@@ -15,8 +15,10 @@ trap stop_db EXIT HUP INT TERM
 
 port=$(docker port "$id" 5432/tcp | head -1 | sed 's/.*://')
 ready=0
-for _ in $(seq 50); do
-  if docker exec "$id" pg_isready -U dropwise -d dropwise >/dev/null 2>&1; then
+for _ in $(seq 120); do
+  # Probe TCP like the test process does; the default pg_isready target is a
+  # Unix socket and can report ready before the published TCP endpoint is up.
+  if docker exec "$id" pg_isready -h 127.0.0.1 -p 5432 -U dropwise -d dropwise >/dev/null 2>&1; then
     ready=1
     break
   fi
