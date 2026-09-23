@@ -8,3 +8,4 @@
 - 2026-09-23T15:38:41Z: T2 first run done (3/3 runs identical). bb8 0.9.1: 0 violations in all scenarios (S2.1b has no Pending boundary: 0 plans). Positive control: violations in S2.1a, S2.2, S2.4, S2.5 (all C2(a) capacity lost), none in S2.1b, S2.3.
 - 2026-09-23T15:38:41Z: first run of T1 started (./run.sh t1-tungstenite).
 - 2026-09-23T15:38:50Z: T1 first run done (3/3 runs identical). tokio-tungstenite 0.30.0: 0 violations in S1.1-S1.6. Plans per scenario: 3, 30, 3, 18, 3, 6 (Pending boundaries occur only where next() waits for data). No positive control defined for T1 (section 5).
+- 2026-09-23T16:18:30Z: amendment A2 registered before writing or running T3 scenarios: T3 tester is Codex (GPT), unlike T1/T2 (Claude session); use locally available `postgres:18-alpine` instead of preregistered `postgres:16` (explicit exploratory-target server-version deviation; no pull planned).
