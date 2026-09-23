@@ -1,0 +1,13 @@
+[package]
+name = "prospective-t2-bb8"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+bb8 = "=0.9.1"
+# Positive control (PREREGISTRATION.md section 5): bb8 0.9.1 with the PooledConnection
+# wrapping moved after the is_valid await in Pool::get (see vendor/bb8-mutant/src/inner.rs).
+bb8_mutant = { package = "bb8", path = "vendor/bb8-mutant" }
+tokio = { version = "1.40", features = ["macros", "rt", "sync", "time", "test-util"] }

@@ -1,0 +1,11 @@
+[package]
+name = "prospective-t1-tungstenite"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+tokio-tungstenite = "=0.30.0"
+futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
+tokio = { version = "1.40", features = ["io-util", "macros", "rt", "sync", "time", "test-util"] }
