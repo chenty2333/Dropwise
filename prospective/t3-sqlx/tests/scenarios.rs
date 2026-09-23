@@ -74,13 +74,17 @@ async fn race_query<F>(ctx: &Ctx, future: F) -> Result<(), String>
 where
     F: Future<Output = Result<(), String>>,
 {
+    // A3: SQLx pool/network setup and cleanup use real time, but cancellation
+    // scheduling itself uses the frozen current-thread paused clock.
+    tokio::time::pause();
     let (operation, mut preempt) = ctx.race(future);
-    tokio::select! {
+    let result = tokio::select! {
         biased;
-        result = operation => result?,
-        _ = &mut preempt => {},
-    }
-    Ok(())
+        result = operation => result,
+        _ = &mut preempt => Ok(()),
+    };
+    tokio::time::resume();
+    result
 }
 
 async fn verify_follow_ups(pool: &PgPool, base: i64) -> Result<(), String> {
@@ -112,6 +116,16 @@ async fn warm_pool(pool: &PgPool) -> Result<(), String> {
 }
 
 async fn run(ctx: Ctx, scenario: Scenario) -> Result<(), String> {
+    // SQLx PoolOptions uses Tokio timeouts while establishing real TCP sockets.
+    // Resume for external I/O; race_query pauses again around each target.
+    tokio::time::resume();
+    let result = run_with_real_time(ctx, scenario).await;
+    // Keep Dropwise's default Settle window on the frozen current-thread clock.
+    tokio::time::pause();
+    result
+}
+
+async fn run_with_real_time(ctx: Ctx, scenario: Scenario) -> Result<(), String> {
     let pool = make_pool().await?;
     // Establish and exercise the pool's sole connection before the cancellation target.
     warm_pool(&pool).await?;
@@ -176,6 +190,13 @@ async fn run(ctx: Ctx, scenario: Scenario) -> Result<(), String> {
 }
 
 async fn run_partial_stream(ctx: Ctx) -> Result<(), String> {
+    tokio::time::resume();
+    let result = run_partial_stream_with_real_time(ctx).await;
+    tokio::time::pause();
+    result
+}
+
+async fn run_partial_stream_with_real_time(ctx: Ctx) -> Result<(), String> {
     let pool = make_pool().await?;
     warm_pool(&pool).await?;
 

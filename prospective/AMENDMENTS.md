@@ -17,3 +17,15 @@ T3 will be authored and tested by Codex (GPT), rather than the Claude session th
 and T2. The preregistered server image was `postgres:16`; this host already has the
 `postgres:18-alpine` image locally, so T3 will use that image instead. This is an explicit
 server-version deviation for the secondary, exploratory target; no image pull is planned.
+
+## A3 (2026-09-23T16:35:00Z, before the second scenario correction)
+
+The first run failed in pool setup; correcting the runner to probe TCP (commit `d4aab47`)
+did not resolve it. In sqlx 0.9.0, `PoolOptions::connect_with` bounds opening the pool with
+`acquire_timeout` (30 seconds by default); with Dropwise's `Flavor::CurrentThread`, Tokio time
+starts paused, so a real TCP connection can remain pending while the virtual timeout expires
+before any target is registered. To exercise C3 while keeping every frozen `Config` field
+unchanged, T3 will resume Tokio time only during pool creation/warm-up and post-race follow-up
+queries, and pause it again around each `ctx.race` target and before scenario return/settling.
+This is a T3 harness timing adjustment: external database I/O remains real-time, while the
+registered cancellation delay and settle window use the frozen paused-clock behavior.
