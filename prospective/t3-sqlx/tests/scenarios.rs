@@ -16,7 +16,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 const FOLLOW_UPS: i64 = 8;
-const STREAM_ROWS: i64 = 100_000;
+const STREAM_ROWS: i64 = 20_000;
 
 #[derive(Clone, Copy)]
 enum Scenario {
@@ -129,6 +129,12 @@ async fn run_with_real_time(ctx: Ctx, scenario: Scenario) -> Result<(), String> 
     let pool = make_pool().await?;
     // Establish and exercise the pool's sole connection before the cancellation target.
     warm_pool(&pool).await?;
+    // Check out the only pooled connection while Tokio time is resumed. The
+    // target itself is the SQL fetch future, not Pool::acquire's timeout.
+    let mut target_conn = pool
+        .acquire()
+        .await
+        .map_err(|e| format!("checking out target connection: {e}"))?;
 
     let base = match scenario {
         Scenario::SingleRow => {
@@ -136,7 +142,7 @@ async fn run_with_real_time(ctx: Ctx, scenario: Scenario) -> Result<(), String> 
             race_query(&ctx, async {
                 let actual = sqlx::query_scalar::<_, i64>("SELECT $1::int8")
                     .bind(value)
-                    .fetch_one(&pool)
+                    .fetch_one(&mut *target_conn)
                     .await
                     .map_err(|e| format!("target single-row query: {e}"))?;
                 if actual != value {
@@ -152,7 +158,7 @@ async fn run_with_real_time(ctx: Ctx, scenario: Scenario) -> Result<(), String> 
                 let rows = sqlx::query_scalar::<_, i64>(
                     "SELECT g::int8 FROM generate_series(1, 20000) AS g",
                 )
-                .fetch_all(&pool)
+                .fetch_all(&mut *target_conn)
                 .await
                 .map_err(|e| format!("target large-result query: {e}"))?;
                 if rows.len() != 20_000 || rows.first() != Some(&1) || rows.last() != Some(&20_000) {
@@ -173,7 +179,7 @@ async fn run_with_real_time(ctx: Ctx, scenario: Scenario) -> Result<(), String> 
                     "SELECT $1::int8 FROM (SELECT pg_sleep(0.05)) AS delayed",
                 )
                 .bind(value)
-                .fetch_one(&pool)
+                .fetch_one(&mut *target_conn)
                 .await
                 .map_err(|e| format!("target pg_sleep query: {e}"))?;
                 if actual != value {
@@ -186,6 +192,7 @@ async fn run_with_real_time(ctx: Ctx, scenario: Scenario) -> Result<(), String> 
         }
     };
 
+    drop(target_conn);
     verify_follow_ups(&pool, base).await
 }
 
@@ -199,10 +206,18 @@ async fn run_partial_stream(ctx: Ctx) -> Result<(), String> {
 async fn run_partial_stream_with_real_time(ctx: Ctx) -> Result<(), String> {
     let pool = make_pool().await?;
     warm_pool(&pool).await?;
+    let mut target_conn = pool
+        .acquire()
+        .await
+        .map_err(|e| format!("checking out target stream connection: {e}"))?;
 
     let mut stream = Box::pin(
-        sqlx::query_scalar::<_, i64>("SELECT g::int8 FROM generate_series(1, 100000) AS g")
-            .fetch(&pool),
+        sqlx::query_scalar::<_, i64>(
+            "SELECT g::int8 \
+             FROM generate_series(1, 20000) AS g \
+             LEFT JOIN LATERAL (SELECT pg_sleep(2.0) WHERE g = 10000) AS delayed ON TRUE",
+        )
+        .fetch(&mut *target_conn),
     );
     // Ensure the query stream has yielded rows and is only partially consumed
     // before its next() work is raced and can be dropped.
@@ -240,6 +255,7 @@ async fn run_partial_stream_with_real_time(ctx: Ctx) -> Result<(), String> {
     })
     .await?;
 
+    drop(target_conn);
     verify_follow_ups(&pool, 34_100).await
 }
 
