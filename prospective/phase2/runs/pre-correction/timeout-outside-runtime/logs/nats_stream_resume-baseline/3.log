@@ -1,0 +1,19 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/scenarios.rs (prospective/phase2/target/debug/deps/scenarios-b67ea23453f2dc2a)
+
+running 1 test
+
+thread 'nats_stream_resume' (2987535) panicked at src/lib.rs:377:36:
+there is no reactor running, must be called from the context of a Tokio 1.x runtime
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test nats_stream_resume ... FAILED
+
+failures:
+
+failures:
+    nats_stream_resume
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test scenarios`
+exit_code=101
