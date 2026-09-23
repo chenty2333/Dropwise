@@ -41,3 +41,11 @@ pool. S3.4 will read three rows first, then stream 20,000 rows with a server-sid
 after row 10,000, so the raced stream has a pending read after a prefix and before completion.
 This is a scenario/harness correction for 4.3(a); it does not change C3 or any frozen Config
 field.
+
+## Erratum to A4 (review, 2026-09-23T17:01:39Z)
+
+A4 says S3.4 uses "a server-side 50 ms delay after row 10,000". The code committed in
+`08223af` (and used for all valid T3 runs) uses `pg_sleep(2.0)` at row 10,000, i.e. a 2 s delay;
+the 50 ms delay belongs to S3.3. RESULTS.md already states 2 s correctly. Also note for
+interpretation: the S3.4 delay and the A3 clock handling were chosen after the first T3 runs
+showed no usable Pending boundary; T3 results rest on these post-hoc harness choices.
