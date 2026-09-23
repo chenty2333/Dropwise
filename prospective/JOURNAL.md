@@ -9,3 +9,4 @@
 - 2026-09-23T15:38:41Z: first run of T1 started (./run.sh t1-tungstenite).
 - 2026-09-23T15:38:50Z: T1 first run done (3/3 runs identical). tokio-tungstenite 0.30.0: 0 violations in S1.1-S1.6. Plans per scenario: 3, 30, 3, 18, 3, 6 (Pending boundaries occur only where next() waits for data). No positive control defined for T1 (section 5).
 - 2026-09-23T16:18:30Z: amendment A2 registered before writing or running T3 scenarios: T3 tester is Codex (GPT), unlike T1/T2 (Claude session); use locally available `postgres:18-alpine` instead of preregistered `postgres:16` (explicit exploratory-target server-version deviation; no pull planned).
+- 2026-09-23T16:26:37Z: T3 scenarios S3.1-S3.4 committed as 21a0009; `cargo test --manifest-path prospective/t3-sqlx/Cargo.toml --no-run` succeeded; not run.
