@@ -1,0 +1,2 @@
+wall_clock_elapsed: 0.202131s
+dropwise: 1 target(s), 6 cancellation plan(s) explored

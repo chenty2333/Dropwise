@@ -1,0 +1,30 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+s3_1: 3 plans, 0 violations, 0 unrealized, exhaustive=true, wall=0.114197s
+dropwise: 1 target(s), 3 cancellation plan(s) explored
+  baseline (no cancellation): target single-row query: pool timed out while waiting for an open connection
+
+.s3_2: 3 plans, 0 violations, 0 unrealized, exhaustive=true, wall=0.120511s
+dropwise: 1 target(s), 3 cancellation plan(s) explored
+  baseline (no cancellation): target large-result query: pool timed out while waiting for an open connection
+
+.s3_3: 3 plans, 0 violations, 0 unrealized, exhaustive=true, wall=0.111918s
+dropwise: 1 target(s), 3 cancellation plan(s) explored
+  baseline (no cancellation): target pg_sleep query: pool timed out while waiting for an open connection
+
+.s3_4: 0 plans, 0 violations, 0 unrealized, exhaustive=true, wall=0.224799s
+dropwise: 1 target(s), 0 cancellation plan(s) explored
+
+.
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

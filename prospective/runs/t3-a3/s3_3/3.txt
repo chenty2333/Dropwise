@@ -1,0 +1,3 @@
+wall_clock_elapsed: 0.122148s
+dropwise: 1 target(s), 3 cancellation plan(s) explored
+  baseline (no cancellation): target pg_sleep query: pool timed out while waiting for an open connection

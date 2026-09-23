@@ -1,0 +1,31 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+s3_1: 0 plans, 0 violations, 0 unrealized, exhaustive=false, wall=0.000677s
+dropwise: 0 target(s), 0 cancellation plan(s) explored (NOT exhaustive)
+  baseline (no cancellation): connecting one-connection pool: pool timed out while waiting for an open connection
+
+.s3_2: 0 plans, 0 violations, 0 unrealized, exhaustive=false, wall=0.000394s
+dropwise: 0 target(s), 0 cancellation plan(s) explored (NOT exhaustive)
+  baseline (no cancellation): connecting one-connection pool: pool timed out while waiting for an open connection
+
+.s3_3: 0 plans, 0 violations, 0 unrealized, exhaustive=false, wall=0.000354s
+dropwise: 0 target(s), 0 cancellation plan(s) explored (NOT exhaustive)
+  baseline (no cancellation): connecting one-connection pool: pool timed out while waiting for an open connection
+
+.s3_4: 0 plans, 0 violations, 0 unrealized, exhaustive=false, wall=0.000327s
+dropwise: 0 target(s), 0 cancellation plan(s) explored (NOT exhaustive)
+  baseline (no cancellation): connecting one-connection pool: pool timed out while waiting for an open connection
+
+.
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
