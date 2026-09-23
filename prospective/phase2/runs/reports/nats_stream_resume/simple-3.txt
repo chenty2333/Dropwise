@@ -1,0 +1,8 @@
+scene=nats_stream_resume
+mode=simple
+run=3
+elapsed=0.006608s
+result=Ok(())
+INVOCATION METRICS
+invocation[0]: pending=1 cancelled=true detail=same pull stream retained across the selected next() future
+invocation[1]: pending=1 cancelled=true detail=prefix=acknowledged; logical_order=["event-1", "event-2"]; unique_ids={"event-2", "event-1"}; physical_followup_deliveries=2; ack_pending=0

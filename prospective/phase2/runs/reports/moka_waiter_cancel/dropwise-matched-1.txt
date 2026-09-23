@@ -1,0 +1,50 @@
+scene=moka_waiter_cancel
+mode=dropwise-matched
+run=1
+config=Config { max_runs: 2, max_cancellations: 1, races: [Immediate], flavor: MultiThread { workers: 2 }, settle: Settle { tokio_time: 100ms, real_time: 0ns, watchdog: 10s }, scenario_timeout: 10s }
+elapsed=0.204585s
+validation=Ok(())
+
+REPORT DISPLAY
+dropwise: 1 target(s), 1 cancellation plan(s) explored
+
+REPORT DEBUG
+Report {
+    trials: [
+        Trial {
+            plan: [
+                Cut {
+                    target: 0,
+                    after_pending: 1,
+                    race: Immediate,
+                },
+            ],
+            sites: [
+                Some(
+                    Location {
+                        file: "src/lib.rs",
+                        line: 157,
+                        column: 44,
+                    },
+                ),
+            ],
+            outcomes: [
+                Cancelled,
+            ],
+            invariant: Ok(
+                (),
+            ),
+            leaks: [],
+            settled: true,
+        },
+    ],
+    baseline_errors: [],
+    baseline_targets: 1,
+    baseline_settled: true,
+    exhaustive: true,
+}
+INVOCATION METRICS
+invocation[0]: pending=1 cancelled=false detail=leader task remains independent; marked target is one coalesced waiter
+invocation[1]: pending=1 cancelled=false detail=final leader="same-key-value"; surviving_waiter="same-key-value"; cache=Some("same-key-value"); loader_calls=1
+invocation[2]: pending=1 cancelled=true detail=leader task remains independent; marked target is one coalesced waiter
+invocation[3]: pending=1 cancelled=true detail=final leader="same-key-value"; surviving_waiter="same-key-value"; cache=Some("same-key-value"); loader_calls=1

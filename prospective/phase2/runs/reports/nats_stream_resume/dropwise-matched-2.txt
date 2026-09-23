@@ -1,0 +1,50 @@
+scene=nats_stream_resume
+mode=dropwise-matched
+run=2
+config=Config { max_runs: 2, max_cancellations: 1, races: [Immediate], flavor: MultiThread { workers: 2 }, settle: Settle { tokio_time: 100ms, real_time: 0ns, watchdog: 10s }, scenario_timeout: 10s }
+elapsed=0.216241s
+validation=Ok(())
+
+REPORT DISPLAY
+dropwise: 1 target(s), 1 cancellation plan(s) explored
+
+REPORT DEBUG
+Report {
+    trials: [
+        Trial {
+            plan: [
+                Cut {
+                    target: 0,
+                    after_pending: 1,
+                    race: Immediate,
+                },
+            ],
+            sites: [
+                Some(
+                    Location {
+                        file: "src/lib.rs",
+                        line: 157,
+                        column: 44,
+                    },
+                ),
+            ],
+            outcomes: [
+                Cancelled,
+            ],
+            invariant: Ok(
+                (),
+            ),
+            leaks: [],
+            settled: true,
+        },
+    ],
+    baseline_errors: [],
+    baseline_targets: 1,
+    baseline_settled: true,
+    exhaustive: true,
+}
+INVOCATION METRICS
+invocation[0]: pending=1 cancelled=false detail=same pull stream retained across the selected next() future
+invocation[1]: pending=1 cancelled=false detail=prefix=acknowledged; logical_order=["event-1", "event-2"]; unique_ids={"event-1", "event-2"}; physical_followup_deliveries=1; ack_pending=0
+invocation[2]: pending=1 cancelled=true detail=same pull stream retained across the selected next() future
+invocation[3]: pending=1 cancelled=true detail=prefix=acknowledged; logical_order=["event-1", "event-2"]; unique_ids={"event-1", "event-2"}; physical_followup_deliveries=2; ack_pending=0

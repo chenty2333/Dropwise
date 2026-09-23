@@ -1,0 +1,8 @@
+scene=moka_waiter_cancel
+mode=baseline
+run=3
+elapsed=0.000675s
+result=Ok(())
+INVOCATION METRICS
+invocation[0]: pending=1 cancelled=false detail=leader task remains independent; marked target is one coalesced waiter
+invocation[1]: pending=1 cancelled=false detail=final leader="same-key-value"; surviving_waiter="same-key-value"; cache=Some("same-key-value"); loader_calls=1

@@ -1,0 +1,8 @@
+scene=nats_process_cancel
+mode=simple
+run=3
+elapsed=0.006460s
+result=Ok(())
+INVOCATION METRICS
+invocation[0]: pending=1 cancelled=true detail=gate 1 precedes the idempotent effect; gate 2 is after commit and before ACK
+invocation[1]: pending=1 cancelled=true detail=logical_effects=["work-1", "work-2"]; physical_deliveries=3; ack_pending=0

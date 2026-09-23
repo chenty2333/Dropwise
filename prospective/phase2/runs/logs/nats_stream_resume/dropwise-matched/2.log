@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/scenarios.rs (prospective/phase2/target/debug/deps/scenarios-b67ea23453f2dc2a)
+
+running 1 test
+test nats_stream_resume ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.22s
+
+exit_code=0
