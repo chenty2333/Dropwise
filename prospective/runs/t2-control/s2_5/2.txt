@@ -1,0 +1,85 @@
+dropwise: 2 target(s), 63 cancellation plan(s) explored
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #1, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 2 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1 reschedule(s) -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut
+  target #0 (tests/scenarios.rs:151:1) loses after pending #2, competitor ready after 1ms -> Cancelled + target #1 (tests/scenarios.rs:151:1) loses after pending #3, competitor ready after 1ms -> Cancelled:
+    invariant violated: C2(a) capacity lost: get 1 of 2 failed: TimedOut

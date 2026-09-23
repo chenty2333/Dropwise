@@ -1,0 +1,33 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+s1_1: 3 plans, 0 violations, 0 unrealized, exhaustive=true
+dropwise: 12 target(s), 3 cancellation plan(s) explored
+
+.s1_2: 30 plans, 0 violations, 0 unrealized, exhaustive=true
+dropwise: 3 target(s), 30 cancellation plan(s) explored
+
+.s1_3: 3 plans, 0 violations, 0 unrealized, exhaustive=true
+dropwise: 3 target(s), 3 cancellation plan(s) explored
+
+.s1_4: 18 plans, 0 violations, 0 unrealized, exhaustive=true
+dropwise: 3 target(s), 18 cancellation plan(s) explored
+
+.s1_5: 3 plans, 0 violations, 0 unrealized, exhaustive=true
+dropwise: 6 target(s), 3 cancellation plan(s) explored
+
+.s1_6: 6 plans, 0 violations, 0 unrealized, exhaustive=true
+dropwise: 5 target(s), 6 cancellation plan(s) explored
+
+.
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
