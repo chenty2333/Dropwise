@@ -1,0 +1,12 @@
+[package]
+name = "dropwise-phase2"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+async-nats = { version = "=0.50.0", features = ["jetstream"] }
+dropwise = { path = "../.." }
+futures-util = "0.3"
+moka = { version = "=0.12.16", features = ["future"] }
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
