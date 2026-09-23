@@ -54,7 +54,10 @@ fn require_cancelled(
     mode: Mode,
     run: &dropwise_phase2::TargetRun<impl Sized>,
 ) -> Result<(), String> {
-    if mode != Mode::Baseline && run.end != TargetEnd::Cancelled {
+    if mode == Mode::Baseline && run.end != TargetEnd::Completed {
+        return Err("uncancelled baseline did not complete the marked target".into());
+    }
+    if mode == Mode::Simple && run.end != TargetEnd::Cancelled {
         return Err(format!(
             "{} did not actually cancel the marked target",
             dropwise_phase2::mode_name(mode)
@@ -360,8 +363,10 @@ fn fresh_nats_names(scene: &str) -> (String, String, String) {
         .collect::<String>();
     let consumer_name = format!("C{serial:08}");
     let subject = format!(
-        "dropwise.phase2.{}.{}.{}",
+        "dropwise.phase2.{}.{}.{}.{}.{}",
         scene.replace('_', "."),
+        mode.replace('-', "_"),
+        std::process::id(),
         run,
         serial
     );
