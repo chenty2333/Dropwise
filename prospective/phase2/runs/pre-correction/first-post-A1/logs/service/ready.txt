@@ -1,0 +1,2 @@
+image=nats:2.11.6-alpine
+url=nats://127.0.0.1:32778

@@ -1,0 +1,19 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/scenarios.rs (prospective/phase2/target/debug/deps/scenarios-b67ea23453f2dc2a)
+
+running 1 test
+
+thread 'moka_waiter_cancel' (2990059) panicked at src/lib.rs:399:5:
+moka_waiter_cancel dropwise-full: Err("baseline errors: [\"dropwise-full did not actually cancel the marked target\"]")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test moka_waiter_cancel ... FAILED
+
+failures:
+
+failures:
+    moka_waiter_cancel
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.42s
+
+error: test failed, to rerun pass `--test scenarios`
+exit_code=101

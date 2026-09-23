@@ -1,0 +1,112 @@
+scene=moka_waiter_cancel
+mode=dropwise-full
+run=3
+config=Config { max_runs: 128, max_cancellations: 1, races: [Immediate, Reschedule(1), After(10ms)], flavor: MultiThread { workers: 2 }, settle: Settle { tokio_time: 100ms, real_time: 0ns, watchdog: 10s }, scenario_timeout: 10s }
+elapsed=0.418348s
+validation=Err("baseline errors: [\"dropwise-full did not actually cancel the marked target\"]")
+
+REPORT DISPLAY
+dropwise: 1 target(s), 3 cancellation plan(s) explored
+  baseline (no cancellation): dropwise-full did not actually cancel the marked target
+
+REPORT DEBUG
+Report {
+    trials: [
+        Trial {
+            plan: [
+                Cut {
+                    target: 0,
+                    after_pending: 1,
+                    race: Immediate,
+                },
+            ],
+            sites: [
+                Some(
+                    Location {
+                        file: "src/lib.rs",
+                        line: 157,
+                        column: 44,
+                    },
+                ),
+            ],
+            outcomes: [
+                Cancelled,
+            ],
+            invariant: Ok(
+                (),
+            ),
+            leaks: [],
+            settled: true,
+        },
+        Trial {
+            plan: [
+                Cut {
+                    target: 0,
+                    after_pending: 1,
+                    race: Reschedule(
+                        1,
+                    ),
+                },
+            ],
+            sites: [
+                Some(
+                    Location {
+                        file: "src/lib.rs",
+                        line: 157,
+                        column: 44,
+                    },
+                ),
+            ],
+            outcomes: [
+                Cancelled,
+            ],
+            invariant: Ok(
+                (),
+            ),
+            leaks: [],
+            settled: true,
+        },
+        Trial {
+            plan: [
+                Cut {
+                    target: 0,
+                    after_pending: 1,
+                    race: After(
+                        10ms,
+                    ),
+                },
+            ],
+            sites: [
+                Some(
+                    Location {
+                        file: "src/lib.rs",
+                        line: 157,
+                        column: 44,
+                    },
+                ),
+            ],
+            outcomes: [
+                Cancelled,
+            ],
+            invariant: Ok(
+                (),
+            ),
+            leaks: [],
+            settled: true,
+        },
+    ],
+    baseline_errors: [
+        "dropwise-full did not actually cancel the marked target",
+    ],
+    baseline_targets: 1,
+    baseline_settled: true,
+    exhaustive: true,
+}
+INVOCATION METRICS
+invocation[0]: pending=1 cancelled=false detail=leader task remains independent; marked target is one coalesced waiter
+invocation[1]: pending=1 cancelled=true detail=leader task remains independent; marked target is one coalesced waiter
+invocation[2]: pending=1 cancelled=true detail=final leader="same-key-value"; surviving_waiter="same-key-value"; cache=Some("same-key-value"); loader_calls=1
+invocation[3]: pending=1 cancelled=true detail=leader task remains independent; marked target is one coalesced waiter
+invocation[4]: pending=1 cancelled=true detail=final leader="same-key-value"; surviving_waiter="same-key-value"; cache=Some("same-key-value"); loader_calls=1
+invocation[5]: pending=1 cancelled=true detail=leader task remains independent; marked target is one coalesced waiter
+invocation[6]: pending=1 cancelled=true detail=final leader="same-key-value"; surviving_waiter="same-key-value"; cache=Some("same-key-value"); loader_calls=1

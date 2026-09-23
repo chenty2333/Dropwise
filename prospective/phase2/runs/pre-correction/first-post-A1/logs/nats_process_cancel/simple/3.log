@@ -1,0 +1,19 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/scenarios.rs (prospective/phase2/target/debug/deps/scenarios-b67ea23453f2dc2a)
+
+running 1 test
+
+thread 'nats_process_cancel' (2989629) panicked at src/lib.rs:399:5:
+nats_process_cancel simple: Err("create JetStream stream: jetstream error: subjects overlap with an existing stream (code 400, error code 10065)")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test nats_process_cancel ... FAILED
+
+failures:
+
+failures:
+    nats_process_cancel
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test scenarios`
+exit_code=101
