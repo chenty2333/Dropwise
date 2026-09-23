@@ -374,10 +374,13 @@ where
             .enable_all()
             .build()
             .expect("build plain comparison runtime");
-        let run = runtime.block_on(tokio::time::timeout(
-            Duration::from_secs(10),
-            scenario(mode, None, metrics.clone()),
-        ));
+        let run = runtime.block_on(async {
+            tokio::time::timeout(
+                Duration::from_secs(10),
+                scenario(mode, None, metrics.clone()),
+            )
+            .await
+        });
         let result = match run {
             Ok(result) => result,
             Err(_) => Err("plain run exceeded 10s scenario timeout".into()),
