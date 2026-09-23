@@ -1,0 +1,27 @@
+# One owner/repo per line. Async-heavy Rust projects likely to have hit cancellation bugs.
+tokio-rs/tokio
+tokio-rs/axum
+tokio-rs/tracing
+hyperium/hyper
+grpc/grpc-rust
+hyperium/h2
+quinn-rs/quinn
+oxidecomputer/omicron
+oxidecomputer/propolis
+oxidecomputer/dropshot
+MaterializeInc/materialize
+linkerd/linkerd2-proxy
+neondatabase/neon
+risingwavelabs/risingwave
+databendlabs/databend
+vectordotdev/vector
+influxdata/influxdb
+cloudflare/pingora
+n0-computer/iroh
+libp2p/rust-libp2p
+paritytech/polkadot-sdk
+qdrant/qdrant
+meilisearch/meilisearch
+denoland/deno
+redis-rs/redis-rs
+seanmonstar/reqwest

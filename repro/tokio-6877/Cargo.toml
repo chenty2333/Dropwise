@@ -1,0 +1,10 @@
+[package]
+name = "repro-tokio-6877"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+# Version the issue was reported against.
+tokio = { version = "=1.40.0", features = ["io-util", "macros", "rt", "sync", "time", "test-util"] }

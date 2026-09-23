@@ -1,0 +1,10 @@
+[package]
+name = "repro-tokio-7979"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+# Buggy: 1.51.0 (before tokio-rs/tokio#7983, merged 2026-04-08). Fixed: 1.52.0.
+tokio = { version = "1.51.0", features = ["fs", "io-uring", "macros", "rt", "sync", "time", "test-util"] }

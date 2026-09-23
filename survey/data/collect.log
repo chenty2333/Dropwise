@@ -1,0 +1,123 @@
+repo:tokio-rs/tokio                           issues   page 1:  87 hits (total 87)
+repo:tokio-rs/tokio                           commits  page 1:  23 hits (total 23)
+  rate limited, sleeping 30s
+repo:tokio-rs/tokio                           issues   page 1:  66 hits (total 66)
+repo:tokio-rs/tokio                           commits  page 1:   4 hits (total 4)
+repo:tokio-rs/tokio                           issues   page 1: 100 hits (total 116)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tokio                           issues   page 2:  16 hits (total 116)
+repo:tokio-rs/tokio                           commits  page 1:   2 hits (total 2)
+repo:tokio-rs/axum                            issues   page 1:  10 hits (total 10)
+repo:tokio-rs/axum                            commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/axum                            issues   page 1:   9 hits (total 9)
+repo:tokio-rs/axum                            commits  page 1:   0 hits (total 0)
+repo:tokio-rs/axum                            issues   page 1:  10 hits (total 10)
+repo:tokio-rs/axum                            commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tracing                         issues   page 1:   1 hits (total 1)
+repo:tokio-rs/tracing                         commits  page 1:   0 hits (total 0)
+repo:tokio-rs/tracing                         issues   page 1:   3 hits (total 3)
+repo:tokio-rs/tracing                         commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tracing                         issues   page 1:   4 hits (total 4)
+repo:tokio-rs/tracing                         commits  page 1:   0 hits (total 0)
+repo:hyperium/hyper                           issues   page 1:   4 hits (total 4)
+repo:hyperium/hyper                           commits  page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/hyper                           issues   page 1:  15 hits (total 15)
+repo:hyperium/hyper                           commits  page 1:   1 hits (total 1)
+repo:hyperium/hyper                           issues   page 1:  27 hits (total 27)
+repo:hyperium/hyper                           commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"cancel safe" OR "cancel-safe" OR "cancel safety" OR "cancellation safety" OR "cancel-unsafe" repo:hyperium/tonic -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for commits `"cancel safe" OR "cancel-safe" OR "cancel safety" OR "cancellation safety" OR "cancel-unsafe" repo:hyperium/tonic` page 1: gh: Validation Failed (HTTP 422)
+  error for issues `"not cancel safe" OR "cancellation bug" OR "future is dropped" OR "future was dropped" OR "futurelock" repo:hyperium/tonic -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for commits `"not cancel safe" OR "cancellation bug" OR "future is dropped" OR "future was dropped" OR "futurelock" repo:hyperium/tonic` page 1: gh: Validation Failed (HTTP 422)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"dropped future" OR "cancelled future" OR "select cancel" OR "timeout cancel" OR "cancel correctness" repo:hyperium/tonic -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for commits `"dropped future" OR "cancelled future" OR "select cancel" OR "timeout cancel" OR "cancel correctness" repo:hyperium/tonic` page 1: gh: Validation Failed (HTTP 422)
+repo:hyperium/h2                              issues   page 1:   0 hits (total 0)
+repo:hyperium/h2                              commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/h2                              issues   page 1:   3 hits (total 3)
+repo:hyperium/h2                              commits  page 1:   0 hits (total 0)
+repo:hyperium/h2                              issues   page 1:   5 hits (total 5)
+repo:hyperium/h2                              commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:quinn-rs/quinn                           issues   page 1:   7 hits (total 7)
+repo:quinn-rs/quinn                           commits  page 1:   2 hits (total 2)
+repo:quinn-rs/quinn                           issues   page 1:   3 hits (total 3)
+repo:quinn-rs/quinn                           commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:quinn-rs/quinn                           issues   page 1:   9 hits (total 9)
+repo:quinn-rs/quinn                           commits  page 1:   0 hits (total 0)
+repo:oxidecomputer/omicron                    issues   page 1:  34 hits (total 34)
+repo:oxidecomputer/omicron                    commits  page 1:   6 hits (total 6)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/omicron                    issues   page 1:  19 hits (total 19)
+repo:oxidecomputer/omicron                    commits  page 1:   3 hits (total 3)
+repo:oxidecomputer/omicron                    issues   page 1:  26 hits (total 26)
+repo:oxidecomputer/omicron                    commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/propolis                   issues   page 1:   8 hits (total 8)
+repo:oxidecomputer/propolis                   commits  page 1:   3 hits (total 3)
+repo:oxidecomputer/propolis                   issues   page 1:   4 hits (total 4)
+repo:oxidecomputer/propolis                   commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/propolis                   issues   page 1:   3 hits (total 3)
+repo:oxidecomputer/propolis                   commits  page 1:   0 hits (total 0)
+repo:oxidecomputer/dropshot                   issues   page 1:   4 hits (total 4)
+repo:oxidecomputer/dropshot                   commits  page 1:   1 hits (total 1)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/dropshot                   issues   page 1:   3 hits (total 3)
+repo:oxidecomputer/dropshot                   commits  page 1:   0 hits (total 0)
+repo:oxidecomputer/dropshot                   issues   page 1:   5 hits (total 5)
+repo:oxidecomputer/dropshot                   commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:MaterializeInc/materialize               issues   page 1:  58 hits (total 58)
+repo:MaterializeInc/materialize               commits  page 1:  20 hits (total 20)
+repo:MaterializeInc/materialize               issues   page 1:  29 hits (total 29)
+repo:MaterializeInc/materialize               commits  page 1:   4 hits (total 4)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:MaterializeInc/materialize               issues   page 1:  84 hits (total 84)
+repo:MaterializeInc/materialize               commits  page 1:   1 hits (total 1)
+repo:linkerd/linkerd2-proxy                   issues   page 1:   2 hits (total 2)
+repo:linkerd/linkerd2-proxy                   commits  page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:linkerd/linkerd2-proxy                   issues   page 1:   8 hits (total 8)
+repo:linkerd/linkerd2-proxy                   commits  page 1:   3 hits (total 3)
+repo:linkerd/linkerd2-proxy                   issues   page 1:  15 hits (total 15)
+repo:linkerd/linkerd2-proxy                   commits  page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:neondatabase/neon                        issues   page 1:  47 hits (total 47)
+repo:neondatabase/neon                        commits  page 1:   6 hits (total 6)
+repo:neondatabase/neon                        issues   page 1:  25 hits (total 25)
+repo:neondatabase/neon                        commits  page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:neondatabase/neon                        issues   page 1:  69 hits (total 69)
+repo:neondatabase/neon                        commits  page 1:   0 hits (total 0)
+repo:risingwavelabs/risingwave                issues   page 1:  14 hits (total 14)
+repo:risingwavelabs/risingwave                commits  page 1:   1 hits (total 1)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+658 rows (369 with existing annotations) -> /home/ava/Desktop/Dropwise/survey/data/annotate.csv

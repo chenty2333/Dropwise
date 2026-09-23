@@ -1,0 +1,67 @@
+url,holder,phase,after,violation,outlives,cancel_source,layer,found_by,rationale
+https://github.com/MaterializeInc/materialize/pull/12479,,,,,,,,review,"consequence inferred, not observed (A)"
+https://github.com/MaterializeInc/materialize/pull/12485,,,reuse,mismatch,,select,,review,same client keeps sending (reuse); commands reach the wrong cluster (mismatch); recv in select!; PR describes missed issues found by analysis
+https://github.com/MaterializeInc/materialize/pull/12714,,not_started,,,,,,,tick recreated before anything is taken; starvation (B)
+https://github.com/MaterializeInc/materialize/pull/26190,blocking_thread,,retry,,,,,,incident: spawn_blocking Kafka scan keeps running; restarts pile up (B)
+https://github.com/MaterializeInc/materialize/pull/28816,,,retry,,,select,,,recv reissued each loop iteration; recv sits in select!
+https://github.com/MaterializeInc/materialize/pull/28956,,not_started,,,,,,,future rebuilt and dropped before anything is taken (B)
+https://github.com/MaterializeInc/materialize/pull/29221,,,nothing,,yes,,,,defect is in the Drop itself (B); Timely workers keep running (A)
+https://github.com/cloudflare/pingora/issues/932,shared_object,,,loss,,,,,"partial object stays in the shared cache (A); truncation coded as loss, as for hyper#3995"
+https://github.com/databendlabs/databend/issues/20020,,,,invariant,,,,,flag says finished while finish work did not run (A)
+https://github.com/databendlabs/databend/issues/20044,kernel_or_remote,,,,no,select,,,unrecorded effect lives in remote storage (A); no work continues (B); finish-notify select! (B)
+https://github.com/databendlabs/databend/pull/17902,other_task,,,,yes,,,,"diff: timeout dropped only the waiter, op kept running on the IO-runtime task (B)"
+https://github.com/denoland/deno/issues/35601,,,,,,owner_dropped,,,resource CancelHandle drops the read future (A)
+https://github.com/denoland/deno/pull/14317,,,retry,,,,,review,recv reissued next iteration (A); preemptive fix (B)
+https://github.com/denoland/deno/pull/20316,,,nothing,,,,,,panic occurs in the drop itself (B)
+https://github.com/hyperium/hyper/issues/3199,dropped_future,,,,,,,,"connect is driven by the first request's future, not a separate task (B)"
+https://github.com/hyperium/hyper/issues/3995,dropped_future,,others,loss,,,,,dispatcher future owns the body sender (B); reader is another party (B); truncation = loss
+https://github.com/hyperium/hyper/issues/4040,,,,leak,,,,,stream and window held by the pipe task (B)
+https://github.com/hyperium/hyper/pull/1584,,,nothing,leak,,,,,socket churn caused by the drop itself (B)
+https://github.com/meilisearch/meilisearch/issues/6513,shared_object,,,invariant,,,,,truncated file at the canonical cache path is reused (B)
+https://github.com/n0-computer/iroh/pull/2536,,,retry,,,,,,actor loop reissues recv (A)
+https://github.com/n0-computer/iroh/pull/2572,,,,,,,app,failure,defect in code using select! (A); random connection drops observed (B)
+https://github.com/n0-computer/iroh/pull/4460,other_task,in_progress,,,,,,,relay tasks being closed (A)
+https://github.com/neondatabase/neon/issues/10023,,,others,,,,,,imbalance visible to metric consumers (A)
+https://github.com/neondatabase/neon/issues/6028,shared_object,effect_unrecorded,,,,,,,"Layer state modified in place (A); file already downloaded but not recorded (B, phase rule 1)"
+https://github.com/neondatabase/neon/pull/12345,,,,collateral_failure,,,,failure,followers fail (B); cloud issue observed (B)
+https://github.com/neondatabase/neon/pull/6101,kernel_or_remote,,nothing,memory_safety,,,,,read in flight in the kernel (B); use-after-close of the fd (A)
+https://github.com/neondatabase/neon/pull/7117,kernel_or_remote,,retry,,,,,,query keeps running in Postgres; retry hits duplicate key (B)
+https://github.com/neondatabase/neon/pull/7235,other_task,,,effect_after_close,,,,,dangling walreceiver task (B) running after shutdown (A)
+https://github.com/oxidecomputer/dropshot/issues/914,dropped_future,effect_unrecorded,nothing,loss,,,,,handler finished but end-of-request log/probe lived in the cancelled task
+https://github.com/oxidecomputer/omicron/pull/10204,,,,,,abort,,,PR: relied on task cancellation (A)
+https://github.com/oxidecomputer/omicron/pull/11263,,,others,corruption,no,owner_dropped,app,review,pooled connection used by later requests; framing desync; preventive poison flag
+https://github.com/oxidecomputer/omicron/pull/3140,,effect_unrecorded,,,,owner_dropped,,,zones created but not recorded (A); server drops handler on client timeout (B)
+https://github.com/oxidecomputer/omicron/pull/3579,,recorded_ahead,retry,loss,,,,,state advanced before the report is sent (B)
+https://github.com/oxidecomputer/propolis/issues/650,,effect_unrecorded,,,,,,,some listeners already received the data (B)
+https://github.com/paritytech/polkadot-sdk/pull/11013,dropped_future,,retry,,,,app,failure,response future dropped (B); sync logic is application code (A); issue #5414 reports an observed loss (A)
+https://github.com/qdrant/qdrant/issues/9532,,,,,,select,,,cancel_on_token is a select! (B)
+https://github.com/qdrant/qdrant/issues/9665,,,others,loss,,select,,,replica set used by other operations; shard lost; cancel_on_token select! (B)
+https://github.com/qdrant/qdrant/issues/9670,dropped_future,,,,,,,,"taken update receiver (taken-value rule, B)"
+https://github.com/qdrant/qdrant/issues/9745,,,others,loss,,,,,consistent with qdrant#9665 (B)
+https://github.com/qdrant/qdrant/pull/3367,shared_object,,,,no,,,,"replicas modified in place, partially (A)"
+https://github.com/qdrant/qdrant/pull/7530,,,others,leak,,timeout,,,queued searches hold segments against other operations; timed-out searches
+https://github.com/quinn-rs/quinn/pull/1458,,,,,,,,failure,memory growth observed in use (B)
+https://github.com/redis-rs/redis-rs/issues/325,,effect_unrecorded,,,,,,,"request already written, reply not accounted for (B, phase rule 1)"
+https://github.com/redis-rs/redis-rs/issues/851,,,retry,,,,,,the XREAD is reissued (A)
+https://github.com/redis-rs/redis-rs/pull/597,,,,,,owner_dropped,,,the stream's poll_next drops its in-flight future (A)
+https://github.com/risingwavelabs/risingwave/issues/26172,,,nothing,,,,,,nothing uses the upload afterwards; leak (A)
+https://github.com/risingwavelabs/risingwave/issues/26176,,,,,,owner_dropped,,,parent drops the barrier future (A)
+https://github.com/risingwavelabs/risingwave/issues/26179,,,,loss,,,,,report: delivery futures are lost (A)
+https://github.com/risingwavelabs/risingwave/issues/26220,,n/a,,,no,,,,cancellation outcome mishandled at teardown (B)
+https://github.com/risingwavelabs/risingwave/issues/26409,,,retry,,,,,,consumption restarted (A)
+https://github.com/risingwavelabs/risingwave/pull/22128,,,reuse,loss,,,,,later reads on the connection (B); backfill ends early (A)
+https://github.com/risingwavelabs/risingwave/pull/6658,,,,,,other,,,cancel trigger not specified (B)
+https://github.com/risingwavelabs/risingwave/pull/6985,shared_object,,nothing,,,,,,heap modified in place (A); panic in the drop itself (B)
+https://github.com/risingwavelabs/risingwave/pull/8145,,,retry,,,,,,retry reports 'already in creating' (A)
+https://github.com/seanmonstar/reqwest/issues/949,,,,,,owner_dropped,,,user's poll drops the future (A)
+https://github.com/tokio-rs/tokio/issues/1842,,,,,,owner_dropped,,,dropping the LocalSet container (A)
+https://github.com/tokio-rs/tokio/issues/5535,,,,,,,app,,reporter's program; stdin behaviour is documented (B)
+https://github.com/tokio-rs/tokio/issues/6493,,,retry,invariant,,,app,,next wait (B); generation miscount (B); reporter's program (A)
+https://github.com/tokio-rs/tokio/issues/6877,,effect_unrecorded,,,,,,,"part of the pattern already written (B, phase rule 1)"
+https://github.com/tokio-rs/tokio/issues/7979,kernel_or_remote,in_progress,nothing,,,,,,open in flight in the kernel; completes later (v3 phase rule 3) (B)
+https://github.com/tokio-rs/tokio/pull/1495,,,nothing,panic,,,,,unwrap panic on the blocking thread (B)
+https://github.com/tokio-rs/tokio/pull/2340,,,others,,,,,,notifier later touches the dangling node (A)
+https://github.com/tokio-rs/tokio/pull/3672,,,nothing,,,,,,panic in the abort path itself (B)
+https://github.com/tokio-rs/tokio/pull/3965,,,,,,,,failure,issue #3964 reported the leak (B)
+https://github.com/tokio-rs/tokio/pull/4604,,n/a,teardown,,,,,,runtime-internal (A); runtime termination (B)
+https://github.com/tokio-rs/tokio/pull/7436,,,,,,owner_dropped,,,"dropped before re-poll, shutdown only an example (B)"

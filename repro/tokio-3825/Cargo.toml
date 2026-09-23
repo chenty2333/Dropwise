@@ -1,0 +1,9 @@
+[package]
+name = "repro-tokio-3825"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+tokio = { version = "1.40", features = ["macros", "rt", "sync", "time", "test-util"] }

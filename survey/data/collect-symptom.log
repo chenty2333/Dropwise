@@ -1,0 +1,386 @@
+repo:risingwavelabs/risingwave                issues   page 1:  14 hits (total 14)
+repo:risingwavelabs/risingwave                issues   page 1:  23 hits (total 23)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:risingwavelabs/risingwave                issues   page 1:  69 hits (total 69)
+repo:databendlabs/databend                    issues   page 1:   4 hits (total 4)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:databendlabs/databend                    issues   page 1:   6 hits (total 6)
+repo:databendlabs/databend                    issues   page 1:  41 hits (total 41)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:vectordotdev/vector                      issues   page 1:   2 hits (total 2)
+repo:vectordotdev/vector                      issues   page 1:  13 hits (total 13)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:vectordotdev/vector                      issues   page 1:  29 hits (total 29)
+repo:influxdata/influxdb                      issues   page 1:   1 hits (total 1)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:influxdata/influxdb                      issues   page 1:   2 hits (total 2)
+repo:influxdata/influxdb                      issues   page 1:  23 hits (total 23)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:cloudflare/pingora                       issues   page 1:   8 hits (total 8)
+repo:cloudflare/pingora                       issues   page 1:   5 hits (total 5)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:cloudflare/pingora                       issues   page 1:   7 hits (total 7)
+repo:n0-computer/iroh                         issues   page 1:  13 hits (total 13)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:n0-computer/iroh                         issues   page 1:  10 hits (total 10)
+repo:n0-computer/iroh                         issues   page 1:  15 hits (total 15)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:libp2p/rust-libp2p                       issues   page 1:   3 hits (total 3)
+repo:libp2p/rust-libp2p                       issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:libp2p/rust-libp2p                       issues   page 1:   9 hits (total 9)
+repo:paritytech/polkadot-sdk                  issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:paritytech/polkadot-sdk                  issues   page 1:   2 hits (total 2)
+repo:paritytech/polkadot-sdk                  issues   page 1:  21 hits (total 21)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:qdrant/qdrant                            issues   page 1:  57 hits (total 57)
+repo:qdrant/qdrant                            issues   page 1:  38 hits (total 38)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:qdrant/qdrant                            issues   page 1:  62 hits (total 62)
+repo:meilisearch/meilisearch                  issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:meilisearch/meilisearch                  issues   page 1:   3 hits (total 3)
+repo:meilisearch/meilisearch                  issues   page 1:   5 hits (total 5)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:denoland/deno                            issues   page 1:   4 hits (total 4)
+repo:denoland/deno                            issues   page 1:  12 hits (total 12)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:denoland/deno                            issues   page 1:  41 hits (total 41)
+  error for issues `"cancel safe" OR "cancel-safe" OR "cancel safety" OR "cancellation safety" OR "cancel-unsafe" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"not cancel safe" OR "cancellation bug" OR "future is dropped" OR "future was dropped" OR "futurelock" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for issues `"dropped future" OR "cancelled future" OR "select cancel" OR "timeout cancel" OR "cancel correctness" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:redis-rs/redis-rs                        issues   page 1:   0 hits (total 0)
+repo:redis-rs/redis-rs                        issues   page 1:   5 hits (total 5)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:redis-rs/redis-rs                        issues   page 1:   9 hits (total 9)
+repo:seanmonstar/reqwest                      issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:seanmonstar/reqwest                      issues   page 1:   1 hits (total 1)
+repo:seanmonstar/reqwest                      issues   page 1:   6 hits (total 6)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:grpc/grpc-rust                           issues   page 1:   4 hits (total 4)
+repo:grpc/grpc-rust                           issues   page 1:   8 hits (total 8)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:grpc/grpc-rust                           issues   page 1:  23 hits (total 23)
+443 new candidates, 1101 total -> /home/ava/Desktop/Dropwise/survey/data/candidates.jsonl
+repo:tokio-rs/tokio                           issues   page 1:  24 hits (total 24)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tokio                           issues   page 1: 100 hits (total 135)
+repo:tokio-rs/tokio                           issues   page 2:  35 hits (total 135)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tokio                           issues   page 1:   1 hits (total 1)
+repo:tokio-rs/tokio                           issues   page 1:   6 hits (total 6)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tokio                           issues   page 1:  97 hits (total 97)
+repo:tokio-rs/tokio                           issues   page 1:  15 hits (total 15)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/axum                            issues   page 1:   1 hits (total 1)
+repo:tokio-rs/axum                            issues   page 1:  11 hits (total 11)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/axum                            issues   page 1:   0 hits (total 0)
+repo:tokio-rs/axum                            issues   page 1:   1 hits (total 1)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/axum                            issues   page 1:   6 hits (total 6)
+repo:tokio-rs/axum                            issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tracing                         issues   page 1:   7 hits (total 7)
+repo:tokio-rs/tracing                         issues   page 1:   9 hits (total 9)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tracing                         issues   page 1:   0 hits (total 0)
+repo:tokio-rs/tracing                         issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:tokio-rs/tracing                         issues   page 1:   9 hits (total 9)
+repo:tokio-rs/tracing                         issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/hyper                           issues   page 1:   0 hits (total 0)
+repo:hyperium/hyper                           issues   page 1:  11 hits (total 11)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/hyper                           issues   page 1:   1 hits (total 1)
+repo:hyperium/hyper                           issues   page 1:  13 hits (total 13)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/hyper                           issues   page 1:  34 hits (total 34)
+repo:hyperium/hyper                           issues   page 1:   7 hits (total 7)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:grpc/grpc-rust                           issues   page 1:   2 hits (total 2)
+repo:grpc/grpc-rust                           issues   page 1:  10 hits (total 10)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:grpc/grpc-rust                           issues   page 1:   0 hits (total 0)
+repo:grpc/grpc-rust                           issues   page 1:  10 hits (total 10)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:grpc/grpc-rust                           issues   page 1:  15 hits (total 15)
+repo:grpc/grpc-rust                           issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/h2                              issues   page 1:   0 hits (total 0)
+repo:hyperium/h2                              issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/h2                              issues   page 1:   0 hits (total 0)
+repo:hyperium/h2                              issues   page 1:   1 hits (total 1)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:hyperium/h2                              issues   page 1:   4 hits (total 4)
+repo:hyperium/h2                              issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:quinn-rs/quinn                           issues   page 1:   1 hits (total 1)
+repo:quinn-rs/quinn                           issues   page 1:  20 hits (total 20)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:quinn-rs/quinn                           issues   page 1:   0 hits (total 0)
+repo:quinn-rs/quinn                           issues   page 1:   1 hits (total 1)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:quinn-rs/quinn                           issues   page 1:  10 hits (total 10)
+repo:quinn-rs/quinn                           issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/omicron                    issues   page 1:  12 hits (total 12)
+repo:oxidecomputer/omicron                    issues   page 1:  95 hits (total 95)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/omicron                    issues   page 1:   0 hits (total 0)
+repo:oxidecomputer/omicron                    issues   page 1:  12 hits (total 12)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/omicron                    issues   page 1:  21 hits (total 21)
+repo:oxidecomputer/omicron                    issues   page 1:  10 hits (total 10)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/propolis                   issues   page 1:   7 hits (total 7)
+repo:oxidecomputer/propolis                   issues   page 1:   9 hits (total 9)
+  rate limited, sleeping 30s
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:oxidecomputer/propolis -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22cancelled+mid%22+OR+%22canceled+mid%22+OR+%22cancelled+in+the+middle%22+OR+%22canceled+in+the+middle%22+OR+%22cancelled+halfway%22+re
+  error for issues `"request is cancelled" OR "request was cancelled" OR "handler is cancelled" OR "handler was cancelled" OR "client disconnects" repo:oxidecomputer/propolis -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22request+is+cancelled%22+OR+%22request+was+cancelled%22+OR+%22handler+is+cancelled%22+OR+%22handler+was+cancelled%22+OR+%22client+disc
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:oxidecomputer/propolis -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22future+gets+dropped%22+OR+%22future+being+dropped%22+OR+%22gets+cancelled%22+OR+%22got+cancelled%22+OR+%22drop+the+future%22+repo%3Ao
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:oxidecomputer/propolis -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:oxidecomputer/dropshot -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Aoxidecomputer%2F
+repo:oxidecomputer/dropshot                   issues   page 1:   3 hits (total 3)
+repo:oxidecomputer/dropshot                   issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/dropshot                   issues   page 1:   6 hits (total 6)
+repo:oxidecomputer/dropshot                   issues   page 1:   6 hits (total 6)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/dropshot                   issues   page 1:   0 hits (total 0)
+repo:MaterializeInc/materialize               issues   page 1:  24 hits (total 24)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:MaterializeInc/materialize               issues   page 1: 100 hits (total 365)
+repo:MaterializeInc/materialize               issues   page 2: 100 hits (total 365)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:MaterializeInc/materialize               issues   page 3: 100 hits (total 365)
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:MaterializeInc/materialize -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22cancelled+mid%22+OR+%22canceled+mid%22+OR+%22cancelled+in+the+middle%22+OR+%22canceled+in+the+middle%22+OR+%22cancelled+halfway%22+re
+  error for issues `"request is cancelled" OR "request was cancelled" OR "handler is cancelled" OR "handler was cancelled" OR "client disconnects" repo:MaterializeInc/materialize -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22request+is+cancelled%22+OR+%22request+was+cancelled%22+OR+%22handler+is+cancelled%22+OR+%22handler+was+cancelled%22+OR+%22client+disc
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:MaterializeInc/materialize -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22future+gets+dropped%22+OR+%22future+being+dropped%22+OR+%22gets+cancelled%22+OR+%22got+cancelled%22+OR+%22drop+the+future%22+repo%3AM
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:MaterializeInc/materialize -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:linkerd/linkerd2-proxy -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Alinkerd%2Flinker
+repo:linkerd/linkerd2-proxy                   issues   page 1:   8 hits (total 8)
+repo:linkerd/linkerd2-proxy                   issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:linkerd/linkerd2-proxy                   issues   page 1:   2 hits (total 2)
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:linkerd/linkerd2-proxy -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22future+gets+dropped%22+OR+%22future+being+dropped%22+OR+%22gets+cancelled%22+OR+%22got+cancelled%22+OR+%22drop+the+future%22+repo%3Al
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:linkerd/linkerd2-proxy -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:neondatabase/neon -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Aneondatabase%2Fn
+repo:neondatabase/neon                        issues   page 1:  97 hits (total 97)
+  rate limited, sleeping 30s
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:neondatabase/neon -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22cancelled+mid%22+OR+%22canceled+mid%22+OR+%22cancelled+in+the+middle%22+OR+%22canceled+in+the+middle%22+OR+%22cancelled+halfway%22+re
+repo:neondatabase/neon                        issues   page 1:  20 hits (total 20)
+repo:neondatabase/neon                        issues   page 1:  44 hits (total 44)
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:neondatabase/neon -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+repo:risingwavelabs/risingwave                issues   page 1:  20 hits (total 20)
+repo:risingwavelabs/risingwave                issues   page 1: 100 hits (total 261)
+  rate limited, sleeping 30s
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:risingwavelabs/risingwave -author:app/dependabot -author:app/renovate` page 2: Get "https://api.github.com/search/issues?page=2&per_page=100&q=%22select+loop%22+OR+%22select%21+loop%22+OR+%22select%21+branch%22+OR+%22select%21+arm%22+OR+%22in+a+select%21%22+repo%3Arisingwavelabs
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:risingwavelabs/risingwave -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22cancelled+mid%22+OR+%22canceled+mid%22+OR+%22cancelled+in+the+middle%22+OR+%22canceled+in+the+middle%22+OR+%22cancelled+halfway%22+re
+  error for issues `"request is cancelled" OR "request was cancelled" OR "handler is cancelled" OR "handler was cancelled" OR "client disconnects" repo:risingwavelabs/risingwave -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22request+is+cancelled%22+OR+%22request+was+cancelled%22+OR+%22handler+is+cancelled%22+OR+%22handler+was+cancelled%22+OR+%22client+disc
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:risingwavelabs/risingwave -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22future+gets+dropped%22+OR+%22future+being+dropped%22+OR+%22gets+cancelled%22+OR+%22got+cancelled%22+OR+%22drop+the+future%22+repo%3Ar
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:risingwavelabs/risingwave -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:databendlabs/databend -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Adatabendlabs%2Fd
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:databendlabs/databend -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22select+loop%22+OR+%22select%21+loop%22+OR+%22select%21+branch%22+OR+%22select%21+arm%22+OR+%22in+a+select%21%22+repo%3Adatabendlabs%2
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:databendlabs/databend -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22cancelled+mid%22+OR+%22canceled+mid%22+OR+%22cancelled+in+the+middle%22+OR+%22canceled+in+the+middle%22+OR+%22cancelled+halfway%22+re
+repo:databendlabs/databend                    issues   page 1:   3 hits (total 3)
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:databendlabs/databend -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22future+gets+dropped%22+OR+%22future+being+dropped%22+OR+%22gets+cancelled%22+OR+%22got+cancelled%22+OR+%22drop+the+future%22+repo%3Ad
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:databendlabs/databend -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:vectordotdev/vector -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Avectordotdev%2Fv
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:vectordotdev/vector -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22select+loop%22+OR+%22select%21+loop%22+OR+%22select%21+branch%22+OR+%22select%21+arm%22+OR+%22in+a+select%21%22+repo%3Avectordotdev%2
+repo:vectordotdev/vector                      issues   page 1:   0 hits (total 0)
+repo:vectordotdev/vector                      issues   page 1:  10 hits (total 10)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:vectordotdev/vector                      issues   page 1:  28 hits (total 28)
+repo:vectordotdev/vector                      issues   page 1:  27 hits (total 27)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:influxdata/influxdb                      issues   page 1:  13 hits (total 13)
+repo:influxdata/influxdb                      issues   page 1: 100 hits (total 390)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:influxdata/influxdb                      issues   page 2: 100 hits (total 390)
+repo:influxdata/influxdb                      issues   page 3: 100 hits (total 390)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:influxdata/influxdb                      issues   page 1:   0 hits (total 0)
+repo:influxdata/influxdb                      issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:influxdata/influxdb                      issues   page 1:   3 hits (total 3)
+repo:influxdata/influxdb                      issues   page 1: 100 hits (total 111)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:influxdata/influxdb                      issues   page 2:  11 hits (total 111)
+repo:cloudflare/pingora                       issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:cloudflare/pingora                       issues   page 1:  10 hits (total 10)
+repo:cloudflare/pingora                       issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:cloudflare/pingora                       issues   page 1:   6 hits (total 6)
+repo:cloudflare/pingora                       issues   page 1:   7 hits (total 7)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:cloudflare/pingora                       issues   page 1:   4 hits (total 4)
+repo:n0-computer/iroh                         issues   page 1:  11 hits (total 11)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:n0-computer/iroh                         issues   page 1:  33 hits (total 33)
+repo:n0-computer/iroh                         issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:n0-computer/iroh                         issues   page 1:   6 hits (total 6)
+repo:n0-computer/iroh                         issues   page 1:  12 hits (total 12)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:n0-computer/iroh                         issues   page 1:   0 hits (total 0)
+repo:libp2p/rust-libp2p                       issues   page 1:  12 hits (total 12)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:libp2p/rust-libp2p                       issues   page 1: 100 hits (total 121)
+repo:libp2p/rust-libp2p                       issues   page 2:  21 hits (total 121)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:libp2p/rust-libp2p                       issues   page 1:   0 hits (total 0)
+repo:libp2p/rust-libp2p                       issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:libp2p/rust-libp2p                       issues   page 1:  16 hits (total 16)
+repo:libp2p/rust-libp2p                       issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:paritytech/polkadot-sdk                  issues   page 1:  22 hits (total 22)
+repo:paritytech/polkadot-sdk                  issues   page 1:  43 hits (total 43)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:paritytech/polkadot-sdk                  issues   page 1:   0 hits (total 0)
+repo:paritytech/polkadot-sdk                  issues   page 1:   4 hits (total 4)
+  rate limited, sleeping 30s
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:paritytech/polkadot-sdk -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22future+gets+dropped%22+OR+%22future+being+dropped%22+OR+%22gets+cancelled%22+OR+%22got+cancelled%22+OR+%22drop+the+future%22+repo%3Ap
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:paritytech/polkadot-sdk -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:qdrant/qdrant -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Aqdrant%2Fqdrant+
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:qdrant/qdrant -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22select+loop%22+OR+%22select%21+loop%22+OR+%22select%21+branch%22+OR+%22select%21+arm%22+OR+%22in+a+select%21%22+repo%3Aqdrant%2Fqdran
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:qdrant/qdrant -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22cancelled+mid%22+OR+%22canceled+mid%22+OR+%22cancelled+in+the+middle%22+OR+%22canceled+in+the+middle%22+OR+%22cancelled+halfway%22+re
+  error for issues `"request is cancelled" OR "request was cancelled" OR "handler is cancelled" OR "handler was cancelled" OR "client disconnects" repo:qdrant/qdrant -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22request+is+cancelled%22+OR+%22request+was+cancelled%22+OR+%22handler+is+cancelled%22+OR+%22handler+was+cancelled%22+OR+%22client+disc
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:qdrant/qdrant -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22future+gets+dropped%22+OR+%22future+being+dropped%22+OR+%22gets+cancelled%22+OR+%22got+cancelled%22+OR+%22drop+the+future%22+repo%3Aq
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:qdrant/qdrant -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22partially+written%22+OR+%22partial+write%22+OR+%22left+in+an+inconsistent+state%22+OR+%22half-written%22+OR+%22half+written%22+repo%3
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:meilisearch/meilisearch -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Ameilisearch%2Fme
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:meilisearch/meilisearch -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22select+loop%22+OR+%22select%21+loop%22+OR+%22select%21+branch%22+OR+%22select%21+arm%22+OR+%22in+a+select%21%22+repo%3Ameilisearch%2F
+repo:meilisearch/meilisearch                  issues   page 1:   0 hits (total 0)
+repo:meilisearch/meilisearch                  issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:meilisearch/meilisearch                  issues   page 1:   2 hits (total 2)
+repo:meilisearch/meilisearch                  issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:denoland/deno                            issues   page 1:  25 hits (total 25)
+repo:denoland/deno                            issues   page 1:  62 hits (total 62)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:denoland/deno                            issues   page 1:   5 hits (total 5)
+repo:denoland/deno                            issues   page 1:  30 hits (total 30)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:denoland/deno                            issues   page 1:  26 hits (total 26)
+repo:denoland/deno                            issues   page 1:  45 hits (total 45)
+  rate limited, sleeping 30s
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Alaunchbadge%2Fsq
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22select+loop%22+OR+%22select%21+loop%22+OR+%22select%21+branch%22+OR+%22select%21+arm%22+OR+%22in+a+select%21%22+repo%3Alaunchbadge%2F
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for issues `"request is cancelled" OR "request was cancelled" OR "handler is cancelled" OR "handler was cancelled" OR "client disconnects" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:redis-rs/redis-rs                        issues   page 1:   3 hits (total 3)
+repo:redis-rs/redis-rs                        issues   page 1:   8 hits (total 8)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:redis-rs/redis-rs                        issues   page 1:   0 hits (total 0)
+repo:redis-rs/redis-rs                        issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:redis-rs/redis-rs                        issues   page 1:  10 hits (total 10)
+repo:redis-rs/redis-rs                        issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:seanmonstar/reqwest                      issues   page 1:   0 hits (total 0)
+repo:seanmonstar/reqwest                      issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:seanmonstar/reqwest                      issues   page 1:   0 hits (total 0)
+repo:seanmonstar/reqwest                      issues   page 1:   0 hits (total 0)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:seanmonstar/reqwest                      issues   page 1:   4 hits (total 4)
+repo:seanmonstar/reqwest                      issues   page 1:   0 hits (total 0)
+1884 new candidates, 2985 total -> /home/ava/Desktop/Dropwise/survey/data/candidates.jsonl
+2985 rows (1101 labelled) -> /home/ava/Desktop/Dropwise/survey/data/annotate.csv
+ALL-DONE

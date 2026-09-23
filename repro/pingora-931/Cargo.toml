@@ -1,0 +1,14 @@
+[package]
+name = "repro-pingora-931"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+async-trait = "0.1"
+tokio = { version = "1.40", features = ["macros", "rt", "sync", "time", "test-util"] }
+# Buggy: latest release (issue cloudflare/pingora#931 still open at 0.9.0).
+pmc_buggy = { package = "pingora-memory-cache", version = "=0.9.0" }
+# Fixed: head of the proposed fix, cloudflare/pingora#948 (unmerged).
+pmc_fixed = { package = "pingora-memory-cache", git = "https://github.com/stareezy-1/pingora", rev = "a56b1a031593341377fdf8a8074762f7ac686c45" }

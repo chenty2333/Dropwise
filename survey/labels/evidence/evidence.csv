@@ -1,0 +1,101 @@
+url,evidence,fix_merged,maintainer,reproducer,evidence_flag,evidence_notes
+https://github.com/tokio-rs/tokio/pull/2340,fix_merged,https://github.com/tokio-rs/tokio/pull/2340,author hawkw (member),,,no test for the bug (maintainers say hard to repro)
+https://github.com/risingwavelabs/risingwave/issues/26180,reproducer,,,reporter whitebox analysis/test,reporter_only,audit-style report; only template label type/bug
+https://github.com/databendlabs/databend/issues/20044,fix_merged,https://github.com/databendlabs/databend/pull/20050,,reporter,,fix title matches: cleanup canceled Lance stage output
+https://github.com/qdrant/qdrant/issues/9532,reproducer,,,reporter whitebox test,contested,maintainer could not reproduce; label parked
+https://github.com/databendlabs/databend/issues/20015,fix_merged,https://github.com/databendlabs/databend/pull/20016,,reporter (docker),,
+https://github.com/neondatabase/neon/pull/7235,fix_merged,https://github.com/neondatabase/neon/pull/7235,author/merger are project developers,,,fix PR of neon#7062 (dedup)
+https://github.com/neondatabase/neon/issues/10023,maintainer,,author problame (project developer),,,"closed not planned, low impact"
+https://github.com/tokio-rs/tokio/issues/6493,maintainer,,Darksonn,reporter program,,only docs changed (#6494): not a fix
+https://github.com/oxidecomputer/omicron/pull/10204,fix_merged,https://github.com/oxidecomputer/omicron/pull/10204,project developers,,,observed as CI flake #10063
+https://github.com/cloudflare/pingora/issues/934,fix_merged,6dcc236 (internal),andrewhavck: fixed in 6dcc236,reporter,,
+https://github.com/databendlabs/databend/issues/20020,fix_merged,https://github.com/databendlabs/databend/pull/20021,,regression test in fix PR,,
+https://github.com/qdrant/qdrant/issues/9745,maintainer,,label accepted,reporter whitebox test,,fix PR #9770 open
+https://github.com/oxidecomputer/omicron/issues/3356,fix_merged,https://github.com/oxidecomputer/omicron/pull/3411,author (project developer),,,
+https://github.com/cloudflare/pingora/issues/931,reproducer,,,reporter; Dropwise executed repro on 0.9.0,reporter_only,label bug only; fix PR #948 open
+https://github.com/tokio-rs/tokio/pull/8260,fix_merged,https://github.com/tokio-rs/tokio/pull/8260,merged by Darksonn,test in PR,,
+https://github.com/MaterializeInc/materialize/pull/28956,fix_merged,https://github.com/MaterializeInc/materialize/pull/28956,project developers,,,
+https://github.com/MaterializeInc/materialize/pull/12714,fix_merged,https://github.com/MaterializeInc/materialize/pull/12714,project developers,,,PR has no description; diff pins tick future
+https://github.com/qdrant/qdrant/pull/3367,fix_merged,https://github.com/qdrant/qdrant/pull/3367,project developers,,,preventive
+https://github.com/tokio-rs/tokio/issues/3929,fix_merged,https://github.com/tokio-rs/tokio/pull/3934,Darksonn (member author),example in issue,,RUSTSEC-2021-0072
+https://github.com/risingwavelabs/risingwave/issues/26409,fix_merged,https://github.com/risingwavelabs/risingwave/pull/26412,,,,
+https://github.com/tokio-rs/tokio/issues/3711,maintainer,,Darksonn explains mechanism,reporter program,,no tokio fix possible per maintainer
+https://github.com/meilisearch/meilisearch/issues/6513,maintainer,,Kerollmops acknowledges (low priority),reporter whitebox test,,fix PRs #6523/#6526 not merged
+https://github.com/neondatabase/neon/issues/3478,fix_merged,https://github.com/neondatabase/neon/pull/4314,project developers,steps to reproduce,,fix #4314 spawns handlers to shield from cancellation
+https://github.com/redis-rs/redis-rs/issues/851,maintainer,,jaymell (maintainer) explains,reporter repo,,user misuse of XREAD BLOCK 0
+https://github.com/neondatabase/neon/pull/7117,fix_merged,https://github.com/neondatabase/neon/pull/7117,project developers,test in PR,,
+https://github.com/oxidecomputer/omicron/pull/3140,fix_merged,https://github.com/oxidecomputer/omicron/pull/3140,project developers,,,observed #3098
+https://github.com/qdrant/qdrant/pull/7530,fix_merged,https://github.com/qdrant/qdrant/pull/7530,timvisee (member),,,tested manually per maintainer
+https://github.com/risingwavelabs/risingwave/issues/26179,reproducer,,,reporter whitebox analysis/test,reporter_only,audit-style; only template label
+https://github.com/qdrant/qdrant/issues/9670,fix_merged,https://github.com/qdrant/qdrant/pull/9671,timvisee: fixed by #9671,,,
+https://github.com/neondatabase/neon/issues/6028,fix_merged,https://github.com/neondatabase/neon/pull/7030,author (project developer),,,fix removes need to repair internal state
+https://github.com/tokio-rs/tokio/pull/3965,fix_merged,https://github.com/tokio-rs/tokio/pull/3965,merged by Darksonn,regression test,,fixes #3964
+https://github.com/tokio-rs/tokio/issues/5535,maintainer,,"Darksonn: well-known, documented",reporter program,,no fix (documented behaviour)
+https://github.com/hyperium/hyper/issues/4040,fix_merged,https://github.com/hyperium/hyper/pull/4042,,runnable test in issue,,
+https://github.com/qdrant/qdrant/pull/7787,fix_merged,https://github.com/qdrant/qdrant/pull/7791,timvisee (member),test PR,,
+https://github.com/tokio-rs/tokio/issues/2685,fix_merged,https://github.com/tokio-rs/tokio/pull/2907,ipetkov: known limitation,playground repro,,fix adds orphan reaping
+https://github.com/denoland/deno/issues/35601,maintainer,,author bartlomieju (member),proof program,,"open, workarounds only"
+https://github.com/tokio-rs/tokio/issues/5285,maintainer,,Darksonn diagnoses reporter's select!,reporter program,,user-code defect
+https://github.com/denoland/deno/pull/20316,fix_merged,https://github.com/denoland/deno/pull/20316,merged by mmastrac,test in PR,,
+https://github.com/tokio-rs/tokio/issues/2318,maintainer,,"Darksonn, carllerche",reporter program,,only docs changed (#2420)
+https://github.com/meilisearch/meilisearch/issues/6508,reproducer,,,regression test in unmerged PR #6599,reporter_only,"labels rust,bug; no maintainer comment"
+https://github.com/redis-rs/redis-rs/issues/325,maintainer,,Marwes (maintainer) explains mechanism,,,no merged fix in redis-rs
+https://github.com/MaterializeInc/materialize/pull/28816,fix_merged,https://github.com/MaterializeInc/materialize/pull/28816,project developers,,,
+https://github.com/hyperium/hyper/issues/3995,fix_merged,https://github.com/hyperium/hyper/pull/4069,seanmonstar,reporter; Dropwise executed repro 1.9.0 vs 1.10.0,,
+https://github.com/risingwavelabs/risingwave/pull/12725,fix_merged,https://github.com/risingwavelabs/risingwave/pull/12725,project developers,test in PR,,
+https://github.com/risingwavelabs/risingwave/issues/26172,reproducer,,,reporter whitebox test,reporter_only,audit-style; only template label
+https://github.com/quinn-rs/quinn/pull/1458,fix_merged,https://github.com/quinn-rs/quinn/pull/1458,merged by Ralith (maintainer),,,
+https://github.com/MaterializeInc/materialize/pull/12479,fix_merged,https://github.com/MaterializeInc/materialize/pull/12479,project developers,,,
+https://github.com/oxidecomputer/propolis/issues/650,maintainer,,author (project developer) observed it,,,fix PR #830 open
+https://github.com/qdrant/qdrant/issues/9665,maintainer,,label accepted,regression test in unmerged PR #9666,,
+https://github.com/qdrant/qdrant/pull/10338,fix_merged,https://github.com/qdrant/qdrant/pull/10338,agourlay/timvisee (members),test in PR,,
+https://github.com/risingwavelabs/risingwave/issues/3909,fix_merged,https://github.com/risingwavelabs/risingwave/pull/3911,author (project developer),,,
+https://github.com/MaterializeInc/materialize/pull/38577,fix_merged,https://github.com/MaterializeInc/materialize/pull/38577,antiguru (member),,,
+https://github.com/qdrant/qdrant/pull/8680,fix_merged,https://github.com/qdrant/qdrant/pull/8680,merged by timvisee,,,
+https://github.com/tokio-rs/tokio/issues/6877,maintainer,,Darksonn diagnoses,reporter program; Dropwise executed,,user-code defect
+https://github.com/risingwavelabs/risingwave/pull/6985,fix_merged,https://github.com/risingwavelabs/risingwave/pull/6985,project developers,,,merged via bot after review
+https://github.com/MaterializeInc/materialize/pull/26190,fix_merged,https://github.com/MaterializeInc/materialize/pull/26190,project developers,,,incident #56
+https://github.com/n0-computer/iroh/pull/2572,fix_merged,https://github.com/n0-computer/iroh/pull/2572,Frando (member),,,
+https://github.com/databendlabs/databend/pull/17902,fix_merged,https://github.com/databendlabs/databend/pull/17902,Xuanwo (collaborator),,,
+https://github.com/neondatabase/neon/pull/12345,fix_merged,https://github.com/neondatabase/neon/pull/12345,project developers,test in PR,,cloud issue #30539
+https://github.com/risingwavelabs/risingwave/issues/26176,reproducer,,,reporter whitebox test,reporter_only,audit-style; only template label
+https://github.com/n0-computer/iroh/pull/2536,fix_merged,https://github.com/n0-computer/iroh/pull/2539,,external reproducer repo,,defect in flume; iroh replaced flume (#2539 merged)
+https://github.com/hyperium/hyper/issues/3199,maintainer,,seanmonstar agrees,reporter test code,,fix PR #3205 open
+https://github.com/tokio-rs/tokio/issues/542,maintainer,,carllerche: known issue (#428),reporter program,,tokio#649 not verifiable as the fix
+https://github.com/hyperium/h2/issues/546,fix_merged,https://github.com/tokio-rs/tokio/pull/3870,carllerche: has repro,reporter test,,thread states fixed by tokio#3870
+https://github.com/MaterializeInc/materialize/pull/12485,fix_merged,https://github.com/MaterializeInc/materialize/pull/12485,project developers,,,
+https://github.com/cloudflare/pingora/issues/932,maintainer,,drcaramelsyrup agrees with fix direction,reporter whitebox test,,fix PR #949 open
+https://github.com/neondatabase/neon/pull/6101,fix_merged,https://github.com/neondatabase/neon/pull/6101,project developers,,,
+https://github.com/risingwavelabs/risingwave/issues/26220,fix_merged,https://github.com/risingwavelabs/risingwave/pull/26221,author (project developer),CI logs,,
+https://github.com/MaterializeInc/materialize/pull/29221,fix_merged,https://github.com/MaterializeInc/materialize/pull/29221,project developers,,,
+https://github.com/oxidecomputer/omicron/pull/3579,fix_merged,https://github.com/oxidecomputer/omicron/pull/3579,project developers,,,found in review
+https://github.com/paritytech/polkadot-sdk/pull/11013,maintainer,,"issue #5414 by project developer, label I2-bug",regression test in PR,,PR open
+https://github.com/tokio-rs/tokio/issues/7979,fix_merged,https://github.com/tokio-rs/tokio/pull/7983,member author,PoC; Dropwise executed 1.51.0 vs 1.52.0,,
+https://github.com/tokio-rs/tokio/issues/1842,fix_merged,https://github.com/tokio-rs/tokio/pull/1843,hawkw,reporter program,,
+https://github.com/risingwavelabs/risingwave/pull/22128,fix_merged,https://github.com/risingwavelabs/risingwave/pull/22128,project developers,tests in PR,,
+https://github.com/tokio-rs/tokio/pull/3672,fix_merged,https://github.com/tokio-rs/tokio/pull/3672,carllerche,test in PR,,fixes #3662
+https://github.com/cloudflare/pingora/issues/933,reproducer,,,reporter whitebox analysis,reporter_only,"no label, no maintainer response; fix PR #1002 open"
+https://github.com/tokio-rs/tokio/pull/1495,fix_merged,https://github.com/tokio-rs/tokio/pull/1495,carllerche,,,caught in review inside the PR
+https://github.com/tokio-rs/tokio/pull/8095,fix_merged,https://github.com/tokio-rs/tokio/pull/8095,merged by Darksonn,test in PR,,
+https://github.com/hyperium/hyper/pull/1584,fix_merged,https://github.com/hyperium/hyper/pull/1585,seanmonstar,,,alternative fix merged
+https://github.com/n0-computer/iroh/pull/4460,fix_merged,https://github.com/n0-computer/iroh/pull/4460,flub,test in PR,,
+https://github.com/tokio-rs/tokio/pull/8252,fix_merged,https://github.com/tokio-rs/tokio/pull/8252,Darksonn: important bugfix,test in PR,,
+https://github.com/seanmonstar/reqwest/issues/949,maintainer,,seanmonstar explains,reporter program,,user-code defect
+https://github.com/oxidecomputer/dropshot/issues/914,fix_merged,https://github.com/oxidecomputer/dropshot/pull/965,author (collaborator),,,
+https://github.com/risingwavelabs/risingwave/pull/6658,fix_merged,https://github.com/risingwavelabs/risingwave/pull/6658,project developers,test in PR,,fixes #6637
+https://github.com/neondatabase/neon/pull/4314,fix_merged,https://github.com/neondatabase/neon/pull/4314,project developers,,,fix PR of neon#3478 (dedup)
+https://github.com/tokio-rs/tokio/issues/4908,maintainer,,Darksonn diagnoses buffer handling,reporter code,,user-code defect
+https://github.com/tokio-rs/tokio/pull/4604,fix_merged,https://github.com/tokio-rs/tokio/pull/4795,Darksonn: motivation makes sense,,,replacement PR merged
+https://github.com/oxidecomputer/omicron/pull/11263,fix_merged,https://github.com/oxidecomputer/omicron/pull/11263,bnaecker (collaborator),test in PR,,preventive
+https://github.com/redis-rs/redis-rs/pull/597,fix_merged,https://github.com/redis-rs/redis-rs/pull/597,merged by jaymell,test in PR,,
+https://github.com/tokio-rs/tokio/pull/7436,fix_merged,https://github.com/tokio-rs/tokio/pull/7436,member author,,,found in review of #7321
+https://github.com/tokio-rs/tokio/issues/3825,maintainer,,Darksonn gives the corrected loop,reporter code,,user-code defect
+https://github.com/hyperium/hyper/issues/2113,maintainer,,"LucioFranco, seanmonstar",,,same as #2112
+https://github.com/vectordotdev/vector/issues/21657,reproducer,,,reporter config/logs,contested,maintainer jszwedko: intended/expected during shutdown; closed not planned
+https://github.com/oxidecomputer/omicron/pull/3351,fix_merged,https://github.com/oxidecomputer/omicron/pull/3351,project developers,,,preventive
+https://github.com/denoland/deno/pull/14317,fix_merged,https://github.com/denoland/deno/pull/14317,merged by dsherret,,,preventive
+https://github.com/tokio-rs/tokio/issues/6369,fix_merged,https://github.com/tokio-rs/mio/pull/1760,,Application Verifier repro,,RUSTSEC-2024-0019; fixed upstream in mio
+https://github.com/neondatabase/neon/issues/7062,fix_merged,https://github.com/neondatabase/neon/pull/7235,author (project developer),diff in issue,,
+https://github.com/risingwavelabs/risingwave/pull/25152,fix_merged,https://github.com/risingwavelabs/risingwave/pull/25152,project developers,,,production #25071
+https://github.com/cloudflare/pingora/pull/949,reproducer,,,test in PR,,fix PR of pingora#932 (dedup)
+https://github.com/risingwavelabs/risingwave/pull/8145,fix_merged,https://github.com/risingwavelabs/risingwave/pull/8145,project developers,,,fixes #8086

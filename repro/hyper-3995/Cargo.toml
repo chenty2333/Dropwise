@@ -1,0 +1,15 @@
+[package]
+name = "repro-hyper-3995"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+# Buggy: 1.9.0 (before hyperium/hyper#4069, merged 2026-05-12). Fixed: 1.10.0.
+# run.sh switches with `cargo update -p hyper --precise ...`.
+hyper = { version = "1.9.0", features = ["client", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+http-body-util = "0.1"
+bytes = "1"
+tokio = { version = "1.40", features = ["io-util", "macros", "rt", "sync", "time", "test-util"] }

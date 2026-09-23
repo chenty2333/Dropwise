@@ -1,0 +1,14 @@
+risingwavelabs/risingwave
+databendlabs/databend
+vectordotdev/vector
+influxdata/influxdb
+cloudflare/pingora
+n0-computer/iroh
+libp2p/rust-libp2p
+paritytech/polkadot-sdk
+qdrant/qdrant
+meilisearch/meilisearch
+denoland/deno
+redis-rs/redis-rs
+seanmonstar/reqwest
+grpc/grpc-rust

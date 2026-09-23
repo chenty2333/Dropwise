@@ -1,0 +1,11 @@
+[package]
+name = "repro-redis-851"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+# The reporter built against a local redis-rs checkout around 0.23 (their Cargo.toml).
+redis = { version = "=0.23.3", features = ["tokio-comp", "streams"] }
+tokio = { version = "1.40", features = ["macros", "rt", "sync", "time", "test-util", "net"] }

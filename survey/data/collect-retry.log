@@ -1,0 +1,126 @@
+repo:databendlabs/databend                    issues   page 1:   8 hits (total 8)
+repo:databendlabs/databend                    issues   page 1: 100 hits (total 257)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:databendlabs/databend                    issues   page 2: 100 hits (total 257)
+repo:databendlabs/databend                    issues   page 3:  57 hits (total 257)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:databendlabs/databend                    issues   page 1:   0 hits (total 0)
+repo:databendlabs/databend                    issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:databendlabs/databend                    issues   page 1:  13 hits (total 13)
+repo:databendlabs/databend                    issues   page 1:   9 hits (total 9)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:linkerd/linkerd2-proxy                   issues   page 1:   1 hits (total 1)
+repo:linkerd/linkerd2-proxy                   issues   page 1:   8 hits (total 8)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:linkerd/linkerd2-proxy                   issues   page 1:   0 hits (total 0)
+repo:linkerd/linkerd2-proxy                   issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:linkerd/linkerd2-proxy                   issues   page 1:  15 hits (total 15)
+repo:linkerd/linkerd2-proxy                   issues   page 1:   1 hits (total 1)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:meilisearch/meilisearch                  issues   page 1:   4 hits (total 4)
+repo:meilisearch/meilisearch                  issues   page 1:   9 hits (total 9)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:meilisearch/meilisearch                  issues   page 1:   0 hits (total 0)
+repo:meilisearch/meilisearch                  issues   page 1:   3 hits (total 3)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:meilisearch/meilisearch                  issues   page 1:   2 hits (total 2)
+repo:meilisearch/meilisearch                  issues   page 1:   2 hits (total 2)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:neondatabase/neon -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22lost+message%22+OR+%22lost+messages%22+OR+%22message+lost%22+OR+%22messages+lost%22+OR+%22dropped+messages%22+repo%3Aneondatabase%2Fn
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:neondatabase/neon -author:app/dependabot -author:app/renovate` page 1: Get "https://api.github.com/search/issues?page=1&per_page=100&q=%22select+loop%22+OR+%22select%21+loop%22+OR+%22select%21+branch%22+OR+%22select%21+arm%22+OR+%22in+a+select%21%22+repo%3Aneondatabase%2
+repo:neondatabase/neon                        issues   page 1:   2 hits (total 2)
+repo:neondatabase/neon                        issues   page 1:  20 hits (total 20)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:neondatabase/neon                        issues   page 1:  44 hits (total 44)
+repo:neondatabase/neon                        issues   page 1:  25 hits (total 25)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/omicron                    issues   page 1:  12 hits (total 12)
+repo:oxidecomputer/omicron                    issues   page 1:  95 hits (total 95)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/omicron                    issues   page 1:   0 hits (total 0)
+repo:oxidecomputer/omicron                    issues   page 1:  12 hits (total 12)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:oxidecomputer/omicron                    issues   page 1:  21 hits (total 21)
+repo:oxidecomputer/omicron                    issues   page 1:  10 hits (total 10)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:paritytech/polkadot-sdk                  issues   page 1:  22 hits (total 22)
+repo:paritytech/polkadot-sdk                  issues   page 1:  43 hits (total 43)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:paritytech/polkadot-sdk                  issues   page 1:   0 hits (total 0)
+repo:paritytech/polkadot-sdk                  issues   page 1:   4 hits (total 4)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:paritytech/polkadot-sdk                  issues   page 1:  15 hits (total 15)
+repo:paritytech/polkadot-sdk                  issues   page 1:   9 hits (total 9)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:qdrant/qdrant                            issues   page 1:  10 hits (total 10)
+repo:qdrant/qdrant                            issues   page 1:  50 hits (total 50)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:qdrant/qdrant                            issues   page 1:   6 hits (total 6)
+repo:qdrant/qdrant                            issues   page 1:  19 hits (total 19)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:qdrant/qdrant                            issues   page 1:  43 hits (total 43)
+repo:qdrant/qdrant                            issues   page 1:  77 hits (total 77)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:risingwavelabs/risingwave                issues   page 1:  20 hits (total 20)
+repo:risingwavelabs/risingwave                issues   page 1: 100 hits (total 261)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:risingwavelabs/risingwave                issues   page 2: 100 hits (total 261)
+repo:risingwavelabs/risingwave                issues   page 3:  61 hits (total 261)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:risingwavelabs/risingwave                issues   page 1:   1 hits (total 1)
+repo:risingwavelabs/risingwave                issues   page 1:   7 hits (total 7)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:risingwavelabs/risingwave                issues   page 1:  45 hits (total 45)
+repo:risingwavelabs/risingwave                issues   page 1:  16 hits (total 16)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:vectordotdev/vector                      issues   page 1:  76 hits (total 76)
+repo:vectordotdev/vector                      issues   page 1:  76 hits (total 76)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:vectordotdev/vector                      issues   page 1:   0 hits (total 0)
+repo:vectordotdev/vector                      issues   page 1:  10 hits (total 10)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+repo:vectordotdev/vector                      issues   page 1:  28 hits (total 28)
+repo:vectordotdev/vector                      issues   page 1:  27 hits (total 27)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"lost message" OR "lost messages" OR "message lost" OR "messages lost" OR "dropped messages" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for issues `"select loop" OR "select! loop" OR "select! branch" OR "select! arm" OR "in a select!" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"cancelled mid" OR "canceled mid" OR "cancelled in the middle" OR "canceled in the middle" OR "cancelled halfway" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for issues `"request is cancelled" OR "request was cancelled" OR "handler is cancelled" OR "handler was cancelled" OR "client disconnects" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  rate limited, sleeping 30s
+  rate limited, sleeping 60s
+  error for issues `"future gets dropped" OR "future being dropped" OR "gets cancelled" OR "got cancelled" OR "drop the future" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+  error for issues `"partially written" OR "partial write" OR "left in an inconsistent state" OR "half-written" OR "half written" repo:launchbadge/sqlx -author:app/dependabot -author:app/renovate` page 1: gh: Validation Failed (HTTP 422)
+810 new candidates, 3795 total -> /home/ava/Desktop/Dropwise/survey/data/candidates.jsonl
+3795 rows (1101 labelled) -> /home/ava/Desktop/Dropwise/survey/data/annotate.csv

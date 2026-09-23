@@ -1,0 +1,9 @@
+databendlabs/databend
+linkerd/linkerd2-proxy
+meilisearch/meilisearch
+neondatabase/neon
+oxidecomputer/omicron
+paritytech/polkadot-sdk
+qdrant/qdrant
+risingwavelabs/risingwave
+vectordotdev/vector

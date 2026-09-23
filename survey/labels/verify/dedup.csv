@@ -1,0 +1,9 @@
+url,relevant,fix_url,rationale
+https://github.com/meilisearch/meilisearch/pull/6599,dup,https://github.com/meilisearch/meilisearch/issues/6508,"fix PR of the verified issue #6508"
+https://github.com/hyperium/hyper/pull/1585,dup,https://github.com/hyperium/hyper/pull/1584,"alternative fix of the defect verified as hyper#1584"
+https://github.com/vectordotdev/vector/pull/24670,dup,https://github.com/vectordotdev/vector/issues/21657,"same defect as vector#21657, which has maintainer confirmation"
+https://github.com/hyperium/hyper/pull/3205,dup,https://github.com/hyperium/hyper/issues/3199,"fix PR of the verified issue #3199"
+https://github.com/risingwavelabs/risingwave/pull/26221,dup,https://github.com/risingwavelabs/risingwave/issues/26220,"fix PR of the verified issue #26220"
+https://github.com/neondatabase/neon/pull/7235,dup,https://github.com/neondatabase/neon/issues/7062,"fix PR of neon#7062 (found in the evidence pass)"
+https://github.com/cloudflare/pingora/pull/949,dup,https://github.com/cloudflare/pingora/issues/932,"fix PR of pingora#932 (found in the evidence pass)"
+https://github.com/neondatabase/neon/pull/4314,dup,https://github.com/neondatabase/neon/issues/3478,"fix PR of neon#3478 (found in the evidence pass)"
