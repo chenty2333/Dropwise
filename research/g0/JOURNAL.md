@@ -169,3 +169,10 @@
 - 站点：父提交 `cli/file_watcher.rs:190`，`watch_func` 的无 `biased;` `tokio::select!`；`next_restart(&mut resolver, &mut receiver)` 分支在 operation future 完成时被丢弃，而 DebouncedReceiver::recv 的局部路径集合会随 future 一起丢失。父提交 Tokio 1.17.0，select macro 不使用 IntoFuture 构造，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
 - 预筛：父提交已有 `cli/tests/integration/watcher_tests.rs` 中 `run_watch`、`bundle_js_watch`、`lint_watch_test` 等 CLI `--watch` 测试，沿 `watch_func -> next_restart -> DebouncedReceiver::recv` 到达 select。站点是共享 watcher loop，修复在 helper 另处，D3 generic_site=yes。D2=`na`。
 - 判定 `ineligible (tokio_not_patchable)`；Tokio 源码已提供确定否定条件，未运行动态候选，因而没有 site_hit/branch_pending/defect_path_pending 测量；D3 path 计数留空。无外部服务。用时约 20 分钟。D1 对目标 merged PR 无状态变更。
+
+## G0-22 — 完成（2026-09-25）
+
+- 修复定位：issue #7062 的任务列表含一组相关 PR；按冻结规则，#7235 是唯一已合并且标题/说明直接针对 dangling `handle_walreceiver_connection` task 的修复 PR（#7234 为 preliminary refactor，#7260/#7233 为 follow-on refactor）。merge/fix commit `cdf12ed008c27fa7d59e296c498ce34ce681bddb`，第一父提交 `12512f31736a5c5b3d3973c5c5cfd43dd58acb3d`。PR 改 walreceiver source files，无测试文件改动。
+- 站点：父提交 `pageserver/src/tenant/timeline/walreceiver.rs:99`，task_mgr-spawned manager task 中 `tokio::select!`；`connection_manager_loop_step` 在 `task_mgr::shutdown_watcher()` 获胜时被 drop，可能中断 `drop_old_connection`，使已取出的 connection task handle 丢失。站点无 `biased;`。父提交 Cargo.lock Tokio 1.36.0；其 select macro 不用 IntoFuture 构造，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
+- 预筛：已有 `test_runner/regress/test_timeline_delete.py` 删除 timeline，调用 Timeline::shutdown/task_mgr shutdown path，可到 walreceiver manager outer task select。connection_manager 内部测试只测单步状态，不是该 outer select。修复涉及通用任务 loop 和另一个 helper，D3 generic_site=yes；D2=`na`。
+- 判定 `ineligible (tokio_not_patchable)`。候选未动态运行：Tokio 1.36.0 是确定负面条件；故无动态 site_hit/branch_pending，D3 defect_path_pending 留空。无外部服务。用时约 20 分钟。D1 依上述合并修复 PR 选择不改变 status。
