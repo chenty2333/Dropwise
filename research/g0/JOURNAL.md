@@ -117,3 +117,9 @@
 - 预筛：父提交已有 `test_shard_transfer_deferred.py::test_shard_transfer_includes_deferred_points`（snapshot/stream_records）及 `test_resharding_deferred.py::test_resharding_transfer_deferred_points`（up/down），它们创建 prevent_unoptimized/deferred-point 场景并调用 wait=true 更新。该 LocalShard::update timeout 是共享站点，而修复在 update worker helper，故按 D3 generic_site=yes。
 - 动态：构建通过；4 个既有候选参数用例全部通过。探针计数的每进程最大值为 site_hit=3、branch_pending=3；在被修复的 `wait_for_deferred_points_ready` 活动期计数仅当 site 分支 Pending 才增加，最终 `defect_path_pending=0`。因此 D3 路径条件失败，`ineligible (site_not_hit)`，尽管基础 timeout 表达式有命中。D2=`na`。探针 diff：`probes/G0-13.diff`。候选 peers 仅在回环地址启动，无 Docker 外部服务；pytest basetemp 明确设在 `/home/ava/dropwise-g0-work/qdrant` 下。
 - 首次 pytest 因仓库配置要求 `pytest-xdist` 插件而未启动测试；补上该依赖后运行成功。protoc 31.1 只放在临时工作树。测试目录、target、protoc、父提交快照及目标源码改动均已清理。用时约 25 分钟；D1 对已合并 PR 无状态变更。
+
+## G0-14 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #2572 已合并；merge/fix commit `32bb0f3be432676ca49473e75c7eb00db32a3673`，第一父提交 `8e4e586cece3968700a13562058f3a5c152c1805`。PR 仅改 `iroh-gossip/src/net.rs`，没有测试文件改动。
+- 站点：父提交同文件第 656 行，`connection_loop` 中带 `biased;` 的 `tokio::select!`；`read_message(&mut recv, ...)` 在 `send_rx.recv()` 先完成时被丢弃，即使它已消费部分帧。PR 把 select 改为持久 send/receive 两个循环的 `tokio::try_join!`。父提交 Tokio 1.38.1；宏直接存放分支表达式、不经 IntoFuture，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
+- 预筛：父提交已有 `iroh-gossip/src/net.rs::test::gossip_net_smoke`，启动三个端点并加入 topic/广播，调用链到 `endpoint_loop -> Gossip::handle_connection -> connection_loop -> select!`。但宏源码已构成确定 patchability 否定，未进行动态构建/运行。D2=`na`、generic_site=no（连接循环专用于 gossip 且修复直接改同一函数）、defect_path_pending=`na`。状态 `ineligible (tokio_not_patchable)`；无外部 Docker/服务。用时约 16 分钟，D1 不改变状态。
