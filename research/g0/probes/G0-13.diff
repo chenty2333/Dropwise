@@ -1,0 +1,92 @@
+--- a/lib/collection/src/update_workers/mod.rs
++++ b/lib/collection/src/update_workers/mod.rs
+@@ -1,3 +1,23 @@
++use std::sync::atomic::{AtomicUsize, Ordering};
++
++pub(crate) static G0_ACTIVE_DEFERRED_WAITS: AtomicUsize = AtomicUsize::new(0);
++pub(crate) static G0_TIMEOUT_SITE_HIT: AtomicUsize = AtomicUsize::new(0);
++pub(crate) static G0_TIMEOUT_BRANCH_PENDING: AtomicUsize = AtomicUsize::new(0);
++pub(crate) static G0_DEFECT_PATH_PENDING: AtomicUsize = AtomicUsize::new(0);
++
++pub(crate) struct G0DeferredWaitGuard;
++impl G0DeferredWaitGuard {
++    pub(crate) fn new() -> Self {
++        G0_ACTIVE_DEFERRED_WAITS.fetch_add(1, Ordering::SeqCst);
++        Self
++    }
++}
++impl Drop for G0DeferredWaitGuard {
++    fn drop(&mut self) {
++        G0_ACTIVE_DEFERRED_WAITS.fetch_sub(1, Ordering::SeqCst);
++    }
++}
++
+ pub mod applied_seq;
+ pub mod flush_workers;
+ pub mod internal_update_result;
+--- a/lib/collection/src/update_workers/update_worker.rs
++++ b/lib/collection/src/update_workers/update_worker.rs
+@@ -18,6 +18,7 @@
+ use crate::shards::update_tracker::UpdateTracker;
+ use crate::update_handler::{OperationData, OptimizerSignal, UpdateSignal};
+ use crate::update_workers::UpdateWorkers;
++use crate::update_workers::G0DeferredWaitGuard;
+ use crate::update_workers::applied_seq::AppliedSeqHandler;
+ use crate::update_workers::internal_update_result::InternalUpdateResult;
+ use crate::wal_delta::LockedWal;
+@@ -222,6 +223,7 @@
+         optimization_finished_receiver: &mut watch::Receiver<()>,
+         cancel: &CancellationToken,
+     ) -> CollectionResult<()> {
++        let _g0_defect_path_guard = G0DeferredWaitGuard::new();
+         loop {
+             let locked_segments = segments.clone();
+             let has_deferred_points =
+--- a/lib/collection/src/shards/local_shard/shard_ops.rs
++++ b/lib/collection/src/shards/local_shard/shard_ops.rs
+@@ -1,4 +1,7 @@
+ use std::sync::Arc;
++use std::future::Future;
++use std::pin::Pin;
++use std::task::Poll;
+ use std::time::Duration;
+ 
+ use async_trait::async_trait;
+@@ -124,7 +127,36 @@
+             }
+             // Wait for timeout
+             (Some(receiver), Some(timeout)) => {
+-                match tokio::time::timeout(timeout, receiver).await {
++                crate::update_workers::G0_TIMEOUT_SITE_HIT.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
++                let mut receiver = Box::pin(receiver);
++                let mut pending_recorded = false;
++                let mut defect_path_pending_recorded = false;
++                let tracked_receiver = std::future::poll_fn(|cx| {
++                    match Pin::as_mut(&mut receiver).poll(cx) {
++                        Poll::Pending => {
++                            if !pending_recorded {
++                                crate::update_workers::G0_TIMEOUT_BRANCH_PENDING.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
++                                pending_recorded = true;
++                            }
++                            if !defect_path_pending_recorded
++                                && crate::update_workers::G0_ACTIVE_DEFERRED_WAITS.load(std::sync::atomic::Ordering::SeqCst) > 0
++                            {
++                                crate::update_workers::G0_DEFECT_PATH_PENDING.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
++                                defect_path_pending_recorded = true;
++                            }
++                            Poll::Pending
++                        }
++                        ready => ready,
++                    }
++                });
++                let timeout_result = tokio::time::timeout(timeout, tracked_receiver).await;
++                eprintln!(
++                    "G0_PROBE timeout site_hit={} branch_pending={} defect_path_pending={}",
++                    crate::update_workers::G0_TIMEOUT_SITE_HIT.load(std::sync::atomic::Ordering::SeqCst),
++                    crate::update_workers::G0_TIMEOUT_BRANCH_PENDING.load(std::sync::atomic::Ordering::SeqCst),
++                    crate::update_workers::G0_DEFECT_PATH_PENDING.load(std::sync::atomic::Ordering::SeqCst),
++                );
++                match timeout_result {
+                     Ok(res) => {
+                         let InternalUpdateResult { op_num, status } = res??;
+                         debug_assert_eq!(

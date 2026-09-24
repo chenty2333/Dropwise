@@ -109,3 +109,11 @@
 - 动态：在临时父提交源码上加 timeout/site 计数和内层 receiver 首次 Pending 计数，构建成功后该候选通过。探针输出各进程局部累计值，至少一个 peer 的计数达到 `site_hit=88`、`branch_pending=88`；CSV 记录可观测最大值而非跨 peer 求和。探针 diff：`probes/G0-12.diff`。无外部服务或 Docker。
 - 环境偏差：初次构建缺少 protoc，提供 scratch-only protoc 31.1 后构建成功。pytest 的既有 `tmp_path` 默认把少量 peer 数据放在 `/tmp/pytest-of-ava/...`，违反了用户指定的工作目录限制；测试完成后立即删除该测试目录，检查时 `/tmp` 可用空间仍为 2.8 GiB，构建/target 未放入 `/tmp`。该路径偏差会在 RESULTS.md 透明列出。target、protoc、临时父快照和目标源码改动均已清理。
 - 判定：`eligible`，因此 `eligible_pending` 也满足。D2=`na`；D3 `generic_site=no`，站点和修复清理代码同处 awaiter helper，`defect_path_pending=na`。D1 无 status 变化。用时约 20 分钟。
+
+## G0-13 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #8680 已合并；merge/fix commit `ca9566c5a15dd579fa5224e0ebd9d479215e8e33`，第一父提交 `f6ea7b0b36fa39a5bb2c621f434c0e6ebe2bad89`。PR 只改 `lib/collection/src/update_workers/update_worker.rs`，没有新增测试文件。
+- 站点：父提交 `lib/collection/src/shards/local_shard/shard_ops.rs:127`，`LocalShard::update` 中 `tokio::time::timeout(timeout, receiver)`；到期会丢弃 feedback oneshot receiver，但串行 update worker 仍可能停在 `wait_for_deferred_points_ready`。父提交 Tokio 1.51.1；select macro 用 IntoFuture 构造，timeout 有 `#[track_caller]`、timeout_at 无，patchable=yes。
+- 预筛：父提交已有 `test_shard_transfer_deferred.py::test_shard_transfer_includes_deferred_points`（snapshot/stream_records）及 `test_resharding_deferred.py::test_resharding_transfer_deferred_points`（up/down），它们创建 prevent_unoptimized/deferred-point 场景并调用 wait=true 更新。该 LocalShard::update timeout 是共享站点，而修复在 update worker helper，故按 D3 generic_site=yes。
+- 动态：构建通过；4 个既有候选参数用例全部通过。探针计数的每进程最大值为 site_hit=3、branch_pending=3；在被修复的 `wait_for_deferred_points_ready` 活动期计数仅当 site 分支 Pending 才增加，最终 `defect_path_pending=0`。因此 D3 路径条件失败，`ineligible (site_not_hit)`，尽管基础 timeout 表达式有命中。D2=`na`。探针 diff：`probes/G0-13.diff`。候选 peers 仅在回环地址启动，无 Docker 外部服务；pytest basetemp 明确设在 `/home/ava/dropwise-g0-work/qdrant` 下。
+- 首次 pytest 因仓库配置要求 `pytest-xdist` 插件而未启动测试；补上该依赖后运行成功。protoc 31.1 只放在临时工作树。测试目录、target、protoc、父提交快照及目标源码改动均已清理。用时约 25 分钟；D1 对已合并 PR 无状态变更。
