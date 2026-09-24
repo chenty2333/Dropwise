@@ -1,0 +1,74 @@
+diff --git a/nexus/src/app/instance.rs b/nexus/src/app/instance.rs
+index 86924f9..ff21f42 100644
+--- a/nexus/src/app/instance.rs
++++ b/nexus/src/app/instance.rs
+@@ -52,11 +52,29 @@ use sled_agent_client::Client as SledAgentClient;
+ use std::net::SocketAddr;
+ use std::str::FromStr;
+ use std::sync::Arc;
++#[cfg(test)]
++use std::future::Future;
+ use tokio::io::{AsyncRead, AsyncWrite};
+ use uuid::Uuid;
+ 
+ const MAX_KEYS_PER_INSTANCE: u32 = 8;
+ 
++#[cfg(test)]
++fn g0_count_pending<F: Future>(
++    future: F,
++    active: bool,
++    branch: &'static str,
++) -> impl Future<Output = F::Output> {
++    let mut future = Box::pin(future);
++    std::future::poll_fn(move |cx| {
++        let poll = Future::poll(future.as_mut(), cx);
++        if active && poll.is_pending() {
++            eprintln!("G0_BRANCH_PENDING branch={branch}");
++        }
++        poll
++    })
++}
++
+ pub(crate) enum WriteBackUpdatedInstance {
+     WriteBack,
+     Drop,
+@@ -1421,6 +1439,8 @@ impl super::Nexus {
+             let nexus_write;
+             let propolis_read;
+             let propolis_write;
++            let mut nexus_write_active = false;
++            let mut propolis_write_active = false;
+             match buffered_input.take() {
+                 None => {
+                     nexus_read = nexus_stream.next().fuse();
+@@ -1432,6 +1452,7 @@ impl super::Nexus {
+                         }
+                         Some(msg) => {
+                             nexus_write = nexus_sink.send(msg).fuse();
++                            nexus_write_active = true;
+                             propolis_read = Fuse::terminated();
+                         }
+                     }
+@@ -1439,6 +1460,7 @@ impl super::Nexus {
+                 Some(msg) => {
+                     nexus_read = Fuse::terminated();
+                     propolis_write = propolis_conn.send(msg).fuse();
++                    propolis_write_active = true;
+                     match buffered_output.take() {
+                         // can't propolis_read simultaneously due to a
+                         // &mut propolis_conn being taken above
+@@ -1453,6 +1475,14 @@ impl super::Nexus {
+                     }
+                 }
+             };
++            #[cfg(test)]
++            let nexus_write =
++                g0_count_pending(nexus_write, nexus_write_active, "nexus_write");
++            #[cfg(test)]
++            let propolis_write =
++                g0_count_pending(propolis_write, propolis_write_active, "propolis_write");
++            #[cfg(test)]
++            eprintln!("G0_SITE_HIT");
+             tokio::select! {
+                 msg = nexus_read => {
+                     match msg {
