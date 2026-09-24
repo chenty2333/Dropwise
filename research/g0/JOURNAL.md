@@ -35,3 +35,11 @@
 - D3 动态结果：site_hit=31、branch_pending=107、defect_path_pending=76。分测试为 parallel_manifest_complete 8/30/21，overwrite_raw_path_cleanup_prefix 11/33/17，default_path_with_query_id_directory 5/15/9，detailed_output_is_aggregated_once 5/22/22，string_literal_projection 2/7/7。初始未关联路径探针曾测得 31/108；最终 CSV 采用本次关联路径重跑数值。
 - D2+D3：站点是 `futures::future::select`，且既有测试命中、branch_pending>0、defect_path_pending>0，故 `site_kind_alt_eligible=yes`；generic_site=yes。主 status 在调整前后均为 ineligible/site_kind_not_covered（D3 路径条件已满足，但 Tokio 覆盖门槛不满足）；eligible_pending 不变。
 - 累计用时约 70 分钟（此次复跑约 19 分钟）；仅使用绑定 127.0.0.1 的临时 MinIO Docker 服务，已停止。target 已删除，目标源码探针仅保留在 `probes/G0-01.diff`。未偏离 D1–D3 登记规则。
+
+## G0-03 — 完成（2026-09-24）
+
+- 修复定位：已合并 PR #3411，merge commit `7e979f08b9c95c98d5e51d08719fd95de549e7e1`，其第一父提交 `6d5da99ca4368488c7fb20039e0dc158ae230e4e`。修复改动 `nexus/src/app/instance.rs`，以 cancel-safe reserve/send 和缓冲替换 select 中可丢弃的 `SinkExt::send`。
+- 站点：父提交 `nexus/src/app/instance.rs:1456`，`Nexus::proxy_instance_serial_ws` 内无 `biased;` 的 `tokio::select!`；潜在丢弃分支是 `nexus_write`/`propolis_write`。Cargo.lock Tokio 1.28.2。对应源码 `select.rs` 不用 `IntoFuture::into_future` 构造分支，故 patchable=no；timeout 有 `#[track_caller]`，timeout_at 无，但不影响该 select 结论。
+- 预筛：父提交已有 `#[tokio::test] test_serial_console_stream_proxying`，直接调用该方法并在两个方向收发 websocket 数据；PR 修改了该既有测试的日志初始化，按父提交版本仍是候选。其它同名 serial-console 测试不调用 Nexus websocket proxy。
+- 动态预算内尝试：首次因 Cargo Git SSL 传输错误中断；改用 Git CLI 后依赖可取回。依父提交 `rust-toolchain.toml` 使用 Rust 1.70.0；构建随后因 `dpd-admin-client` 所需的 `out/downloads/dpd-admin-38735f1f1c8101121553e271e9da0d7a38485687.json` 缺失而失败，官方仓库脚本下载该固定版本时返回 HTTP 404。未运行候选测试；没有 site_hit/branch_pending 动态证据。状态仍为 `ineligible (tokio_not_patchable)`，这是确定的独立否定条件；build_ok=no 已另记，未把静态候选描述为动态命中。
+- D2=`na`、D3 `generic_site=no`/defect_path_pending=`na`。无外部服务。target 已清理；探针 diff 仅在 `probes/G0-03.diff`。用时约 85 分钟，未偏离冻结规则。
