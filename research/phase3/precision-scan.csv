@@ -1,0 +1,9 @@
+repo,commit,tracked_rust_files,excluded_by_path,generated_files_excluded,missing_tracked_files,eligible_src_rust_files,parsed_files,parse_errors,raw_hit_sites,function_candidates,elapsed_seconds,detector_exit
+qdrant,6ab21cac18ebb6f4ae29102c7f8f5cc11affd5de,1824,204,2,0,1618,1618,0,5,5,4.931,0
+risingwave,0d32b959c513370b47eda4e5e7787185472c5cf2,2725,194,2,0,2529,2529,0,77,52,10.59,0
+databend,3a1be1ebf2af8968cfa01297fc4f4d18177ed520,3910,700,3,0,3207,3207,0,68,40,10.26,0
+materialize,36a9d421672f86e1485f848823a6be3ca2529140,1590,158,12,0,1420,1420,0,27,23,10.054,0
+neon,fa504217c61bbcaf5c512d75830564541f917f8f,698,43,5,0,650,650,0,47,38,3.959,0
+pingora,4487f7b2ab50f159e4a2cf4f6a6b813f61bb6e19,234,59,0,0,175,175,0,20,13,1.362,0
+shotover,5cb1e0dd3c9a8835c7bb7ae5e6ca6a46aaa9ec9e,181,58,0,0,123,123,0,7,6,0.479,0
+greptimedb,c7fa48ef95bc5da1f245d9e292ee53b28a4f2136,2174,156,1,0,2017,2017,0,95,57,11.628,0
