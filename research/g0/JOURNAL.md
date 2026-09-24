@@ -162,3 +162,10 @@
 - 修复定位：目标 PR #8252 已合并；merge/fix commit `91d3b4c0bccf2234fc3ed19e605e2cd402f19437`，第一父提交 `a46338401b9e0ffc9bd68c31100ee99cee717481`。PR 改 Tokio runtime time-wheel/entry 源，并新增 `tokio/src/runtime/time_alt/tests.rs` 中 `insert_of_already_cancelled_entry_does_not_enter_wheel` 与 `cancel_races_with_insert`，新测试不计入候选。
 - 站点：父提交 `tokio/src/runtime/time_alt/wheel/mod.rs:68`，`Wheel::insert`。EntryHandle 在 cancellation sender 注册前被取消时，旧代码仍把它加入 wheel，令无可用 cancellation sender 的 entry 只能等自然过期或 runtime 关闭。站点类型记 other：取消源是任意 caller 丢弃 Sleep/timeout future，Tokio 内部 wheel insert 不是一个可定位的用户 `tokio::select!`/timeout 表达式。父提交 Tokio package version 1.53.0（本身无 Cargo.lock）；宏使用 IntoFuture，timeout/timeout_at 有 `#[track_caller]`，所以 Tokio 源形态 patchable=yes，但 site kind 不覆盖。
 - 预筛：父提交已有 `tokio/tests/time_timeout.rs::future_and_timeout_in_future`、`timeout_is_not_exhausted_by_future`，通过 runtime timer driver 到 wheel insert；time_alt/tests.rs 现有 cancellation queue tests 不直接调用 wheel insert。虽然候选静态可达，主判定因站点类别有确定负面证据，未运行动态测试。D2=no、D3 generic_site=no（fix 直接改 Wheel::insert/EntryHandle），defect_path_pending=na。无外部服务。用时约 18 分钟；D1 对目标 merged PR 无状态变更。
+
+## G0-21 — 完成（2026-09-25）
+
+- 修复定位：目标 PR #14317 已合并；merge/fix commit `3d1123f8b09cecfa57a93d8b8b7d19af2b45f070`，第一父提交 `c30d95f2e36cb3519e1e23c0934b388ebba6bc2c`。PR 只改 `cli/file_watcher.rs`，无测试文件改动。
+- 站点：父提交 `cli/file_watcher.rs:190`，`watch_func` 的无 `biased;` `tokio::select!`；`next_restart(&mut resolver, &mut receiver)` 分支在 operation future 完成时被丢弃，而 DebouncedReceiver::recv 的局部路径集合会随 future 一起丢失。父提交 Tokio 1.17.0，select macro 不使用 IntoFuture 构造，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
+- 预筛：父提交已有 `cli/tests/integration/watcher_tests.rs` 中 `run_watch`、`bundle_js_watch`、`lint_watch_test` 等 CLI `--watch` 测试，沿 `watch_func -> next_restart -> DebouncedReceiver::recv` 到达 select。站点是共享 watcher loop，修复在 helper 另处，D3 generic_site=yes。D2=`na`。
+- 判定 `ineligible (tokio_not_patchable)`；Tokio 源码已提供确定否定条件，未运行动态候选，因而没有 site_hit/branch_pending/defect_path_pending 测量；D3 path 计数留空。无外部服务。用时约 20 分钟。D1 对目标 merged PR 无状态变更。
