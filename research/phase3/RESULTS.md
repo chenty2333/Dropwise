@@ -57,7 +57,7 @@ Q2 的 16 个真风险候选均对应 `research/phase3/confirmation/tests/candid
 
 ## 成本、偏离与限制
 
-- 从计划冻结 `2026-09-24T01:31:25Z` 到最终验证时间（由最终 journal 记录）为总墙钟成本；低于预登记 6 小时预算。精确率批量扫描耗时 **53.263 秒**；人工判读、上下文定位与报告占主要时间。单独源码抓取/人工审查用时未分项计时，不伪称其精确值。
+- 从计划冻结 `2026-09-24T01:31:25Z` 到最终验证结束 `2026-09-24T03:26:35Z`，总墙钟成本 **1 小时 55 分 10 秒**，低于预登记 6 小时预算。精确率批量扫描耗时 **53.263 秒**；人工判读、上下文定位与报告占主要时间。单独源码抓取/人工审查用时未分项计时，不伪称其精确值。
 - 新增 Rust 源码行数：检测器 `research/phase3/detector/src/main.rs` **934 行**；Q3 Dropwise 模型 `confirmation/tests/candidates.rs` **500 行**；合计 **1,434 行**（不含 Cargo manifests/lockfile、CSV、计划、日志、结果/相关工作文档）。检测器 commit 中自身 `cargo fmt --check`、`cargo test --locked`（8/8）和 `cargo build --locked` 均通过。
 - 唯一登记的分析偏离为 **P3-D1**，见 `JOURNAL.md`：首轮检测输出同一 scope 的多条原始语法命中后，依照计划中已冻结的候选单位（函数/async 块）归一化为 scope 候选，再计算指标及抽样；保留两种计数。检测器版本未修改，Q1 缺陷所在函数命中数不受归一化影响；Q2 主体候选数为 234（346 个原始命中位置）。这不是看过标签后调规则/检测器，且没有新增或替换评估目标。
 - 其他执行故障为 harness/操作错误，不改变评估：Q1 初次调用错误的可执行文件名、Q3 初次格式/编译及嵌套 runtime 测试问题均在有效评估前修正。另有一次 heredoc Shell 插值造成 JOURNAL 条目文本失真；随后的追加更正明确记录了这次日志错误及有效命令/结果。未发现 Dropwise 项目代码 bug；**Phase 3 自身提交没有改 `src/` 或冻结文件**。仓库状态审计另外发现共享 `master` 历史中存在 commit `b524edb473201bf223b4fef1d284a904c99c717b`（2026-09-24T02:43:20Z，提交说明为 repro 相关），其文件路径包含受保护的 `survey/labels/human/reproduced.csv`。从 Git 元数据无法确定该提交与本阶段并行工作的归属；它不在 Phase 3 提交变更集中。Phase 3 未读取、编辑或回退该文件；为避免覆盖已提交状态而保留，详见 `JOURNAL.md`。所列 Q1 输入 `relevant.csv`、`v3.csv`、`evidence.csv` 与 `src/` 在基线到当前间未出现改动。
