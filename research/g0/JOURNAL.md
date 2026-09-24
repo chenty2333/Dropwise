@@ -142,3 +142,10 @@
 - 站点：父提交 `src/coord/src/coord.rs:745`，`Coordinator::serve` 带 `biased;` 的 `tokio::select!` 中 `self.dataflow_client.recv()` 分支；内部/外部命令获胜时可在分区 client 部分重连期间丢弃该 future，导致对新旧集群连接状态混淆。修复在 Partitioned::recv 保存重连状态并阻止重连期间 send。父提交 Tokio 1.17.0，不经 IntoFuture 构造 select 分支，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
 - 预筛：既有 `test/testdrive/coordinator-multiplicities.td` 与 `test/sqllogictest/cluster.slt` 可经 SQL command/query 调用 coordinator 消息循环；父提交无现成的分区连接中途失败/重连测试。站点为共享 Coordinator loop、修复函数在 Partitioned client 另一文件，D3 generic_site=yes；D2=`na`。
 - 判定 `ineligible (tokio_not_patchable)`，为确定否定；候选未动态运行。没有 site_hit/branch_pending/defect_path_pending 动态值，未将通用调用链表述成缺陷路径命中。无服务启动。用时约 20 分钟。D1 对已合并 PR 无状态变更。
+
+## G0-18 — 完成（2026-09-25）
+
+- 修复定位：目标 PR #22128 已合并；merge/fix commit `1a825138bdf0d0e0e218bd339c2f5b4eb7fbc793`，第一父提交 `c0ab2178e3029882de40806a3738d7826d40566d`。PR 改 MySQL CDC source/client 及 e2e SQL；新增 ignored unit test `test_mysql_async_with_connection_pool`，其中的 tokio::time::timeout 最小复现按规则不计候选。
+- 站点：父提交 `src/connector/src/source/cdc/external/mysql.rs:462`，`MySqlExternalTableReader::snapshot_read_inner` await `mysql_async::Conn::exec_drop("SET time_zone", ...)`。future 被丢弃会令 mysql_async 连接残留协议字节，之后复用可导致空读/EOF。父提交该函数周围没有 Databend 自己的 Tokio select/timeout 站点；PR 描述的 timeout 是新增复现方式，取消源实际由调用者/驱动发起，故 site_kind=other。父提交 Tokio 1.44.2 的宏/timeout 源符合补丁条件，patchable=yes，但站点不在冻结覆盖类型中。
+- 预筛候选：父提交既有但 ignored 的 `test_mysql_table_reader` 直接调用 snapshot_read；既有 `e2e_test/source_legacy/cdc/mysql_cdc.sql` 驱动 MySQL CDC snapshot。同文件新增 timeout 单测不计。未运行动态候选：站点是 mysql_async future 的取消，不是本仓库可定位的 Tokio timeout；需要的 MySQL e2e 服务也未启动。
+- 判定 `ineligible (site_kind_not_covered)`。D2=no；D3 generic_site=no（MySQL reader 专用路径，修复直接改此路径），defect_path_pending=na。无外部服务。用时约 20 分钟；D1 对目标合并修复 PR 无状态变化。
