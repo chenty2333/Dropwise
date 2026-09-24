@@ -176,3 +176,7 @@
 - 站点：父提交 `pageserver/src/tenant/timeline/walreceiver.rs:99`，task_mgr-spawned manager task 中 `tokio::select!`；`connection_manager_loop_step` 在 `task_mgr::shutdown_watcher()` 获胜时被 drop，可能中断 `drop_old_connection`，使已取出的 connection task handle 丢失。站点无 `biased;`。父提交 Cargo.lock Tokio 1.36.0；其 select macro 不用 IntoFuture 构造，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
 - 预筛：已有 `test_runner/regress/test_timeline_delete.py` 删除 timeline，调用 Timeline::shutdown/task_mgr shutdown path，可到 walreceiver manager outer task select。connection_manager 内部测试只测单步状态，不是该 outer select。修复涉及通用任务 loop 和另一个 helper，D3 generic_site=yes；D2=`na`。
 - 判定 `ineligible (tokio_not_patchable)`。候选未动态运行：Tokio 1.36.0 是确定负面条件；故无动态 site_hit/branch_pending，D3 defect_path_pending 留空。无外部服务。用时约 20 分钟。D1 依上述合并修复 PR 选择不改变 status。
+
+## CSV 记录归一化（2026-09-25）
+
+- 终检发现 D1 重新处理 G0-02 时曾保留一条原 `unknown/no_unique_fix` 旧行，同时追加了修订行，导致 eligibility.csv 暂有 23 行记录。现合并为每个冻结缺陷唯一一行，保留 D1 后 `ineligible/site_kind_not_covered` 的最终字段，并在 notes 中明确保存调整前 `unknown/no_unique_fix`。冻结总体仍为 22 个 URL；仅消除重复记录，不改变判定规则或缺陷状态。
