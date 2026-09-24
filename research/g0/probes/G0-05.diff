@@ -1,0 +1,22 @@
+diff --git a/src/stream/src/executor/sink.rs b/src/stream/src/executor/sink.rs
+index 463f219..bfd649c 100644
+--- a/src/stream/src/executor/sink.rs
++++ b/src/stream/src/executor/sink.rs
+@@ -819,8 +819,16 @@ impl<F: LogStoreFactory> SinkExecutor<F> {
+                     .map_err(|e| StreamExecutorError::from((e, sink_param.sink_id)))?;
+                 }
+             };
++            let mut future = Box::pin(future);
++            eprintln!("G0_SITE_HIT");
+             select! {
+-                result = future => {
++                result = std::future::poll_fn(|cx| {
++                    let poll = std::future::Future::poll(future.as_mut(), cx);
++                    if poll.is_pending() {
++                        eprintln!("G0_BRANCH_PENDING");
++                    }
++                    poll
++                }) => {
+                     let Err(e): StreamExecutorResult<!> = result;
+                     return Err(e);
+                 }
