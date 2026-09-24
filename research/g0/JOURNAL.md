@@ -184,3 +184,22 @@
 ## G0-13 D3 状态变更注记（2026-09-25）
 
 - 完整总体的计数回算确认：若不应用 D3，G0-13 的既有候选已观察到 `site_hit=3`、`branch_pending=3`，且 Tokio timeout 可补丁，按原门槛会为 eligible/eligible_pending；D3 要求通用站点和修复路径相关联，但 `defect_path_pending=0`，故最终改为 `ineligible/site_not_hit`。已在 CSV notes 留存该调整前后状态。规则不变。
+
+## 偏离登记 D4 — 项目负责人指示（2026-09-25）
+
+依据 `REVIEW.md`，冻结计划第 2 节的 patchable 判据有误。本记录在任何 D4 重判或动态确认之前登记并单独提交。本轮由项目负责人侧（Claude）直接执行，不经 Codex。
+
+登记时计数（D1–D3 后的最终值）：eligible=2、eligible_pending=2、ineligible=19、unknown=1、eligible_if_futures_covered=3。
+
+- **D4 判据更正。** 原判据要求“select! 分支经 `IntoFuture::into_future` 构造”，这是把 tokio 1.53.1 上补丁的具体位置误当成了可否打补丁的前提。更正为：只要该 Tokio 版本的 `select!` 宏把各分支 future 逐个放入一个元组（1.x 形式为 `( $( $fut , )+ )` 或 `( $( IntoFuture::into_future(...) , )+ )`），就能用按版本适配的补丁逐分支包装，`patchable=yes`。`timeout`/`timeout_at` 是否带 `#[track_caller]` 不影响可行性，补丁可以自行加上。对每个 Tokio 版本，在 `patchable_reason` 中记录补丁应改的文件和行号。父提交无 `Cargo.lock` 时，在临时工作树中用父提交时间点可解析的版本生成 lockfile，并记录方法和所得版本。
+- **补做范围。**
+  - 对 G0-03、09、11、14、16、17、21、22 按 D4 重判 patchable。其余条件未被否定者，按原第 4 节与 D3 做动态确认：临时探针，最多运行 10 个预筛候选，通用站点记录 `defect_path_pending`，每例 90 分钟，超时记 `unknown (budget)`。
+  - G0-04 与 G0-10 只更新 patchable 列，主状态由其它确定否定条件决定，不重做。
+  - G0-05 不重做。
+- **新增两列。**
+  - `harness_kind`：cargo_test / cargo_integration / sqllogictest / testdrive / pytest / other。
+  - `baseline_wall_seconds`：单个候选测试在无探针、无注入时的一次运行墙钟，用于估算 A′“每个计划一个进程”的成本。
+  - 对所有运行过测试的个案补填，无法补填写 `na`。
+- **门槛不变：** eligible≥6 通过；eligible+unknown≥6 未决；否则不通过。RESULTS.md 并列报告 D4 前后计数。
+
+其余冻结规则、预算与禁止事项不变。
