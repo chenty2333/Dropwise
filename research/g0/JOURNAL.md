@@ -129,3 +129,9 @@
 - 修复定位：目标 PR #17902 已合并；merge/fix commit `ebeab9379e51fd787c6756273d9fbfc812e1ce57`，第一父提交 `11d99804b86b2ac3ab694c9f2368ab1681123962`。PR 只改 `src/common/storage/src/operator.rs`，未新增/修改测试。
 - 站点：Databend 在父提交 `src/common/storage/src/operator.rs:141` 构造 OpenDAL `TimeoutLayer`；其依赖版本为 OpenDAL 0.53.1，内部 `TimeoutAccessor::timeout` 在 `src/layers/timeout.rs:196` 调 `tokio::time::timeout`（IO timeout 也有对应路径）。超时会丢弃 OpenDAL 的底层存储操作 future；PR 将此 layer 移到其它 storage layers 之前，以保护重试/运行时层次的可重入性。该表达式在依赖内部，不是 Databend 自己的 select/timeout 站点，因此 `site_kind=other`。父提交 Tokio 1.44.2 的宏使用 IntoFuture，timeout 有 `#[track_caller]`、timeout_at 无，底层 Tokio 函数 patchable=yes，但主站点类别不覆盖。
 - 预筛：父提交已有 `src/query/service/tests/it/storages/fuse/operations/commit.rs::test_fuse_occ_retry` 和 `src/query/service/tests/it/storages/fuse/table.rs::test_fuse_table_normal_case`，经 Fuse table 存储访问可到 Databend `build_operator` 并进入 OpenDAL layer。没有动态运行：由依赖内部 timeout 站点类别确定不满足主门槛。D2=no；D3 generic_site=yes（共享 OpenDAL timeout layer，修复位于 Databend operator builder），路径计数未测所以 defect_path_pending 留空。无外部服务。用时约 25 分钟。D1 对合并 PR 无状态变更。
+
+## G0-16 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #2536 关闭未合并；survey 指向的关联修复 PR #2539 已合并，并明确说明是 #2536 分阶段移除 Flume 修复的一部分。其 merge commit `22314a18228799e26de8ba2c0e44b45aec3b2af4`，第一父提交 `9052905d0d75d62c761139f02294d6abc1c53af6`。合并修复改 Cargo.lock/iroh-net 源文件，没有测试文件改动。
+- 站点：父提交 `iroh-net/src/net/netmon/actor.rs:115`，`Actor::run` 带 `biased;` 的 `tokio::select!`；`self.mon_receiver.recv_async()` 在定时器分支获胜时被丢弃，Flume 可能丢失 wake notification。父提交 Tokio 1.38.1；对应宏不经 IntoFuture 构造，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
+- 预筛：父提交既有 `iroh-net/src/net/netmon.rs::tests::test_smoke_monitor` 创建 Monitor 并启动 Actor::run，可触达该 select。因 Tokio patchability 是确定负面，本项未运行动态测试。D2=`na`，generic_site=no（修复直接更换同一 net monitor 消息通道），defect_path_pending=`na`。状态 `ineligible (tokio_not_patchable)`；无外部服务。用时约 20 分钟。D1 对“目标 PR 关闭、但有关联合并修复 PR”的处理不改变最终状态。
