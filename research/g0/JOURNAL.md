@@ -66,3 +66,10 @@
 - 预筛唯一候选 `lib/collection/src/tests/hw_metrics.rs::test_hw_metrics_cancellation`：父提交既有 Tokio 测试，明确将 LocalShard::do_search 的超时设为 10ms 并断言超时，调用链经过目标 timeout 及被修复的 SegmentsSearcher::search。
 - 动态：候选测试通过，`site_hit=1`、`branch_pending=1`。D3 按通用站点规则在被改动的 `SegmentsSearcher::search` 放置 Drop 守卫活动计数，timeout 内层 future 首次 Pending 时仅在活动计数大于 0 时计 defect path；`defect_path_pending=1`。故 generic_site=yes，主状态 eligible，eligible_pending=yes。D2=`na`。无外部服务。探针 diff：`probes/G0-06.diff`。
 - 初次构建因缺少 protoc 停止；只在临时工作树提供 protoc 31.1、其 include 文件并补齐探针编译错误后，构建和测试成功。用时约 25 分钟；测试后已移除临时工具、target 和源改动。无计划外规则变更。
+
+## G0-07 — 完成（2026-09-24）
+
+- 修复定位：issue #9670 唯一关联的 PR #9671 已合并；merge commit `7b59e7c40c800d4a94aa014461f92c7bff9aa214`，GitHub commit API 核实第一父提交为 `f65a4d1071f0f8e6a8abc6bbaebb46954490a515`。PR 新增 `lib/collection/src/shards/local_shard/optimizer_config_update_tests.rs`，新增回归测试不计入候选。
+- 站点：父提交 `lib/collection/src/collection/collection_ops.rs:377`，`Collection::recreate_optimizers` 的 `future::try_join_all(updates)`。其中一个 shard 更新返回 Err 时，try_join_all 会立即返回并丢弃其它正在执行的 `ReplicaSet::on_optimizer_config_update` futures。PR diff 把它替换为 `join_all`；这是 futures-util 组合子而非 Tokio `select!`/timeout。父提交 Tokio 1.52.3；对应 select macro 通过 IntoFuture 构造、timeout 有 `#[track_caller]`，Tokio patchable=yes，但本缺陷站点不受 A′ 覆盖。
+- 预筛候选：两组 OpenAPI collection update 测试修改 HNSW/optimizer/vector 核心配置，调用链经 collection metadata 更新到后台 optimizer recreation 和该 try_join_all；另有 `test_dirty_shard_survives_update_collection` 经 UpdateCollection 重放到相同路径。后者显式单 shard；OpenAPI fixture 默认 `default_shard_number()=1`。父提交没有现成的跨 shard「一支失败、另一 Pending」测试；PR 新回归测试专门添加了该场景。
+- 判定：`ineligible (site_kind_not_covered)`。D2=`no`：既有候选没有缺陷所需的被丢弃 Pending sibling（均为单 shard/default 单 shard）；新增的跨 shard测试按规则不计。D3 `generic_site=no`，因为 site 与修复修改的函数相同，`defect_path_pending=na`。因主门槛有确定否定证据，未构建运行动态候选；无外部服务。用时约 22 分钟。D1 对本已合并 PR 的规则无状态变更。
