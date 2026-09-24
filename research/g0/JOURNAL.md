@@ -149,3 +149,10 @@
 - 站点：父提交 `src/connector/src/source/cdc/external/mysql.rs:462`，`MySqlExternalTableReader::snapshot_read_inner` await `mysql_async::Conn::exec_drop("SET time_zone", ...)`。future 被丢弃会令 mysql_async 连接残留协议字节，之后复用可导致空读/EOF。父提交该函数周围没有 Databend 自己的 Tokio select/timeout 站点；PR 描述的 timeout 是新增复现方式，取消源实际由调用者/驱动发起，故 site_kind=other。父提交 Tokio 1.44.2 的宏/timeout 源符合补丁条件，patchable=yes，但站点不在冻结覆盖类型中。
 - 预筛候选：父提交既有但 ignored 的 `test_mysql_table_reader` 直接调用 snapshot_read；既有 `e2e_test/source_legacy/cdc/mysql_cdc.sql` 驱动 MySQL CDC snapshot。同文件新增 timeout 单测不计。未运行动态候选：站点是 mysql_async future 的取消，不是本仓库可定位的 Tokio timeout；需要的 MySQL e2e 服务也未启动。
 - 判定 `ineligible (site_kind_not_covered)`。D2=no；D3 generic_site=no（MySQL reader 专用路径，修复直接改此路径），defect_path_pending=na。无外部服务。用时约 20 分钟；D1 对目标合并修复 PR 无状态变化。
+
+## G0-19 — 完成（2026-09-25）
+
+- 修复定位：target PR #1584 关闭未合并；survey 的关联修复 PR #1585 已合并，merge/fix commit `f2d464ac79b47f988bffc826b80cf7d107f80694`，第一父提交 `1f95f58837e5fd78b0e9bb1a51276c38bc9d559c`。修复 PR 修改 `src/client/mod.rs`、pool/mock 辅助代码和 `src/client/tests.rs`，新增 `checkout_win_allows_connect_future_to_be_pooled`；新增测试不计候选。
+- 站点：父提交 `src/client/mod.rs:321`，`Client::send_request` 中 `checkout.select(connect)`（futures 0.1 的 Future::select）；pool checkout 获胜时旧代码丢弃尚未完成的 connect future，不能在之后将连接放回池。父提交无 Cargo.lock，Cargo.toml 声明 Tokio 0.1.7，故 Tokio 精确版本/patchable=unknown；此站点本身是 futures 组合子而非 Tokio。
+- 预筛候选：父提交已有 `src/client/tests.rs::retryable_request` 和 `conn_reset_after_write`，都调用 Client::request 并沿 `send_request -> checkout.select(connect)`。D2 只能在运行后确认 futures alternative。
+- 动态尝试：为既有 `retryable_request` 做构建，但 Cargo 在编译前解析失败：无锁父提交的依赖解析器将全部可用 `spmc 0.2.x` 版本判为 yanked。没有运行测试、没有 site_hit/branch_pending；没有外部服务。主状态仍为确定 `ineligible (site_kind_not_covered)`，因为实际站点是 futures 0.1 select 而非 Tokio。D2=`no`（尚无动态正证据），D3 generic_site=no（修复修改同一 Client::send_request 路径），defect_path_pending=na。用时约 20 分钟。D1 将原 closed-unmerged target 改为已合并的关联 PR #1585，但无主 status 变化。
