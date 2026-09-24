@@ -180,3 +180,7 @@
 ## CSV 记录归一化（2026-09-25）
 
 - 终检发现 D1 重新处理 G0-02 时曾保留一条原 `unknown/no_unique_fix` 旧行，同时追加了修订行，导致 eligibility.csv 暂有 23 行记录。现合并为每个冻结缺陷唯一一行，保留 D1 后 `ineligible/site_kind_not_covered` 的最终字段，并在 notes 中明确保存调整前 `unknown/no_unique_fix`。冻结总体仍为 22 个 URL；仅消除重复记录，不改变判定规则或缺陷状态。
+
+## G0-13 D3 状态变更注记（2026-09-25）
+
+- 完整总体的计数回算确认：若不应用 D3，G0-13 的既有候选已观察到 `site_hit=3`、`branch_pending=3`，且 Tokio timeout 可补丁，按原门槛会为 eligible/eligible_pending；D3 要求通用站点和修复路径相关联，但 `defect_path_pending=0`，故最终改为 `ineligible/site_not_hit`。已在 CSV notes 留存该调整前后状态。规则不变。
