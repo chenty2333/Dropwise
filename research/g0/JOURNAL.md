@@ -11,3 +11,13 @@
 
 - 修复唯一性审查：survey 指向 commit `6dcc236a0fcbc6cc22fb48246641eb879899b790`（message: “Make H2 response header reads cancellation safe”），其 message 指向 PR #944。PR #944 声明 `Closes #934`，但 GitHub 记录 `merged_at=null`，故不是已合并修复 PR。commit 的 GitHub 关联只返回通用同步 PR #977；该 PR merge commit `09696b51bc59315353d96686355861604d0bb48c` 的第一父提交为 `e819abf69fbe41b855445d1dc2deadb0aac0ab2c`，而该父提交已包含 fix commit `6dcc236`（compare 显示后者是其祖先）。因此 #977 不能提供修复前父提交；按冻结规则不以它替代，`parent_sha` 与后续站点/测试检查保持未知。
 - 判定：`unknown (no_unique_fix)`；未构建、未运行测试、未启动服务。用时 8 分钟。未偏离冻结规则。
+
+## 偏离登记 D1–D3 — 用户指示（2026-09-24 16:44 Asia/Tokyo）
+
+在执行任何 D1–D3 补查、改判、加列或重跑前，先登记本偏离并单独提交。登记时已完成并提交 2/22 项；按原冻结规则的当前计数为：eligible=0、eligible_pending=0、ineligible=1（G0-01/site_kind_not_covered）、unknown=1（G0-02/no_unique_fix）。这只是已完成子集，不是 G0 最终门槛计数；最终 RESULTS.md 将列出完整总体的调整前/后计数。
+
+- D1：issue 没有已合并修复 PR 时，若默认分支存在唯一明确指向该缺陷的修复提交，则核验该提交在默认分支、diff 含修复且第一父提交不含修复，以提交及其第一父作为 fix/parent；适用于 G0-02 及后续全部缺陷。受影响记录在 notes 保留调整前 status，并记录新 status。
+- D2：eligibility.csv 新增 `site_kind_alt_eligible`（yes/no/na），只作辅助计数、不改主门槛；RESULTS.md 报 `eligible_if_futures_covered = eligible + site_kind_alt_eligible=yes`。G0-01 按已取得的 31/108 site_hit/branch_pending 补填，但最终 yes/no 还按 D3 的 defect_path_pending 计算。
+- D3：通用共享站点但修复函数在别处时，临时加入修复函数入口/出口活动计数及 Drop 守卫；仅当活动计数大于 0 时计入 `defect_path_pending`。eligibility.csv 新增 `generic_site`、`defect_path_pending`。generic_site=yes 的主 eligible 与 eligible_pending 均须 defect_path_pending>0；generic_site=no 沿用原门槛。G0-01 必须在 lance_dataset/pipeline.rs 修复所改函数加探针后重跑原 5 个候选测试；D2 alt 计数亦须满足 defect_path_pending>0。
+
+除上述明确调整外，冻结计划的总体、预算、原门槛其余部分和禁止事项均不变。提交本记录后再开始执行。
