@@ -1,5 +1,20 @@
+diff --git a/src/query/pipeline/src/core/mod.rs b/src/query/pipeline/src/core/mod.rs
+index 8843cce556..8f273c9702 100644
+--- a/src/query/pipeline/src/core/mod.rs
++++ b/src/query/pipeline/src/core/mod.rs
+@@ -26,6 +26,10 @@ mod sync_task;
+ mod unsafe_cell_wrap;
+ mod waker;
+ 
++// G0-only counter shared by the temporary Lance-path and executor probes.
++pub static G0_DEFECT_PATH_ACTIVE: std::sync::atomic::AtomicUsize =
++    std::sync::atomic::AtomicUsize::new(0);
++
+ pub use finished_chain::Callback;
+ pub use finished_chain::ExecutionInfo;
+ pub use finished_chain::FinishedCallbackChain;
 diff --git a/src/query/service/src/pipelines/executor/processor_async_task.rs b/src/query/service/src/pipelines/executor/processor_async_task.rs
-index fa69d8c..2f25237 100644
+index fa69d8c475..7c3ad90e6c 100644
 --- a/src/query/service/src/pipelines/executor/processor_async_task.rs
 +++ b/src/query/service/src/pipelines/executor/processor_async_task.rs
 @@ -13,8 +13,11 @@
@@ -14,17 +29,29 @@ index fa69d8c..2f25237 100644
  use std::sync::Arc;
  use std::task::Context;
  use std::task::Poll;
-@@ -44,6 +47,17 @@ use crate::pipelines::executor::WorkersCondvar;
+@@ -27,6 +30,7 @@ use databend_common_base::runtime::profile::Profile;
+ use databend_common_base::runtime::profile::ProfileStatisticsName;
+ use databend_common_exception::ErrorCode;
+ use databend_common_exception::Result;
++use databend_common_pipeline::core::G0_DEFECT_PATH_ACTIVE;
+ use databend_common_pipeline::core::ProcessorPtr;
+ use futures_util::FutureExt;
+ use futures_util::future::BoxFuture;
+@@ -44,6 +48,21 @@ use crate::pipelines::executor::WorkersCondvar;
  
  const TARGET_DUMP_GRAPH: &str = "databend::log::dump_graph";
  
-+struct G0ProbeGuard(Arc<AtomicUsize>);
++struct G0ProbeGuard {
++    branch_pending: Arc<AtomicUsize>,
++    defect_path_pending: Arc<AtomicUsize>,
++}
 +
 +impl Drop for G0ProbeGuard {
 +    fn drop(&mut self) {
 +        eprintln!(
-+            "G0_PROBE site_hit=1 branch_pending={}",
-+            self.0.load(Ordering::Relaxed)
++            "G0_PROBE site_hit=1 branch_pending={} defect_path_pending={}",
++            self.branch_pending.load(Ordering::Relaxed),
++            self.defect_path_pending.load(Ordering::Relaxed),
 +        );
 +    }
 +}
@@ -32,20 +59,28 @@ index fa69d8c..2f25237 100644
  pub enum ExecutorTasksQueue {
      QueryExecutorTasksQueue(Arc<QueryExecutorTasksQueue>),
      QueriesExecutorTasksQueue(Arc<QueriesExecutorTasksQueue>),
-@@ -114,7 +128,20 @@ impl ProcessorAsyncTask {
+@@ -114,7 +133,28 @@ impl ProcessorAsyncTask {
          };
  
          let inner = async move {
 -            let left = Box::pin(inner);
 +            let branch_pending = Arc::new(AtomicUsize::new(0));
-+            let _probe_guard = G0ProbeGuard(branch_pending.clone());
++            let defect_path_pending = Arc::new(AtomicUsize::new(0));
++            let _probe_guard = G0ProbeGuard {
++                branch_pending: branch_pending.clone(),
++                defect_path_pending: defect_path_pending.clone(),
++            };
 +            let mut inner = Box::pin(inner);
 +            let branch_pending_counter = branch_pending.clone();
++            let defect_path_pending_counter = defect_path_pending.clone();
 +            let left = Box::pin(async move {
 +                poll_fn(|cx| {
 +                    let poll = inner.as_mut().poll(cx);
 +                    if poll.is_pending() {
 +                        branch_pending_counter.fetch_add(1, Ordering::Relaxed);
++                        if G0_DEFECT_PATH_ACTIVE.load(Ordering::Relaxed) > 0 {
++                            defect_path_pending_counter.fetch_add(1, Ordering::Relaxed);
++                        }
 +                    }
 +                    poll
 +                })
@@ -54,3 +89,54 @@ index fa69d8c..2f25237 100644
              let right = Box::pin(finished_notify.notified());
              match futures::future::select(left, right).await {
                  Either::Left((res, _)) => res,
+diff --git a/src/query/storages/stage/src/append/lance_dataset/pipeline.rs b/src/query/storages/stage/src/append/lance_dataset/pipeline.rs
+index 70cee79b14..576be1e0fd 100644
+--- a/src/query/storages/stage/src/append/lance_dataset/pipeline.rs
++++ b/src/query/storages/stage/src/append/lance_dataset/pipeline.rs
+@@ -18,6 +18,8 @@ use databend_common_base::runtime::GlobalIORuntime;
+ use databend_common_exception::ErrorCode;
+ use databend_common_exception::Result;
+ use databend_common_expression::TableSchemaRef;
++use databend_common_pipeline::core::ExecutionInfo;
++use databend_common_pipeline::core::basic_callback;
+ use databend_common_pipeline::core::Pipeline;
+ use databend_common_storage::ensure_no_stage_path_traversal;
+ use databend_storages_common_stage::CopyIntoLocationInfo;
+@@ -31,6 +33,23 @@ use super::writer_processor::FragmentWriterParams;
+ use super::writer_processor::LanceDatasetWriter;
+ use super::writer_processor::SharedFragmentState;
+ 
++struct G0LancePathGuard;
++
++impl G0LancePathGuard {
++    fn new() -> Self {
++        databend_common_pipeline::core::G0_DEFECT_PATH_ACTIVE
++            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
++        Self
++    }
++}
++
++impl Drop for G0LancePathGuard {
++    fn drop(&mut self) {
++        databend_common_pipeline::core::G0_DEFECT_PATH_ACTIVE
++            .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
++    }
++}
++
+ pub(crate) fn append_data_to_lance_dataset(
+     pipeline: &mut Pipeline,
+     info: CopyIntoLocationInfo,
+@@ -49,6 +68,13 @@ pub(crate) fn append_data_to_lance_dataset(
+         op.clone(),
+         target_dataset_path.as_str(),
+     ))?;
++    // Hold an RAII guard for the lifetime of the pipeline; dropping its
++    // finished callback on completion or cancellation decrements the counter.
++    let g0_lance_path_guard = Arc::new(G0LancePathGuard::new());
++    pipeline.lift_on_finished(basic_callback(move |_info: &ExecutionInfo| {
++        let _keep_path_active = &g0_lance_path_guard;
++        Ok(())
++    }));
+     let staging_accessor = Operator::new(Memory::default())?.finish();
+     let staging_dataset_path = "tmp".to_string();
+ 
