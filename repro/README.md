@@ -107,3 +107,12 @@ mechanism and code shape, adapted as follows:
 | redis-rs#851 | the harness also uses a multiplexed connection; waits of 50 ms instead of 1 s; fixed stream keys instead of random IDs; Redis 8 (the reporter's server version is unknown); the fixed variant (`BLOCK 100`) is ours, following the maintainer's advice to avoid `BLOCK 0` |
 | hyper#3995 | the report involved reqwest/object_store and a runtime shut down mid-read; here a raw HTTP/1 response over an in-memory duplex, and Dropwise drops the dispatcher future (as runtime shutdown drops its task) |
 | tokio#7979 | an ordinary temp file opened with `tokio::fs::File::open` after a warm-up open, not the reporter's PoC |
+
+## Upstream
+
+- 2026-09-24: comment on cloudflare/pingora#948 (fix PR for #931), posted with the owner's
+  approval: independent reproduction on 0.9.0 with the standalone test, confirmation that the
+  PR fixes it and applies to current `main`, a short review, and a suggested regression test
+  for a follower already waiting when the writer is cancelled
+  (https://github.com/cloudflare/pingora/pull/948#issuecomment-5806880101). Review details:
+  `pingora-931/REVIEW.md`.
