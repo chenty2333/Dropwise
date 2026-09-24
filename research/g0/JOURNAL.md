@@ -58,3 +58,11 @@
 - 预筛：父提交已有 7 个测试构造并执行 SinkExecutor，最短候选 `test_empty_barrier_sink` 可沿 SinkExecutor::execute -> execute_consume_log 到达该 select。
 - 动态预算内尝试未到测试。一次由调用错误的包名导致 Cargo 拒绝目标；更正为 `omicron-nexus` 的处理属前一缺陷，不计此项。G0-05 构建依赖已解析，但 faiss-sys CMake 报 `Could NOT find BLAS`，导致 `risingwave_stream` 测试不能完成。静态父提交夜间版为 nightly-2026-06-11，rustup 官方下载反复 TLS EOF；重试使用已安装较新 nightly 后仍在 BLAS 处失败。
 - 按预算计时 125 分钟，超过冻结 90 分钟 35 分钟；现停止该缺陷并记 `unknown (budget)`，未把失败构建/未运行测试记为命中。该超时为执行偏差，保留在此记录。D2=`na`，D3 `generic_site=no`。target 已清理，无外部服务。
+
+## G0-06 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #7530 已合并；merge commit `c86aa1a000e2cecfdf1320897910a83afd1f0a66`，第一父提交 `80ae57f0b312cdfec05ebcf546c529b06c222a42`。diff 将 `SegmentsSearcher::search` 中 spawn_blocking 返回的 JoinHandle 包装为 AbortOnDropHandle；未新增或修改测试文件。父提交保留原先裸 JoinHandle。
+- 取消站点：父提交 `lib/collection/src/shards/local_shard/search.rs:137`，`LocalShard::do_search_impl` 的 `tokio::time::timeout(timeout, search_request)`；到期丢弃内层 `SegmentsSearcher::search` future，令已排队的 blocking 搜索 JoinHandle 继续存活。站点类型为直接 Tokio timeout。父提交 Cargo.lock Tokio 1.47.1；该源码的 select! 通过 IntoFuture 构造，timeout 有 `#[track_caller]`、timeout_at 没有，patchable=yes。
+- 预筛唯一候选 `lib/collection/src/tests/hw_metrics.rs::test_hw_metrics_cancellation`：父提交既有 Tokio 测试，明确将 LocalShard::do_search 的超时设为 10ms 并断言超时，调用链经过目标 timeout 及被修复的 SegmentsSearcher::search。
+- 动态：候选测试通过，`site_hit=1`、`branch_pending=1`。D3 按通用站点规则在被改动的 `SegmentsSearcher::search` 放置 Drop 守卫活动计数，timeout 内层 future 首次 Pending 时仅在活动计数大于 0 时计 defect path；`defect_path_pending=1`。故 generic_site=yes，主状态 eligible，eligible_pending=yes。D2=`na`。无外部服务。探针 diff：`probes/G0-06.diff`。
+- 初次构建因缺少 protoc 停止；只在临时工作树提供 protoc 31.1、其 include 文件并补齐探针编译错误后，构建和测试成功。用时约 25 分钟；测试后已移除临时工具、target 和源改动。无计划外规则变更。
