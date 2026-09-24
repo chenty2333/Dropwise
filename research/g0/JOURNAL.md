@@ -50,3 +50,11 @@
 - 站点：父提交 `src/storage/src/source/mod.rs:883` 的 `create_raw_source_simple` 中无 biased 的 `tokio::select!`；竞争分支是 `timestamper.tick()` 与 pin 后的 source future。Tokio 1.18.2 select macro 不经 `IntoFuture::into_future`，故 patchable=no。
 - 静态预筛：在父提交受检的 source/test 路径中，`create_raw_source_simple` 只有声明/文档引用，没有调用点；也未找到 `SimpleSource` 实现或调用此站点的既有测试函数，故无候选，`ineligible (no_preexisting_test)`。按冻结规则未进入动态构建/测试。
 - D2=`na`；D3 `generic_site=no`，defect_path_pending=`na`。用时 20 分钟；未偏离计划。
+
+## G0-05 — 完成（2026-09-24；dynamic unknown）
+
+- 修复定位：issue #26409 对应已合并 PR #26412；merge commit `e459ee339b8cdbcf8b6cecea2e1fe0a472aa7cdc` 第一父提交 `e83b32ffa85a877dcfcd700da37507d792e7642c`。PR 只改 `src/stream/src/executor/sink.rs`，增加 inline no-op update reader regression tests（这些新增测试不作候选）。
+- 站点：父提交 `src/stream/src/executor/sink.rs:822`，`SinkExecutor::execute_consume_log` 的 `tokio::select!`，无 biased；与重建通知竞争的被取消分支是消费 sink/log-reader 的 `future`。Cargo.lock Tokio 1.49.0；宏分支由 IntoFuture 构造且 timeout 有 track_caller，patchable=yes。
+- 预筛：父提交已有 7 个测试构造并执行 SinkExecutor，最短候选 `test_empty_barrier_sink` 可沿 SinkExecutor::execute -> execute_consume_log 到达该 select。
+- 动态预算内尝试未到测试。一次由调用错误的包名导致 Cargo 拒绝目标；更正为 `omicron-nexus` 的处理属前一缺陷，不计此项。G0-05 构建依赖已解析，但 faiss-sys CMake 报 `Could NOT find BLAS`，导致 `risingwave_stream` 测试不能完成。静态父提交夜间版为 nightly-2026-06-11，rustup 官方下载反复 TLS EOF；重试使用已安装较新 nightly 后仍在 BLAS 处失败。
+- 按预算计时 125 分钟，超过冻结 90 分钟 35 分钟；现停止该缺陷并记 `unknown (budget)`，未把失败构建/未运行测试记为命中。该超时为执行偏差，保留在此记录。D2=`na`，D3 `generic_site=no`。target 已清理，无外部服务。
