@@ -39,7 +39,7 @@ G0-05 是唯一 unknown：`unknown/budget`。构建卡在 `faiss-sys` 的 CMake 
 ## 站点与 A′ 启示
 
 - 22 个修复路径中，直接 `tokio::select!` 有 10 个，直接 `tokio::time::timeout` 有 3 个；futures 家族组合子有 4 个（3 个 `futures::future::select`，1 个 `try_join_all`），其余自定义包装、框架/库内部或其他站点有 5 个。Tokio-only 注入面无法覆盖所有被标注为 select/timeout 的根因；D2 把已验证的 futures 替代候选计入后也只有 3/22，不足以挽回本轮门槛。
-- 父版本 Tokio 源码版本可确定 20/22；2 个父提交没有 `Cargo.lock` 且 manifest 版本范围不足以确定具体版本。精确版本中 1.17.0 出现 3 次；1.52.3、1.38.1、1.44.2 各 2 次；其余 11 个版本各 1 次。patchability 总体为 yes=9、no=10、unknown=3。版本跨度意味着补丁验证不能只针对当前 Tokio 版本。
+- 父版本 Tokio 源码版本可确定 19/22；3 个父提交没有 `Cargo.lock` 且 manifest 版本范围不足以确定具体版本。精确版本中 1.17.0 出现 3 次；1.52.3、1.38.1、1.44.2 各 2 次；其余 10 个版本各 1 次。patchability 总体为 yes=9、no=10、unknown=3。版本跨度意味着补丁验证不能只针对当前 Tokio 版本。
 - 9 个站点被标成 `generic_site=yes`。其中 2 个相关路径计数为正，1 个为零；其余 6 个因已有确定的主门槛否定项未进入动态路径确认。G0-13 说明仅有通用站点命中会造成假阳性，D3 的路径相关计数确实改变了一个最终分类。
 - 5/22 个案运行了候选测试并获得实际站点计数；其中 2/22 使用临时 Docker 外部服务（Databend 的 loopback MinIO、Pingora 的 loopback OpenResty），都已停止。Qdrant 测试使用本地 peer 进程而非 Docker。Kafka/MySQL 等仅在未运行候选所需的服务没有被启动。
 - 两个最终 eligible 个案均是 Tokio timeout（G0-06、G0-12），都有正的分支 Pending；因此对于这些具体缺陷，既有测试到达站点并实际经历过未就绪状态。但全总体的候选规模和分类仍未达到路线门槛。
