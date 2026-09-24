@@ -3,8 +3,9 @@ use std::fmt;
 use std::future::Future;
 use std::panic::Location;
 use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use std::task::{Context, Poll, Waker};
+use std::task::{Context, Poll, Wake, Waker};
 use std::time::Duration;
 
 use crate::obligation::{set_current, Leak, Ledger};
@@ -23,6 +24,15 @@ pub enum Race {
     /// The competitor becomes ready after this much Tokio time (virtual under
     /// `Flavor::CurrentThread`, real under `Flavor::MultiThread`).
     After(Duration),
+    /// The competitor becomes ready once the target is woken, and the target is
+    /// dropped without being polled again: the event it was waiting for has been
+    /// delivered to it but not yet consumed (e.g. a `Notify` notification, a
+    /// message handed to a waiting receiver). Needs no timing parameter.
+    ///
+    /// With [`Ctx::race`], such a run is only realizable if the program's
+    /// `select!` may poll the competitor first; do not use it with a `biased;`
+    /// `select!` that lists the target before the competitor.
+    AfterWake,
 }
 
 impl fmt::Display for Race {
@@ -31,6 +41,7 @@ impl fmt::Display for Race {
             Race::Immediate => write!(f, "competitor ready immediately"),
             Race::Reschedule(n) => write!(f, "competitor ready after {n} reschedule(s)"),
             Race::After(d) => write!(f, "competitor ready after {d:?}"),
+            Race::AfterWake => write!(f, "competitor ready once the target is woken"),
         }
     }
 }
@@ -176,7 +187,7 @@ impl Ctx {
     #[track_caller]
     pub fn target<F: Future>(&self, fut: F) -> Target<F> {
         let (core, cut) = TargetCore::register(self, Location::caller());
-        Target { core, cut, phase: Phase::Running(Box::pin(fut)) }
+        Target { core, cut, probe: WakeProbe::for_cut(cut), phase: Phase::Running(Box::pin(fut)) }
     }
 
     /// Mark `fut` as a cancellation target inside the program's own `select!`.
@@ -197,10 +208,12 @@ impl Ctx {
     pub fn race<F: Future>(&self, fut: F) -> (Raced<F>, Preempt) {
         let (core, cut) = TargetCore::register(self, Location::caller());
         let shared = Arc::new(Mutex::new(RaceShared::default()));
-        let raced = Raced { core, cut, inner: Some(Box::pin(fut)), shared: shared.clone() };
+        let probe = WakeProbe::for_cut(cut);
+        let raced = Raced { core, cut, probe: probe.clone(), inner: Some(Box::pin(fut)), shared: shared.clone() };
         let preempt = Preempt {
             shared,
             race: cut.map(|c| c.race),
+            probe,
             delay: None,
             state: self.state.clone(),
             index: raced.core.index,
@@ -261,25 +274,32 @@ enum Delay {
     Now,
     Reschedule { remaining: usize, current: Option<BoxFuture> },
     Sleep(Pin<Box<tokio::time::Sleep>>),
+    WaitWake(Arc<WakeProbe>),
 }
 
 impl Delay {
     /// Call when the target returns the planned `Pending`: `After` counts from here.
-    fn new(race: Race) -> Self {
-        Self::starting_at(race, tokio::time::Instant::now())
+    fn new(race: Race, probe: Option<&Arc<WakeProbe>>) -> Self {
+        Self::starting_at(race, tokio::time::Instant::now(), probe)
     }
 
-    fn starting_at(race: Race, start: tokio::time::Instant) -> Self {
+    fn starting_at(race: Race, start: tokio::time::Instant, probe: Option<&Arc<WakeProbe>>) -> Self {
         match race {
             Race::Immediate | Race::Reschedule(0) => Delay::Now,
             Race::Reschedule(n) => Delay::Reschedule { remaining: n, current: None },
             Race::After(d) => Delay::Sleep(Box::pin(tokio::time::sleep_until(start + d))),
+            Race::AfterWake => Delay::WaitWake(probe.expect("AfterWake targets have a probe").clone()),
         }
     }
 
     fn poll(&mut self, cx: &mut Context<'_>) -> Poll<()> {
         match self {
             Delay::Now => Poll::Ready(()),
+            Delay::WaitWake(probe) => {
+                // Register first, so a wake between the check and returning is not lost.
+                *probe.waker.lock().unwrap() = Some(cx.waker().clone());
+                if probe.woken.load(Ordering::SeqCst) { Poll::Ready(()) } else { Poll::Pending }
+            }
             Delay::Sleep(sleep) => sleep.as_mut().poll(cx),
             Delay::Reschedule { remaining, current } => loop {
                 if let Some(fut) = current {
@@ -298,6 +318,43 @@ impl Delay {
     }
 }
 
+/// Sits between a target's inner future and the task waker, to see when the
+/// inner future is woken (only for `Race::AfterWake` plans).
+#[derive(Default)]
+struct WakeProbe {
+    /// Woken since the inner future was last polled.
+    woken: AtomicBool,
+    waker: Mutex<Option<Waker>>,
+}
+
+impl WakeProbe {
+    fn for_cut(cut: Option<Cut>) -> Option<Arc<Self>> {
+        matches!(cut, Some(Cut { race: Race::AfterWake, .. })).then(Arc::default)
+    }
+
+    /// Poll `fut` through `probe` if there is one, else directly.
+    fn poll<F: Future>(probe: &Option<Arc<Self>>, fut: Pin<&mut F>, cx: &mut Context<'_>) -> Poll<F::Output> {
+        let Some(probe) = probe else { return fut.poll(cx) };
+        probe.woken.store(false, Ordering::SeqCst);
+        *probe.waker.lock().unwrap() = Some(cx.waker().clone());
+        let waker = Waker::from(probe.clone());
+        fut.poll(&mut Context::from_waker(&waker))
+    }
+}
+
+impl Wake for WakeProbe {
+    fn wake(self: Arc<Self>) {
+        self.wake_by_ref();
+    }
+
+    fn wake_by_ref(self: &Arc<Self>) {
+        self.woken.store(true, Ordering::SeqCst);
+        if let Some(w) = self.waker.lock().unwrap().as_ref() {
+            w.wake_by_ref();
+        }
+    }
+}
+
 enum Phase<F> {
     Running(Pin<Box<F>>),
     /// Lost the race; kept alive (unpolled) until the competitor fires.
@@ -309,6 +366,7 @@ enum Phase<F> {
 pub struct Target<F> {
     core: TargetCore,
     cut: Option<Cut>,
+    probe: Option<Arc<WakeProbe>>,
     phase: Phase<F>,
 }
 
@@ -320,7 +378,7 @@ impl<F: Future> Future for Target<F> {
         let this = self.get_mut();
         loop {
             match &mut this.phase {
-                Phase::Running(inner) => match inner.as_mut().poll(cx) {
+                Phase::Running(inner) => match WakeProbe::poll(&this.probe, inner.as_mut(), cx) {
                     Poll::Ready(v) => {
                         this.phase = Phase::Done;
                         this.core.set(Status::Completed);
@@ -333,7 +391,7 @@ impl<F: Future> Future for Target<F> {
                         let Phase::Running(inner) = std::mem::replace(&mut this.phase, Phase::Done) else {
                             unreachable!()
                         };
-                        let delay = Delay::new(this.cut.expect("losing implies a cut").race);
+                        let delay = Delay::new(this.cut.expect("losing implies a cut").race, this.probe.as_ref());
                         this.phase = Phase::Doomed { _inner: inner, delay };
                     }
                 },
@@ -377,6 +435,7 @@ struct RaceShared {
 pub struct Raced<F> {
     core: TargetCore,
     cut: Option<Cut>,
+    probe: Option<Arc<WakeProbe>>,
     inner: Option<Pin<Box<F>>>,
     shared: Arc<Mutex<RaceShared>>,
 }
@@ -396,7 +455,7 @@ impl<F: Future> Future for Raced<F> {
             }
         }
         let inner = this.inner.as_mut().expect("dropwise::Raced polled after completion");
-        match inner.as_mut().poll(cx) {
+        match WakeProbe::poll(&this.probe, inner.as_mut(), cx) {
             Poll::Ready(v) => {
                 this.inner = None;
                 this.core.set(Status::Completed);
@@ -437,6 +496,7 @@ impl<F> Drop for Raced<F> {
 pub struct Preempt {
     shared: Arc<Mutex<RaceShared>>,
     race: Option<Race>,
+    probe: Option<Arc<WakeProbe>>,
     /// Created once the target is doomed, so the delay is measured from the
     /// planned `Pending`, not from `Ctx::race`.
     delay: Option<Delay>,
@@ -458,7 +518,7 @@ impl Future for Preempt {
             sh.doomed_at.expect("doomed implies doomed_at")
         };
         let race = this.race.expect("doomed implies a cut");
-        let delay = this.delay.get_or_insert_with(|| Delay::starting_at(race, doomed_at));
+        let delay = this.delay.get_or_insert_with(|| Delay::starting_at(race, doomed_at, this.probe.as_ref()));
         if delay.poll(cx).is_pending() {
             return Poll::Pending;
         }

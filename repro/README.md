@@ -21,7 +21,7 @@ are used. Evidence levels (codebook v3, field `reproduced`):
 | materialize#38577 placeholder across await | modelled | before/after fix | no | later `into_result` "panics"; fixed clean |
 | qdrant#9665 `local.take()` then await | modelled | before / fix proposed in #9666 | no | shard slot left `None`; fixed clean |
 | risingwave#3909 dedup leader fetch in-future | modelled | before/after #3911 (spawned fetch) | no | follower stranded; fixed clean |
-| tokio#3825 `Notified` recreated in a `select!` loop | executed | reporter's loop → maintainer's pinned `Notified` (tokio 1.53.1) | no | hangs only when the competitor wins **after** the notification arrived (`Race::After(5s)`); `Immediate`, `Reschedule(1)`, `After(1s)` clean; fix clean |
+| tokio#3825 `Notified` recreated in a `select!` loop | executed | reporter's loop → maintainer's pinned `Notified` (tokio 1.53.1) | no | hangs only when the competitor wins **after** the notification arrived (`Race::After(5s)`); `Immediate`, `Reschedule(1)`, `After(1s)` clean; fix clean. Also found by `Race::AfterWake` with no timing parameter on the reporter's unbiased `select!` |
 | redis-rs#851 `XREAD BLOCK 0` dropped in `select!` | executed | reporter's program (redis-rs 0.23.3, Redis 8 in docker) → finite block | **yes**: the program's own `select!` drops the in-flight XREAD | baseline hangs: the server keeps blocking after the future is dropped; fixed clean (3 plans unrealized: real network) |
 | neon#12345 batch leader cancelled mid-batch | modelled | leader in-future / leader work runs to completion | no | violation only at the mid-batch boundary, not while waiting for the lock |
 
@@ -40,7 +40,11 @@ omicron) cannot be run in isolation; the runnable app-layer cases are reporters'
   cancel on their own.
 - tokio#3825 needs control over *when* the competitor wins: the notification is lost only if
   the competitor wins after it arrived. The race parameter (5 s, against the report's 4 s
-  notification) was chosen after reading the report.
+  notification) was chosen after reading the report, and the `biased;` order used with it
+  (target first) makes that run unrealizable in the literal program. Since 2026-09-24,
+  `Race::AfterWake` (competitor wins once the target is woken, target dropped unpolled)
+  reproduces it with **no timing parameter** on the reporter's `select!` as written
+  (unbiased, tick first); the fix is clean (`Kept`) and `Immediate` misses it.
 - tokio#7979 needs the settle phase: the fd leaks when the kernel completes the open after
   the future is gone.
 - pingora#931 needs the scenario watchdog: without it the exploration itself would hang.

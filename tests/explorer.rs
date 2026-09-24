@@ -85,6 +85,34 @@ fn after_race_counts_from_the_planned_pending() {
     assert!(report.is_clean(), "{report}");
 }
 
+/// `Race::AfterWake` drops the target after its event was delivered to it but
+/// before it consumed it. A value handed to a waiting oneshot receiver is lost;
+/// dropping the receiver earlier (`Immediate`) lets the sender get it back.
+#[test]
+fn after_wake_drops_a_delivered_but_unconsumed_event() {
+    let scenario = |ctx: Ctx| async move {
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            if let Err(o) = tx.send(Obligation::new(7u32, "reply")) {
+                o.abandon("receiver gone before send");
+            }
+        });
+        if let Some(Ok(o)) = ctx.target(rx).await {
+            o.discharge();
+        }
+        Ok(())
+    };
+    let immediate = explore(&immediate_only(), scenario);
+    assert!(immediate.is_clean() && immediate.exhaustive, "{immediate}");
+
+    let config = Config { races: vec![Race::AfterWake], ..Config::default() };
+    let report = explore(&config, scenario);
+    let v: Vec<_> = report.violations().collect();
+    assert_eq!(v.len(), 1, "{report}");
+    assert_eq!(v[0].leaks[0].label, "reply");
+}
+
 /// With `Race::Reschedule(1)`, a producer runs while the target is suspended, so the
 /// post-cancellation code sees a different queue state than with `Immediate`.
 #[test]
