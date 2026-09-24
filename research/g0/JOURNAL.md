@@ -93,3 +93,10 @@
 - 站点：父提交 `src/connector/src/sink/kafka.rs:525`，`KafkaLogSinker::consume_log_and_sink` 调 `futures::future::select(pin!(log_reader.next_item()), pin!(self.future_manager.next_truncate_offset()))`；truncate-offset 分支先完成时丢弃 `next_item` future，造成已弹出的 flushed chunk 丢失。父提交 Cargo.lock Tokio 1.32.0，源码 `select.rs` 不用 IntoFuture 构造（timeout 有 `#[track_caller]`、timeout_at 无），patchable=no；但实际站点本身为 futures::future::select。
 - 预筛：父提交已有 `e2e_test/sink/kafka/create_sink.slt`，创建 Kafka sink 并插入数据，可沿 Kafka sink 运行到该 futures select 和 KvLogStoreReader。KV log-store 的既有单测直接测 reader，不调用 Kafka select。动态候选未运行：主判定因 site kind 已确定不在 Tokio A′ 覆盖内；该 SLT 还需构建 RisingWave 并临时提供 127.0.0.1:29092 Kafka，未启动任何服务。
 - 判定 `ineligible (site_kind_not_covered)`；D2=`no`，因只有静态候选，没有动态 site_hit/branch_pending 证据，不把可达性假定为已命中。D3 `generic_site=no`（Kafka 专用 sink loop），`defect_path_pending=na`。用时约 27 分钟。D1 对目标合并 PR 无状态变更。
+
+## G0-11 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #12479 已合并；merge/fix commit `e5ef22d1c21434a6b4041386727317612d8d4162`，第一父提交 `a838ec6e67692e7dc55e7234d86aeecd7922ddb8`。PR 改 `src/coord/src/coord.rs` 和 `src/dataflow-types/src/client/controller.rs`，未新增/修改测试。
+- 站点：父提交 `src/coord/src/coord.rs:745`，`Coordinator::serve` 中带 `biased;` 的 `tokio::select!`；`self.dataflow_client.recv()` 分支在 internal command 或 external command 获胜时被丢弃。修复把它拆为 select 内 cancel-safe `ready()` 和 handler 中 `process()`。父提交 Tokio 1.17.0；select 宏不经 IntoFuture 构造、timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
+- 预筛：父提交已有 `test/testdrive/coordinator-multiplicities.td`（SQL/SELECT）及 `test/sqllogictest/cluster.slt`（建集群、物化视图和查询），可沿 coordinator 消息环到达此 select。站点为共享 Coordinator 主消息循环，修复函数 Controller::recv 在别处，D3 `generic_site=yes`。D2=`na`。
+- 判定 `ineligible (tokio_not_patchable)`。候选未动态运行：Tokio 1.17.0 的 IntoFuture 条件是确定否定；因此无动态命中数，D3 的 defect_path_pending 留空，不把静态调用链当作动态证据。未启动服务。用时约 24 分钟。D1 对已合并修复 PR 无状态变更。
