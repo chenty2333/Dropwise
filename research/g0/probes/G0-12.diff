@@ -1,0 +1,55 @@
+--- a/lib/storage/src/content_manager/consensus_manager.rs
++++ b/lib/storage/src/content_manager/consensus_manager.rs
+@@ -2,7 +2,10 @@
+ use std::collections::{HashMap, HashSet};
+ use std::error::Error;
+ use std::fmt::Display;
+-use std::future::Future;
++use std::future::{Future, poll_fn};
++use std::pin::Pin;
++use std::sync::atomic::{AtomicUsize, Ordering};
++use std::task::Poll;
+ use std::ops::Deref;
+ use std::path::Path;
+ use std::str;
+@@ -43,6 +46,10 @@
+     PeerInfo, PeerMetadataById, RaftInfo,
+ };
+ 
++// G0 temporary counters for the await_receiver timeout site.
++pub(crate) static G0_AWAIT_RECEIVER_SITE_HIT: AtomicUsize = AtomicUsize::new(0);
++pub(crate) static G0_AWAIT_RECEIVER_BRANCH_PENDING: AtomicUsize = AtomicUsize::new(0);
++
+ pub mod prelude {
+     use crate::content_manager::toc::TableOfContent;
+ 
+@@ -760,9 +767,26 @@
+         wait_timeout: Duration,
+         operation: &ConsensusOperations,
+     ) -> Result<bool, StorageError> {
+-        let timeout_res = tokio::time::timeout(wait_timeout, receiver.recv())
+-            .await
+-            .map_err(|_: Elapsed| {
++        G0_AWAIT_RECEIVER_SITE_HIT.fetch_add(1, Ordering::SeqCst);
++        let mut recv_future = Box::pin(receiver.recv());
++        let mut pending_recorded = false;
++        let tracked_recv = poll_fn(|cx| match Pin::as_mut(&mut recv_future).poll(cx) {
++            Poll::Pending => {
++                if !pending_recorded {
++                    G0_AWAIT_RECEIVER_BRANCH_PENDING.fetch_add(1, Ordering::SeqCst);
++                    pending_recorded = true;
++                }
++                Poll::Pending
++            }
++            ready => ready,
++        });
++        let timeout_result = tokio::time::timeout(wait_timeout, tracked_recv).await;
++        eprintln!(
++            "G0_PROBE await_receiver site_hit={} branch_pending={}",
++            G0_AWAIT_RECEIVER_SITE_HIT.load(Ordering::SeqCst),
++            G0_AWAIT_RECEIVER_BRANCH_PENDING.load(Ordering::SeqCst),
++        );
++        let timeout_res = timeout_result.map_err(|_: Elapsed| {
+                 self.on_consensus_op_apply.lock().remove(operation);
+                 StorageError::service_error(format!(
+                     "Waiting for consensus operation commit failed. Timeout set at: {} seconds",

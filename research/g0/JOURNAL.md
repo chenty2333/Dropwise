@@ -100,3 +100,12 @@
 - 站点：父提交 `src/coord/src/coord.rs:745`，`Coordinator::serve` 中带 `biased;` 的 `tokio::select!`；`self.dataflow_client.recv()` 分支在 internal command 或 external command 获胜时被丢弃。修复把它拆为 select 内 cancel-safe `ready()` 和 handler 中 `process()`。父提交 Tokio 1.17.0；select 宏不经 IntoFuture 构造、timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
 - 预筛：父提交已有 `test/testdrive/coordinator-multiplicities.td`（SQL/SELECT）及 `test/sqllogictest/cluster.slt`（建集群、物化视图和查询），可沿 coordinator 消息环到达此 select。站点为共享 Coordinator 主消息循环，修复函数 Controller::recv 在别处，D3 `generic_site=yes`。D2=`na`。
 - 判定 `ineligible (tokio_not_patchable)`。候选未动态运行：Tokio 1.17.0 的 IntoFuture 条件是确定否定；因此无动态命中数，D3 的 defect_path_pending 留空，不把静态调用链当作动态证据。未启动服务。用时约 24 分钟。D1 对已合并修复 PR 无状态变更。
+
+## G0-12 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #10338 已合并；merge/fix commit `7e7f19fc4161ebfd64eadcf4816cfd4ebdef460a`，第一父提交 `c5f2ba45bd52496d9db90881c92186060b603716`。PR 在 `lib/storage/src/content_manager/consensus_manager.rs` 修改 timeout/awaiter 清理，并在同文件新增 6 个并发/超时回归测试；这些新增测试不计入候选。PR 还处理 `await_for_multiple_operations` 的第二个 timeout 和未 poll 就丢弃的 awaiter guard。
+- 站点：父提交该文件第 763 行，`ConsensusManager::await_receiver` 中 `tokio::time::timeout(wait_timeout, receiver.recv())`。超时丢弃 receiver 后旧代码直接移除共享操作 map sender，导致其它尚未完成的 waiters 收到 sender dropped。父提交 Cargo.lock Tokio 1.53.1；select 分支经 IntoFuture 构造，timeout 和 timeout_at 都有 `#[track_caller]`，patchable=yes。
+- 预筛：既有 `tests/consensus_tests/test_cluster_operation_coalescing.py::test_cluster_operation_coalescing` 启动三节点后并发循环删除同一 collection；调用链 API -> Dispatcher -> propose_consensus_op_with_await -> await_receiver。它是该超时站点的候选。
+- 动态：在临时父提交源码上加 timeout/site 计数和内层 receiver 首次 Pending 计数，构建成功后该候选通过。探针输出各进程局部累计值，至少一个 peer 的计数达到 `site_hit=88`、`branch_pending=88`；CSV 记录可观测最大值而非跨 peer 求和。探针 diff：`probes/G0-12.diff`。无外部服务或 Docker。
+- 环境偏差：初次构建缺少 protoc，提供 scratch-only protoc 31.1 后构建成功。pytest 的既有 `tmp_path` 默认把少量 peer 数据放在 `/tmp/pytest-of-ava/...`，违反了用户指定的工作目录限制；测试完成后立即删除该测试目录，检查时 `/tmp` 可用空间仍为 2.8 GiB，构建/target 未放入 `/tmp`。该路径偏差会在 RESULTS.md 透明列出。target、protoc、临时父快照和目标源码改动均已清理。
+- 判定：`eligible`，因此 `eligible_pending` 也满足。D2=`na`；D3 `generic_site=no`，站点和修复清理代码同处 awaiter helper，`defect_path_pending=na`。D1 无 status 变化。用时约 20 分钟。
