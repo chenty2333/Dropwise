@@ -43,3 +43,10 @@
 - 预筛：父提交已有 `#[tokio::test] test_serial_console_stream_proxying`，直接调用该方法并在两个方向收发 websocket 数据；PR 修改了该既有测试的日志初始化，按父提交版本仍是候选。其它同名 serial-console 测试不调用 Nexus websocket proxy。
 - 动态预算内尝试：首次因 Cargo Git SSL 传输错误中断；改用 Git CLI 后依赖可取回。依父提交 `rust-toolchain.toml` 使用 Rust 1.70.0；构建随后因 `dpd-admin-client` 所需的 `out/downloads/dpd-admin-38735f1f1c8101121553e271e9da0d7a38485687.json` 缺失而失败，官方仓库脚本下载该固定版本时返回 HTTP 404。未运行候选测试；没有 site_hit/branch_pending 动态证据。状态仍为 `ineligible (tokio_not_patchable)`，这是确定的独立否定条件；build_ok=no 已另记，未把静态候选描述为动态命中。
 - D2=`na`、D3 `generic_site=no`/defect_path_pending=`na`。无外部服务。target 已清理；探针 diff 仅在 `probes/G0-03.diff`。用时约 85 分钟，未偏离冻结规则。
+
+## G0-04 — 完成（2026-09-24）
+
+- 修复：目标 PR #12714 本身是唯一已合并修复 PR；merge commit `9834520fc2e2c918f16383878f38ab0eb4803c40` 第一父提交 `87495221ccf6b242b07a247f244c3c06be2c04c7`。PR 仅修改 `src/storage/src/source/mod.rs`，没有新增/修改测试文件。
+- 站点：父提交 `src/storage/src/source/mod.rs:883` 的 `create_raw_source_simple` 中无 biased 的 `tokio::select!`；竞争分支是 `timestamper.tick()` 与 pin 后的 source future。Tokio 1.18.2 select macro 不经 `IntoFuture::into_future`，故 patchable=no。
+- 静态预筛：在父提交受检的 source/test 路径中，`create_raw_source_simple` 只有声明/文档引用，没有调用点；也未找到 `SimpleSource` 实现或调用此站点的既有测试函数，故无候选，`ineligible (no_preexisting_test)`。按冻结规则未进入动态构建/测试。
+- D2=`na`；D3 `generic_site=no`，defect_path_pending=`na`。用时 20 分钟；未偏离计划。
