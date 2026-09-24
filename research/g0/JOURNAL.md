@@ -21,3 +21,10 @@
 - D3：通用共享站点但修复函数在别处时，临时加入修复函数入口/出口活动计数及 Drop 守卫；仅当活动计数大于 0 时计入 `defect_path_pending`。eligibility.csv 新增 `generic_site`、`defect_path_pending`。generic_site=yes 的主 eligible 与 eligible_pending 均须 defect_path_pending>0；generic_site=no 沿用原门槛。G0-01 必须在 lance_dataset/pipeline.rs 修复所改函数加探针后重跑原 5 个候选测试；D2 alt 计数亦须满足 defect_path_pending>0。
 
 除上述明确调整外，冻结计划的总体、预算、原门槛其余部分和禁止事项均不变。提交本记录后再开始执行。
+
+## G0-02 D1 复核 — 完成（2026-09-24）
+
+- D1 核验通过：fix commit `6dcc236a0fcbc6cc22fb48246641eb879899b790` 位于默认分支 `origin/main` 历史中；其唯一第一父提交是 `b646bfb87cc28aebe576f4c2f0cdfda85383bf6a`。diff 将 `read_response_header` 从 `resp_fut.take()` 后直接 await 改为经 `poll_response_header`/`poll_fn` 驱动，父提交保留原缺陷代码。修复 inline 新增两个测试，但均不计入既有测试。
+- 站点与补查：父提交 `pingora-core/src/protocols/http/v2/client.rs:199`，`Http2Session::read_response_header` 调用的是 `pingora_timeout::timeout` 自定义包装，非直接 Tokio timeout。父提交无 Cargo.lock（manifest 仅 `tokio = "1"`），故按计划 Tokio 版本及 patchable 记 unknown。父提交既有本地候选 `pingora-proxy/tests/test_upstream.rs::test_h2_upstream_no_end_stream_read_timeout` 设定 4 秒 read_timeout，经 `proxy_h2` 到该 timeout；另有使用公网 1.1.1.1 的 `test_https_check`，按外部服务限制未运行。
+- 动态：在父提交临时工作树运行本地 H2 候选，通过；`site_hit=1`、内层 future `branch_pending=1`。测试需要的 OpenResty 通过临时 Docker 容器提供，仅映射到 127.0.0.1:8000/8001/8443–8446，已停止。构建在临时无锁解析下选到 Tokio 1.53.1；不将其冒充父提交锁定版本。临时 target 已删除。
+- 调整前 status=`unknown`（no_unique_fix）；D1 后 status=`ineligible`（site_kind_not_covered）。D2 为 `na`，D3 `generic_site=no`，故 defect_path_pending 不适用。未偏离已登记规则。

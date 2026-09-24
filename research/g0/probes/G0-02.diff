@@ -1,0 +1,35 @@
+diff --git a/pingora-core/src/protocols/http/v2/client.rs b/pingora-core/src/protocols/http/v2/client.rs
+index e043971..5708e45 100644
+--- a/pingora-core/src/protocols/http/v2/client.rs
++++ b/pingora-core/src/protocols/http/v2/client.rs
+@@ -191,15 +191,27 @@ impl Http2Session {
+             panic!("H2 response header is already read")
+         }
+ 
+-        let Some(resp_fut) = self.resp_fut.take() else {
++        let Some(mut resp_fut) = self.resp_fut.take() else {
+             panic!("Try to take response header, but it is already taken")
+         };
+ 
+         let res = match self.read_timeout {
+-            Some(t) => timeout(t, resp_fut)
++            Some(t) => {
++                eprintln!("G0_SITE_HIT");
++                timeout(
++                    t,
++                    std::future::poll_fn(|cx| {
++                        let poll = resp_fut.poll_unpin(cx);
++                        if poll.is_pending() {
++                            eprintln!("G0_BRANCH_PENDING");
++                        }
++                        poll
++                    }),
++                )
+                 .await
+                 .map_err(|_| Error::explain(ReadTimedout, "while reading h2 response header"))
+-                .map_err(|e| self.handle_err(e))?,
++                .map_err(|e| self.handle_err(e))?
++            }
+             None => resp_fut.await,
+         };
+         let (resp, body_reader) = res.map_err(handle_read_header_error)?.into_parts();
