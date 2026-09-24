@@ -123,3 +123,9 @@
 - 修复定位：目标 PR #2572 已合并；merge/fix commit `32bb0f3be432676ca49473e75c7eb00db32a3673`，第一父提交 `8e4e586cece3968700a13562058f3a5c152c1805`。PR 仅改 `iroh-gossip/src/net.rs`，没有测试文件改动。
 - 站点：父提交同文件第 656 行，`connection_loop` 中带 `biased;` 的 `tokio::select!`；`read_message(&mut recv, ...)` 在 `send_rx.recv()` 先完成时被丢弃，即使它已消费部分帧。PR 把 select 改为持久 send/receive 两个循环的 `tokio::try_join!`。父提交 Tokio 1.38.1；宏直接存放分支表达式、不经 IntoFuture，timeout 有 `#[track_caller]`、timeout_at 无，patchable=no。
 - 预筛：父提交已有 `iroh-gossip/src/net.rs::test::gossip_net_smoke`，启动三个端点并加入 topic/广播，调用链到 `endpoint_loop -> Gossip::handle_connection -> connection_loop -> select!`。但宏源码已构成确定 patchability 否定，未进行动态构建/运行。D2=`na`、generic_site=no（连接循环专用于 gossip 且修复直接改同一函数）、defect_path_pending=`na`。状态 `ineligible (tokio_not_patchable)`；无外部 Docker/服务。用时约 16 分钟，D1 不改变状态。
+
+## G0-15 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #17902 已合并；merge/fix commit `ebeab9379e51fd787c6756273d9fbfc812e1ce57`，第一父提交 `11d99804b86b2ac3ab694c9f2368ab1681123962`。PR 只改 `src/common/storage/src/operator.rs`，未新增/修改测试。
+- 站点：Databend 在父提交 `src/common/storage/src/operator.rs:141` 构造 OpenDAL `TimeoutLayer`；其依赖版本为 OpenDAL 0.53.1，内部 `TimeoutAccessor::timeout` 在 `src/layers/timeout.rs:196` 调 `tokio::time::timeout`（IO timeout 也有对应路径）。超时会丢弃 OpenDAL 的底层存储操作 future；PR 将此 layer 移到其它 storage layers 之前，以保护重试/运行时层次的可重入性。该表达式在依赖内部，不是 Databend 自己的 select/timeout 站点，因此 `site_kind=other`。父提交 Tokio 1.44.2 的宏使用 IntoFuture，timeout 有 `#[track_caller]`、timeout_at 无，底层 Tokio 函数 patchable=yes，但主站点类别不覆盖。
+- 预筛：父提交已有 `src/query/service/tests/it/storages/fuse/operations/commit.rs::test_fuse_occ_retry` 和 `src/query/service/tests/it/storages/fuse/table.rs::test_fuse_table_normal_case`，经 Fuse table 存储访问可到 Databend `build_operator` 并进入 OpenDAL layer。没有动态运行：由依赖内部 timeout 站点类别确定不满足主门槛。D2=no；D3 generic_site=yes（共享 OpenDAL timeout layer，修复位于 Databend operator builder），路径计数未测所以 defect_path_pending 留空。无外部服务。用时约 25 分钟。D1 对合并 PR 无状态变更。
