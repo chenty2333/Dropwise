@@ -67,6 +67,7 @@ pub struct Settle {
     /// Wall-clock bound on waiting for `tokio_time` to pass. Blocking-pool work
     /// that never finishes keeps paused time from advancing; when the watchdog
     /// fires, the run is reported as not settled instead of hanging.
+    /// Like [`Config::scenario_timeout`], it is enforced in-process.
     pub watchdog: Duration,
 }
 
@@ -93,6 +94,12 @@ pub struct Config {
     /// Wall-clock bound on one scenario run. A scenario that does not finish is
     /// reported as a liveness violation (and dropped) instead of hanging the
     /// exploration; stuck waiters are often exactly the defect being looked for.
+    ///
+    /// The bound is enforced in-process: it fires only when the scenario yields
+    /// back to the runtime. A single `poll` that never returns (a busy loop, a
+    /// blocking call on a runtime thread) is not interrupted, and dropping the
+    /// runtime afterwards may still wait for blocking-pool work. For batch runs,
+    /// also bound each test process from outside.
     pub scenario_timeout: Duration,
 }
 
@@ -193,7 +200,8 @@ impl Ctx {
         let raced = Raced { core, cut, inner: Some(Box::pin(fut)), shared: shared.clone() };
         let preempt = Preempt {
             shared,
-            delay: cut.map(|c| Delay::new(c.race)),
+            race: cut.map(|c| c.race),
+            delay: None,
             state: self.state.clone(),
             index: raced.core.index,
         };
@@ -256,11 +264,16 @@ enum Delay {
 }
 
 impl Delay {
+    /// Call when the target returns the planned `Pending`: `After` counts from here.
     fn new(race: Race) -> Self {
+        Self::starting_at(race, tokio::time::Instant::now())
+    }
+
+    fn starting_at(race: Race, start: tokio::time::Instant) -> Self {
         match race {
             Race::Immediate | Race::Reschedule(0) => Delay::Now,
             Race::Reschedule(n) => Delay::Reschedule { remaining: n, current: None },
-            Race::After(d) => Delay::Sleep(Box::pin(tokio::time::sleep(d))),
+            Race::After(d) => Delay::Sleep(Box::pin(tokio::time::sleep_until(start + d))),
         }
     }
 
@@ -352,6 +365,8 @@ impl<F> Drop for Target<F> {
 #[derive(Default)]
 struct RaceShared {
     doomed: bool,
+    /// When the target returned the planned `Pending`; `Race::After` counts from here.
+    doomed_at: Option<tokio::time::Instant>,
     fired: bool,
     target_waker: Option<Waker>,
     competitor_waker: Option<Waker>,
@@ -396,6 +411,7 @@ impl<F: Future> Future for Raced<F> {
                 } else if this.core.pending(this.cut) {
                     let mut sh = this.shared.lock().unwrap();
                     sh.doomed = true;
+                    sh.doomed_at = Some(tokio::time::Instant::now());
                     sh.target_waker = Some(cx.waker().clone());
                     if let Some(w) = sh.competitor_waker.take() {
                         w.wake();
@@ -420,6 +436,9 @@ impl<F> Drop for Raced<F> {
 /// across loop iterations with `&mut preempt`.
 pub struct Preempt {
     shared: Arc<Mutex<RaceShared>>,
+    race: Option<Race>,
+    /// Created once the target is doomed, so the delay is measured from the
+    /// planned `Pending`, not from `Ctx::race`.
     delay: Option<Delay>,
     state: Arc<Mutex<RunState>>,
     index: usize,
@@ -430,14 +449,16 @@ impl Future for Preempt {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
         let this = self.get_mut();
-        {
+        let doomed_at = {
             let mut sh = this.shared.lock().unwrap();
             if !sh.doomed || sh.fired {
                 sh.competitor_waker = Some(cx.waker().clone());
                 return Poll::Pending;
             }
-        }
-        let delay = this.delay.as_mut().expect("doomed implies a cut");
+            sh.doomed_at.expect("doomed implies doomed_at")
+        };
+        let race = this.race.expect("doomed implies a cut");
+        let delay = this.delay.get_or_insert_with(|| Delay::starting_at(race, doomed_at));
         if delay.poll(cx).is_pending() {
             return Poll::Pending;
         }

@@ -61,6 +61,30 @@ fn after_race_lets_the_system_advance() {
     assert_eq!(report.trials.len(), 1);
 }
 
+/// `Race::After` counts from the planned `Pending` for `race` as for `target`,
+/// even when that `Pending` comes long after `Ctx::race` was called.
+#[test]
+fn after_race_counts_from_the_planned_pending() {
+    let d = Duration::from_secs(1);
+    let config = Config { races: vec![Race::After(d)], ..Config::default() };
+    let report = explore(&config, |ctx: Ctx| async move {
+        let start = Instant::now();
+        let (op, mut preempt) = ctx.race(async {
+            tokio::time::sleep(Duration::from_secs(3)).await; // Pending #1 at t=0
+            tokio::time::sleep(Duration::from_secs(10)).await; // Pending #2 at t=3s
+        });
+        tokio::select! {
+            _ = op => Ok(()),
+            _ = &mut preempt => match start.elapsed() {
+                t if t == d || t == Duration::from_secs(3) + d => Ok(()),
+                t => Err(format!("competitor fired at {t:?}")),
+            },
+        }
+    });
+    assert!(report.exhaustive && report.trials.len() == 2, "{report}");
+    assert!(report.is_clean(), "{report}");
+}
+
 /// With `Race::Reschedule(1)`, a producer runs while the target is suspended, so the
 /// post-cancellation code sees a different queue state than with `Immediate`.
 #[test]
