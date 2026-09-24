@@ -73,3 +73,9 @@
 - 站点：父提交 `lib/collection/src/collection/collection_ops.rs:377`，`Collection::recreate_optimizers` 的 `future::try_join_all(updates)`。其中一个 shard 更新返回 Err 时，try_join_all 会立即返回并丢弃其它正在执行的 `ReplicaSet::on_optimizer_config_update` futures。PR diff 把它替换为 `join_all`；这是 futures-util 组合子而非 Tokio `select!`/timeout。父提交 Tokio 1.52.3；对应 select macro 通过 IntoFuture 构造、timeout 有 `#[track_caller]`，Tokio patchable=yes，但本缺陷站点不受 A′ 覆盖。
 - 预筛候选：两组 OpenAPI collection update 测试修改 HNSW/optimizer/vector 核心配置，调用链经 collection metadata 更新到后台 optimizer recreation 和该 try_join_all；另有 `test_dirty_shard_survives_update_collection` 经 UpdateCollection 重放到相同路径。后者显式单 shard；OpenAPI fixture 默认 `default_shard_number()=1`。父提交没有现成的跨 shard「一支失败、另一 Pending」测试；PR 新回归测试专门添加了该场景。
 - 判定：`ineligible (site_kind_not_covered)`。D2=`no`：既有候选没有缺陷所需的被丢弃 Pending sibling（均为单 shard/default 单 shard）；新增的跨 shard测试按规则不计。D3 `generic_site=no`，因为 site 与修复修改的函数相同，`defect_path_pending=na`。因主门槛有确定否定证据，未构建运行动态候选；无外部服务。用时约 22 分钟。D1 对本已合并 PR 的规则无状态变更。
+
+## G0-08 — 完成（2026-09-24）
+
+- 修复定位：issue #4040 由已合并 PR #4042 修复。merge commit `5b17a69ebcf969471c1a19b25ed2cb81299d1be6`，第一父提交 `7211ec25eff2ea6ee783817fee2a221d4eb2ed03`。PR 改 `src/client/dispatch.rs`、`src/proto/h2/client.rs`、`src/proto/h2/mod.rs`，并修改 `tests/client.rs` 新增回归测试 `h2_pipe_task_cancelled_on_response_future_drop`；新增测试不计入既有测试。
+- 站点：父提交 `src/client/dispatch.rs:360`，`SendWhen::poll` 中 `Callback::poll_canceled(cx)` 的手动轮询分支。调用者丢弃 response future 后，该分支让 send task 结束但未通知 H2 pipe task，pipe task 继续持有 SendStream。外部 caller timeout 是缺陷的触发方式；Hyper 代码中没有对应 Tokio `select!`/timeout 表达式，站点类型记 `other`。父提交没有 Cargo.lock（manifest 仅 `tokio = "1"`），版本/patchable=unknown。
+- 预筛：父提交的 `tests/client.rs` 没有既有测试在请求体仍 Pending 时取消/超时丢弃 HTTP/2 response future。现有 keep-alive timeout 测试不是该取消路径；唯一精确回归测试由 PR 新增。无候选，`ineligible (no_preexisting_test)`；未构建/运行，无外部服务。D2=no；D3 generic_site=no（触发取消的是仓库外 caller，Hyper 内无共享 Tokio 站点需要关联）。用时约 18 分钟。
