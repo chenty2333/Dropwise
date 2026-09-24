@@ -14,3 +14,23 @@
 - 2026-09-24T02:52:10Z — Q2 抽样 71/71 逐条判读完成并先于确认阶段提交。归并候选池 N=234，类别：真实风险 16、已防护 34、取消不可达 15、无法判断 6（主精确率分母将未知保守计为非 TP）。实际审阅样本率 16/71=22.5%；按冻结分层权重 `ΣN_r*TP_r/n_r / ΣN_r` 得总体精确率估计 63.4/234=27.1%；剔除未知的条件样本率为 16/65=24.6%，不作为主值。每仓库 N/n/类别和源码理由均在 `precision-scan.csv`、`precision-review.csv`；未抽中的候选保留函数级命中位置于 `precision-hits.csv`。
 - 2026-09-24T03:03:00Z — Q2 审阅 71/71 完成并提交（`0adb46e`），真实风险候选 16 个。开始 Q3：对每个候选先评估从冻结应用快照直接隔离执行目标函数的可行性；大型系统若无法在本阶段预算内直连，则严格按计划做 `modelled` Dropwise 控制流模型，保留原始函数路径/行号与行为差异。不会改目标 `src/`，也不会把模型结果称为新缺陷。
 - 时间校正（2026-09-24T03:04:11Z）：上一条固定写入的 `03:03:00Z` 是录入时的秒数错误；实际追加 Q3 开始记录时命令行 UTC 为 `03:03:55Z`。阶段顺序未受影响：先完成 Q2 并提交，再追加此 Q3 记录，后开始确认准备。
+- 2026-09-24T03:13:30Z — Q3 Dropwise 确认测试：提交前新建 。冻结的 16 个 Q2 真实风险候选均有独立 Dropwise 场景；
+running 16 tests
+test databend_ndv_state_replace ... ok
+test databend_rows_input_take ... ok
+test greptimedb_parquet_encoder_take ... ok
+test databend_runtime_writer_take ... ok
+test greptimedb_range_read_cursor ... ok
+test neon_image_layer_counters ... ok
+test databend_segment_state_replace ... ok
+test neon_image_layer_iterator_tail ... ok
+test qdrant_optimizer_trigger ... ok
+test greptimedb_row_group_pop ... ok
+test pingora_h2_stream_slot ... ok
+test shotover_cassandra_handshake_flag ... ok
+test risingwave_topn_partial_refill ... ok
+test neon_scram_state_replace ... ok
+test risingwave_concat_iterator_take ... ok
+test risingwave_fast_concat_iterator_take ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s 16/16 通过，所有模型在无取消基线通过，并在计划注入的首个 Pending 取消后触发各自不变量。测试工程第一次编译暴露测试本身问题（嵌套  与 Dropwise 自建 runtime 冲突、两个枚举断言缺 Debug），修正后通过；不是目标程序缺陷。Neon SCRAM 另用临时 Dropwise harness 通过  直接编译固定 commit  中的真实 （按该提交 Cargo.lock 的 base64/hmac/rand/sha2/stringprep/tokio 版本），用 2048 次迭代触发其真实  yield；Dropwise 于第一个 Pending 丢弃真实 ，同对象重试得到 。该检查是隔离源码执行，不是 Neon 应用集成测试；无目标仓库源码改动。其余 15 个均为依据原函数行号的缩减模型，不是目标行为证据；没有执行修复前父提交比较，故当前零“新缺陷候选”。
