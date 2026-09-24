@@ -1,0 +1,11 @@
+[package]
+name = "pingora-931-upstream-test"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# Standalone reproduction for cloudflare/pingora#931, with no dependency on Dropwise.
+[dependencies]
+async-trait = "0.1"
+pingora-memory-cache = "=0.9.0"
+tokio = { version = "1", features = ["macros", "rt", "time"] }

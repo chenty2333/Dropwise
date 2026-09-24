@@ -48,7 +48,11 @@ omicron) cannot be run in isolation; the runnable app-layer cases are reporters'
   Dropwise reported torn reads, because `read_exact` is not cancel safe either (as the
   maintainer had said). The committed fixed variant keeps both operations alive.
 - The pingora#931 defect is present in the latest release (0.9.0, 2026-09-09); the fix PR
-  is still open.
+  is still open. `pingora-931/upstream-test/` is a standalone reproduction without Dropwise
+  (plain tokio, one test): it fails on 0.9.0 and passes on the #948 head. The #948 branch is
+  based on 0.8.0, so the Dropwise pair compares 0.9.0 with a 0.8.0-based fix; this is not a
+  confound here because `pingora-memory-cache/src/read_through.rs` is unchanged between the
+  0.8.0 and 0.9.0 tags, and #948 is mergeable into main (checked 2026-09-24).
 
 ## Limits
 
