@@ -14,8 +14,8 @@ are used. Evidence levels (codebook v3, field `reproduced`):
 | Case | Level | Buggy → fixed | Found without injection? | Result |
 |---|---|---|---|---|
 | tokio#6877 `write_all`/`read_exact` in `select!` | executed | reporter's loop → both ops kept alive (tokio 1.40.0) | **yes**: the program's own `select!` already cancels `write_all` | baseline fails; fixed clean |
-| hyper#3995 dispatcher dropped mid-body | executed | hyper 1.9.0 → 1.10.0 | no | 4/8 plans: body ends `Ok` after 5/10 bytes; fixed clean |
-| tokio#7979 cancelled io_uring `open` leaks fd | executed | tokio 1.51.0 → 1.52.0 | no | 1 fd leaked per plan, visible **only after settling**; fixed clean |
+| hyper#3995 dispatcher dropped mid-body | executed | hyper 1.9.0 → 1.10.0; confirmed at 156a6f6 → b7a679b (fix commit) | no | 4/8 plans: body ends `Ok` after 5/10 bytes; fixed clean |
+| tokio#7979 cancelled io_uring `open` leaks fd | executed | tokio 1.51.0 → 1.52.0; confirmed at ad8c59a → c791213 (fix commit) | no | 1 fd leaked per plan, visible **only after settling**; fixed clean |
 | pingora#931 RTCache lock kept after cancelled lookup | executed | pingora-memory-cache 0.9.0 (latest release) → PR #948 head | no | 2/2 plans: later caller hangs (liveness, via scenario watchdog); fix clean |
 | databend#20020 flag set before awaited finish | modelled | shape before/after #20021 | no | violation at the on_finish boundary; fixed clean |
 | materialize#38577 placeholder across await | modelled | before/after fix | no | later `into_result` "panics"; fixed clean |
@@ -51,8 +51,10 @@ omicron) cannot be run in isolation; the runnable app-layer cases are reporters'
   is still open. `pingora-931/upstream-test/` is a standalone reproduction without Dropwise
   (plain tokio, one test): it fails on 0.9.0 and passes on the #948 head. The #948 branch is
   based on 0.8.0, so the Dropwise pair compares 0.9.0 with a 0.8.0-based fix; this is not a
-  confound here because `pingora-memory-cache/src/read_through.rs` is unchanged between the
-  0.8.0 and 0.9.0 tags, and #948 is mergeable into main (checked 2026-09-24).
+  confound here: the crates.io sources of pingora-memory-cache 0.8.0 and 0.9.0 are identical
+  (all of `src/`, compared file by file), the #948 head differs from them only by the PR's own
+  diff (138 changed lines in `read_through.rs`), and #948 is mergeable into main (checked
+  2026-09-24).
 
 ## Limits
 

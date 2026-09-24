@@ -24,4 +24,7 @@ run pingora-931
 run modelled
 run tokio-3825
 run redis-851
+# Release pairs above can include unrelated commits; confirm at the fixing commit and parent.
+out=$(./commit_level_check.sh); echo "$out"
+echo "$out" | grep -q FAIL && status=1
 exit $status
