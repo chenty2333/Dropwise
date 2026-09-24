@@ -1,0 +1,56 @@
+diff --git a/src/query/service/src/pipelines/executor/processor_async_task.rs b/src/query/service/src/pipelines/executor/processor_async_task.rs
+index fa69d8c..2f25237 100644
+--- a/src/query/service/src/pipelines/executor/processor_async_task.rs
++++ b/src/query/service/src/pipelines/executor/processor_async_task.rs
+@@ -13,8 +13,11 @@
+ // limitations under the License.
+ 
+ use std::future::Future;
++use std::future::poll_fn;
+ use std::intrinsics::assume;
+ use std::pin::Pin;
++use std::sync::atomic::AtomicUsize;
++use std::sync::atomic::Ordering;
+ use std::sync::Arc;
+ use std::task::Context;
+ use std::task::Poll;
+@@ -44,6 +47,17 @@ use crate::pipelines::executor::WorkersCondvar;
+ 
+ const TARGET_DUMP_GRAPH: &str = "databend::log::dump_graph";
+ 
++struct G0ProbeGuard(Arc<AtomicUsize>);
++
++impl Drop for G0ProbeGuard {
++    fn drop(&mut self) {
++        eprintln!(
++            "G0_PROBE site_hit=1 branch_pending={}",
++            self.0.load(Ordering::Relaxed)
++        );
++    }
++}
++
+ pub enum ExecutorTasksQueue {
+     QueryExecutorTasksQueue(Arc<QueryExecutorTasksQueue>),
+     QueriesExecutorTasksQueue(Arc<QueriesExecutorTasksQueue>),
+@@ -114,7 +128,20 @@ impl ProcessorAsyncTask {
+         };
+ 
+         let inner = async move {
+-            let left = Box::pin(inner);
++            let branch_pending = Arc::new(AtomicUsize::new(0));
++            let _probe_guard = G0ProbeGuard(branch_pending.clone());
++            let mut inner = Box::pin(inner);
++            let branch_pending_counter = branch_pending.clone();
++            let left = Box::pin(async move {
++                poll_fn(|cx| {
++                    let poll = inner.as_mut().poll(cx);
++                    if poll.is_pending() {
++                        branch_pending_counter.fetch_add(1, Ordering::Relaxed);
++                    }
++                    poll
++                })
++                .await
++            });
+             let right = Box::pin(finished_notify.notified());
+             match futures::future::select(left, right).await {
+                 Either::Left((res, _)) => res,
