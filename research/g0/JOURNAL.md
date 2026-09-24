@@ -79,3 +79,10 @@
 - 修复定位：issue #4040 由已合并 PR #4042 修复。merge commit `5b17a69ebcf969471c1a19b25ed2cb81299d1be6`，第一父提交 `7211ec25eff2ea6ee783817fee2a221d4eb2ed03`。PR 改 `src/client/dispatch.rs`、`src/proto/h2/client.rs`、`src/proto/h2/mod.rs`，并修改 `tests/client.rs` 新增回归测试 `h2_pipe_task_cancelled_on_response_future_drop`；新增测试不计入既有测试。
 - 站点：父提交 `src/client/dispatch.rs:360`，`SendWhen::poll` 中 `Callback::poll_canceled(cx)` 的手动轮询分支。调用者丢弃 response future 后，该分支让 send task 结束但未通知 H2 pipe task，pipe task 继续持有 SendStream。外部 caller timeout 是缺陷的触发方式；Hyper 代码中没有对应 Tokio `select!`/timeout 表达式，站点类型记 `other`。父提交没有 Cargo.lock（manifest 仅 `tokio = "1"`），版本/patchable=unknown。
 - 预筛：父提交的 `tests/client.rs` 没有既有测试在请求体仍 Pending 时取消/超时丢弃 HTTP/2 response future。现有 keep-alive timeout 测试不是该取消路径；唯一精确回归测试由 PR 新增。无候选，`ineligible (no_preexisting_test)`；未构建/运行，无外部服务。D2=no；D3 generic_site=no（触发取消的是仓库外 caller，Hyper 内无共享 Tokio 站点需要关联）。用时约 18 分钟。
+
+## G0-09 — 完成（2026-09-24）
+
+- 修复定位：目标 PR #28816 本身是已合并修复；merge commit `5f02d4fe4120fc97ed45d31d88b5c6f8839935bb`，第一父提交 `62875cc04674971788bdf5141eed69a22ef96375`。PR 改 compute/service 源文件，没有测试文件改动。
+- 站点：父提交 `src/compute-client/src/controller/replica.rs:241`，`ReplicaTask::run_message_loop` 无 `biased;` 的 `tokio::select!`；`response = client.recv()`（`SequentialHydration::recv`）分支在 `command_rx.recv()` 分支获胜时会被丢弃。修复将 `SequentialHydration::observe_response` 的异步发送改为同步 channel 通知，以保证 recv cancel-safe。父提交 Cargo.lock Tokio 1.38.0；其 select.rs 直接收集分支表达式，不经 `IntoFuture::into_future`，timeout 有 `#[track_caller]`、timeout_at 没有，故 patchable=no。
+- 预筛候选：父提交已有 `test/testdrive/sequential-hydration.td`，通过创建计算集群/物化视图并改变 replica factor，可能运行 compute replica message loop 并触达上述 response 分支。该站点是共享通用 message loop，修复位于其调用的 `SequentialHydration::observe_response/recv`，故 generic_site=yes（D3）。D2=`na`。
+- 判定：`ineligible (tokio_not_patchable)`，为确定负面条件。候选未动态运行：检查 Tokio 1.38 宏源码后已确定 A′ 的冻结 patchability 条件不满足；不构建庞大的 Materialize testdrive 服务。没有 site_hit/branch_pending/defect_path_pending 动态值，不把静态调用链写成命中。尝试读取现成 mzcompose CLI 时，它开始在 scratch 创建 Python 虚拟环境并安装依赖；未启动 Docker 服务/项目构建即停止并清理。D3 计数未运行，故 defect_path_pending 留空。用时约 22 分钟。D1 对已合并修复 PR 无状态变更。
