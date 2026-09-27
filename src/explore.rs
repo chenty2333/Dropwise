@@ -4,11 +4,11 @@ use std::future::Future;
 use std::panic::Location;
 use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 use std::task::{Context, Poll, Wake, Waker};
 use std::time::Duration;
 
-use crate::obligation::{set_current, Leak, Ledger};
+use crate::obligation::{CurrentLedger, set_current, Leak, Ledger};
 
 /// When the competing branch wins, measured from the moment the target returns
 /// the planned `Pending`.
@@ -709,8 +709,12 @@ fn build_runtime(flavor: Flavor, ledger: &Arc<Ledger>) -> tokio::runtime::Runtim
     };
     // Blocking-pool threads run cancelled work too, so they need the ledger as well.
     let ledger = ledger.clone();
-    builder.on_thread_start(move || set_current(Some(ledger.clone())));
-    builder.on_thread_stop(|| set_current(None));
+    builder.on_thread_start(move || {
+        set_current(Some(ledger.clone()));
+    });
+    builder.on_thread_stop(|| {
+        set_current(None);
+    });
     // enable_all: time plus I/O drivers (network, files, io-uring under tokio_unstable),
     // so scenarios can use real I/O; drivers the build does not include are skipped.
     builder.enable_all().build().expect("build tokio runtime")
@@ -723,14 +727,49 @@ struct RunResult {
     targets: Vec<TargetRecord>,
 }
 
+/// Real-time bound for one bounded `block_on`.
+///
+/// The watchdog thread waits on a condvar instead of sleeping for the whole
+/// limit, so it is gone as soon as the run is over. Sleeping out the limit would
+/// leave two threads alive per run (scenario plus settle) for the duration of
+/// `scenario_timeout`, which adds up to hundreds of threads in one search.
+struct Watchdog {
+    stop: Arc<(Mutex<bool>, Condvar)>,
+    join: Option<std::thread::JoinHandle<()>>,
+}
+
+impl Watchdog {
+    fn start(limit: Duration, fired: tokio::sync::oneshot::Sender<()>) -> Self {
+        let stop = Arc::new((Mutex::new(false), Condvar::new()));
+        let shared = stop.clone();
+        let join = std::thread::spawn(move || {
+            let guard = shared.0.lock().unwrap();
+            let (stopped, _timed_out) =
+                shared.1.wait_timeout_while(guard, limit, |stopped| !*stopped).unwrap();
+            if !*stopped {
+                let _ = fired.send(());
+            }
+        });
+        Self { stop, join: Some(join) }
+    }
+}
+
+impl Drop for Watchdog {
+    fn drop(&mut self) {
+        let (flag, cv) = &*self.stop;
+        *flag.lock().unwrap() = true;
+        cv.notify_one();
+        if let Some(join) = self.join.take() {
+            let _ = join.join();
+        }
+    }
+}
+
 /// Drive `fut` on `rt`, giving up after `limit` of wall-clock time. The bound
 /// is enforced from a plain thread because paused Tokio time may not advance.
 fn block_on_bounded<F: Future>(rt: &tokio::runtime::Runtime, limit: Duration, fut: F) -> Option<F::Output> {
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
-    std::thread::spawn(move || {
-        std::thread::sleep(limit);
-        let _ = tx.send(());
-    });
+    let _watchdog = Watchdog::start(limit, tx);
     rt.block_on(async {
         tokio::select! {
             out = fut => Some(out),
@@ -768,7 +807,7 @@ where
     };
     let rt = build_runtime(config.flavor, &ledger);
 
-    set_current(Some(ledger.clone()));
+    let _ledger = CurrentLedger::attach(ledger.clone());
     let mut invariant = block_on_bounded(&rt, config.scenario_timeout, scenario(ctx.clone()))
         .unwrap_or_else(|| {
             Err(format!("scenario did not finish within {:?} (liveness)", config.scenario_timeout))
@@ -786,7 +825,7 @@ where
     // Only what happened up to here counts; tasks torn down by runtime shutdown
     // are an accepted form of abandonment.
     let leaks = ledger.finish();
-    set_current(None);
+    drop(_ledger);
     rt.shutdown_timeout(Duration::from_secs(1));
 
     let targets = ctx.state.lock().unwrap().targets.clone();

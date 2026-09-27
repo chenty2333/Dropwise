@@ -72,3 +72,29 @@ fn stuck_scenario_is_a_liveness_violation() {
     assert_eq!(v.len(), 1, "{report}");
     assert!(v[0].invariant.as_ref().unwrap_err().contains("liveness"), "{report}");
 }
+
+/// Every bounded run arms a real-time watchdog, and it must be gone once the run
+/// is over: a watchdog that instead sleeps out `scenario_timeout` piles up one
+/// live thread per run and per settle phase across a search.
+#[cfg(target_os = "linux")]
+#[test]
+fn watchdog_threads_do_not_accumulate_across_runs() {
+    let live = || std::fs::read_dir("/proc/self/task").map(|d| d.count()).unwrap_or(0);
+    let config =
+        Config { races: vec![Race::Immediate], max_cancellations: 2, max_runs: 60, ..Config::default() };
+    let before = live();
+    let report = explore(&config, |ctx: Ctx| async move {
+        for _ in 0..3 {
+            ctx.target(async {
+                for _ in 0..3 {
+                    tokio::task::yield_now().await;
+                }
+            })
+            .await;
+        }
+        Ok(())
+    });
+    let after = live();
+    assert!(report.trials.len() >= 30, "need enough runs to count: {}", report.trials.len());
+    assert!(after < before + 20, "{after} live threads after {} runs, {before} before the search", report.trials.len() + 1);
+}

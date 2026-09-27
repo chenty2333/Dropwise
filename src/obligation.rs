@@ -80,9 +80,27 @@ thread_local! {
     static CURRENT: RefCell<Option<Arc<Ledger>>> = const { RefCell::new(None) };
 }
 
-/// Make `ledger` the current thread's ledger (`None` detaches it).
-pub(crate) fn set_current(ledger: Option<Arc<Ledger>>) {
-    CURRENT.with(|c| *c.borrow_mut() = ledger);
+/// Make `ledger` the current thread's ledger (`None` detaches it), returning
+/// the ledger the thread had before.
+pub(crate) fn set_current(ledger: Option<Arc<Ledger>>) -> Option<Arc<Ledger>> {
+    CURRENT.with(|c| std::mem::replace(&mut *c.borrow_mut(), ledger))
+}
+
+/// Tracks the ledger of the current thread for one run, restoring the previous
+/// one even if the run panics: a stale ledger would keep collecting obligations
+/// into an already-reported run.
+pub(crate) struct CurrentLedger(Option<Arc<Ledger>>);
+
+impl CurrentLedger {
+    pub(crate) fn attach(ledger: Arc<Ledger>) -> Self {
+        Self(set_current(Some(ledger)))
+    }
+}
+
+impl Drop for CurrentLedger {
+    fn drop(&mut self) {
+        set_current(self.0.take());
+    }
 }
 
 impl<T> Obligation<T> {
