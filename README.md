@@ -11,6 +11,9 @@ but not reused as if it were at a message boundary.
 
 ## Usage
 
+`cargo run --example quickstart` is the same shape as below, runnable, with the
+report printed and annotated.
+
 Plug into the program's own `select!` with `ctx.race`; the losing branch is
 dropped (or kept) by the real code, so the post-cancellation control flow is
 the program's:
@@ -51,7 +54,9 @@ than counted as passes; `assert_cancel_correct` fails on them.
   Plans cover up to `Config::max_cancellations` targets per run, breadth-first.
 - **Race timing.** `Race::Immediate`, `Race::Reschedule(n)` (competitor ready
   after yielding to Tokio `n` times; Tokio usually runs other ready tasks first,
-  but does not guarantee it), `Race::After(d)`.
+  but does not guarantee it), `Race::After(d)` (ready after that much Tokio
+  time), `Race::AfterWake` (ready once the target has been *woken* but not
+  polled again: the event reached it and was not consumed — no timing parameter).
 - **Settling.** After the scenario returns, the runtime keeps running for
   `Settle::tokio_time`. Paused Tokio time does not auto-advance while
   `spawn_blocking` work runs, so this also waits for in-flight blocking-pool
@@ -61,6 +66,22 @@ than counted as passes; `assert_cancel_correct` fails on them.
 - **Library models.** `dropwise::models::mpsc::{Receiver, UnboundedReceiver}` hand
   out messages as `Obligation`s; `models::oblige(fut, label)` does the same for
   any future. Outside a Dropwise run obligations are untracked.
+
+### Reading a report
+
+A run can come back without a violation for reasons that are not success. The
+`Report` keeps them apart, and `Display` prints every one of them:
+
+| signal | meaning |
+|---|---|
+| `baseline_errors` | the *uncancelled* run already fails or leaks: fix that before reading the trials |
+| `violations()` | a plan found a problem: the invariant failed, or an `Obligation` was dropped unresolved or left outstanding |
+| `unrealized()` | a planned `Pending` boundary was never reached, so that plan tested nothing |
+| `unsettled()`, `!baseline_settled` | `Settle::watchdog` cut the observation window short: late effects may be missing, so a clean result is inconclusive |
+| `!exhaustive` | `max_runs` did not cover the frontier, or the scenario marked no target at all |
+| `is_clean()` | no violation was *observed* — on its own it says nothing about the five rows above |
+
+`assert_cancel_correct` requires all of them: clean, exhaustive, settled, realized.
 
 ### What is and is not guaranteed
 
@@ -81,6 +102,29 @@ than counted as passes; `assert_cancel_correct` fails on them.
 See `tests/serial_console.rs` (RFD 400 bug and fix), `tests/semantics.rs`
 (`select!` integration, kept futures, unrealized plans, outstanding obligations,
 late completions) and `tests/explorer.rs`.
+
+## Development
+
+```sh
+cargo run --example quickstart   # the usage shape above, runnable end to end
+cargo test                       # harness tests
+cargo clippy --all-targets
+```
+
+The root crate is the library plus its tests and examples: `cargo test` needs a
+Rust toolchain and nothing else — no upstream checkouts, no services, every
+scenario in-process on `tokio`.
+
+The research halves are separate crates and documents, and are **not** part of
+that command:
+
+- `repro/` — paired reproductions against upstream releases, each with its own
+  `Cargo.toml` and pinned versions (one case needs a Redis in Docker). Run with
+  `repro/run_all.sh`.
+- `prospective/` — pre-registered experiments on third-party crates
+  (`t1`-`t3`, `phase2`), run per target with `prospective/run.sh <target>`.
+- `survey/`, `research/` — the bug survey (`survey/survey.py`, codebook) and
+  the feasibility probes.
 
 ## Bug survey
 

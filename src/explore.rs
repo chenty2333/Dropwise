@@ -627,6 +627,14 @@ impl Report {
         self.trials.iter().filter(|t| !t.is_realized())
     }
 
+    /// Nothing was *observed* to go wrong: the baseline run reported no problem
+    /// and no trial violated its invariant or leaked.
+    ///
+    /// This is not a pass conclusion on its own. It says nothing about plans
+    /// that were never realized ([`Trial::is_realized`]), observation windows
+    /// cut short by the settle watchdog ([`Report::unsettled`]), plans the run
+    /// budget did not reach (`exhaustive`), or schedules and inputs the scenario
+    /// did not exercise. [`assert_cancel_correct`] checks all of those.
     pub fn is_clean(&self) -> bool {
         self.baseline_errors.is_empty() && self.violations().next().is_none()
     }

@@ -14,6 +14,9 @@
 //! Plans enumerate `Pending` boundaries of the marked futures for one input and
 //! one (mostly reproducible) schedule; they are not source-level `.await`s and
 //! not a proof over all executions.
+//!
+//! `cargo run --example quickstart` walks through one buggy and one corrected
+//! shape with the report printed; [`Report`] documents which signals mean what.
 
 mod explore;
 pub mod models;
