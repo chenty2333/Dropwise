@@ -32,6 +32,23 @@ fn multiple_targets_and_combinations() {
     assert_eq!(pair.leaks.len(), 2);
 }
 
+/// A `max_runs` budget below the frontier cuts the search short. The report must
+/// say so even though the queue is empty by the time the budget runs out.
+#[test]
+fn budget_below_the_frontier_is_not_exhaustive() {
+    let config = Config { max_runs: 3, ..immediate_only() };
+    let report = explore(&config, |ctx: Ctx| async move {
+        for _ in 0..4 {
+            ctx.target(hold_across_await("msg")).await;
+        }
+        Ok(())
+    });
+    assert_eq!(report.baseline_targets, 4);
+    assert_eq!(report.trials.len(), 2, "one run is the baseline: {report}");
+    assert!(!report.exhaustive, "2 of 4 single cuts unrun: {report}");
+    assert!(report.to_string().contains("NOT exhaustive"), "{report}");
+}
+
 #[test]
 fn every_race_mode_is_tried() {
     let config = Config {

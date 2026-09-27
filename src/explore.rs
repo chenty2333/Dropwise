@@ -857,6 +857,7 @@ where
     let mut report = Report::default();
     let mut queue: VecDeque<Vec<Cut>> = VecDeque::from([Vec::new()]);
     let mut runs = 0;
+    let mut truncated = false;
 
     while runs < config.max_runs {
         let Some(plan) = queue.pop_front() else { break };
@@ -886,9 +887,19 @@ where
         if plan.len() < config.max_cancellations {
             // Only extend with later targets, so each combination is generated once.
             let start = plan.last().map_or(0, |c| c.target + 1);
-            for (target, rec) in res.targets.iter().enumerate().skip(start) {
+            // Exactly `max_runs - runs` plans can still be popped, and a pop
+            // frees one slot while a push takes one: a plan queued behind that
+            // many others can never run, so neither can its subtree. Skipping it
+            // keeps the queue proportional to the run budget instead of to the
+            // combinatorial frontier, and leaves the search non-exhaustive.
+            let slots = config.max_runs - runs;
+            'plans: for (target, rec) in res.targets.iter().enumerate().skip(start) {
                 for after_pending in 1..=rec.pendings {
                     for &race in &config.races {
+                        if queue.len() >= slots {
+                            truncated = true;
+                            break 'plans;
+                        }
                         let mut next = plan.clone();
                         next.push(Cut { target, after_pending, race });
                         queue.push_back(next);
@@ -898,7 +909,7 @@ where
         }
     }
 
-    report.exhaustive = queue.is_empty() && report.baseline_targets > 0;
+    report.exhaustive = queue.is_empty() && !truncated && report.baseline_targets > 0;
     report
 }
 
