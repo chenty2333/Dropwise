@@ -108,9 +108,9 @@ pub struct Config {
     ///
     /// The bound is enforced in-process: it fires only when the scenario yields
     /// back to the runtime. A single `poll` that never returns (a busy loop, a
-    /// blocking call on a runtime thread) is not interrupted, and dropping the
-    /// runtime afterwards may still wait for blocking-pool work. For batch runs,
-    /// also bound each test process from outside.
+    /// blocking call on a runtime thread) is not interrupted, and tearing the
+    /// runtime down still waits up to a second for blocking-pool work it cannot
+    /// cancel. For batch runs, also bound each test process from outside.
     pub scenario_timeout: Duration,
 }
 
@@ -720,6 +720,42 @@ fn build_runtime(flavor: Flavor, ledger: &Arc<Ledger>) -> tokio::runtime::Runtim
     builder.enable_all().build().expect("build tokio runtime")
 }
 
+/// Grace period for tearing down one run's runtime: a `Runtime` drop waits
+/// forever for `spawn_blocking` work to return, and detached cancelled work that
+/// never returns is exactly what a scenario leaves behind.
+const SHUTDOWN_GRACE: Duration = Duration::from_secs(1);
+
+/// The runtime of one run, shut down with [`SHUTDOWN_GRACE`] on every exit
+/// path. Without the bound on the unwind path, a scenario panic hangs the whole
+/// process instead of reaching the caller. `Runtime::shutdown_timeout` consumes
+/// the runtime, which is why it is held in an `Option`.
+struct RunRuntime {
+    rt: Option<tokio::runtime::Runtime>,
+}
+
+impl RunRuntime {
+    fn new(rt: tokio::runtime::Runtime) -> Self {
+        Self { rt: Some(rt) }
+    }
+
+    fn get(&self) -> &tokio::runtime::Runtime {
+        self.rt.as_ref().expect("shut down only when the run ends")
+    }
+
+    fn close(&mut self) {
+        if let Some(rt) = self.rt.take() {
+            rt.shutdown_timeout(SHUTDOWN_GRACE);
+        }
+    }
+}
+
+impl Drop for RunRuntime {
+    /// Reached only when the run unwinds before `close`.
+    fn drop(&mut self) {
+        self.close();
+    }
+}
+
 struct RunResult {
     settled: bool,
     invariant: Result<(), String>,
@@ -805,14 +841,14 @@ where
     let ctx = Ctx {
         state: Arc::new(Mutex::new(RunState { plan, targets: Vec::new(), checks: Vec::new() })),
     };
-    let rt = build_runtime(config.flavor, &ledger);
+    let mut rt = RunRuntime::new(build_runtime(config.flavor, &ledger));
 
     let _ledger = CurrentLedger::attach(ledger.clone());
-    let mut invariant = block_on_bounded(&rt, config.scenario_timeout, scenario(ctx.clone()))
+    let mut invariant = block_on_bounded(rt.get(), config.scenario_timeout, scenario(ctx.clone()))
         .unwrap_or_else(|| {
             Err(format!("scenario did not finish within {:?} (liveness)", config.scenario_timeout))
         });
-    let settled = settle(&rt, config.settle);
+    let settled = settle(rt.get(), config.settle);
     let checks = std::mem::take(&mut ctx.state.lock().unwrap().checks);
     for check in checks {
         if let Err(e) = check() {
@@ -826,7 +862,7 @@ where
     // are an accepted form of abandonment.
     let leaks = ledger.finish();
     drop(_ledger);
-    rt.shutdown_timeout(Duration::from_secs(1));
+    rt.close();
 
     let targets = ctx.state.lock().unwrap().targets.clone();
     RunResult { settled, invariant, leaks, targets }

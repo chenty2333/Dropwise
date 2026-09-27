@@ -98,3 +98,37 @@ fn watchdog_threads_do_not_accumulate_across_runs() {
     assert!(report.trials.len() >= 30, "need enough runs to count: {}", report.trials.len());
     assert!(after < before + 20, "{after} live threads after {} runs, {before} before the search", report.trials.len() + 1);
 }
+
+/// A scenario panic must still reach the caller instead of hanging the process:
+/// dropping a `Runtime` waits forever for `spawn_blocking` work to return, and
+/// detached cancelled work that never returns is what a scenario leaves behind.
+#[test]
+fn panicking_scenario_with_detached_blocking_work_does_not_hang() {
+    let stop = Arc::new(AtomicBool::new(false));
+    let config = Config { races: vec![Race::Immediate], ..Config::default() };
+    let started = Instant::now();
+    let s = stop.clone();
+    let panicked = std::panic::catch_unwind(move || {
+        explore(&config, move |ctx: Ctx| {
+            let s = s.clone();
+            async move {
+                // Detached, and outlives the run: dropping the runtime would
+                // wait for it forever.
+                drop(tokio::task::spawn_blocking(move || {
+                    while !s.load(Ordering::SeqCst) {
+                        std::thread::sleep(Duration::from_millis(10));
+                    }
+                }));
+                ctx.target(async {
+                    tokio::task::yield_now().await;
+                })
+                .await;
+                panic!("scenario exploded");
+            }
+        });
+    })
+    .is_err();
+    stop.store(true, Ordering::SeqCst);
+    assert!(panicked, "the scenario panic must propagate");
+    assert!(started.elapsed() < Duration::from_secs(10), "teardown hung after the panic");
+}
