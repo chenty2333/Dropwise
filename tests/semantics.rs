@@ -6,6 +6,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use dropwise::models::mpsc::Receiver;
+use dropwise::models::oblige;
 use dropwise::{explore, Config, Ctx, CutOutcome, LeakKind, Obligation, Race, Settle};
 use tokio::sync::mpsc;
 
@@ -172,6 +173,46 @@ fn late_completion_is_seen_only_after_settling() {
     let v: Vec<_> = r.violations().collect();
     assert_eq!(v.len(), 1, "{r}");
     assert_eq!(v[0].leaks[0].label, "opened fd");
+}
+
+/// `models::oblige` is the model for any future: while it is still running
+/// nothing is owed, and once it has produced a value that value must be
+/// resolved. The leak is attributed to the `oblige` call site, not to the model.
+#[test]
+fn oblige_owes_only_a_value_it_produced() {
+    let cancelled_before_the_value = |ctx: Ctx| async move {
+        let got = ctx
+            .target(oblige(
+                async {
+                    tokio::task::yield_now().await;
+                    7u32
+                },
+                "computed answer",
+            ))
+            .await;
+        if let Some(answer) = got {
+            answer.abandon("caller no longer interested");
+        }
+        Ok(())
+    };
+    let r = explore(&Config { races: vec![Race::Immediate], ..Config::default() }, cancelled_before_the_value);
+    assert!(r.exhaustive && r.is_clean(), "losing before the value exists owes nothing:\n{r}");
+
+    let dropped_after_the_value = |ctx: Ctx| async move {
+        let answer = oblige(async { 7u32 }, "computed answer").await;
+        ctx.target(async move {
+            tokio::task::yield_now().await;
+            answer.discharge();
+        })
+        .await;
+        Ok(())
+    };
+    let r = explore(&Config { races: vec![Race::Immediate], ..Config::default() }, dropped_after_the_value);
+    let v: Vec<_> = r.violations().collect();
+    assert_eq!(v.len(), 1, "{r}");
+    assert_eq!(v[0].leaks[0].kind, LeakKind::DroppedUnresolved);
+    assert_eq!(v[0].leaks[0].label, "computed answer");
+    assert!(v[0].leaks[0].site.file().ends_with("semantics.rs"), "site {}", v[0].leaks[0].site);
 }
 
 /// omicron #10204 shape: the caller cleans up after cancellation while
