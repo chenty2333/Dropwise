@@ -49,6 +49,15 @@ fn budget_below_the_frontier_is_not_exhaustive() {
     assert!(report.to_string().contains("NOT exhaustive"), "{report}");
 }
 
+/// A scenario that marks nothing explores nothing, and `is_clean` is then
+/// trivially true. The report has to say so.
+#[test]
+fn a_run_without_targets_says_it_explored_nothing() {
+    let report = explore(&Config::default(), |_ctx: Ctx| async { Ok::<(), String>(()) });
+    assert!(report.is_clean() && !report.exhaustive, "{report}");
+    assert!(report.to_string().contains("reached no target"), "{report}");
+}
+
 #[test]
 fn every_race_mode_is_tried() {
     let config = Config {

@@ -665,6 +665,9 @@ impl fmt::Display for Report {
             self.trials.len(),
             if self.exhaustive { "" } else { " (NOT exhaustive)" }
         )?;
+        if self.baseline_targets == 0 {
+            writeln!(f, "  the uncancelled run reached no target: nothing was explored (mark ctx.target/ctx.race)")?;
+        }
         for e in &self.baseline_errors {
             writeln!(f, "  baseline (no cancellation): {e}")?;
         }
@@ -775,8 +778,8 @@ struct RunResult {
 ///
 /// The watchdog thread waits on a condvar instead of sleeping for the whole
 /// limit, so it is gone as soon as the run is over. Sleeping out the limit would
-/// leave two threads alive per run (scenario plus settle) for the duration of
-/// `scenario_timeout`, which adds up to hundreds of threads in one search.
+/// leave two threads (scenario plus settle) alive per run until their own
+/// timeouts expire, which adds up to hundreds of threads in one search.
 struct Watchdog {
     stop: Arc<(Mutex<bool>, Condvar)>,
     join: Option<std::thread::JoinHandle<()>>,

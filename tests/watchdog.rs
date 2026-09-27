@@ -95,8 +95,9 @@ fn watchdog_threads_do_not_accumulate_across_runs() {
         Ok(())
     });
     let after = live();
-    assert!(report.trials.len() >= 30, "need enough runs to count: {}", report.trials.len());
-    assert!(after < before + 20, "{after} live threads after {} runs, {before} before the search", report.trials.len() + 1);
+    let runs = report.trials.len() + 1;
+    assert!(runs > 30, "need enough runs to count: {runs}");
+    assert!(after < before + 20, "{after} live threads after {runs} runs, {before} before the search");
 }
 
 /// A scenario panic must still reach the caller instead of hanging the process:
