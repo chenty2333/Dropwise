@@ -146,11 +146,12 @@ fn main() {
     // The defect is a dropped obligation (the job went with the cancelled
     // future) plus the invariant that noticed the missing write.
     assert!(buggy.violations().count() > 0, "expected the first shape to lose a job");
-    // In CI the two checks below are one call:
+    // With the default configuration, the checks below can be expressed as:
     // `dropwise::assert_cancel_correct(|ctx| async move { ..the fixed loop.. })`,
     // which panics with this same report on any violation, unrealized plan,
     // unsettled run or truncated search.
     assert!(fixed.is_clean(), "the second shape must find no violation: {fixed}");
     assert!(fixed.exhaustive && fixed.unrealized().next().is_none(), "{fixed}");
-    println!("\nboth checks passed: the first shape loses a job, the second never does");
+    assert!(fixed.baseline_settled && fixed.unsettled().next().is_none(), "{fixed}");
+    println!("\nboth checks passed: the bug was detected; the fixed loop passed the explored plans");
 }

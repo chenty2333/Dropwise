@@ -79,7 +79,7 @@ fn stuck_scenario_is_a_liveness_violation() {
 #[cfg(target_os = "linux")]
 #[test]
 fn watchdog_threads_do_not_accumulate_across_runs() {
-    let live = || std::fs::read_dir("/proc/self/task").map(|d| d.count()).unwrap_or(0);
+    let live = || std::fs::read_dir("/proc/self/task").expect("read live thread count").count();
     let config =
         Config { races: vec![Race::Immediate], max_cancellations: 2, max_runs: 60, ..Config::default() };
     let before = live();
@@ -115,11 +115,14 @@ fn panicking_scenario_with_detached_blocking_work_does_not_hang() {
             async move {
                 // Detached, and outlives the run: dropping the runtime would
                 // wait for it forever.
+                let (started_tx, started_rx) = tokio::sync::oneshot::channel();
                 drop(tokio::task::spawn_blocking(move || {
+                    started_tx.send(()).unwrap();
                     while !s.load(Ordering::SeqCst) {
                         std::thread::sleep(Duration::from_millis(10));
                     }
                 }));
+                started_rx.await.unwrap();
                 ctx.target(async {
                     tokio::task::yield_now().await;
                 })

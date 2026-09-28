@@ -165,3 +165,37 @@ impl<T> Drop for Obligation<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Config, Ctx, explore};
+
+    #[test]
+    fn run_restores_the_previous_ledger_on_every_exit_path() {
+        let previous = Arc::new(Ledger::default());
+        let binding = CurrentLedger::attach(previous.clone());
+        let config = Config { max_runs: 1, ..Config::default() };
+        // Constructor panic, future panic, check panic, and normal completion.
+        for phase in 0..4 {
+            let result = std::panic::catch_unwind(|| {
+                explore(&config, |ctx: Ctx| {
+                    assert!(phase != 0, "constructor panic");
+                    async move {
+                        assert!(phase != 1, "future panic");
+                        if phase == 2 {
+                            ctx.after_settle(|| panic!("check panic"));
+                        }
+                        Ok(())
+                    }
+                })
+            });
+            assert_eq!(result.is_err(), phase < 3);
+            CURRENT.with(|current| {
+                assert!(Arc::ptr_eq(current.borrow().as_ref().unwrap(), &previous));
+            });
+        }
+        drop(binding);
+        CURRENT.with(|current| assert!(current.borrow().is_none()));
+    }
+}

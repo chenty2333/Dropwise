@@ -79,7 +79,7 @@ A run can come back without a violation for reasons that are not success. The
 | `unrealized()` | a planned `Pending` boundary was never reached, so that plan tested nothing |
 | `unsettled()`, `!baseline_settled` | `Settle::watchdog` cut the observation window short: late effects may be missing, so a clean result is inconclusive |
 | `!exhaustive` | `max_runs` did not cover the frontier, or the scenario marked no target at all |
-| `is_clean()` | no violation was *observed* — on its own it says nothing about the five rows above |
+| `is_clean()` | no baseline error or trial violation was *observed* — does not imply realization, settling or exhaustive exploration |
 
 `assert_cancel_correct` requires all of them: clean, exhaustive, settled, realized.
 
@@ -122,7 +122,9 @@ that command:
   `Cargo.toml` and pinned versions (one case needs a Redis in Docker). Run with
   `repro/run_all.sh`.
 - `prospective/` — pre-registered experiments on third-party crates
-  (`t1`-`t3`, `phase2`), run per target with `prospective/run.sh <target>`.
+  (`t1`-`t3`, `phase2`). Use `prospective/run.sh t1-tungstenite` or
+  `prospective/run.sh t2-bb8`; T3 and Phase 2 have their own runners:
+  `prospective/t3-sqlx/run.sh` and `prospective/phase2/run.sh`.
 - `survey/`, `research/` — the bug survey (`survey/survey.py`, codebook) and
   the feasibility probes.
 

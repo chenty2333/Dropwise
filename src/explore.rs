@@ -8,7 +8,7 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::task::{Context, Poll, Wake, Waker};
 use std::time::Duration;
 
-use crate::obligation::{CurrentLedger, set_current, Leak, Ledger};
+use crate::obligation::{set_current, CurrentLedger, Leak, Ledger};
 
 /// When the competing branch wins, measured from the moment the target returns
 /// the planned `Pending`.
@@ -634,7 +634,9 @@ impl Report {
     /// that were never realized ([`Trial::is_realized`]), observation windows
     /// cut short by the settle watchdog ([`Report::unsettled`]), plans the run
     /// budget did not reach (`exhaustive`), or schedules and inputs the scenario
-    /// did not exercise. [`assert_cancel_correct`] checks all of those.
+    /// did not exercise. [`assert_cancel_correct`] also checks realization,
+    /// settling and completeness within the configured limits, but cannot
+    /// establish correctness for untested schedules or inputs.
     pub fn is_clean(&self) -> bool {
         self.baseline_errors.is_empty() && self.violations().next().is_none()
     }

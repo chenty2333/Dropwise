@@ -49,6 +49,35 @@ fn budget_below_the_frontier_is_not_exhaustive() {
     assert!(report.to_string().contains("NOT exhaustive"), "{report}");
 }
 
+#[test]
+fn bounded_queue_preserves_the_breadth_first_prefix() {
+    let scenario = |ctx: Ctx| async move {
+        for _ in 0..3 {
+            ctx.target(async {
+                tokio::task::yield_now().await;
+                tokio::task::yield_now().await;
+            })
+            .await;
+        }
+        Ok(())
+    };
+    let mut config = Config { max_cancellations: 2, ..immediate_only() };
+    let full = explore(&config, scenario);
+    assert!(full.exhaustive, "{full}");
+    assert!(full.trials.iter().any(|t| t.plan.len() == 2));
+    for budget in 0..=full.trials.len() + 2 {
+        config.max_runs = budget;
+        let bounded = explore(&config, scenario);
+        let expected = budget.saturating_sub(1).min(full.trials.len());
+        assert_eq!(bounded.trials.len(), expected, "budget {budget}");
+        for (actual, expected) in bounded.trials.iter().zip(&full.trials) {
+            assert_eq!(actual.plan, expected.plan, "budget {budget}");
+            assert_eq!(actual.outcomes, expected.outcomes, "budget {budget}");
+        }
+        assert_eq!(bounded.exhaustive, budget > full.trials.len(), "budget {budget}");
+    }
+}
+
 /// A scenario that marks nothing explores nothing, and `is_clean` is then
 /// trivially true. The report has to say so.
 #[test]
