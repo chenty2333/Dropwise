@@ -233,3 +233,10 @@
 - 在既有父版本 scratch `materialize/w28816` 尝试 `cargo +1.80.0 build --locked -p mz-environmentd -p mz-testdrive`。先修复该版本工具链的残缺安装（不改默认 toolchain）；offline 缺 git 依赖后在线重试，下载成功。随后 vendored OpenSSL 构建因 Perl 模块缺失失败；补用已有 FindBin helper 后仍失败，未升级目标依赖或修改 Cargo.lock。
 - 在线构建 94.03 秒，helper 重试 0.88 秒；含检查和工具链恢复约 3 分钟。最终 unknown/build，不是 site_not_hit。未启动服务，未运行候选；harness=testdrive，baseline_wall_seconds=na。
 - 恢复成本：完整的 Perl/OpenSSL native 构建依赖、完整 environmentd/testdrive 构建及测试服务；其后才能观察 D3 计数。仅清理本轮 d4-review-target。
+
+## G0-11 D4 收尾（2026-09-29）
+
+- patchable=yes（Tokio 1.17.0 select.rs:461）。核对 w12479 的初始 git tree 与原父提交 a838ec6：只有 vendoring 的 .cargo/config 和未复制的无关 sqlite 子模块不同；现有修改是探针，不把 synthetic `parent` commit 当上游 SHA。
+- 尝试重新构建既有 sqllogictest/computed/storaged（Rust 1.60、locked/offline）。149.51 秒后遇旧 protobuf 的 CMake policy 错误；使用已有 protoc 后 9.20 秒遇 OpenSSL 缺 FindBin；再使用系统 OpenSSL 后，旧 librdkafka 构建仍被 CMake 删除 <3.5 兼容性阻止。含检查约 5 分钟。
+- 不采信已有成功日志/旧二进制作为本轮通过。最终 unknown/build；harness=sqllogictest，baseline_wall_seconds=na，未运行候选、未启动服务、没有新的站点或 D3 路径计数。
+- 恢复成本：匹配旧 native 构建环境（尤其 CMake/librdkafka），重建并运行既有 cluster.slt，再收集关联计数。本次尝试用了既有 target，不删除其原有构建产物或原探针。
