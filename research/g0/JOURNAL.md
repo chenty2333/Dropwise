@@ -214,3 +214,11 @@
 - 历史 D1–D3 结果继续保留；以追加章节及入口提示记录 D4 后现状和未解决项。每项结果单独提交。
 - 第一优先中的 CI 和 Phase 3 入口提示属于此次另行授权的工程/文档工作，不是 G0 样本或判据变更。第二优先另立计划并先提交，沿用已知案例，不宣称前瞻发现。
 - 本轮不 push、不启动第三优先，不新增多版本产品兼容层或完整 Tokio 注入 runner。
+
+## G0-03 D4 收尾（2026-09-29）
+
+- `patchable=yes`：已检查本机 Tokio 1.28.2 `src/macros/select.rs:474` 的逐分支元组构造。无须 IntoFuture，旧排除理由撤回。
+- 在原父提交 `6d5da99`、Rust 1.70.0 下执行 `CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=.../omicron/d4-review-target timeout 300s cargo test --locked --offline -p omicron-nexus --lib test_serial_console_stream_proxying --no-run`。本次实际构建在 nexus-db-model 的 build script 失败：`DEP_PQ_LIBDIRS` 未设置；不是测试或站点未命中。
+- 另核实父版本所需 dendrite OpenAPI 下载 URL（`b9444d0c.../dpd.json`）仍 HTTP 404。历史记录将 dpd 与 ddm 名称混写，本轮依据实际 dpd-client/build.rs/package-manifest.toml，不沿用旧拼写。
+- 最终 `unknown/build`，无 site/Pending 动态计数；harness=cargo_test，baseline_wall_seconds=na。没有启动服务，构建加检查约 5 分钟，未用满 90 分钟但已有明确阻塞。恢复成本：准备匹配 libpq 构建环境及该父版本私有/历史 OpenAPI 产物，再重建候选。
+- 仅清理本轮创建的 d4-review-target，不删除既有 scratch 文件。
