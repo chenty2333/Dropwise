@@ -1,0 +1,13 @@
+[package]
+name = "dropwise-mechanisms"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../.." }
+tokio = { version = "1.51", features = ["fs", "io-uring", "macros", "rt", "sync", "time", "test-util"] }
+serde_json = "1"
+
+[patch.crates-io]
+tokio = { git = "https://github.com/tokio-rs/tokio", rev = "ad8c59add6a1988d8c327fb3358beeeae3bbb5cd" }
