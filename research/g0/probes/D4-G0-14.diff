@@ -1,0 +1,51 @@
+--- a/iroh-gossip/src/lib.rs
++++ b/iroh-gossip/src/lib.rs
+@@ -2,6 +2,7 @@
+ 
+ #![deny(missing_docs, rustdoc::broken_intra_doc_links)]
+ 
++mod g0_probe;
+ #[cfg(feature = "dispatcher")]
+ pub mod dispatcher;
+ pub mod metrics;
+--- a/iroh-gossip/src/net.rs
++++ b/iroh-gossip/src/net.rs
+@@ -653,6 +653,7 @@
+     let mut send_buf = BytesMut::new();
+     let mut recv_buf = BytesMut::new();
+     loop {
++        crate::g0_probe::hit();
+         tokio::select! {
+             biased;
+             // If `send_rx` is closed,
+@@ -664,7 +665,7 @@
+                 write_message(&mut send, &mut send_buf, &msg, max_message_size).await?
+             }
+ 
+-            msg = read_message(&mut recv, &mut recv_buf, max_message_size) => {
++            msg = crate::g0_probe::branch(read_message(&mut recv, &mut recv_buf, max_message_size)) => {
+                 let msg = msg?;
+                 match msg {
+                     None => break,
+--- /dev/null
++++ b/iroh-gossip/src/g0_probe.rs
+@@ -0,0 +1,19 @@
++// D4 observational probe: one line per site entry / branch first Pending.
++use std::future::{Future, poll_fn};
++
++pub(super) fn hit() {
++    eprintln!("G0_D4 site_hit");
++}
++
++pub(super) fn branch<F: Future>(fut: F) -> impl Future<Output = F::Output> {
++    let mut fut = Box::pin(fut);
++    let mut seen = false;
++    poll_fn(move |cx| {
++        let result = fut.as_mut().poll(cx);
++        if result.is_pending() && !seen {
++            seen = true;
++            eprintln!("G0_D4 branch_pending");
++        }
++        result
++    })
++}

@@ -240,3 +240,11 @@
 - 尝试重新构建既有 sqllogictest/computed/storaged（Rust 1.60、locked/offline）。149.51 秒后遇旧 protobuf 的 CMake policy 错误；使用已有 protoc 后 9.20 秒遇 OpenSSL 缺 FindBin；再使用系统 OpenSSL 后，旧 librdkafka 构建仍被 CMake 删除 <3.5 兼容性阻止。含检查约 5 分钟。
 - 不采信已有成功日志/旧二进制作为本轮通过。最终 unknown/build；harness=sqllogictest，baseline_wall_seconds=na，未运行候选、未启动服务、没有新的站点或 D3 路径计数。
 - 恢复成本：匹配旧 native 构建环境（尤其 CMake/librdkafka），重建并运行既有 cluster.slt，再收集关联计数。本次尝试用了既有 target，不删除其原有构建产物或原探针。
+
+## G0-14 D4 动态确认（2026-09-29）
+
+- Tokio 1.38.1 select.rs:498，patchable=yes；在父源码归档 `iroh-8e4e586...` 的新副本 `iroh/d4-review-14` 构建，未修改原 scratch 或原未跟踪探针。
+- `cargo +1.80.0 test --locked -p iroh-gossip --lib gossip_net_smoke --no-run` 成功，构建 164.24 秒。无探针 binary `iroh_gossip-cbdd3d175a3898c9 net::test::gossip_net_smoke --exact`：1/1 通过，墙钟 1.50 秒。
+- 添加最小计数探针后重编译 14.68 秒，相同既有测试通过（1.393 秒），site_hit=39、branch_pending=29。每个分支实例只计第一次 Pending。generic_site=no，D3 关联列为 na。探针为 `probes/D4-G0-14.diff`；与旧未跟踪 G0-14.diff 不同，不移动原有 cfg 属性。
+- 最终 eligible / eligible_pending。仅证明既有测试触达该站点且实际 Pending，不证明触发历史缺陷。
+- 测试内嵌 relay 监听 loopback；endpoint 会使用本机网卡地址，均随测试退出。未启动 Docker 或外部服务。TMPDIR 在本例目录下。含工具等待和用户提示处理墙钟约 14 分钟，未超 90 分钟；清理本例 target。
