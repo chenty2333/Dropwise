@@ -248,3 +248,9 @@
 - 添加最小计数探针后重编译 14.68 秒，相同既有测试通过（1.393 秒），site_hit=39、branch_pending=29。每个分支实例只计第一次 Pending。generic_site=no，D3 关联列为 na。探针为 `probes/D4-G0-14.diff`；与旧未跟踪 G0-14.diff 不同，不移动原有 cfg 属性。
 - 最终 eligible / eligible_pending。仅证明既有测试触达该站点且实际 Pending，不证明触发历史缺陷。
 - 测试内嵌 relay 监听 loopback；endpoint 会使用本机网卡地址，均随测试退出。未启动 Docker 或外部服务。TMPDIR 在本例目录下。含工具等待和用户提示处理墙钟约 14 分钟，未超 90 分钟；清理本例 target。
+
+## G0-17 D4 收尾（2026-09-29）
+
+- patchable=yes：Tokio 1.17.0 select.rs:461 为逐分支元组。核对父提交归档与 w12485 的 coordinator、partitioned client、Cargo.lock 一致。纠正旧记录的函数拼写：该父版本外层 select 在 coord.rs:739，745 行是 `self.dataflow_client.ready()`，经 Controller::ready 和 compute client stream 到 Partitioned::recv，并非 G0-11 父版本的直接 recv。D3 仍需关联重连路径，不改变门槛。
+- 安装父版本声明的 Rust 1.60.0 minimal 后，执行 `CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=$PWD/d4-review-target timeout 300s cargo +1.60.0 build --locked --offline -p mz-sqllogictest -p storaged -p materialized`。205.39 秒后 openssl-sys 构建失败，Perl 缺 FindBin。
+- 最终 unknown/build；既有 cluster.slt 未执行，计数不填零，baseline_wall_seconds=na。约 5 分钟，无服务启动。恢复需匹配 native 构建依赖并完整构建测试服务。
