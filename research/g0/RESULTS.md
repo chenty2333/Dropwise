@@ -1,6 +1,6 @@
 # G0 可行性检查结果
 
-> **历史结果提示（2026-09-29）：** 下文原结论基于 D1–D3，不能用作当前路线裁决。`REVIEW.md` 已指出 patchability 判据错误，`JOURNAL.md` 的 D4/D5 登记要求补做；当前应按“未决”处理，D4 收尾结果将追加在本文末尾。原数据和结论保留用于比较。
+> **当前结论（D4 收尾，2026-09-29）：G0 仍未决。** eligible=4、ineligible=12、unknown=6；4+6≥6，但已确认的 4 项未达到通过门槛。完整更新见文末“D4 收尾结果”。下文 D1–D3 的“不通过”是保留的历史结论，不可用作当前裁决。
 
 ## 结论
 
@@ -97,3 +97,45 @@ G0-05 是唯一 unknown：`unknown/budget`。构建卡在 `faiss-sys` 的 CMake 
 - G0-12：pytest 的默认 `tmp_path` 曾短暂在 `/tmp/pytest-of-ava/...` 创建小型测试 peer 目录；发现后立即删除。构建与 `target` 均在指定工作树，未在 `/tmp` 构建；无遗留文件。
 - G0-02 D1 过程中曾暂留旧行和修订行；终检时合并为唯一 G0-02 行，旧 `unknown/no_unique_fix` 状态仍在 notes 中。最终 CSV 对应冻结名单 22 个唯一 URL。
 - 不存在对外操作；目标仓库改动仅在指定 scratch worktree 中，Dropwise 的源代码与冻结调查输入未修改。
+
+## D4 收尾结果（2026-09-29）
+
+D4 的八项动态补查和 G0-04/10 静态更正已完成。这里的“完成”包括明确的构建/测试环境 unknown，不表示所有候选均已运行。D5 更换执行人，未放宽总体、站点类型、D3 或门槛。
+
+| 规则/状态 | eligible | eligible_pending | ineligible | unknown | eligible_if_futures_covered | 裁决 |
+|---|---:|---:|---:|---:|---:|---|
+| 历史 D1–D3 | 2 | 2 | 19 | 1 | 3 | 当时不通过，patchability 判据后来撤回 |
+| D4 收尾 | 4 | 4 | 12 | 6 | 5 | **未决** |
+
+新增 eligible 为 G0-14、16。现有四项为 G0-06、12、14、16；前两项沿用历史执行，G0-14 来自本次授权前一会话的执行，本接续轮未重跑这三项。
+
+| D4 个案 | 最终状态 | 动态结果或阻塞 | 无探针单次测试墙钟 |
+|---|---|---|---:|
+| G0-03 Omicron | unknown/build | nexus-db-model 缺 DEP_PQ_LIBDIRS，历史 dpd OpenAPI URL 404 | na |
+| G0-09 Materialize hydration | unknown/build | vendored OpenSSL/Perl 构建失败 | na |
+| G0-11 Materialize coordinator | unknown/build | 旧 native 依赖不兼容当前 CMake/OpenSSL 环境 | na |
+| G0-14 Iroh gossip | eligible | site_hit=39，branch_pending=29，既有测试通过 | 1.50s |
+| G0-16 Iroh net monitor | eligible | site_hit=63，branch_pending=62，既有测试通过 | 15.01s |
+| G0-17 Materialize reconnect | unknown/build | 旧 OpenSSL 构建缺 Perl FindBin | na |
+| G0-21 Deno watcher | ineligible/site_not_hit | 三个既有测试通过，合计 site=11、Pending=6，但 D3 关联 Pending=0 | run_watch 1.58s |
+| G0-22 Neon WAL receiver | unknown/build | Rust 二进制构建成功，pytest fixture 缺 Poetry/moto 环境，测试体未执行 | na |
+
+G0-04/10 的 patchable 改为 yes，主状态分别仍是 no_preexisting_test/site_kind_not_covered。Tokio patchability 现为 yes=19、unknown=3、no=0；源形态支持包装不等于已经实现并测试了完整注入器。当前 ineligible 原因：site_kind_not_covered=8、no_preexisting_test=2、site_not_hit=2，不再有 tokio_not_patchable。
+
+### 六项 unknown 的具体恢复成本
+
+- G0-03：匹配 libpq 构建环境及该历史版本 dpd OpenAPI 产物，然后重建既有 nexus 测试。
+- G0-05（不重做）：兼容 BLAS/MKL 与指定旧 nightly，重建既有 sink 测试；历史超预算记录继续保留。
+- G0-09：匹配 Perl/OpenSSL native 依赖，构建 environmentd/testdrive 并启动受限测试环境。
+- G0-11：匹配旧 CMake/protobuf/librdkafka 环境，构建 SQL 测试服务，再测 D3。
+- G0-17：匹配旧 OpenSSL/Perl 环境，完成 sqllogictest/materialized/storaged 构建，再测重连路径。
+- G0-22：恢复该父版本 Poetry/moto fixture 和完整测试运行依赖，外部 mock 服务遵守 loopback Docker 限制；随后重测干净基线和 D3。现有 PostgreSQL 构建产物也需说明/验证其构建环境。
+
+本轮没有为了把 unknown 变成 eligible 而替换既有测试、放宽路径要求或升级目标依赖。
+
+### 测量范围与成本
+
+- 冻结分母保持 22 个唯一 URL。累计有 8 项获得实际站点计数；Deno 的零仅指三个候选中 **关联路径** 的零，不能解释为全应用不可达。
+- 已运行历史个案的 harness_kind 已按原 runner 补填。没有无探针单次计时的历史项仍为 na，不用带探针计时或构建时间代替。
+- minutes_used 累加历史记录及 D4 的近似工作分钟，现合计 766；G0-04/10 的共同一分钟均摊。它不是新的精确总墙钟：G0-16 的等待与 G0-17 工作有重叠，接续会话也有编排中断。精确构建/测试时间见 JOURNAL 的命令结果；不能从 766 推导独立总耗时或性能比。
+- 既有 eligible 只证明测试可达站点并出现 Pending。尚未证明取消注入能触发缺陷、原断言能发现问题、或每计划一进程的端到端成本可接受。G0 仍不支持宣布 A′ 路线通过。

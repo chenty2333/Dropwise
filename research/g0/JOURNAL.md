@@ -278,3 +278,9 @@
 - 既有 `test_timeline_delete` 的 debug/release-pg16 两参数实例均在 fixture setup 阶段失败：找不到 poetry，fixture 准备启动 moto mock S3。测试体未执行，未启动 moto 或 Neon 服务，0.81 秒启动失败不是有效 baseline_wall_seconds。
 - 最终 unknown/build（测试环境准备阻塞，Rust 二进制 build_ok=yes），站点/路径计数保持未知，不填零。恢复需要该历史版本支持的 Poetry/moto 测试环境，且外部 mock 服务须满足冻结的 loopback Docker 限制；随后才可测无探针基线及 D3。没有为强行完成而替换测试、升级目标依赖或启动主机外部服务。
 - 约 10 分钟；只清理本次 d4-review-target，旧 work 和原未跟踪探针不动。
+
+## D4 完整总体收尾与第一优先验证（2026-09-29）
+
+- 22 个唯一 URL 保持不变：eligible=4、eligible_pending=4、ineligible=12、unknown=6、eligible_if_futures_covered=5。4<6 且 4+6≥6，仍未决。补填历史执行项 harness；无历史无探针计时则保持 na。minutes_used 补入前一会话 D4 近似耗时，与本次新增行统一为累积工作分钟；结果入口明确重叠和非精确总墙钟限制。
+- 核心本机重新运行：26 个测试通过，1 个既有 doctest ignored；locked Clippy all-targets、warnings-denied docs、quickstart 均通过。CI 工作流和 Phase 3 历史提示已由前一会话提交，未 push，所以没有本轮远端 CI 通过结论。
+- 第一优先范围已收尾。第二优先的计划和场景已分开提交，实际对照运行尚未开始。未进入第三优先、未对外发布。
