@@ -1,0 +1,51 @@
+--- a/iroh-net/src/lib.rs
++++ b/iroh-net/src/lib.rs
+@@ -117,6 +117,7 @@
+ #![recursion_limit = "256"]
+ #![deny(missing_docs, rustdoc::broken_intra_doc_links)]
+ 
++mod g0_probe;
+ pub mod defaults;
+ pub mod dialer;
+ mod disco;
+--- a/iroh-net/src/net/netmon/actor.rs
++++ b/iroh-net/src/net/netmon/actor.rs
+@@ -112,6 +112,7 @@
+         let mut wall_time_interval = tokio::time::interval(POLL_WALL_TIME_INTERVAL);
+ 
+         loop {
++            crate::g0_probe::hit();
+             tokio::select! {
+                 biased;
+                 _ = debounce_interval.tick() => {
+@@ -129,7 +130,7 @@
+                         debounce_interval.reset_immediately();
+                     }
+                 }
+-                Ok(_event) = self.mon_receiver.recv_async() => {
++                Ok(_event) = crate::g0_probe::branch(self.mon_receiver.recv_async()) => {
+                     trace!("network activity detected");
+                     last_event.replace(false);
+                     debounce_interval.reset_immediately();
+--- /dev/null
++++ b/iroh-net/src/g0_probe.rs
+@@ -0,0 +1,19 @@
++// D4 observational probe: one line per site entry / branch first Pending.
++use std::future::{Future, poll_fn};
++
++pub(super) fn hit() {
++    eprintln!("G0_D4 site_hit");
++}
++
++pub(super) fn branch<F: Future>(fut: F) -> impl Future<Output = F::Output> {
++    let mut fut = Box::pin(fut);
++    let mut seen = false;
++    poll_fn(move |cx| {
++        let result = fut.as_mut().poll(cx);
++        if result.is_pending() && !seen {
++            seen = true;
++            eprintln!("G0_D4 branch_pending");
++        }
++        result
++    })
++}

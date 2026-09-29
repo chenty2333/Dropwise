@@ -254,3 +254,10 @@
 - patchable=yes：Tokio 1.17.0 select.rs:461 为逐分支元组。核对父提交归档与 w12485 的 coordinator、partitioned client、Cargo.lock 一致。纠正旧记录的函数拼写：该父版本外层 select 在 coord.rs:739，745 行是 `self.dataflow_client.ready()`，经 Controller::ready 和 compute client stream 到 Partitioned::recv，并非 G0-11 父版本的直接 recv。D3 仍需关联重连路径，不改变门槛。
 - 安装父版本声明的 Rust 1.60.0 minimal 后，执行 `CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=$PWD/d4-review-target timeout 300s cargo +1.60.0 build --locked --offline -p mz-sqllogictest -p storaged -p materialized`。205.39 秒后 openssl-sys 构建失败，Perl 缺 FindBin。
 - 最终 unknown/build；既有 cluster.slt 未执行，计数不填零，baseline_wall_seconds=na。约 5 分钟，无服务启动。恢复需匹配 native 构建依赖并完整构建测试服务。
+
+## G0-16 D4 动态确认（2026-09-29）
+
+- 核对父提交 9052905 的 Cargo.lock、netmon actor 与既有 test_smoke_monitor 源码和 d4-review-16 副本一致。Tokio 1.38.1 select.rs:498 可逐分支包装，patchable=yes。
+- Rust 1.80.0 首次 offline 构建缺 addr2line 缓存，改用 locked 在线构建后成功（201.56 秒）；无探针 `net::netmon::tests::test_smoke_monitor --exact` 1/1 通过，墙钟 15.01 秒。
+- 新增独立 D4 探针，重建 30.61 秒；同一既有测试两次均通过，第二次程序化计数 site_hit=63、branch_pending=62，15.018 秒。每分支实例只计第一次 Pending。generic_site=no，defect_path_pending=na。第一次运行输出未用于最终计数。
+- 最终 eligible / eligible_pending，只证明站点可达并经历 Pending，不证明历史缺陷触发。探针为 probes/D4-G0-16.diff，原未跟踪 G0-16.diff 未改动。仅启动测试自己的网卡状态观察器，没有改动网络配置或外部服务。约 12 分钟（含穿插的 G0-17 等待，不与其耗时相加解释为独立总墙钟）。
