@@ -131,6 +131,9 @@ that command:
   `prospective/t3-sqlx/run.sh` and `prospective/phase2/run.sh`.
 - `survey/`, `research/` — the bug survey (`survey/survey.py`, codebook) and
   the feasibility probes.
+- [Known-mechanism comparison](research/mechanisms/RESULTS.md) — independent first-Pending
+  controls, matched/full Dropwise runs and settling ablations on two historical cases.
+  These are retrospective mechanism results, not new bug discoveries.
 
 ## Bug survey
 
