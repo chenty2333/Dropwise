@@ -1,0 +1,87 @@
+diff --git a/cli/file_watcher.rs b/cli/file_watcher.rs
+index fd7d4e1..d6e414e 100644
+--- a/cli/file_watcher.rs
++++ b/cli/file_watcher.rs
+@@ -41,6 +41,7 @@ impl DebouncedReceiver {
+       .await?
+       .into_iter()
+       .collect::<HashSet<_>>(); // prevent duplicates
++    crate::g0_probe::path(async {
+     loop {
+       tokio::select! {
+         items = self.receiver.recv() => {
+@@ -51,6 +52,7 @@ impl DebouncedReceiver {
+         }
+       }
+     }
++    }).await
+   }
+ }
+ 
+@@ -187,8 +189,9 @@ where
+     match resolution_result {
+       Ok(operation_arg) => {
+         let fut = error_handler(operation(operation_arg));
++        crate::g0_probe::hit();
+         select! {
+-          (paths, result) = next_restart(&mut resolver, &mut receiver) => {
++          (paths, result) = crate::g0_probe::branch(next_restart(&mut resolver, &mut receiver)) => {
+             if result.is_ok() {
+               paths_to_watch = paths;
+             }
+diff --git a/cli/main.rs b/cli/main.rs
+index 320e4e8..1a4e0ee 100644
+--- a/cli/main.rs
++++ b/cli/main.rs
+@@ -15,6 +15,7 @@ mod emit;
+ mod errors;
+ mod file_fetcher;
+ mod file_watcher;
++mod g0_probe;
+ mod flags;
+ mod flags_allow_net;
+ mod fmt_errors;
+--- /dev/null
++++ b/cli/g0_probe.rs
+@@ -0,0 +1,41 @@
++// D4 observational counters. Path correlation is limited to this branch's poll.
++use deno_core::futures::future::poll_fn;
++use std::{cell::Cell, future::Future, sync::atomic::{AtomicUsize, Ordering::SeqCst}};
++thread_local! {
++    static ACTIVE: Cell<bool> = Cell::new(false);
++    static PATH: Cell<bool> = Cell::new(false);
++}
++static SITE: AtomicUsize = AtomicUsize::new(0);
++static PENDING: AtomicUsize = AtomicUsize::new(0);
++static CORRELATED: AtomicUsize = AtomicUsize::new(0);
++fn report() {
++    if let Ok(dir) = std::env::var("G0_D4_OUT") {
++        std::fs::write(format!("{}/{}.txt", dir, std::process::id()),
++            format!("{} {} {}", SITE.load(SeqCst), PENDING.load(SeqCst), CORRELATED.load(SeqCst))).unwrap();
++    }
++}
++pub fn hit() { SITE.fetch_add(1, SeqCst); report(); }
++pub fn path<F: Future>(f: F) -> impl Future<Output=F::Output> {
++    let mut f = Box::pin(f);
++    poll_fn(move |cx| {
++        let r = f.as_mut().poll(cx);
++        if r.is_pending() && ACTIVE.with(Cell::get) { PATH.with(|p| p.set(true)); }
++        r
++    })
++}
++pub fn branch<F: Future>(f: F) -> impl Future<Output=F::Output> {
++    let mut f = Box::pin(f);
++    let (mut seen, mut correlated) = (false, false);
++    poll_fn(move |cx| {
++        let previous = ACTIVE.with(|p| p.replace(true));
++        PATH.with(|p| p.set(false));
++        let r = f.as_mut().poll(cx);
++        ACTIVE.with(|p| p.set(previous));
++        if r.is_pending() {
++            if !seen { seen=true; PENDING.fetch_add(1, SeqCst); }
++            if !correlated && PATH.with(Cell::get) { correlated=true; CORRELATED.fetch_add(1, SeqCst); }
++            report();
++        }
++        r
++    })
++}

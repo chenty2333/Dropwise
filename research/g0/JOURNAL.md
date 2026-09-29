@@ -261,3 +261,12 @@
 - Rust 1.80.0 首次 offline 构建缺 addr2line 缓存，改用 locked 在线构建后成功（201.56 秒）；无探针 `net::netmon::tests::test_smoke_monitor --exact` 1/1 通过，墙钟 15.01 秒。
 - 新增独立 D4 探针，重建 30.61 秒；同一既有测试两次均通过，第二次程序化计数 site_hit=63、branch_pending=62，15.018 秒。每分支实例只计第一次 Pending。generic_site=no，defect_path_pending=na。第一次运行输出未用于最终计数。
 - 最终 eligible / eligible_pending，只证明站点可达并经历 Pending，不证明历史缺陷触发。探针为 probes/D4-G0-16.diff，原未跟踪 G0-16.diff 未改动。仅启动测试自己的网卡状态观察器，没有改动网络配置或外部服务。约 12 分钟（含穿插的 G0-17 等待，不与其耗时相加解释为独立总墙钟）。
+
+## G0-21 D4 动态确认（2026-09-29）
+
+- 父提交归档与 scratch HEAD 的 file_watcher.rs、既有 watcher_tests.rs、Cargo.lock 一致；Tokio 1.17.0 select.rs:461 可包装，patchable=yes。
+- Rust 1.59.0 `cargo test --locked --offline -p deno --test integration_tests --no-run` 构建成功，431.66 秒。无探针 binary 执行 `integration::watcher::run_watch --exact`，1/1 通过、1.58 秒。
+- D4 探针只观察站点和首次 Pending；D3 仅当该 branch 的一次 poll 中，已收集文件路径的 DebouncedReceiver 内层循环实际 Pending 才计数。另做探针本身的隔离正/负/重复 poll 控制：无关联路径=0、有路径=1、不重复计数，均通过。这不是新增候选，不进入 G0 分母。
+- 探针重建 58.30 秒。三个原预筛既有测试均通过：run_watch 6/2/0（1.641 秒），bundle_js_watch 2/1/0（1.502 秒），lint_watch_test 3/3/0（1.241 秒），依次为 site_hit/branch_pending/defect_path_pending。合计 11/6/0；按 D3 判为 ineligible/site_not_hit，只适用于这组候选，不声称整个应用永远不可达。
+- 调用错误单独说明：最初 test target 误写 integration；一次漏设 CARGO_TARGET_DIR 导致默认 target 重建，14.43 秒后停止；一次 exact filter 名称错误运行 0 测试；一次重建命令 cwd 错误。均非项目失败、均未计作通过。随后使用实际 binary 和 `--list` 中的精确名称执行上述测量。
+- TMPDIR 位于本例 d4-tmp；无外部服务或网络设置变更。约 14 分钟。原有未跟踪探针和默认 target 的原内容保留，仅清理本次 d4-review-target。
