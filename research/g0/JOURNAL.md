@@ -222,3 +222,7 @@
 - 另核实父版本所需 dendrite OpenAPI 下载 URL（`b9444d0c.../dpd.json`）仍 HTTP 404。历史记录将 dpd 与 ddm 名称混写，本轮依据实际 dpd-client/build.rs/package-manifest.toml，不沿用旧拼写。
 - 最终 `unknown/build`，无 site/Pending 动态计数；harness=cargo_test，baseline_wall_seconds=na。没有启动服务，构建加检查约 5 分钟，未用满 90 分钟但已有明确阻塞。恢复成本：准备匹配 libpq 构建环境及该父版本私有/历史 OpenAPI 产物，再重建候选。
 - 仅清理本轮创建的 d4-review-target，不删除既有 scratch 文件。
+
+## G0-04 / G0-10 D4 静态更正（2026-09-29）
+
+检查 Tokio 1.18.2 上游版本源码 select.rs:463、已有 Tokio 1.32.0 版本源码 select.rs:474，均为逐分支 future 元组，patchable 改 yes（源形态可行，不声称补丁已执行验证）。G0-04 仍 ineligible/no_preexisting_test；G0-10 实际为 futures::future::select，仍 ineligible/site_kind_not_covered。依 D4 不运行动态候选，约 1 分钟，无服务或构建。
