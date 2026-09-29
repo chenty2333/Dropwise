@@ -111,6 +111,10 @@ cargo test                       # harness tests
 cargo clippy --all-targets
 ```
 
+Core CI runs the tests, Clippy, API documentation build and quickstart on stable
+Rust. It does not run the separate research experiments or claim their results.
+Formatting is not gated yet: the existing tree does not match default rustfmt.
+
 The root crate is the library plus its tests and examples: `cargo test` needs a
 Rust toolchain and nothing else — no upstream checkouts, no services, every
 scenario in-process on `tokio`.

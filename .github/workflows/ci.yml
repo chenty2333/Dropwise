@@ -1,0 +1,35 @@
+name: Core CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install stable Rust
+        run: rustup toolchain install stable --profile minimal --component clippy
+      - name: Test core library and doctests
+        run: timeout 180s cargo +stable test --locked
+      - name: Lint all core targets
+        run: cargo +stable clippy --locked --all-targets -- -D warnings
+      - name: Build API documentation
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo +stable doc --locked --no-deps
+      - name: Run quickstart
+        run: timeout 60s cargo +stable run --locked --example quickstart
