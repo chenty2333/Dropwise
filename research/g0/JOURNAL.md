@@ -270,3 +270,11 @@
 - 探针重建 58.30 秒。三个原预筛既有测试均通过：run_watch 6/2/0（1.641 秒），bundle_js_watch 2/1/0（1.502 秒），lint_watch_test 3/3/0（1.241 秒），依次为 site_hit/branch_pending/defect_path_pending。合计 11/6/0；按 D3 判为 ineligible/site_not_hit，只适用于这组候选，不声称整个应用永远不可达。
 - 调用错误单独说明：最初 test target 误写 integration；一次漏设 CARGO_TARGET_DIR 导致默认 target 重建，14.43 秒后停止；一次 exact filter 名称错误运行 0 测试；一次重建命令 cwd 错误。均非项目失败、均未计作通过。随后使用实际 binary 和 `--list` 中的精确名称执行上述测量。
 - TMPDIR 位于本例 d4-tmp；无外部服务或网络设置变更。约 14 分钟。原有未跟踪探针和默认 target 的原内容保留，仅清理本次 d4-review-target。
+
+## G0-22 D4 收尾（2026-09-29）
+
+- 新建 detached parent 12512f3 worktree，未复制旧 scratch 的 Cargo.lock、bindgen、C header 等改动。Tokio 1.36.0 select.rs:474 可包装，patchable=yes。
+- Rust 1.77.0 locked/offline 构建 pageserver/safekeeper/control_plane，首次因缺 protoc 失败（125.48 秒）。指定已有 scratch protoc 及旧 scratch 的 PostgreSQL install 路径后成功（180.69 秒），storage_broker 单独成功（53.40 秒）。旧 PostgreSQL 原生产物只是构建输入；本轮未将它视为经过独立验证的干净父版本产物。最初 package 名误写 neon_local，已按实际 Cargo manifest 改为 control_plane。
+- 既有 `test_timeline_delete` 的 debug/release-pg16 两参数实例均在 fixture setup 阶段失败：找不到 poetry，fixture 准备启动 moto mock S3。测试体未执行，未启动 moto 或 Neon 服务，0.81 秒启动失败不是有效 baseline_wall_seconds。
+- 最终 unknown/build（测试环境准备阻塞，Rust 二进制 build_ok=yes），站点/路径计数保持未知，不填零。恢复需要该历史版本支持的 Poetry/moto 测试环境，且外部 mock 服务须满足冻结的 loopback Docker 限制；随后才可测无探针基线及 D3。没有为强行完成而替换测试、升级目标依赖或启动主机外部服务。
+- 约 10 分钟；只清理本次 d4-review-target，旧 work 和原未跟踪探针不动。
