@@ -226,3 +226,10 @@
 ## G0-04 / G0-10 D4 静态更正（2026-09-29）
 
 检查 Tokio 1.18.2 上游版本源码 select.rs:463、已有 Tokio 1.32.0 版本源码 select.rs:474，均为逐分支 future 元组，patchable 改 yes（源形态可行，不声称补丁已执行验证）。G0-04 仍 ineligible/no_preexisting_test；G0-10 实际为 futures::future::select，仍 ineligible/site_kind_not_covered。依 D4 不运行动态候选，约 1 分钟，无服务或构建。
+
+## G0-09 D4 收尾（2026-09-29）
+
+- Tokio 1.38.0 select.rs:498 可逐分支包装，patchable=yes。候选保持 `test/testdrive/sequential-hydration.td`，D3 仍要求 ReplicaTask 外层站点与 SequentialHydration 修复路径相关。
+- 在既有父版本 scratch `materialize/w28816` 尝试 `cargo +1.80.0 build --locked -p mz-environmentd -p mz-testdrive`。先修复该版本工具链的残缺安装（不改默认 toolchain）；offline 缺 git 依赖后在线重试，下载成功。随后 vendored OpenSSL 构建因 Perl 模块缺失失败；补用已有 FindBin helper 后仍失败，未升级目标依赖或修改 Cargo.lock。
+- 在线构建 94.03 秒，helper 重试 0.88 秒；含检查和工具链恢复约 3 分钟。最终 unknown/build，不是 site_not_hit。未启动服务，未运行候选；harness=testdrive，baseline_wall_seconds=na。
+- 恢复成本：完整的 Perl/OpenSSL native 构建依赖、完整 environmentd/testdrive 构建及测试服务；其后才能观察 D3 计数。仅清理本轮 d4-review-target。
