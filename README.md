@@ -134,6 +134,30 @@ that command:
 - [Known-mechanism comparison](research/mechanisms/RESULTS.md) — independent first-Pending
   controls, matched/full Dropwise runs and settling ablations on two historical cases.
   These are retrospective mechanism results, not new bug discoveries.
+- Small interruption/composition experiments: `bash prospective/run-interruption.sh`
+  runs observation-limit controls, survivor transaction-state checks, owned-connection
+  handoffs, commit-before-acknowledgement retries, and Pending-window comparisons,
+  three times each. It reuses the existing SQLx/bb8 crates and locked dependencies,
+  starts a disposable loopback-only PostgreSQL container, and stops it on exit.
+  Requires Docker, the local `postgres:18-alpine` image and cached crates. Results
+  go only to stdout; frozen studies and historical results are unchanged.
+  - SQLx successor observations are judged against an allowed set calibrated from
+    the same scenario (operation never started, operation completed; two samples
+    each, `prospective/support/allowed.rs`), not hard-coded expected business
+    values. The selected projection and whether "never started" is acceptable
+    remain explicit application contracts, not inferred specifications. Unstable
+    calibrations or incomplete observations are unknown.
+  - Controls expose legal partial progress (false atomicity alarms), lossy state
+    projections and equal task counts (missed identity changes), delayed cleanup
+    (early leak alarms), and external events after equal T/2T snapshots. A completion
+    signal only certifies the work explicitly covered by that signal.
+  - The shared test-only TCP gate withholds actual PostgreSQL reply bytes. An
+    independent connection certifies commit; sampling immediately before query
+    destruction distinguishes witnessed committed/unacknowledged cuts from unknowns.
+    Pending enumeration with `AfterWake` can reach this window when gated; absence
+    of a certificate without the gate is not evidence that the window is unreachable.
+  Unsafe controls are expected to expose contamination/duplicate effects; tests pass
+  when the labelled outcomes are reproduced. These are not new upstream bug claims.
 
 ## Bug survey
 
