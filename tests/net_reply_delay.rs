@@ -18,7 +18,9 @@ fn reply_delay(delay: Duration) -> ProxyOptions {
 /// Mock upstream: accepts connections, reads one request, writes one reply, and
 /// then holds the connection open until the test runtime shuts down.
 async fn start_upstream(reply: &'static [u8]) -> SocketAddr {
-    let listener = TcpListener::bind(("127.0.0.1", 0)).await.expect("bind mock upstream");
+    let listener = TcpListener::bind(("127.0.0.1", 0))
+        .await
+        .expect("bind mock upstream");
     let addr = listener.local_addr().expect("mock upstream address");
     tokio::spawn(async move {
         loop {
@@ -37,7 +39,9 @@ async fn start_upstream(reply: &'static [u8]) -> SocketAddr {
 /// Mock upstream that writes `CHUNKS` as separate writes, with a short pause
 /// between them so the proxy can hand them to the client one chunk at a time.
 async fn start_chunked_upstream() -> SocketAddr {
-    let listener = TcpListener::bind(("127.0.0.1", 0)).await.expect("bind mock upstream");
+    let listener = TcpListener::bind(("127.0.0.1", 0))
+        .await
+        .expect("bind mock upstream");
     let addr = listener.local_addr().expect("mock upstream address");
     tokio::spawn(async move {
         loop {
@@ -57,7 +61,9 @@ async fn start_chunked_upstream() -> SocketAddr {
 }
 
 async fn connect_through(proxy: &Proxy) -> (TcpStream, SocketAddr) {
-    let client = TcpStream::connect(proxy.addr()).await.expect("connect to proxy");
+    let client = TcpStream::connect(proxy.addr())
+        .await
+        .expect("connect to proxy");
     let addr = client.local_addr().expect("client local address");
     (client, addr)
 }
@@ -71,13 +77,20 @@ async fn wait_for_stats(
     let deadline = Instant::now() + Duration::from_secs(5);
     let mut last = None;
     loop {
-        if let Some(stats) = proxy.connections().into_iter().find(|stats| stats.client == client) {
+        if let Some(stats) = proxy
+            .connections()
+            .into_iter()
+            .find(|stats| stats.client == client)
+        {
             if done(&stats) {
                 return stats;
             }
             last = Some(stats);
         }
-        assert!(Instant::now() < deadline, "byte counts did not settle: {last:?}");
+        assert!(
+            Instant::now() < deadline,
+            "byte counts did not settle: {last:?}"
+        );
         tokio::time::sleep(Duration::from_millis(10)).await;
     }
 }
@@ -100,7 +113,10 @@ async fn held_reply_makes_the_client_read_pending() {
     // The upstream has already written the reply; the proxy is holding it.
     let mut buf = [0u8; 64];
     let read = tokio::time::timeout(Duration::from_millis(100), client.read(&mut buf)).await;
-    assert!(read.is_err(), "the read completed although the proxy should hold the reply");
+    assert!(
+        read.is_err(),
+        "the read completed although the proxy should hold the reply"
+    );
 
     let mut reply = vec![0u8; REPLY.len()];
     tokio::time::timeout(Duration::from_secs(5), client.read_exact(&mut reply))
@@ -160,14 +176,26 @@ async fn residue_does_not_see_a_held_reply() {
 
     // The request reached the upstream, so it has had a chance to send the
     // reply; the proxy is now inside the delay.
-    wait_for_stats(&proxy, client_addr, |stats| stats.to_upstream == REQUEST.len() as u64).await;
+    wait_for_stats(&proxy, client_addr, |stats| {
+        stats.to_upstream == REQUEST.len() as u64
+    })
+    .await;
     tokio::time::sleep(Duration::from_millis(50)).await;
     let held = stats_to_client(&proxy, client_addr);
-    assert_eq!(held, 0, "the reply was already forwarded, so the delay had elapsed");
+    assert_eq!(
+        held, 0,
+        "the reply was already forwarded, so the delay had elapsed"
+    );
     let during = residue(&proxy, client_addr);
-    assert_eq!(during, 0, "residue saw bytes that the proxy is still holding");
+    assert_eq!(
+        during, 0,
+        "residue saw bytes that the proxy is still holding"
+    );
 
-    wait_for_stats(&proxy, client_addr, |stats| stats.to_client == REPLY.len() as u64).await;
+    wait_for_stats(&proxy, client_addr, |stats| {
+        stats.to_client == REPLY.len() as u64
+    })
+    .await;
     let after = residue(&proxy, client_addr);
     assert_eq!(after, REPLY.len(), "residue missed the forwarded reply");
 }

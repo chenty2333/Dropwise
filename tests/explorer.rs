@@ -1,12 +1,15 @@
 use std::time::Duration;
 
 use dropwise::models::mpsc::UnboundedReceiver;
-use dropwise::{explore, Config, Ctx, Flavor, Obligation, Race};
+use dropwise::{Config, Ctx, Flavor, Obligation, Race, explore};
 use tokio::sync::mpsc;
 use tokio::time::Instant;
 
 fn immediate_only() -> Config {
-    Config { races: vec![Race::Immediate], ..Config::default() }
+    Config {
+        races: vec![Race::Immediate],
+        ..Config::default()
+    }
 }
 
 async fn hold_across_await(label: &'static str) {
@@ -17,7 +20,10 @@ async fn hold_across_await(label: &'static str) {
 
 #[test]
 fn multiple_targets_and_combinations() {
-    let config = Config { max_cancellations: 2, ..immediate_only() };
+    let config = Config {
+        max_cancellations: 2,
+        ..immediate_only()
+    };
     let report = explore(&config, |ctx: Ctx| async move {
         ctx.target(hold_across_await("first")).await;
         ctx.target(hold_across_await("second")).await;
@@ -36,7 +42,10 @@ fn multiple_targets_and_combinations() {
 /// say so even though the queue is empty by the time the budget runs out.
 #[test]
 fn budget_below_the_frontier_is_not_exhaustive() {
-    let config = Config { max_runs: 3, ..immediate_only() };
+    let config = Config {
+        max_runs: 3,
+        ..immediate_only()
+    };
     let report = explore(&config, |ctx: Ctx| async move {
         for _ in 0..4 {
             ctx.target(hold_across_await("msg")).await;
@@ -61,7 +70,10 @@ fn bounded_queue_preserves_the_breadth_first_prefix() {
         }
         Ok(())
     };
-    let mut config = Config { max_cancellations: 2, ..immediate_only() };
+    let mut config = Config {
+        max_cancellations: 2,
+        ..immediate_only()
+    };
     let full = explore(&config, scenario);
     assert!(full.exhaustive, "{full}");
     assert!(full.trials.iter().any(|t| t.plan.len() == 2));
@@ -74,7 +86,11 @@ fn bounded_queue_preserves_the_breadth_first_prefix() {
             assert_eq!(actual.plan, expected.plan, "budget {budget}");
             assert_eq!(actual.outcomes, expected.outcomes, "budget {budget}");
         }
-        assert_eq!(bounded.exhaustive, budget > full.trials.len(), "budget {budget}");
+        assert_eq!(
+            bounded.exhaustive,
+            budget > full.trials.len(),
+            "budget {budget}"
+        );
     }
 }
 
@@ -82,7 +98,9 @@ fn bounded_queue_preserves_the_breadth_first_prefix() {
 /// trivially true. The report has to say so.
 #[test]
 fn a_run_without_targets_says_it_explored_nothing() {
-    let report = explore(&Config::default(), |_ctx: Ctx| async { Ok::<(), String>(()) });
+    let report = explore(&Config::default(), |_ctx: Ctx| async {
+        Ok::<(), String>(())
+    });
     assert!(report.is_clean() && !report.exhaustive, "{report}");
     assert!(report.to_string().contains("reached no target"), "{report}");
 }
@@ -90,7 +108,11 @@ fn a_run_without_targets_says_it_explored_nothing() {
 #[test]
 fn every_race_mode_is_tried() {
     let config = Config {
-        races: vec![Race::Immediate, Race::Reschedule(1), Race::After(Duration::from_millis(5))],
+        races: vec![
+            Race::Immediate,
+            Race::Reschedule(1),
+            Race::After(Duration::from_millis(5)),
+        ],
         ..Config::default()
     };
     let report = explore(&config, |ctx: Ctx| async move {
@@ -103,10 +125,15 @@ fn every_race_mode_is_tried() {
 #[test]
 fn after_race_lets_the_system_advance() {
     let d = Duration::from_millis(10);
-    let config = Config { races: vec![Race::After(d)], ..Config::default() };
+    let config = Config {
+        races: vec![Race::After(d)],
+        ..Config::default()
+    };
     let report = explore(&config, |ctx: Ctx| async move {
         let start = Instant::now();
-        let out = ctx.target(tokio::time::sleep(Duration::from_secs(3600))).await;
+        let out = ctx
+            .target(tokio::time::sleep(Duration::from_secs(3600)))
+            .await;
         match out {
             None if start.elapsed() < d => Err(format!("dropped after {:?}", start.elapsed())),
             _ => Ok(()),
@@ -121,7 +148,10 @@ fn after_race_lets_the_system_advance() {
 #[test]
 fn after_race_counts_from_the_planned_pending() {
     let d = Duration::from_secs(1);
-    let config = Config { races: vec![Race::After(d)], ..Config::default() };
+    let config = Config {
+        races: vec![Race::After(d)],
+        ..Config::default()
+    };
     let report = explore(&config, |ctx: Ctx| async move {
         let start = Instant::now();
         let (op, mut preempt) = ctx.race(async {
@@ -161,7 +191,10 @@ fn after_wake_drops_a_delivered_but_unconsumed_event() {
     let immediate = explore(&immediate_only(), scenario);
     assert!(immediate.is_clean() && immediate.exhaustive, "{immediate}");
 
-    let config = Config { races: vec![Race::AfterWake], ..Config::default() };
+    let config = Config {
+        races: vec![Race::AfterWake],
+        ..Config::default()
+    };
     let report = explore(&config, scenario);
     let v: Vec<_> = report.violations().collect();
     assert_eq!(v.len(), 1, "{report}");
@@ -189,13 +222,19 @@ fn yield_race_exposes_interleavings_immediate_misses() {
         }
     };
     assert!(explore(&immediate_only(), scenario).is_clean());
-    let config = Config { races: vec![Race::Reschedule(1)], ..Config::default() };
+    let config = Config {
+        races: vec![Race::Reschedule(1)],
+        ..Config::default()
+    };
     assert_eq!(explore(&config, scenario).violations().count(), 1);
 }
 
 #[test]
 fn leaks_on_worker_threads_are_recorded() {
-    let config = Config { flavor: Flavor::MultiThread { workers: 2 }, ..immediate_only() };
+    let config = Config {
+        flavor: Flavor::MultiThread { workers: 2 },
+        ..immediate_only()
+    };
     let report = explore(&config, |ctx: Ctx| async move {
         tokio::spawn(async move {
             ctx.target(hold_across_await("on worker")).await;

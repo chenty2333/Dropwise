@@ -42,7 +42,8 @@ pub mod net;
 mod obligation;
 
 pub use explore::{
-    assert_cancel_correct, assert_observed, explore, explore_observed, Config, Ctx, Cut, CutOutcome,
-    Expect, Flavor, Gap, GapWait, Preempt, Race, Raced, Report, Settle, Target, Trial, Verdict,
+    Config, Ctx, Cut, CutOutcome, Expect, Flavor, Gap, GapWait, Preempt, Race, Raced, Report,
+    Settle, Target, Trial, Verdict, assert_cancel_correct, assert_observed, explore,
+    explore_observed,
 };
 pub use obligation::{Leak, LeakKind, Obligation};

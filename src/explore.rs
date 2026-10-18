@@ -8,7 +8,7 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::task::{Context, Poll, Wake, Waker};
 use std::time::Duration;
 
-use crate::obligation::{set_current, CurrentLedger, Leak, Ledger};
+use crate::obligation::{CurrentLedger, Leak, Ledger, set_current};
 
 /// When the competing branch wins, measured from the moment the target returns
 /// the planned `Pending`.
@@ -302,9 +302,19 @@ impl Ctx {
             drop(fut);
             core.set(Status::Doomed);
             core.set(Status::Cancelled);
-            return Target { core, cut, probe: None, phase: Phase::Skipped };
+            return Target {
+                core,
+                cut,
+                probe: None,
+                phase: Phase::Skipped,
+            };
         }
-        Target { core, cut, probe: WakeProbe::for_cut(cut), phase: Phase::Running(Box::pin(fut)) }
+        Target {
+            core,
+            cut,
+            probe: WakeProbe::for_cut(cut),
+            phase: Phase::Running(Box::pin(fut)),
+        }
     }
 
     /// Mark `fut` as a cancellation target inside the program's own `select!`.
@@ -337,7 +347,13 @@ impl Ctx {
             core.set(Status::Doomed);
         }
         let probe = WakeProbe::for_cut(cut);
-        let raced = Raced { core, cut, probe: probe.clone(), inner: Some(Box::pin(fut)), shared: shared.clone() };
+        let raced = Raced {
+            core,
+            cut,
+            probe: probe.clone(),
+            inner: Some(Box::pin(fut)),
+            shared: shared.clone(),
+        };
         let preempt = Preempt {
             shared,
             race: cut.map(|c| c.race),
@@ -364,7 +380,13 @@ impl Ctx {
         let mut st = self.state.lock().unwrap();
         let index = st.gap_defaults.len();
         st.gap_defaults.push(default);
-        let chosen = st.plan.gaps.get(index).copied().flatten().map(|choice| st.gap_choices[choice]);
+        let chosen = st
+            .plan
+            .gaps
+            .get(index)
+            .copied()
+            .flatten()
+            .map(|choice| st.gap_choices[choice]);
         GapWait::new(chosen.unwrap_or(default))
     }
 
@@ -387,7 +409,12 @@ pub struct GapWait {
 
 impl GapWait {
     fn new(gap: Gap) -> Self {
-        Self { gap, yielded: 0, yielding: None, sleep: None }
+        Self {
+            gap,
+            yielded: 0,
+            yielding: None,
+            sleep: None,
+        }
     }
 }
 
@@ -402,8 +429,9 @@ impl Future for GapWait {
                 if this.yielded >= n {
                     return Poll::Ready(());
                 }
-                let yield_now =
-                    this.yielding.get_or_insert_with(|| Box::pin(tokio::task::yield_now()));
+                let yield_now = this
+                    .yielding
+                    .get_or_insert_with(|| Box::pin(tokio::task::yield_now()));
                 if yield_now.as_mut().poll(cx).is_pending() {
                     return Poll::Pending;
                 }
@@ -411,7 +439,9 @@ impl Future for GapWait {
                 this.yielded += 1;
             },
             Gap::Sleep(d) => {
-                let sleep = this.sleep.get_or_insert_with(|| Box::pin(tokio::time::sleep(d)));
+                let sleep = this
+                    .sleep
+                    .get_or_insert_with(|| Box::pin(tokio::time::sleep(d)));
                 sleep.as_mut().poll(cx)
             }
         }
@@ -429,18 +459,40 @@ impl TargetCore {
     fn register(ctx: &Ctx, site: &'static Location<'static>) -> (Self, Option<Cut>) {
         let mut st = ctx.state.lock().unwrap();
         let index = st.targets.len();
-        st.targets.push(TargetRecord { site, pendings: 0, status: Status::Running, lost_race: false });
-        let cut = st.plan.cuts.iter().find(|c| c.target == index).copied().or_else(|| {
-            if !st.plan.repeat {
-                return None;
-            }
-            let start = st.plan.cuts.first().copied()?;
-            if index <= start.target || st.targets.get(start.target)?.site != site {
-                return None;
-            }
-            Some(Cut { target: index, after_pending: start.after_pending, race: start.race })
+        st.targets.push(TargetRecord {
+            site,
+            pendings: 0,
+            status: Status::Running,
+            lost_race: false,
         });
-        (Self { state: ctx.state.clone(), index, seen: 0 }, cut)
+        let cut = st
+            .plan
+            .cuts
+            .iter()
+            .find(|c| c.target == index)
+            .copied()
+            .or_else(|| {
+                if !st.plan.repeat {
+                    return None;
+                }
+                let start = st.plan.cuts.first().copied()?;
+                if index <= start.target || st.targets.get(start.target)?.site != site {
+                    return None;
+                }
+                Some(Cut {
+                    target: index,
+                    after_pending: start.after_pending,
+                    race: start.race,
+                })
+            });
+        (
+            Self {
+                state: ctx.state.clone(),
+                index,
+                seen: 0,
+            },
+            cut,
+        )
     }
 
     fn set(&self, status: Status) {
@@ -461,7 +513,11 @@ impl TargetCore {
     fn pending(&mut self, cut: Option<Cut>) -> bool {
         self.seen += 1;
         let lose = cut.is_some_and(|c| c.after_pending == self.seen);
-        self.set(if lose { Status::Doomed } else { Status::Running });
+        self.set(if lose {
+            Status::Doomed
+        } else {
+            Status::Running
+        });
         lose
     }
 }
@@ -471,7 +527,10 @@ type BoxFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
 /// Waits until the competitor should fire.
 enum Delay {
     Now,
-    Reschedule { remaining: usize, current: Option<BoxFuture> },
+    Reschedule {
+        remaining: usize,
+        current: Option<BoxFuture>,
+    },
     Sleep(Pin<Box<tokio::time::Sleep>>),
     WaitWake(Arc<WakeProbe>),
 }
@@ -482,12 +541,21 @@ impl Delay {
         Self::starting_at(race, tokio::time::Instant::now(), probe)
     }
 
-    fn starting_at(race: Race, start: tokio::time::Instant, probe: Option<&Arc<WakeProbe>>) -> Self {
+    fn starting_at(
+        race: Race,
+        start: tokio::time::Instant,
+        probe: Option<&Arc<WakeProbe>>,
+    ) -> Self {
         match race {
             Race::Immediate | Race::Reschedule(0) => Delay::Now,
-            Race::Reschedule(n) => Delay::Reschedule { remaining: n, current: None },
+            Race::Reschedule(n) => Delay::Reschedule {
+                remaining: n,
+                current: None,
+            },
             Race::After(d) => Delay::Sleep(Box::pin(tokio::time::sleep_until(start + d))),
-            Race::AfterWake => Delay::WaitWake(probe.expect("AfterWake targets have a probe").clone()),
+            Race::AfterWake => {
+                Delay::WaitWake(probe.expect("AfterWake targets have a probe").clone())
+            }
         }
     }
 
@@ -497,7 +565,11 @@ impl Delay {
             Delay::WaitWake(probe) => {
                 // Register first, so a wake between the check and returning is not lost.
                 *probe.waker.lock().unwrap() = Some(cx.waker().clone());
-                if probe.woken.load(Ordering::SeqCst) { Poll::Ready(()) } else { Poll::Pending }
+                if probe.woken.load(Ordering::SeqCst) {
+                    Poll::Ready(())
+                } else {
+                    Poll::Pending
+                }
             }
             Delay::Sleep(sleep) => sleep.as_mut().poll(cx),
             Delay::Reschedule { remaining, current } => loop {
@@ -528,12 +600,25 @@ struct WakeProbe {
 
 impl WakeProbe {
     fn for_cut(cut: Option<Cut>) -> Option<Arc<Self>> {
-        matches!(cut, Some(Cut { race: Race::AfterWake, .. })).then(Arc::default)
+        matches!(
+            cut,
+            Some(Cut {
+                race: Race::AfterWake,
+                ..
+            })
+        )
+        .then(Arc::default)
     }
 
     /// Poll `fut` through `probe` if there is one, else directly.
-    fn poll<F: Future>(probe: &Option<Arc<Self>>, fut: Pin<&mut F>, cx: &mut Context<'_>) -> Poll<F::Output> {
-        let Some(probe) = probe else { return fut.poll(cx) };
+    fn poll<F: Future>(
+        probe: &Option<Arc<Self>>,
+        fut: Pin<&mut F>,
+        cx: &mut Context<'_>,
+    ) -> Poll<F::Output> {
+        let Some(probe) = probe else {
+            return fut.poll(cx);
+        };
         probe.woken.store(false, Ordering::SeqCst);
         *probe.waker.lock().unwrap() = Some(cx.waker().clone());
         let waker = Waker::from(probe.clone());
@@ -557,7 +642,10 @@ impl Wake for WakeProbe {
 enum Phase<F> {
     Running(Pin<Box<F>>),
     /// Lost the race; kept alive (unpolled) until the competitor fires.
-    Doomed { _inner: Pin<Box<F>>, delay: Delay },
+    Doomed {
+        _inner: Pin<Box<F>>,
+        delay: Delay,
+    },
     /// Calibration-only cut: dropped before its first poll.
     Skipped,
     Done,
@@ -589,11 +677,18 @@ impl<F: Future> Future for Target<F> {
                         if !this.core.pending(this.cut) {
                             return Poll::Pending;
                         }
-                        let Phase::Running(inner) = std::mem::replace(&mut this.phase, Phase::Done) else {
+                        let Phase::Running(inner) = std::mem::replace(&mut this.phase, Phase::Done)
+                        else {
                             unreachable!()
                         };
-                        let delay = Delay::new(this.cut.expect("losing implies a cut").race, this.probe.as_ref());
-                        this.phase = Phase::Doomed { _inner: inner, delay };
+                        let delay = Delay::new(
+                            this.cut.expect("losing implies a cut").race,
+                            this.probe.as_ref(),
+                        );
+                        this.phase = Phase::Doomed {
+                            _inner: inner,
+                            delay,
+                        };
                     }
                 },
                 Phase::Doomed { delay, .. } => {
@@ -667,7 +762,10 @@ impl<F: Future> Future for Raced<F> {
                 return Poll::Pending;
             }
         }
-        let inner = this.inner.as_mut().expect("dropwise::Raced polled after completion");
+        let inner = this
+            .inner
+            .as_mut()
+            .expect("dropwise::Raced polled after completion");
         match WakeProbe::poll(&this.probe, inner.as_mut(), cx) {
             Poll::Ready(v) => {
                 this.inner = None;
@@ -738,7 +836,9 @@ impl Future for Preempt {
             sh.doomed_at.expect("doomed implies doomed_at")
         };
         let race = this.race.expect("doomed implies a cut");
-        let delay = this.delay.get_or_insert_with(|| Delay::starting_at(race, doomed_at, this.probe.as_ref()));
+        let delay = this
+            .delay
+            .get_or_insert_with(|| Delay::starting_at(race, doomed_at, this.probe.as_ref()));
         if delay.poll(cx).is_pending() {
             return Poll::Pending;
         }
@@ -866,13 +966,18 @@ impl Report {
 
     /// Trials whose calibration could not judge the observation.
     pub fn unknown(&self) -> impl Iterator<Item = &Trial> {
-        self.trials.iter().filter(|t| t.verdict == Some(Verdict::Unknown))
+        self.trials
+            .iter()
+            .filter(|t| t.verdict == Some(Verdict::Unknown))
     }
 
     /// Number of trials with this verdict; always 0 for a plain [`explore`]
     /// report, whose trials carry no verdict.
     pub fn verdict_count(&self, verdict: Verdict) -> usize {
-        self.trials.iter().filter(|t| t.verdict == Some(verdict)).count()
+        self.trials
+            .iter()
+            .filter(|t| t.verdict == Some(verdict))
+            .count()
     }
 
     /// Nothing was *observed* to go wrong: the baseline run reported no problem
@@ -927,10 +1032,17 @@ impl fmt::Display for Report {
             "dropwise: {} target(s), {} cancellation plan(s) explored{}",
             self.baseline_targets,
             self.trials.len(),
-            if self.exhaustive { "" } else { " (NOT exhaustive)" }
+            if self.exhaustive {
+                ""
+            } else {
+                " (NOT exhaustive)"
+            }
         )?;
         if self.baseline_targets == 0 {
-            writeln!(f, "  the uncancelled run reached no target: nothing was explored (mark ctx.target/ctx.race)")?;
+            writeln!(
+                f,
+                "  the uncancelled run reached no target: nothing was explored (mark ctx.target/ctx.race)"
+            )?;
         }
         for e in &self.baseline_errors {
             writeln!(f, "  baseline (no cancellation): {e}")?;
@@ -945,7 +1057,10 @@ impl fmt::Display for Report {
             }
         }
         if !self.baseline_settled {
-            writeln!(f, "  baseline: observation window ended before settling (watchdog)")?;
+            writeln!(
+                f,
+                "  baseline: observation window ended before settling (watchdog)"
+            )?;
         }
         let unsettled: Vec<_> = self.unsettled().collect();
         if !unsettled.is_empty() {
@@ -960,7 +1075,11 @@ impl fmt::Display for Report {
         }
         let unrealized: Vec<_> = self.unrealized().filter(|t| !t.is_violation()).collect();
         if !unrealized.is_empty() {
-            writeln!(f, "  {} plan(s) not realized (nothing tested):", unrealized.len())?;
+            writeln!(
+                f,
+                "  {} plan(s) not realized (nothing tested):",
+                unrealized.len()
+            )?;
             for t in unrealized {
                 writeln!(f, "    {}", describe(t))?;
             }
@@ -979,7 +1098,11 @@ impl fmt::Display for Report {
         }
         let unknown: Vec<_> = self.unknown().collect();
         if !unknown.is_empty() {
-            writeln!(f, "  {} plan(s) cannot be decided (unstable calibration):", unknown.len())?;
+            writeln!(
+                f,
+                "  {} plan(s) cannot be decided (unstable calibration):",
+                unknown.len()
+            )?;
             for t in unknown {
                 writeln!(f, "    {}", describe(t))?;
             }
@@ -1079,13 +1202,18 @@ impl Watchdog {
         let shared = stop.clone();
         let join = std::thread::spawn(move || {
             let guard = shared.0.lock().unwrap();
-            let (stopped, _timed_out) =
-                shared.1.wait_timeout_while(guard, limit, |stopped| !*stopped).unwrap();
+            let (stopped, _timed_out) = shared
+                .1
+                .wait_timeout_while(guard, limit, |stopped| !*stopped)
+                .unwrap();
             if !*stopped {
                 let _ = fired.send(());
             }
         });
-        Self { stop, join: Some(join) }
+        Self {
+            stop,
+            join: Some(join),
+        }
     }
 }
 
@@ -1102,7 +1230,11 @@ impl Drop for Watchdog {
 
 /// Drive `fut` on `rt`, giving up after `limit` of wall-clock time. The bound
 /// is enforced from a plain thread because paused Tokio time may not advance.
-fn block_on_bounded<F: Future>(rt: &tokio::runtime::Runtime, limit: Duration, fut: F) -> Option<F::Output> {
+fn block_on_bounded<F: Future>(
+    rt: &tokio::runtime::Runtime,
+    limit: Duration,
+    fut: F,
+) -> Option<F::Output> {
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
     let _watchdog = Watchdog::start(limit, tx);
     rt.block_on(async {
@@ -1116,9 +1248,10 @@ fn block_on_bounded<F: Future>(rt: &tokio::runtime::Runtime, limit: Duration, fu
 /// Returns false if the watchdog cut the Tokio-time phase short.
 fn settle(rt: &tokio::runtime::Runtime, settle: Settle) -> bool {
     // The sleep must be created inside the runtime, hence the async block.
-    let settled =
-        block_on_bounded(rt, settle.watchdog, async { tokio::time::sleep(settle.tokio_time).await })
-            .is_some();
+    let settled = block_on_bounded(rt, settle.watchdog, async {
+        tokio::time::sleep(settle.tokio_time).await
+    })
+    .is_some();
     if !settle.real_time.is_zero() {
         std::thread::sleep(settle.real_time);
         // Let tasks woken by the late work run.
@@ -1151,7 +1284,10 @@ where
     let _ledger = CurrentLedger::attach(ledger.clone());
     let mut invariant = block_on_bounded(rt.get(), config.scenario_timeout, scenario(ctx.clone()))
         .unwrap_or_else(|| {
-            Err(format!("scenario did not finish within {:?} (liveness)", config.scenario_timeout))
+            Err(format!(
+                "scenario did not finish within {:?} (liveness)",
+                config.scenario_timeout
+            ))
         });
     let settled = settle(rt.get(), config.settle);
     let checks = std::mem::take(&mut ctx.state.lock().unwrap().checks);
@@ -1173,7 +1309,13 @@ where
         let st = ctx.state.lock().unwrap();
         (st.targets.clone(), st.gap_defaults.clone())
     };
-    RunResult { settled, invariant, leaks, targets, gap_defaults }
+    RunResult {
+        settled,
+        invariant,
+        leaks,
+        targets,
+        gap_defaults,
+    }
 }
 
 fn outcome(rec: Option<&TargetRecord>) -> CutOutcome {
@@ -1188,11 +1330,26 @@ fn outcome(rec: Option<&TargetRecord>) -> CutOutcome {
 }
 
 fn trial_from(config: &Config, plan: &Plan, res: &RunResult) -> Trial {
-    let sites = plan.cuts.iter().map(|c| res.targets.get(c.target).map(|t| t.site)).collect();
-    let outcomes = plan.cuts.iter().map(|c| outcome(res.targets.get(c.target))).collect();
-    let cancelled =
-        res.targets.iter().filter(|r| r.lost_race && r.status == Status::Cancelled).count();
-    let gaps = plan.gaps.iter().map(|choice| choice.map(|i| config.gap_choices[i])).collect();
+    let sites = plan
+        .cuts
+        .iter()
+        .map(|c| res.targets.get(c.target).map(|t| t.site))
+        .collect();
+    let outcomes = plan
+        .cuts
+        .iter()
+        .map(|c| outcome(res.targets.get(c.target)))
+        .collect();
+    let cancelled = res
+        .targets
+        .iter()
+        .filter(|r| r.lost_race && r.status == Status::Cancelled)
+        .count();
+    let gaps = plan
+        .gaps
+        .iter()
+        .map(|choice| choice.map(|i| config.gap_choices[i]))
+        .collect();
     Trial {
         plan: plan.cuts.clone(),
         sites,
@@ -1207,8 +1364,13 @@ fn trial_from(config: &Config, plan: &Plan, res: &RunResult) -> Trial {
 }
 
 fn later_target_at_site(res: &RunResult, target: usize) -> bool {
-    let Some(rec) = res.targets.get(target) else { return false };
-    res.targets.iter().skip(target + 1).any(|later| later.site == rec.site)
+    let Some(rec) = res.targets.get(target) else {
+        return false;
+    };
+    res.targets
+        .iter()
+        .skip(target + 1)
+        .any(|later| later.site == rec.site)
 }
 
 /// Queue the plans one run makes reachable. With `repeat_at_site` and
@@ -1238,13 +1400,20 @@ fn extend_queue(
     'plans: for (target, rec) in res.targets.iter().enumerate().skip(start) {
         for after_pending in 1..=rec.pendings {
             for &race in &config.races {
-                let cut = Cut { target, after_pending, race };
+                let cut = Cut {
+                    target,
+                    after_pending,
+                    race,
+                };
                 let mut next = plan.clone();
                 next.cuts.push(cut);
                 let mut variants = vec![next.clone()];
                 if next.cuts.len() == 1 {
                     if config.repeat_at_site && later_target_at_site(res, target) {
-                        variants.push(Plan { repeat: true, ..next.clone() });
+                        variants.push(Plan {
+                            repeat: true,
+                            ..next.clone()
+                        });
                     }
                     if !config.gap_choices.is_empty() {
                         // One variant per gap site and substitution; the other
@@ -1289,7 +1458,12 @@ where
     S: FnMut(Ctx) -> Fut,
     Fut: Future<Output = Result<(), String>>,
 {
-    search(config, |plan, _| (run_once(config, &mut scenario, plan.clone()), Judgement::default()))
+    search(config, |plan, _| {
+        (
+            run_once(config, &mut scenario, plan.clone()),
+            Judgement::default(),
+        )
+    })
 }
 
 /// What a search step adds to its trial beyond the run itself.
@@ -1302,7 +1476,10 @@ struct Judgement {
 
 /// The breadth-first plan search shared by [`explore`] and [`explore_observed`].
 /// `step` runs one plan; it may add calibration errors and notes to the report.
-fn search(config: &Config, mut step: impl FnMut(&Plan, &mut Report) -> (RunResult, Judgement)) -> Report {
+fn search(
+    config: &Config,
+    mut step: impl FnMut(&Plan, &mut Report) -> (RunResult, Judgement),
+) -> Report {
     let mut report = Report::default();
     let mut queue: VecDeque<Plan> = VecDeque::from([Plan::default()]);
     let mut runs = 0;
@@ -1319,7 +1496,9 @@ fn search(config: &Config, mut step: impl FnMut(&Plan, &mut Report) -> (RunResul
             if let Err(e) = &res.invariant {
                 report.baseline_errors.push(e.clone());
             }
-            report.baseline_errors.extend(res.leaks.iter().map(|l| l.to_string()));
+            report
+                .baseline_errors
+                .extend(res.leaks.iter().map(|l| l.to_string()));
         } else {
             let mut trial = trial_from(config, &plan, &res);
             trial.verdict = judgement.verdict;
@@ -1384,7 +1563,11 @@ fn calibration_targets(plan: &Plan, res: &RunResult) -> Vec<usize> {
             .filter(|(_, rec)| rec.lost_race)
             .map(|(index, _)| index)
             .collect();
-        if cut.is_empty() { plan.cuts.iter().map(|c| c.target).collect() } else { cut }
+        if cut.is_empty() {
+            plan.cuts.iter().map(|c| c.target).collect()
+        } else {
+            cut
+        }
     } else {
         plan.cuts.iter().map(|c| c.target).collect()
     };
@@ -1411,7 +1594,11 @@ impl CalibrationKey {
         while gaps.last() == Some(&None) {
             gaps.pop();
         }
-        Self { targets: targets.to_vec(), skipped, gaps }
+        Self {
+            targets: targets.to_vec(),
+            skipped,
+            gaps,
+        }
     }
 
     fn side(&self) -> &'static str {
@@ -1430,9 +1617,17 @@ impl CalibrationKey {
             .iter()
             .zip(&self.skipped)
             .filter(|(_, skip)| **skip)
-            .map(|(target, _)| Cut { target: *target, after_pending: 0, race: Race::Immediate })
+            .map(|(target, _)| Cut {
+                target: *target,
+                after_pending: 0,
+                race: Race::Immediate,
+            })
             .collect();
-        Plan { cuts, repeat: false, gaps: self.gaps.clone() }
+        Plan {
+            cuts,
+            repeat: false,
+            gaps: self.gaps.clone(),
+        }
     }
 
     fn label(&self) -> String {
@@ -1501,7 +1696,12 @@ where
             return Side::Absent;
         }
         if !res.leaks.is_empty() {
-            let leaks = res.leaks.iter().map(ToString::to_string).collect::<Vec<_>>().join("; ");
+            let leaks = res
+                .leaks
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join("; ");
             errors.push(format!("{} leaked: {leaks}", key.label()));
             return Side::Absent;
         }
@@ -1538,7 +1738,12 @@ fn ensure_calibrated<T, S, Fut>(
     cache.insert(key.clone(), value);
 }
 
-fn classify<T: PartialEq>(pre: &Side<T>, post: &Side<T>, mixed: &[&Side<T>], actual: &T) -> Verdict {
+fn classify<T: PartialEq>(
+    pre: &Side<T>,
+    post: &Side<T>,
+    mixed: &[&Side<T>],
+    actual: &T,
+) -> Verdict {
     if post.matches(actual) {
         Verdict::Post
     } else if pre.matches(actual) {
@@ -1555,7 +1760,10 @@ fn classify<T: PartialEq>(pre: &Side<T>, post: &Side<T>, mixed: &[&Side<T>], act
 fn allows(expect: Expect, verdict: Verdict) -> bool {
     match expect {
         Expect::Atomic => {
-            matches!(verdict, Verdict::Pre | Verdict::Post | Verdict::Mixed | Verdict::Unknown)
+            matches!(
+                verdict,
+                Verdict::Pre | Verdict::Post | Verdict::Mixed | Verdict::Unknown
+            )
         }
         Expect::Completed => matches!(verdict, Verdict::Post | Verdict::Unknown),
         Expect::Undone => matches!(verdict, Verdict::Pre | Verdict::Unknown),
@@ -1567,13 +1775,19 @@ fn degeneracy_note<T: PartialEq + fmt::Debug>(
     pre: &Side<T>,
     post: &Side<T>,
 ) -> Option<String> {
-    let (Side::Stable(a), Side::Stable(b)) = (pre, post) else { return None };
+    let (Side::Stable(a), Side::Stable(b)) = (pre, post) else {
+        return None;
+    };
     if a != b {
         return None;
     }
     Some(format!(
         "target(s) {}: pre and post observations are equal ({a:?}); this observation cannot tell whether the operation happened, only whether it contaminated shared state",
-        targets.iter().map(|t| format!("#{t}")).collect::<Vec<_>>().join(", ")
+        targets
+            .iter()
+            .map(|t| format!("#{t}"))
+            .collect::<Vec<_>>()
+            .join(", ")
     ))
 }
 
@@ -1646,14 +1860,22 @@ where
     search(config, |plan, report| {
         let (res, observed) = run_observed(config, &mut scenario, plan.clone());
         let mut judgement = Judgement::default();
-        let Some(Ok(actual)) = &observed else { return (res, judgement) };
+        let Some(Ok(actual)) = &observed else {
+            return (res, judgement);
+        };
         let targets = calibration_targets(plan, &res);
         if plan.cuts.is_empty() || targets.is_empty() {
             return (res, judgement);
         }
         let (pre_key, post_key, mixed_keys) = calibration_keys(&targets, plan, expect);
         for key in [&pre_key, &post_key].into_iter().chain(&mixed_keys) {
-            ensure_calibrated(config, &mut scenario, &mut cache, key, &mut report.baseline_errors);
+            ensure_calibrated(
+                config,
+                &mut scenario,
+                &mut cache,
+                key,
+                &mut report.baseline_errors,
+            );
         }
         let pre = &cache[&pre_key];
         let post = &cache[&post_key];

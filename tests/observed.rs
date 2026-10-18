@@ -1,16 +1,19 @@
 //! Tests for the observed API: allowed-set calibration, verdicts, the repeat
 //! and gap dimensions, and the non-degenerate notes. Everything is in-process.
 
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering::SeqCst};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering::SeqCst};
 use std::time::Duration;
 
 use dropwise::{
-    assert_observed, explore, explore_observed, Config, Ctx, Expect, Gap, Race, Verdict,
+    Config, Ctx, Expect, Gap, Race, Verdict, assert_observed, explore, explore_observed,
 };
 
 fn immediate() -> Config {
-    Config { races: vec![Race::Immediate], ..Config::default() }
+    Config {
+        races: vec![Race::Immediate],
+        ..Config::default()
+    }
 }
 
 /// A cancellation before the effect leaves the `pre` state, which `Atomic`
@@ -30,7 +33,12 @@ fn atomic_accepts_the_pre_calibration() {
     assert!(report.is_clean(), "{report}");
     assert_eq!(report.trials.len(), 1, "{report}");
     assert_eq!(report.verdict_count(Verdict::Pre), 1, "{report}");
-    assert!(report.trials.iter().all(|t| t.plan.iter().all(|c| c.after_pending > 0)));
+    assert!(
+        report
+            .trials
+            .iter()
+            .all(|t| t.plan.iter().all(|c| c.after_pending > 0))
+    );
 }
 
 /// A half-done state is neither calibration and is reported, with the observed
@@ -53,7 +61,13 @@ fn a_mixed_state_is_neither_calibration() {
     assert_eq!(report.violations().count(), 1, "{report}");
     assert_eq!(report.verdict_count(Verdict::Neither), 1, "{report}");
     assert_eq!(report.verdict_count(Verdict::Post), 1, "{report}");
-    let error = report.violations().next().unwrap().invariant.as_ref().unwrap_err();
+    let error = report
+        .violations()
+        .next()
+        .unwrap()
+        .invariant
+        .as_ref()
+        .unwrap_err();
     assert!(error.contains("Neither under Atomic"), "{error}");
     assert!(error.contains("observed 1"), "{error}");
     assert!(error.contains("pre=0"), "{error}");
@@ -63,19 +77,29 @@ fn a_mixed_state_is_neither_calibration() {
 /// `Completed` rejects the not-started calibration that `Atomic` allows.
 #[test]
 fn completed_only_allows_the_post_calibration() {
-    let report = explore_observed(&immediate(), Expect::Completed, move |ctx: Ctx| async move {
-        let count = Arc::new(AtomicUsize::new(0));
-        let inner = count.clone();
-        ctx.target(async move {
-            tokio::task::yield_now().await;
-            inner.fetch_add(1, SeqCst);
-        })
-        .await;
-        Ok(count.load(SeqCst))
-    });
+    let report = explore_observed(
+        &immediate(),
+        Expect::Completed,
+        move |ctx: Ctx| async move {
+            let count = Arc::new(AtomicUsize::new(0));
+            let inner = count.clone();
+            ctx.target(async move {
+                tokio::task::yield_now().await;
+                inner.fetch_add(1, SeqCst);
+            })
+            .await;
+            Ok(count.load(SeqCst))
+        },
+    );
     assert_eq!(report.verdict_count(Verdict::Pre), 1, "{report}");
     assert_eq!(report.violations().count(), 1, "{report}");
-    let error = report.violations().next().unwrap().invariant.as_ref().unwrap_err();
+    let error = report
+        .violations()
+        .next()
+        .unwrap()
+        .invariant
+        .as_ref()
+        .unwrap_err();
     assert!(error.contains("Pre under Completed"), "{error}");
 }
 
@@ -95,13 +119,22 @@ fn undone_only_allows_the_pre_calibration() {
         Ok(queue.lock().unwrap().len())
     };
     let atomic = explore_observed(&immediate(), Expect::Atomic, &mut scenario);
-    assert!(atomic.is_clean(), "Atomic allows the completed-looking state:\n{atomic}");
+    assert!(
+        atomic.is_clean(),
+        "Atomic allows the completed-looking state:\n{atomic}"
+    );
     assert_eq!(atomic.verdict_count(Verdict::Post), 1, "{atomic}");
 
     let undone = explore_observed(&immediate(), Expect::Undone, &mut scenario);
     assert_eq!(undone.verdict_count(Verdict::Post), 1, "{undone}");
     assert_eq!(undone.violations().count(), 1, "{undone}");
-    let error = undone.violations().next().unwrap().invariant.as_ref().unwrap_err();
+    let error = undone
+        .violations()
+        .next()
+        .unwrap()
+        .invariant
+        .as_ref()
+        .unwrap_err();
     assert!(error.contains("Post under Undone"), "{error}");
 }
 
@@ -135,7 +168,10 @@ fn equal_calibrations_get_a_note() {
     assert!(report.is_clean(), "{report}");
     assert_eq!(report.verdict_count(Verdict::Post), 1, "{report}");
     assert_eq!(report.notes.len(), 1, "{report}");
-    assert!(report.notes[0].contains("pre and post observations are equal"), "{report}");
+    assert!(
+        report.notes[0].contains("pre and post observations are equal"),
+        "{report}"
+    );
 }
 
 /// Two disagreeing calibration samples make the trial `Unknown`, never a
@@ -194,7 +230,10 @@ fn failing_calibration_is_a_baseline_error() {
 /// cancelled" as `post`.
 #[test]
 fn several_cuts_share_the_calibration() {
-    let config = Config { max_cancellations: 2, ..immediate() };
+    let config = Config {
+        max_cancellations: 2,
+        ..immediate()
+    };
     let report = explore_observed(&config, Expect::Atomic, move |ctx: Ctx| async move {
         let count = Arc::new(AtomicUsize::new(0));
         for _ in 0..2 {
@@ -236,15 +275,26 @@ fn a_pair_plan_may_leave_one_operation_done_and_one_not() {
         .await;
         Ok((first.load(SeqCst), second.load(SeqCst)))
     };
-    let config = Config { max_cancellations: 2, ..immediate() };
+    let config = Config {
+        max_cancellations: 2,
+        ..immediate()
+    };
     let report = explore_observed(&config, Expect::Atomic, scenario);
     assert!(report.is_clean(), "{report}");
-    let pair = report.trials.iter().find(|t| t.plan.len() == 2).expect("pair plan");
+    let pair = report
+        .trials
+        .iter()
+        .find(|t| t.plan.len() == 2)
+        .expect("pair plan");
     assert_eq!(pair.verdict, Some(Verdict::Mixed), "{report}");
 
     // `Completed` does not allow it.
     let report = explore_observed(&config, Expect::Completed, scenario);
-    let pair = report.trials.iter().find(|t| t.plan.len() == 2).expect("pair plan");
+    let pair = report
+        .trials
+        .iter()
+        .find(|t| t.plan.len() == 2)
+        .expect("pair plan");
     assert!(pair.is_violation(), "{report}");
 }
 
@@ -264,16 +314,35 @@ fn repeat_at_site_cancels_later_targets_at_the_same_site() {
     let off = explore(&immediate(), scenario);
     assert_eq!(off.trials.len(), 3, "{off}");
 
-    let config = Config { repeat_at_site: true, ..immediate() };
+    let config = Config {
+        repeat_at_site: true,
+        ..immediate()
+    };
     let report = explore(&config, scenario);
     // Three single cuts, plus a repeated plan for targets #0 and #1 (target #2
     // has no later target at the same site).
     assert_eq!(report.trials.len(), 5, "{report}");
-    assert_eq!(report.trials.iter().filter(|t| t.cancelled == 3).count(), 1, "{report}");
-    assert_eq!(report.trials.iter().filter(|t| t.cancelled == 2).count(), 1, "{report}");
-    assert_eq!(report.trials.iter().filter(|t| t.cancelled == 1).count(), 3, "{report}");
+    assert_eq!(
+        report.trials.iter().filter(|t| t.cancelled == 3).count(),
+        1,
+        "{report}"
+    );
+    assert_eq!(
+        report.trials.iter().filter(|t| t.cancelled == 2).count(),
+        1,
+        "{report}"
+    );
+    assert_eq!(
+        report.trials.iter().filter(|t| t.cancelled == 1).count(),
+        3,
+        "{report}"
+    );
     for trial in report.trials.iter().filter(|t| t.cancelled > 1) {
-        assert_eq!(trial.plan.len(), 1, "the repeated instances are not separate cuts: {report}");
+        assert_eq!(
+            trial.plan.len(),
+            1,
+            "the repeated instances are not separate cuts: {report}"
+        );
     }
 }
 
@@ -294,7 +363,11 @@ fn gap_choices_are_explored_and_recorded() {
     });
     // The unmodified plan plus three substitutions of gap #0.
     assert_eq!(report.trials.len(), 4, "{report}");
-    assert_eq!(report.trials.iter().filter(|t| t.gaps.is_empty()).count(), 1, "{report}");
+    assert_eq!(
+        report.trials.iter().filter(|t| t.gaps.is_empty()).count(),
+        1,
+        "{report}"
+    );
     assert_eq!(
         report
             .trials
@@ -311,7 +384,11 @@ fn gap_choices_are_explored_and_recorded() {
         ctx.gap(Gap::Sleep(Duration::from_millis(10))).await;
         Ok(())
     });
-    assert_eq!(plain.trials.len(), 1, "gap_choices is off by default: {plain}");
+    assert_eq!(
+        plain.trials.len(),
+        1,
+        "gap_choices is off by default: {plain}"
+    );
 }
 
 /// A gap choice equal to the site's default would repeat the unmodified plan,
@@ -319,7 +396,10 @@ fn gap_choices_are_explored_and_recorded() {
 #[test]
 fn a_gap_choice_equal_to_the_default_is_not_repeated() {
     let default = Gap::Sleep(Duration::from_millis(10));
-    let config = Config { gap_choices: vec![Gap::Now, default], ..immediate() };
+    let config = Config {
+        gap_choices: vec![Gap::Now, default],
+        ..immediate()
+    };
     let report = explore(&config, |ctx: Ctx| async move {
         ctx.target(tokio::task::yield_now()).await;
         ctx.gap(default).await;
@@ -327,7 +407,13 @@ fn a_gap_choice_equal_to_the_default_is_not_repeated() {
     });
     // The unmodified plan plus the `Now` substitution.
     assert_eq!(report.trials.len(), 2, "{report}");
-    assert!(report.trials.iter().all(|t| t.gaps.iter().all(|g| *g != Some(default))), "{report}");
+    assert!(
+        report
+            .trials
+            .iter()
+            .all(|t| t.gaps.iter().all(|g| *g != Some(default))),
+        "{report}"
+    );
 }
 
 /// `assert_observed` accepts a clean scenario.
@@ -359,14 +445,20 @@ fn the_pre_calibration_skips_race_targets_without_polling() {
     });
     assert!(report.is_clean(), "{report}");
     assert_eq!(report.verdict_count(Verdict::Post), 1, "{report}");
-    assert!(report.notes.is_empty(), "the pre calibration polled the target: {report}");
+    assert!(
+        report.notes.is_empty(),
+        "the pre calibration polled the target: {report}"
+    );
 }
 
 /// A repeated plan calibrates "every instance skipped" as `pre` and "nothing
 /// cancelled" as `post`, using the instance set the trial actually cancelled.
 #[test]
 fn repeat_at_site_is_calibrated() {
-    let config = Config { repeat_at_site: true, ..immediate() };
+    let config = Config {
+        repeat_at_site: true,
+        ..immediate()
+    };
     let report = explore_observed(&config, Expect::Atomic, |ctx: Ctx| async move {
         for _ in 0..3 {
             ctx.target(async {
@@ -378,9 +470,20 @@ fn repeat_at_site_is_calibrated() {
     });
     assert!(report.is_clean(), "{report}");
     assert_eq!(report.trials.len(), 5, "{report}");
-    assert!(report.trials.iter().all(|t| t.verdict.is_some()), "{report}");
-    assert_eq!(report.trials.iter().filter(|t| t.cancelled == 3).count(), 1, "{report}");
-    assert_eq!(report.trials.iter().filter(|t| t.cancelled == 2).count(), 1, "{report}");
+    assert!(
+        report.trials.iter().all(|t| t.verdict.is_some()),
+        "{report}"
+    );
+    assert_eq!(
+        report.trials.iter().filter(|t| t.cancelled == 3).count(),
+        1,
+        "{report}"
+    );
+    assert_eq!(
+        report.trials.iter().filter(|t| t.cancelled == 2).count(),
+        1,
+        "{report}"
+    );
 }
 
 /// Calibration is computed once per (target set, gap assignment) and reused by

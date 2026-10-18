@@ -168,7 +168,10 @@ cargo clippy --all-targets
 
 Core CI runs the tests, Clippy, API documentation build and quickstart on stable
 Rust. It does not run the separate research experiments or claim their results.
-Formatting is not gated yet: the existing tree does not match default rustfmt.
+Formatting of the root crate is gated too: CI runs
+`cargo +stable fmt --check --package dropwise`, which covers `src/`, `tests/` and
+`examples/` only. The separate research crates under `prospective/`, `repro/`
+and `research/` keep their own formatting and are not checked by Core CI.
 
 The root crate is the library plus its tests and examples: `cargo test` needs a
 Rust toolchain and nothing else — no upstream checkouts, no services, every

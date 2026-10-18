@@ -23,6 +23,10 @@ jobs:
           persist-credentials: false
       - name: Install stable Rust
         run: rustup toolchain install stable --profile minimal --component clippy
+      - name: Check root crate formatting
+        # Only the root package: `prospective/`, `repro/` and `research/` are
+        # separate crates with their own style and are not part of Core CI.
+        run: cargo +stable fmt --check --package dropwise
       - name: Test core library and doctests
         run: timeout 180s cargo +stable test --locked
       - name: Lint all core targets

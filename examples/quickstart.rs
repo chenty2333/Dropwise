@@ -11,7 +11,7 @@
 use std::time::Duration;
 
 use dropwise::models::mpsc::UnboundedReceiver;
-use dropwise::{explore, Config, Ctx, Race};
+use dropwise::{Config, Ctx, Race, explore};
 use tokio::sync::mpsc;
 
 #[derive(Default)]
@@ -59,7 +59,9 @@ async fn drain_keep_pending(
     pending: &mut Option<u32>,
     sink: &mut Sink,
 ) -> bool {
-    if pending.is_none() && let Some(job) = rx.recv().await {
+    if pending.is_none()
+        && let Some(job) = rx.recv().await
+    {
         *pending = Some(job.discharge());
     }
     match *pending {
@@ -80,7 +82,10 @@ where
 {
     // One race mode keeps the plan count small; `Config::default()` would also
     // try `Race::Reschedule(1)`, which is a different competitor timing.
-    let config = Config { races: vec![Race::Immediate], ..Config::default() };
+    let config = Config {
+        races: vec![Race::Immediate],
+        ..Config::default()
+    };
     let report = explore(&config, scenario);
     println!(
         "\n== {name}: {} target(s), {} plan(s), {} violation(s), {} unrealized, exhaustive: {}",
@@ -145,13 +150,27 @@ fn main() {
 
     // The defect is a dropped obligation (the job went with the cancelled
     // future) plus the invariant that noticed the missing write.
-    assert!(buggy.violations().count() > 0, "expected the first shape to lose a job");
+    assert!(
+        buggy.violations().count() > 0,
+        "expected the first shape to lose a job"
+    );
     // With the default configuration, the checks below can be expressed as:
     // `dropwise::assert_cancel_correct(|ctx| async move { ..the fixed loop.. })`,
     // which panics with this same report on any violation, unrealized plan,
     // unsettled run or truncated search.
-    assert!(fixed.is_clean(), "the second shape must find no violation: {fixed}");
-    assert!(fixed.exhaustive && fixed.unrealized().next().is_none(), "{fixed}");
-    assert!(fixed.baseline_settled && fixed.unsettled().next().is_none(), "{fixed}");
-    println!("\nboth checks passed: the bug was detected; the fixed loop passed the explored plans");
+    assert!(
+        fixed.is_clean(),
+        "the second shape must find no violation: {fixed}"
+    );
+    assert!(
+        fixed.exhaustive && fixed.unrealized().next().is_none(),
+        "{fixed}"
+    );
+    assert!(
+        fixed.baseline_settled && fixed.unsettled().next().is_none(),
+        "{fixed}"
+    );
+    println!(
+        "\nboth checks passed: the bug was detected; the fixed loop passed the explored plans"
+    );
 }

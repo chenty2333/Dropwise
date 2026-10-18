@@ -13,7 +13,9 @@ const REPLY: &[u8] = b"HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello";
 /// Mock upstream: accepts connections, reads one request, writes one reply, and
 /// then holds the connection open until the test runtime shuts down.
 async fn start_upstream() -> SocketAddr {
-    let listener = TcpListener::bind(("127.0.0.1", 0)).await.expect("bind mock upstream");
+    let listener = TcpListener::bind(("127.0.0.1", 0))
+        .await
+        .expect("bind mock upstream");
     let addr = listener.local_addr().expect("mock upstream address");
     let _server = tokio::spawn(async move {
         loop {
@@ -30,7 +32,9 @@ async fn start_upstream() -> SocketAddr {
 }
 
 async fn connect_through(proxy: &Proxy) -> (TcpStream, SocketAddr) {
-    let client = TcpStream::connect(proxy.addr()).await.expect("connect to proxy");
+    let client = TcpStream::connect(proxy.addr())
+        .await
+        .expect("connect to proxy");
     let addr = client.local_addr().expect("client local address");
     (client, addr)
 }
@@ -48,7 +52,11 @@ async fn read_reply(client: &mut TcpStream) -> Vec<u8> {
 /// Poll `residue` until `done` accepts the value or the timeout expires, and
 /// return the last observed value.
 #[cfg(target_os = "linux")]
-async fn wait_for_residue(proxy: &Proxy, client: SocketAddr, done: impl Fn(usize) -> bool) -> usize {
+async fn wait_for_residue(
+    proxy: &Proxy,
+    client: SocketAddr,
+    done: impl Fn(usize) -> bool,
+) -> usize {
     let deadline = Instant::now() + Duration::from_secs(2);
     loop {
         let bytes = proxy
@@ -73,13 +81,20 @@ async fn wait_for_stats(
     let deadline = Instant::now() + Duration::from_secs(2);
     let mut last = None;
     loop {
-        if let Some(stats) = proxy.connections().into_iter().find(|stats| stats.client == client) {
+        if let Some(stats) = proxy
+            .connections()
+            .into_iter()
+            .find(|stats| stats.client == client)
+        {
             if done(&stats) {
                 return stats;
             }
             last = Some(stats);
         }
-        assert!(Instant::now() < deadline, "byte counts did not settle: {last:?}");
+        assert!(
+            Instant::now() < deadline,
+            "byte counts did not settle: {last:?}"
+        );
         tokio::time::sleep(Duration::from_millis(10)).await;
     }
 }
@@ -120,7 +135,10 @@ async fn residue_is_zero_after_the_client_reads_the_reply() {
     // Allow forwarding to settle before checking.
     tokio::time::sleep(Duration::from_millis(20)).await;
     let after = wait_for_residue(&proxy, client_addr, |n| n == 0).await;
-    assert_eq!(after, 0, "residue still reports unread bytes after the client read the reply");
+    assert_eq!(
+        after, 0,
+        "residue still reports unread bytes after the client read the reply"
+    );
 }
 
 /// A client using a blocking socket: asking for the residue of an empty
@@ -139,7 +157,9 @@ async fn residue_does_not_block_on_a_blocking_client_socket() {
     let before = wait_for_residue(&proxy, client_addr, |n| n == REPLY.len()).await;
     assert_eq!(before, REPLY.len(), "the whole reply is counted");
     let mut reply = vec![0u8; REPLY.len()];
-    client.read_exact(&mut reply).expect("read the buffered reply");
+    client
+        .read_exact(&mut reply)
+        .expect("read the buffered reply");
     assert_eq!(reply, REPLY);
     // Empty buffer on a blocking socket: a blocking read would hang here.
     assert_eq!(wait_for_residue(&proxy, client_addr, |n| n == 0).await, 0);

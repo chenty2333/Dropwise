@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use dropwise::models::mpsc::Receiver;
 use dropwise::models::oblige;
-use dropwise::{explore, Config, Ctx, CutOutcome, LeakKind, Obligation, Race, Settle};
+use dropwise::{Config, Ctx, CutOutcome, LeakKind, Obligation, Race, Settle, explore};
 use tokio::sync::mpsc;
 
 #[derive(Default)]
@@ -37,7 +37,10 @@ fn check(sink: &Sink) -> Result<(), String> {
     if sink.delivered == [0, 1, 2] {
         Ok(())
     } else {
-        Err(format!("delivered {:?}, expected [0, 1, 2]", sink.delivered))
+        Err(format!(
+            "delivered {:?}, expected [0, 1, 2]",
+            sink.delivered
+        ))
     }
 }
 
@@ -69,11 +72,18 @@ fn real_select_loop_finds_the_bug() {
         check(&sink)
     });
     println!("{report}");
-    assert!(report.exhaustive && report.unrealized().next().is_none(), "{report}");
+    assert!(
+        report.exhaustive && report.unrealized().next().is_none(),
+        "{report}"
+    );
     let v: Vec<_> = report.violations().collect();
     assert!(!v.is_empty(), "{report}");
     assert!(v.iter().all(|t| t.outcomes == [CutOutcome::Cancelled]));
-    assert!(v.iter().any(|t| t.leaks.iter().any(|l| l.kind == LeakKind::DroppedUnresolved)));
+    assert!(v.iter().any(|t| {
+        t.leaks
+            .iter()
+            .any(|l| l.kind == LeakKind::DroppedUnresolved)
+    }));
 }
 
 /// Keeping the in-flight operation alive across iterations (the usual fix) is
@@ -84,9 +94,8 @@ fn kept_future_survives_losing_the_race() {
         let mut rx = setup().await;
         let mut sink = Sink::default();
         {
-            let (op, mut tick) = ctx.race(async {
-                while recv_and_forward(&mut rx, &mut sink).await {}
-            });
+            let (op, mut tick) =
+                ctx.race(async { while recv_and_forward(&mut rx, &mut sink).await {} });
             tokio::pin!(op);
             loop {
                 tokio::select! {
@@ -99,17 +108,30 @@ fn kept_future_survives_losing_the_race() {
     });
     assert!(report.is_clean() && report.exhaustive, "{report}");
     assert!(!report.trials.is_empty());
-    assert!(report.trials.iter().all(|t| t.outcomes == [CutOutcome::Kept]), "{report}");
+    assert!(
+        report
+            .trials
+            .iter()
+            .all(|t| t.outcomes == [CutOutcome::Kept]),
+        "{report}"
+    );
 }
 
 /// A plan whose boundary is not reached is reported, not silently passed.
 #[test]
 fn unrealized_plans_are_reported() {
     let runs = Arc::new(AtomicUsize::new(0));
-    let config = Config { races: vec![Race::Immediate], ..Config::default() };
+    let config = Config {
+        races: vec![Race::Immediate],
+        ..Config::default()
+    };
     let report = explore(&config, |ctx: Ctx| {
         // Nondeterministic on purpose: the baseline pends twice, later runs once.
-        let pends = if runs.fetch_add(1, Ordering::SeqCst) == 0 { 2 } else { 1 };
+        let pends = if runs.fetch_add(1, Ordering::SeqCst) == 0 {
+            2
+        } else {
+            1
+        };
         async move {
             ctx.target(async move {
                 for _ in 0..pends {
@@ -139,7 +161,10 @@ fn forgotten_and_forever_held_obligations_are_outstanding() {
         Ok(())
     });
     let errs = report.baseline_errors.join("\n");
-    assert!(errs.contains("`forgotten`") && errs.contains("`held by a stuck task`"), "{report}");
+    assert!(
+        errs.contains("`forgotten`") && errs.contains("`held by a stuck task`"),
+        "{report}"
+    );
     assert!(errs.contains("still unresolved after settling"), "{report}");
 }
 
@@ -162,13 +187,23 @@ fn late_completion_is_seen_only_after_settling() {
     };
     let no_settle = Config {
         races: vec![Race::Immediate],
-        settle: Settle { tokio_time: Duration::ZERO, real_time: Duration::ZERO, ..Settle::default() },
+        settle: Settle {
+            tokio_time: Duration::ZERO,
+            real_time: Duration::ZERO,
+            ..Settle::default()
+        },
         ..Config::default()
     };
     let r = explore(&no_settle, scenario);
-    assert!(r.is_clean(), "without settling the late fd is not observed:\n{r}");
+    assert!(
+        r.is_clean(),
+        "without settling the late fd is not observed:\n{r}"
+    );
 
-    let settled = Config { settle: Settle::default(), ..no_settle };
+    let settled = Config {
+        settle: Settle::default(),
+        ..no_settle
+    };
     let r = explore(&settled, scenario);
     let v: Vec<_> = r.violations().collect();
     assert_eq!(v.len(), 1, "{r}");
@@ -195,8 +230,17 @@ fn oblige_owes_only_a_value_it_produced() {
         }
         Ok(())
     };
-    let r = explore(&Config { races: vec![Race::Immediate], ..Config::default() }, cancelled_before_the_value);
-    assert!(r.exhaustive && r.is_clean(), "losing before the value exists owes nothing:\n{r}");
+    let r = explore(
+        &Config {
+            races: vec![Race::Immediate],
+            ..Config::default()
+        },
+        cancelled_before_the_value,
+    );
+    assert!(
+        r.exhaustive && r.is_clean(),
+        "losing before the value exists owes nothing:\n{r}"
+    );
 
     let dropped_after_the_value = |ctx: Ctx| async move {
         let answer = oblige(async { 7u32 }, "computed answer").await;
@@ -207,12 +251,22 @@ fn oblige_owes_only_a_value_it_produced() {
         .await;
         Ok(())
     };
-    let r = explore(&Config { races: vec![Race::Immediate], ..Config::default() }, dropped_after_the_value);
+    let r = explore(
+        &Config {
+            races: vec![Race::Immediate],
+            ..Config::default()
+        },
+        dropped_after_the_value,
+    );
     let v: Vec<_> = r.violations().collect();
     assert_eq!(v.len(), 1, "{r}");
     assert_eq!(v[0].leaks[0].kind, LeakKind::DroppedUnresolved);
     assert_eq!(v[0].leaks[0].label, "computed answer");
-    assert!(v[0].leaks[0].site.file().ends_with("semantics.rs"), "site {}", v[0].leaks[0].site);
+    assert!(
+        v[0].leaks[0].site.file().ends_with("semantics.rs"),
+        "site {}",
+        v[0].leaks[0].site
+    );
 }
 
 /// omicron #10204 shape: the caller cleans up after cancellation while
@@ -243,15 +297,29 @@ fn after_settle_checks_see_late_side_effects() {
         });
         Ok(())
     };
-    let tokio_only = Config { races: vec![Race::Immediate], ..Config::default() };
-    assert!(explore(&tokio_only, scenario).is_clean(), "virtual settling cannot see an OS thread");
+    let tokio_only = Config {
+        races: vec![Race::Immediate],
+        ..Config::default()
+    };
+    assert!(
+        explore(&tokio_only, scenario).is_clean(),
+        "virtual settling cannot see an OS thread"
+    );
 
     let config = Config {
-        settle: Settle { real_time: Duration::from_millis(200), ..Settle::default() },
+        settle: Settle {
+            real_time: Duration::from_millis(200),
+            ..Settle::default()
+        },
         ..tokio_only
     };
     let r = explore(&config, scenario);
     let v: Vec<_> = r.violations().collect();
     assert_eq!(v.len(), 1, "{r}");
-    assert!(v[0].invariant.as_ref().unwrap_err().contains("after cleanup"));
+    assert!(
+        v[0].invariant
+            .as_ref()
+            .unwrap_err()
+            .contains("after cleanup")
+    );
 }

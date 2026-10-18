@@ -82,7 +82,10 @@ impl Proxy {
     pub async fn start_with(upstream: SocketAddr, options: ProxyOptions) -> io::Result<Self> {
         let listener = TcpListener::bind(("127.0.0.1", 0)).await?;
         let addr = listener.local_addr()?;
-        let state = Arc::new(State { listener_addr: addr, clients: Mutex::new(Vec::new()) });
+        let state = Arc::new(State {
+            listener_addr: addr,
+            clients: Mutex::new(Vec::new()),
+        });
         let (shutdown, shutdown_rx) = watch::channel(false);
         let accept_task = tokio::spawn(accept_loop(
             listener,
@@ -91,7 +94,12 @@ impl Proxy {
             Arc::clone(&state),
             shutdown_rx,
         ));
-        Ok(Self { addr, state, shutdown, accept_task })
+        Ok(Self {
+            addr,
+            state,
+            shutdown,
+            accept_task,
+        })
     }
 
     /// The loopback address clients connect to.
@@ -206,7 +214,9 @@ async fn accept_loop(
             to_client: Arc::clone(&to_client),
         });
 
-        let Ok(upstream_stream) = TcpStream::connect(upstream).await else { continue };
+        let Ok(upstream_stream) = TcpStream::connect(upstream).await else {
+            continue;
+        };
 
         let (client_read, client_write) = client.into_split();
         let (upstream_read, upstream_write) = upstream_stream.into_split();
@@ -298,8 +308,13 @@ mod linux {
 
     /// Snapshot the receive-buffer state of every accepted client socket.
     pub(super) fn residue(state: &State) -> io::Result<Vec<ConnectionResidue>> {
-        let clients: Vec<SocketAddr> =
-            state.clients.lock().unwrap().iter().map(|counters| counters.client).collect();
+        let clients: Vec<SocketAddr> = state
+            .clients
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|counters| counters.client)
+            .collect();
 
         let mut residues = Vec::with_capacity(clients.len());
         for client in clients {
@@ -321,7 +336,10 @@ mod linux {
             let entry = entry.map_err(|e| {
                 io::Error::new(e.kind(), format!("cannot read /proc/self/fd entry: {e}"))
             })?;
-            let Some(fd) = entry.file_name().to_str().and_then(|name| name.parse::<RawFd>().ok())
+            let Some(fd) = entry
+                .file_name()
+                .to_str()
+                .and_then(|name| name.parse::<RawFd>().ok())
             else {
                 continue;
             };
@@ -348,7 +366,10 @@ mod linux {
             let rc = unsafe { libc::ioctl(stream.as_raw_fd(), libc::FIONREAD, &mut pending) };
             if rc == -1 {
                 let e = io::Error::last_os_error();
-                return Err(io::Error::new(e.kind(), format!("FIONREAD on client socket {client} failed: {e}")));
+                return Err(io::Error::new(
+                    e.kind(),
+                    format!("FIONREAD on client socket {client} failed: {e}"),
+                ));
             }
             return Ok(usize::try_from(pending).unwrap_or(0));
         }

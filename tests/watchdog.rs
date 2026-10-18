@@ -2,18 +2,21 @@
 //! virtual settle sleep alone would never return. The real-time watchdog must end
 //! the observation window and report it as incomplete.
 
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
-use dropwise::{explore, Config, Ctx, Race, Settle};
+use dropwise::{Config, Ctx, Race, Settle, explore};
 
 #[test]
 fn stuck_blocking_work_does_not_hang_settling() {
     let stop = Arc::new(AtomicBool::new(false));
     let config = Config {
         races: vec![Race::Immediate],
-        settle: Settle { watchdog: Duration::from_millis(300), ..Settle::default() },
+        settle: Settle {
+            watchdog: Duration::from_millis(300),
+            ..Settle::default()
+        },
         ..Config::default()
     };
     let started = Instant::now();
@@ -37,8 +40,14 @@ fn stuck_blocking_work_does_not_hang_settling() {
     stop.store(true, Ordering::SeqCst);
     assert!(started.elapsed() < Duration::from_secs(20), "settling hung");
     assert!(!report.baseline_settled, "{report}");
-    assert!(!report.trials.is_empty() && report.trials.iter().all(|t| !t.settled), "{report}");
-    assert!(report.to_string().contains("observation window"), "{report}");
+    assert!(
+        !report.trials.is_empty() && report.trials.iter().all(|t| !t.settled),
+        "{report}"
+    );
+    assert!(
+        report.to_string().contains("observation window"),
+        "{report}"
+    );
 }
 
 /// A scenario that never finishes (here: a waiter stranded by a cancelled
@@ -66,11 +75,17 @@ fn stuck_scenario_is_a_liveness_violation() {
         let _keep = tx;
         rx.await.map(|_| ()).map_err(|e| e.to_string())
     });
-    assert!(started.elapsed() < Duration::from_secs(20), "exploration hung");
+    assert!(
+        started.elapsed() < Duration::from_secs(20),
+        "exploration hung"
+    );
     assert!(report.baseline_errors.is_empty(), "{report}");
     let v: Vec<_> = report.violations().collect();
     assert_eq!(v.len(), 1, "{report}");
-    assert!(v[0].invariant.as_ref().unwrap_err().contains("liveness"), "{report}");
+    assert!(
+        v[0].invariant.as_ref().unwrap_err().contains("liveness"),
+        "{report}"
+    );
 }
 
 /// Every bounded run arms a real-time watchdog, and it must be gone once the run
@@ -79,9 +94,17 @@ fn stuck_scenario_is_a_liveness_violation() {
 #[cfg(target_os = "linux")]
 #[test]
 fn watchdog_threads_do_not_accumulate_across_runs() {
-    let live = || std::fs::read_dir("/proc/self/task").expect("read live thread count").count();
-    let config =
-        Config { races: vec![Race::Immediate], max_cancellations: 2, max_runs: 60, ..Config::default() };
+    let live = || {
+        std::fs::read_dir("/proc/self/task")
+            .expect("read live thread count")
+            .count()
+    };
+    let config = Config {
+        races: vec![Race::Immediate],
+        max_cancellations: 2,
+        max_runs: 60,
+        ..Config::default()
+    };
     let before = live();
     let report = explore(&config, |ctx: Ctx| async move {
         for _ in 0..3 {
@@ -97,7 +120,10 @@ fn watchdog_threads_do_not_accumulate_across_runs() {
     let after = live();
     let runs = report.trials.len() + 1;
     assert!(runs > 30, "need enough runs to count: {runs}");
-    assert!(after < before + 20, "{after} live threads after {runs} runs, {before} before the search");
+    assert!(
+        after < before + 20,
+        "{after} live threads after {runs} runs, {before} before the search"
+    );
 }
 
 /// A scenario panic must still reach the caller instead of hanging the process:
@@ -106,7 +132,10 @@ fn watchdog_threads_do_not_accumulate_across_runs() {
 #[test]
 fn panicking_scenario_with_detached_blocking_work_does_not_hang() {
     let stop = Arc::new(AtomicBool::new(false));
-    let config = Config { races: vec![Race::Immediate], ..Config::default() };
+    let config = Config {
+        races: vec![Race::Immediate],
+        ..Config::default()
+    };
     let started = Instant::now();
     let s = stop.clone();
     let panicked = std::panic::catch_unwind(move || {
@@ -134,5 +163,8 @@ fn panicking_scenario_with_detached_blocking_work_does_not_hang() {
     .is_err();
     stop.store(true, Ordering::SeqCst);
     assert!(panicked, "the scenario panic must propagate");
-    assert!(started.elapsed() < Duration::from_secs(10), "teardown hung after the panic");
+    assert!(
+        started.elapsed() < Duration::from_secs(10),
+        "teardown hung after the panic"
+    );
 }

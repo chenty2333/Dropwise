@@ -43,9 +43,15 @@ impl fmt::Display for Leak {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let what = match self.kind {
             LeakKind::DroppedUnresolved => "was dropped unresolved",
-            LeakKind::Outstanding => "was still unresolved after settling (forgotten or held forever)",
+            LeakKind::Outstanding => {
+                "was still unresolved after settling (forgotten or held forever)"
+            }
         };
-        write!(f, "obligation #{} `{}` created at {} {what}", self.id, self.label, self.site)
+        write!(
+            f,
+            "obligation #{} `{}` created at {} {what}",
+            self.id, self.label, self.site
+        )
     }
 }
 
@@ -115,7 +121,13 @@ impl<T> Obligation<T> {
         if let Some(ledger) = &ledger {
             ledger.live.lock().unwrap().insert(id, (label, site));
         }
-        Self { value: Some(value), id, label, site, ledger }
+        Self {
+            value: Some(value),
+            id,
+            label,
+            site,
+            ledger,
+        }
     }
 
     pub fn id(&self) -> u64 {
@@ -175,7 +187,10 @@ mod tests {
     fn run_restores_the_previous_ledger_on_every_exit_path() {
         let previous = Arc::new(Ledger::default());
         let binding = CurrentLedger::attach(previous.clone());
-        let config = Config { max_runs: 1, ..Config::default() };
+        let config = Config {
+            max_runs: 1,
+            ..Config::default()
+        };
         // Constructor panic, future panic, check panic, and normal completion.
         for phase in 0..4 {
             let result = std::panic::catch_unwind(|| {

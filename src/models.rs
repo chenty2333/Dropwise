@@ -13,7 +13,10 @@ use crate::Obligation;
 
 /// Wrap the output of `fut` in an obligation, attributed to the caller.
 #[track_caller]
-pub fn oblige<F: Future>(fut: F, label: &'static str) -> impl Future<Output = Obligation<F::Output>> {
+pub fn oblige<F: Future>(
+    fut: F,
+    label: &'static str,
+) -> impl Future<Output = Obligation<F::Output>> {
     let site = Location::caller();
     async move { Obligation::at(fut.await, label, site) }
 }
@@ -45,14 +48,19 @@ pub mod mpsc {
                     let site = Location::caller();
                     async move {
                         let label = self.label;
-                        self.inner.recv().await.map(|v| Obligation::at(v, label, site))
+                        self.inner
+                            .recv()
+                            .await
+                            .map(|v| Obligation::at(v, label, site))
                     }
                 }
 
                 #[track_caller]
                 pub fn try_recv(&mut self) -> Result<Obligation<T>, mpsc::error::TryRecvError> {
                     let site = Location::caller();
-                    self.inner.try_recv().map(|v| Obligation::at(v, self.label, site))
+                    self.inner
+                        .try_recv()
+                        .map(|v| Obligation::at(v, self.label, site))
                 }
 
                 pub fn into_inner(self) -> $inner {

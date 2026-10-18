@@ -5,7 +5,7 @@
 use std::time::Duration;
 
 use dropwise::models::mpsc::Receiver;
-use dropwise::{explore, Config, Ctx, Obligation};
+use dropwise::{Config, Ctx, Obligation, explore};
 use tokio::sync::mpsc;
 
 #[derive(Default)]
@@ -67,7 +67,10 @@ fn check(sink: &Sink) -> Result<(), String> {
     if sink.delivered == [0, 1, 2] {
         Ok(())
     } else {
-        Err(format!("delivered {:?}, expected [0, 1, 2]", sink.delivered))
+        Err(format!(
+            "delivered {:?}, expected [0, 1, 2]",
+            sink.delivered
+        ))
     }
 }
 
@@ -84,7 +87,11 @@ fn buggy_wrapper_loses_messages() {
     });
     println!("{report}");
     assert!(report.exhaustive);
-    assert!(report.violations().any(|t| !t.leaks.is_empty() && t.invariant.is_err()));
+    assert!(
+        report
+            .violations()
+            .any(|t| !t.leaks.is_empty() && t.invariant.is_err())
+    );
 }
 
 #[test]
@@ -93,7 +100,8 @@ fn fixed_wrapper_is_cancel_correct() {
         let mut rx = setup().await;
         let mut sink = Sink::default();
         let mut pending = None;
-        ctx.target(forward_fixed(&mut rx, &mut pending, &mut sink)).await;
+        ctx.target(forward_fixed(&mut rx, &mut pending, &mut sink))
+            .await;
         while forward_fixed(&mut rx, &mut pending, &mut sink).await {}
         check(&sink)
     });
