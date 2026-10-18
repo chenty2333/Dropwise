@@ -97,7 +97,7 @@ R3.5 在修复版上有 6 个计划判为 Pre，也就是事务在提交前被�
 - **按书面契约 C2（不丢连接、不丢容量）不算违反**，连接确实没有丢。问题在于契约没有提到：被打断的验证会留下状态。
 - **有两种低成本缓解。** 一是 manager 在 `has_broken` 里报告在途请求（R2.1c/R2.2c/R2.3c 均干净）。二是 bb8 在 await `is_valid` 前把状态设为 `Invalid`、成功后再恢复，已在第 4 节实现并验证。
 - 真实 manager 上的影响见第 4 节。
-- 按标题检索 bb8 的 issue（关键词 `cancel`、`is_valid`），没有找到描述此问题的条目；未阅读正文，不能排除已有讨论。**未向上游提交。**
+- 按标题检索 bb8 的 issue（关键词 `cancel`、`is_valid`），没有找到描述此问题的条目。2026-10-18 已上报，见第 4 节末尾。
 
 ### 局限
 
@@ -151,4 +151,8 @@ bb8-memcached 违反时，幸存者会话为 `set(own)=OK, get(a)=InvalidData, g
 - **受影响面窄：** 下载量最大的 bb8-redis、bb8-postgres 经实测不受影响。已确认受影响的 bb8-memcached 下载量很小（近 90 天 131 次）。自写的、基于单条字节流的 `ManageConnection` 实现无法统计，是主要的未知面。
 - **修复面在 bb8：** 6 行改动就能保护所有 manager，不需要每个 manager 自己在 `has_broken` 里跟踪在途请求。
 
-未向 bb8 或 bb8-memcached 提交任何内容。bb8-memcached 有一个相关但未说明此机制的 open issue（#9，“Handle connection-related error in order to detect broken connection”）。
+2026-10-18 已上报：
+
+- bb8 issue [djc/bb8#324](https://github.com/djc/bb8/issues/324)；
+- 修复 PR [djc/bb8#325](https://github.com/djc/bb8/pull/325)：即本补丁，另附一个不依赖外部服务的回归测试 `test_drop_during_is_valid`。该测试在 bb8 main 上失败、打上补丁后通过；bb8 原有测试在 stable 和 MSRV 1.75 下均通过；
+- bb8-memcached issue [dqminh/bb8-memcached#16](https://github.com/dqminh/bb8-memcached/issues/16)，与它已有的 #9 相关。
