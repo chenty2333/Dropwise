@@ -36,6 +36,10 @@ dropwise::assert_cancel_correct(|ctx| async move {
 `ctx.target(fut)` is the lighter alternative: Dropwise drops the future itself
 and returns `None`, and the scenario code after it stands in for the caller.
 
+What you mark and what you check afterwards decide what a run can find. See
+[Choosing what to cancel and what to observe](docs/choosing-targets.md) for a
+target checklist and survivor-style observations.
+
 Dropwise reruns the scenario once per *cancellation plan* (which targets lose,
 after which observed `Pending`, and when the competitor becomes ready), lets
 cancelled work settle, and reports a violation when
