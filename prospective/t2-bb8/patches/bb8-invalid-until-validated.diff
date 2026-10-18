@@ -1,0 +1,23 @@
+# Proposed bb8 0.9.1 fix (not upstream): keep a connection Invalid while is_valid is in
+# flight, so a get() dropped mid-validation discards it instead of returning it to the pool.
+diff -ru a/src/inner.rs b/src/inner.rs
+--- a/src/inner.rs
++++ b/src/inner.rs
+@@ -107,8 +107,16 @@
+                     return Ok(conn);
+                 }
+ 
++                // If this future is dropped while `is_valid` is in flight (by the caller or by
++                // the `connection_timeout` below), the connection may hold a half-finished
++                // validation exchange. Treat it as invalid until validation completes, so that
++                // dropping discards it instead of returning it to the pool.
++                conn.state = ConnectionState::Invalid;
+                 match self.inner.manager.is_valid(&mut conn).await {
+-                    Ok(()) => return Ok(conn),
++                    Ok(()) => {
++                        conn.state = ConnectionState::Present;
++                        return Ok(conn);
++                    }
+                     Err(e) => {
+                         self.inner.statistics.record(StatsKind::ClosedInvalid);
+                         self.inner.forward_error(e);

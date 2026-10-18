@@ -162,6 +162,11 @@ fn config() -> Config {
     }
 }
 
+/// `release` (crates.io bb8 0.9.1) or `fixed` (patches/bb8-invalid-until-validated.diff).
+fn variant() -> String {
+    std::env::var("BB8_VARIANT").unwrap_or_else(|_| "release".into())
+}
+
 fn rescan(id: &str, shape: Shape, careful: bool) {
     let calibration = calibrate(&config(), |ctx, mode| scenario(ctx, mode, shape, careful));
     let tally = Tally::default();
@@ -175,7 +180,7 @@ fn rescan(id: &str, shape: Shape, careful: bool) {
         }
     });
     println!("{report}");
-    println!("{}", tally.summary(id, &report));
+    println!("{}", tally.summary(&format!("{id} [{}]", variant()), &report));
 }
 
 #[test]
@@ -224,6 +229,6 @@ fn r2_2_internal_connection_timeout() {
         let actual = run(true);
         let verdict = calibration.check(Expect::Atomic, &actual);
         let label = if careful { "R2.2c timeout, careful" } else { "R2.2 timeout" };
-        println!("RESCAN {label}: verdict={verdict:?}");
+        println!("RESCAN {label} [{}]: verdict={verdict:?}", variant());
     }
 }
