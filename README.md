@@ -158,6 +158,12 @@ that command:
     of a certificate without the gate is not evidence that the window is unreachable.
   Unsafe controls are expected to expose contamination/duplicate effects; tests pass
   when the labelled outcomes are reproduced. These are not new upstream bug claims.
+- [Rescan of the prospective targets](prospective/RESCAN.md) — `bash prospective/run-rescan.sh`
+  reruns T1–T3 with the [target checklist](docs/choosing-targets.md), survivor
+  observations and allowed-set verdicts, and runs T3 against sqlx 0.9.0 with and
+  without the upstream fix for sqlx#4393. Post hoc: the rescan was designed after
+  that bug was known, so it explains the frozen study's blind spots rather than
+  estimating detection rates.
 
 ## Bug survey
 
