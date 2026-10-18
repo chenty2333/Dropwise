@@ -5,12 +5,18 @@
 //! and [`Proxy::residue`] reports how many bytes wait in the client socket's
 //! receive buffer without reading them.
 //!
+//! [`Proxy::start_with`] can hold every chunk read from the upstream for a
+//! configurable real-time delay before writing it to the client. That makes an
+//! operation return `Pending` while it waits for the reply without changing the
+//! server, which is useful when the server has no `SLEEP`-like primitive.
+//!
 //! Only compiled with the `net` feature.
 
 use std::io;
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -38,6 +44,22 @@ pub struct ConnectionResidue {
     pub bytes: usize,
 }
 
+/// Options for [`Proxy::start_with`].
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ProxyOptions {
+    /// Real time to hold every chunk read from the upstream before writing it
+    /// to the client. Zero forwards at once.
+    ///
+    /// The delay is wall-clock time, so this is meant for
+    /// [`Flavor::MultiThread`](crate::Flavor::MultiThread); under
+    /// [`Flavor::CurrentThread`](crate::Flavor::CurrentThread) Tokio time is
+    /// paused and a sleep would never advance. The order and content of the
+    /// bytes do not change; only their arrival is postponed. While a chunk is
+    /// held it is still in the proxy, not in the client socket, so
+    /// [`Proxy::residue`] does not see it.
+    pub reply_delay: Duration,
+}
+
 /// A TCP proxy bound to `127.0.0.1`, forwarding to a fixed upstream address.
 ///
 /// Dropping the proxy stops its accept loop and signals the connection tasks to
@@ -53,11 +75,22 @@ impl Proxy {
     /// Start listening on `127.0.0.1:0` and forward each accepted connection to
     /// `upstream`.
     pub async fn start(upstream: SocketAddr) -> io::Result<Self> {
+        Self::start_with(upstream, ProxyOptions::default()).await
+    }
+
+    /// Like [`Proxy::start`], with control over how replies are forwarded.
+    pub async fn start_with(upstream: SocketAddr, options: ProxyOptions) -> io::Result<Self> {
         let listener = TcpListener::bind(("127.0.0.1", 0)).await?;
         let addr = listener.local_addr()?;
         let state = Arc::new(State { listener_addr: addr, clients: Mutex::new(Vec::new()) });
         let (shutdown, shutdown_rx) = watch::channel(false);
-        let accept_task = tokio::spawn(accept_loop(listener, upstream, Arc::clone(&state), shutdown_rx));
+        let accept_task = tokio::spawn(accept_loop(
+            listener,
+            upstream,
+            options,
+            Arc::clone(&state),
+            shutdown_rx,
+        ));
         Ok(Self { addr, state, shutdown, accept_task })
     }
 
@@ -110,6 +143,9 @@ impl Proxy {
     /// - Server-push protocols (pub/sub, notifications) make the number
     ///   meaningless: the server sends data the client is not expected to
     ///   consume, and the proxy cannot tell that data apart from a reply.
+    /// - With [`ProxyOptions::reply_delay`], a reply held in the proxy has not
+    ///   reached the client socket yet and is not counted. The count rises once
+    ///   the delay elapses and the chunk is written.
     pub fn residue(&self) -> io::Result<Vec<ConnectionResidue>> {
         #[cfg(target_os = "linux")]
         {
@@ -149,6 +185,7 @@ struct ClientCounters {
 async fn accept_loop(
     listener: TcpListener,
     upstream: SocketAddr,
+    options: ProxyOptions,
     state: Arc<State>,
     mut shutdown: watch::Receiver<bool>,
 ) {
@@ -173,18 +210,35 @@ async fn accept_loop(
 
         let (client_read, client_write) = client.into_split();
         let (upstream_read, upstream_write) = upstream_stream.into_split();
-        tokio::spawn(pump(client_read, upstream_write, to_upstream, shutdown.clone()));
-        tokio::spawn(pump(upstream_read, client_write, to_client, shutdown.clone()));
+        tokio::spawn(pump(
+            client_read,
+            upstream_write,
+            to_upstream,
+            shutdown.clone(),
+            Duration::ZERO,
+        ));
+        tokio::spawn(pump(
+            upstream_read,
+            client_write,
+            to_client,
+            shutdown.clone(),
+            options.reply_delay,
+        ));
     }
 }
 
 /// Copy one direction until EOF, an error, or proxy shutdown, counting the
 /// bytes that were successfully written to the destination.
+///
+/// When `reply_delay` is non-zero, every chunk read from the reader is held in
+/// the proxy for that real-time delay before it is written. Reads stop while a
+/// chunk is held, so the byte stream keeps its order.
 async fn pump<R, W>(
     mut reader: R,
     mut writer: W,
     counter: Arc<AtomicU64>,
     mut shutdown: watch::Receiver<bool>,
+    reply_delay: Duration,
 ) where
     R: AsyncRead + Unpin,
     W: AsyncWrite + Unpin,
@@ -202,6 +256,13 @@ async fn pump<R, W>(
                 Ok(n) => n,
             },
         };
+
+        if !reply_delay.is_zero() {
+            tokio::select! {
+                _ = shutdown.changed() => break 'copy,
+                _ = tokio::time::sleep(reply_delay) => {}
+            }
+        }
 
         // Write the chunk in pieces so a proxy drop can interrupt a blocked
         // write, and count only bytes that actually reached the socket.

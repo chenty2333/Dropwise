@@ -28,7 +28,9 @@
 //!
 //! With the optional `net` feature (Linux), `dropwise::net::Proxy` counts
 //! forwarded bytes and its `residue` method reports unread client bytes without
-//! consuming them. It is off by default.
+//! consuming them. `Proxy::start_with` can also hold replies for a real-time
+//! delay, which makes the waiting operation return `Pending` without changing
+//! the server. It is off by default.
 //!
 //! `cargo run --example quickstart` walks through one buggy and one corrected
 //! shape with the report printed; [`Report`] documents which signals mean what.
