@@ -168,6 +168,10 @@ that command:
   without the upstream fix for sqlx#4393. Post hoc: the rescan was designed after
   that bug was known, so it explains the frozen study's blind spots rather than
   estimating detection rates.
+  `bash prospective/run-bb8-fix.sh` checks a proposed bb8 fix for connections
+  returned to the pool mid-validation (frozen T2 scenarios included) and runs
+  bb8-redis, bb8-postgres and bb8-memcached against real loopback servers with
+  and without it.
 
 ## Bug survey
 

@@ -95,8 +95,8 @@ R3.5 在修复版上有 6 个计划判为 Pre，也就是事务在提交前被�
 `Pool::get()` 先把连接包成 `PooledConnection`，再 await `is_valid`（`bb8-0.9.1/src/inner.rs:93-113`）。一旦在这期间被取消，包括被 bb8 自己的 `connection_timeout` 取消，`PooledConnection` 就会以 `Present` 状态把连接放回池中（`api.rs:531-541`，`inner.rs:143-158`），唯一的拦截点是同步的 `has_broken`。验证请求的回复如果没被读取，就会被下一次验证读到，而它恰好也是 `"PONG"`，于是验证通过，此后每个请求都错位一位。
 
 - **按书面契约 C2（不丢连接、不丢容量）不算违反**，连接确实没有丢。问题在于契约没有提到：被打断的验证会留下状态。
-- **有两种低成本缓解。** 一是 manager 在 `has_broken` 里报告在途请求（R2.1c/R2.2c/R2.3c 均干净）。二是 bb8 在 await `is_valid` 前把状态设为 `Invalid`、成功后再恢复。第二种是推断，未实现。
-- **影响范围未验证。** 多路复用的客户端（如 tokio-postgres、redis 的 multiplexed 连接）丢弃请求时由后台任务处理回复，推测不受影响；直接在一条字节流上一问一答的 manager 可能受影响。本轮只测试了自建的进程内协议模型。
+- **有两种低成本缓解。** 一是 manager 在 `has_broken` 里报告在途请求（R2.1c/R2.2c/R2.3c 均干净）。二是 bb8 在 await `is_valid` 前把状态设为 `Invalid`、成功后再恢复，已在第 4 节实现并验证。
+- 真实 manager 上的影响见第 4 节。
 - 按标题检索 bb8 的 issue（关键词 `cancel`、`is_valid`），没有找到描述此问题的条目；未阅读正文，不能排除已有讨论。**未向上游提交。**
 
 ### 局限
@@ -105,3 +105,50 @@ R3.5 在修复版上有 6 个计划判为 Pre，也就是事务在提交前被�
 - T2 的协议 manager 是我们构造的模型，不是某个真实 manager 的代码。
 - 只重复 3 次，配置固定；T3 使用 `MultiThread` 实时时间，Pending 数可能随环境变化（本轮 3 次相同）。
 - 没有修改冻结研究的任何文件；冻结研究的结论（预注册契约内零发现）仍然成立，本文只解释其边界。
+
+## 4. bb8：修复验证与真实 manager（2026-10-18）
+
+运行入口为 `bash prospective/run-bb8-fix.sh`，每项重复 3 次，**结果完全一致**。补丁 `t2-bb8/patches/bb8-invalid-until-validated.diff` 只改动 `Pool::get()`：await `is_valid` 前把连接标为 `Invalid`，验证成功后恢复为 `Present`。这样，验证中途被丢弃的连接会被 bb8 丢弃并补建，而不是放回池中。bb8 main（`6dff1ee`）和最新发布版 0.9.1 中，这段代码与补丁前相同。补丁同时适用于 bb8 0.8.6 与 0.9.1。
+
+### 4.1 修复本身
+
+- **T2 回扫：** R2.1、R2.2、R2.3 在补丁版上全部干净，带谨慎 manager 的对照组也仍然干净。
+- **冻结场景 S2.1–S2.5：** 补丁版上违反数为 0。阳性对照 mutant 的违反数与冻结研究完全相同（3/0/3/0/3/42）。S2.5 的计划数由 54 变为 63：验证中途被丢弃的连接要重建，`connect` 多出几个 Pending 边界。没有退化。
+- **代价：** 验证被打断时会多建一次连接。
+
+### 4.2 已发布的 manager
+
+先按 crates.io 近 90 天下载量，阅读排名前 10 的 bb8 manager 的 `is_valid`/`has_broken` 实现（静态），再对本机能起服务的三个做动态测试。动态测试中，池经由一个回环代理连接真实服务：
+
+- **两种取消来源：** 一是 Dropwise 在 `get()` 的验证中途取消；二是代理把验证回复扣住 500 ms，让 bb8 自己的 `connection_timeout`（200 ms）触发取消。
+- **幸存者的操作：** 在同一个连接上依次执行写自己的 key、读两个预先写入的 key A 和 B、读回自己的 key，遇到报错也继续往下执行；另由一条独立连接确认写入。
+
+| manager（近 90 天下载） | 连接类型 | 动态：Dropwise 取消 | 动态：bb8 内部超时 | 补丁版 bb8 |
+|---|---|---|---|---|
+| bb8-redis 0.26.0（134 万） | redis `MultiplexedConnection` | 2 计划，干净 | 干净 | 干净 |
+| bb8-postgres 0.9.0（120 万） | tokio-postgres `Client`（后台连接任务） | 2 计划，干净 | 干净 | 干净 |
+| bb8-memcached 0.7.0（131；累计 10 万），基于 bb8 0.8.6 | memcache-async，单条字节流一问一答 | **2/2 违反** | **违反** | 两种取消均干净 |
+
+bb8-memcached 违反时，幸存者会话为 `set(own)=OK, get(a)=InvalidData, get(b)="value-a", get(own)="value-b"`。也就是说，在一次报错之后，**连续两次读取静默地返回了另一个 key 的值**。原因如下：
+
+1. 验证（`version`）的回复残留在连接上，下一次验证读到它，验证通过。
+2. 此后每个请求读到的都是前一个请求的回复。
+3. memcache-async 解析 `get` 回复时不核对 key（`ascii.rs:52-57`）。
+4. bb8-memcached 只在它**自己的**超时触发时才把连接标为 tainted（`client.rs:143-146` 等），外部丢弃的请求不会被标记，所以这个错位的连接会一直留在池里。
+
+其余七个 manager 只做了静态阅读，**未动态验证**：
+
+- **bb8-tiberius：** tiberius 每次发新请求前调用 `flush_stream()`，丢弃上一个请求未读完的回复（`connection.rs:231`），主路径可以自我恢复。“取消正好落在 flush 过程中”这种边缘情况没有检查。
+- **async-bb8-diesel / bb8-diesel：** 验证在阻塞线程中执行，取消不会打断它。
+- **bb8-lapin：** 验证只是同步检查状态，没有 await。
+- **bb8-ldap / bb8-mongodb：** 驱动本身是多路复用的。
+- **bb8-oracle：** 验证在 `spawn_blocking` 里继续执行，可能与下一位借用者并发使用同一个连接，取决于 ODPI-C 的线程模型，未检查。
+
+### 4.3 严重程度
+
+- **单次后果严重：** 静默返回错误数据，而且是别的 key 的数据。在缓存场景里，这可能意味着把一个用户的数据返回给另一个用户。错位的连接会留在池中，持续影响后续借用者，直到它因为别的原因被关闭。
+- **触发不苛刻：** `test_on_check_out` 默认开启；取消可以来自调用方，例如请求超时、客户端断开后 handler 被丢弃、`select!`，也可以来自 bb8 自己的 `connection_timeout`，只要验证回复慢于超时。
+- **受影响面窄：** 下载量最大的 bb8-redis、bb8-postgres 经实测不受影响。已确认受影响的 bb8-memcached 下载量很小（近 90 天 131 次）。自写的、基于单条字节流的 `ManageConnection` 实现无法统计，是主要的未知面。
+- **修复面在 bb8：** 6 行改动就能保护所有 manager，不需要每个 manager 自己在 `has_broken` 里跟踪在途请求。
+
+未向 bb8 或 bb8-memcached 提交任何内容。bb8-memcached 有一个相关但未说明此机制的 open issue（#9，“Handle connection-related error in order to detect broken connection”）。
