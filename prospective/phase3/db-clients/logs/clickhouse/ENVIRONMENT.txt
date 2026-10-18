@@ -1,0 +1,47 @@
+Target: clickhouse-arrow 0.2.1 (frozen; bb8 manager; inner_pool disabled).
+Crate: prospective/phase3/db-clients; test: tests/clickhouse.rs.
+
+Reported result server
+  image: clickhouse/clickhouse-server:25.5.2.47-alpine
+  image id: sha256:84155a247c37832b1611592de2a52b91bc4d4762ed6f5dfd0bc91322b608cf43
+  container: dw-p3-clickhouse-25, native TCP 127.0.0.1:32875, HTTP 127.0.0.1:32876
+  version: 25.5.2.47, server hello revision 54477 (>= 54470, chunked
+  packets negotiated), default user, no password (CLICKHOUSE_SKIP_USER_SETUP=1)
+
+Assignment server (left running; unusable for this client)
+  image: clickhouse/clickhouse-server:24.8.14.39-alpine
+  image id: sha256:b002e56ed5c16e224c312527f6fcba7e77216fec5d7a88a7828f59efc614feb5
+  container: dw-clickhouse-dev, native TCP 127.0.0.1:32874, HTTP 127.0.0.1:32873
+  server revision 54469 < 54470 (chunked-packets negotiation); see
+  incompatible-24.8-handshake.txt, incompatible-24.8-server.log,
+  incompatible-24.8-ch1_b1.log, incompatible-24.8-chunked-fallback.*.
+
+Commands (three repetitions, one test process each):
+  cd prospective/phase3/db-clients
+  DW_CLICKHOUSE_ADDR=127.0.0.1:32875 cargo test --test clickhouse \
+      -- --nocapture --test-threads=1
+Logs: release-1.log, release-2.log, release-3.log (full stdout);
+      release-N.ladder-extract.log (mechanical grep of LADDER lines).
+
+Root-cause contrast (not part of the reported ladder; 24.8 only)
+  patched crate copy: ~/dropwise-phase3-work/clickhouse-arrow-0.2.1-chunked-fallback
+  scenario copy with [patch.crates-io]: ~/dropwise-phase3-work/phase3/db-clients-clickhouse-chunked-fallback
+  diff: incompatible-24.8-chunked-fallback.patch
+  command: DW_CLICKHOUSE_ADDR=127.0.0.1:32874 cargo test --offline \
+      --manifest-path <scenario copy>/Cargo.toml --test clickhouse ch1_b1 \
+      -- --nocapture --test-threads=1
+  result: LADDER B1 CH1 [release]: plans=4 violations=0 unrealized=0
+      unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+  The one-line patch replaces the pre-54470 fallback
+  (ChunkedProtocolMode::default() = ChunkedOptional) with NotChunked; with it
+  the same client speaks to 24.8 and the server log shows normal query contexts
+  (incompatible-24.8-chunked-fallback-server.log) instead of
+  UNKNOWN_PACKET_FROM_CLIENT.
+
+Container auth changes (container-only; no repo file changed)
+  - dw-clickhouse-dev (24.8): /etc/clickhouse-server/users.d/default-user.xml
+    extended the default user's networks with 172.17.0.0/16 (docker bridge),
+    because the published-port source address is 172.17.0.1 and the stock
+    image restricts 'default' to 127.0.0.1/::1. Still default user, no password.
+  - dw-p3-clickhouse-25 (25.5.2.47): started with CLICKHOUSE_SKIP_USER_SETUP=1,
+    which leaves the baked users.xml (default user, no password).

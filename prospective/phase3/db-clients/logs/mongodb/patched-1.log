@@ -1,0 +1,324 @@
+     Locking 1 package to latest Rust 1.98.0 compatible version
+      Adding mongodb v3.9.1 (/home/ava/dropwise-phase3-work/mongodb-3.9.1-fixed)
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling libc v0.2.191
+   Compiling cfg-if v1.0.5
+   Compiling autocfg v1.5.1
+   Compiling libm v0.2.16
+   Compiling serde_core v1.0.229
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling version_check v0.9.5
+   Compiling portable-atomic v1.15.0
+   Compiling pkg-config v0.3.34
+   Compiling bytes v1.12.1
+   Compiling serde v1.0.229
+   Compiling smallvec v1.16.3
+   Compiling zerocopy v0.8.63
+   Compiling critical-section v1.2.0
+   Compiling getrandom v0.3.4
+   Compiling memchr v2.8.3
+   Compiling stable_deref_trait v1.2.1
+   Compiling typenum v1.20.1
+   Compiling ahash v0.8.12
+   Compiling equivalent v1.0.3
+   Compiling siphasher v1.0.4
+   Compiling parking_lot_core v0.9.12
+   Compiling pin-project-lite v0.2.17
+   Compiling phf_shared v0.12.1
+   Compiling iana-time-zone v0.1.65
+   Compiling scopeguard v1.2.0
+   Compiling num-traits v0.2.19
+   Compiling chrono-tz v0.10.4
+   Compiling lock_api v0.4.14
+   Compiling phf v0.12.1
+   Compiling semver v1.0.28
+   Compiling getrandom v0.4.3
+   Compiling arrow-schema v57.3.1
+   Compiling rand_core v0.10.1
+   Compiling ident_case v1.0.1
+   Compiling hashbrown v0.16.1
+   Compiling rustc_version v0.4.1
+   Compiling strsim v0.11.1
+   Compiling litemap v0.8.3
+   Compiling writeable v0.6.4
+   Compiling foldhash v0.2.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling hashbrown v0.17.1
+   Compiling fs_extra v1.3.0
+   Compiling icu_properties_data v2.3.0
+   Compiling crunchy v0.2.4
+   Compiling once_cell v1.21.4
+   Compiling dunce v1.0.5
+   Compiling utf8_iter v1.0.4
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling unicode-segmentation v1.13.3
+   Compiling thiserror v2.0.21
+   Compiling tiny-keccak v2.0.2
+   Compiling itoa v1.0.18
+   Compiling lexical-util v1.0.7
+   Compiling zmij v1.0.23
+   Compiling futures-core v0.3.34
+   Compiling hybrid-array v0.4.15
+   Compiling generic-array v0.14.7
+   Compiling crossbeam-utils v0.8.23
+   Compiling base64 v0.22.1
+   Compiling cpufeatures v0.3.1
+   Compiling serde_json v1.0.154
+   Compiling aho-corasick v1.1.5
+   Compiling slab v0.4.12
+   Compiling zeroize v1.9.1
+   Compiling futures-task v0.3.34
+   Compiling jobserver v0.1.35
+   Compiling getrandom v0.2.17
+   Compiling errno v0.3.14
+   Compiling mio v1.2.4
+   Compiling socket2 v0.6.5
+   Compiling indexmap v2.14.2
+   Compiling signal-hook-registry v1.4.8
+   Compiling futures-io v0.3.34
+   Compiling cmov v0.5.4
+   Compiling regex-syntax v0.8.11
+   Compiling cc v1.8.0
+   Compiling parking_lot v0.12.5
+   Compiling aws-lc-rs v1.18.2
+   Compiling const-random-macro v0.1.16
+   Compiling crypto-common v0.2.2
+   Compiling ctutils v0.4.3
+   Compiling block-buffer v0.12.1
+   Compiling num-integer v0.1.47
+   Compiling num-complex v0.4.6
+   Compiling lexical-parse-integer v1.0.6
+   Compiling lexical-write-integer v1.0.6
+   Compiling bitflags v2.13.2
+   Compiling percent-encoding v2.3.2
+   Compiling const-oid v0.10.2
+   Compiling form_urlencoded v1.2.2
+   Compiling lexical-parse-float v1.0.6
+   Compiling const-random v0.1.18
+   Compiling lexical-write-float v1.0.6
+   Compiling num-bigint v0.4.8
+   Compiling rustls-pki-types v1.15.1
+   Compiling chacha20 v0.10.2
+   Compiling tracing-core v0.1.36
+   Compiling uuid v1.28.0
+   Compiling tinyvec v1.13.3
+   Compiling untrusted v0.9.0
+   Compiling heck v0.5.0
+   Compiling winnow v1.0.4
+   Compiling digest v0.11.3
+   Compiling cmake v0.1.58
+   Compiling zstd-safe v7.3.0
+   Compiling ryu v1.0.23
+   Compiling vcpkg v0.2.15
+   Compiling unicode-width v0.2.2
+   Compiling lexical-core v1.0.6
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling rand v0.10.3
+   Compiling atoi v2.0.0
+   Compiling comfy-table v7.2.2
+   Compiling flatbuffers v25.12.19
+   Compiling proc-macro-utils v0.10.0
+   Compiling radium v0.7.0
+   Compiling regex-automata v0.4.18
+   Compiling rustls v0.23.46
+   Compiling crc32fast v1.5.2
+   Compiling twox-hash v2.1.5
+   Compiling crossbeam-epoch v0.9.21
+   Compiling toml_datetime v1.1.2+spec-1.1.0
+   Compiling aws-lc-sys v0.46.0
+   Compiling zstd-sys v2.1.2+zstd.1.5.7
+   Compiling ring v0.17.14
+   Compiling libz-sys v1.1.30
+   Compiling either v1.19.0
+   Compiling manyhow-macros v0.11.4
+   Compiling toml_parser v1.1.5+spec-1.1.0
+   Compiling digest v0.10.7
+   Compiling rand_core v0.9.5
+   Compiling csv-core v0.1.13
+   Compiling cpufeatures v0.2.17
+   Compiling subtle v2.6.1
+   Compiling tap v1.0.1
+   Compiling time-core v0.1.9
+   Compiling data-encoding v2.11.1
+   Compiling rustversion v1.0.23
+   Compiling log v0.4.34
+   Compiling num-conv v0.2.2
+   Compiling wyz v0.5.1
+   Compiling darling_core v0.23.0
+   Compiling time-macros v0.2.32
+   Compiling csv v1.4.0
+   Compiling synstructure v0.14.0
+   Compiling darling_core v0.24.1
+   Compiling toml_edit v0.25.17+spec-1.1.0
+   Compiling manyhow v0.11.4
+   Compiling zstd v0.13.3
+   Compiling lz4_flex v0.12.2
+   Compiling crossbeam-channel v0.5.17
+   Compiling convert_case v0.10.0
+   Compiling proc-macro-crate v3.5.0
+   Compiling futures-channel v0.3.34
+   Compiling rustc_version_runtime v0.3.0
+   Compiling mysql_common v0.37.3
+   Compiling paste v1.0.15
+   Compiling powerfmt v0.2.1
+   Compiling simdutf8 v0.1.5
+   Compiling regex v1.13.1
+   Compiling unicode-xid v0.2.6
+   Compiling deranged v0.5.9
+   Compiling funty v2.0.0
+   Compiling tagptr v0.2.0
+   Compiling futures-sink v0.3.34
+   Compiling termcolor v1.4.1
+   Compiling moka v0.12.16
+   Compiling flate2 v1.1.10
+   Compiling sha1 v0.10.7
+   Compiling zerocopy-derive v0.8.63
+   Compiling serde_derive v1.0.229
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling tokio-macros v2.7.2
+   Compiling thiserror-impl v2.0.21
+   Compiling futures-macro v0.3.34
+   Compiling macro_magic_core_macros v0.5.1
+   Compiling tracing-attributes v0.1.31
+   Compiling tokio v1.53.3
+   Compiling derive-syn-parse v0.2.0
+   Compiling async-trait v0.1.92
+   Compiling time v0.3.55
+   Compiling zerofrom v0.1.8
+   Compiling futures-util v0.3.34
+   Compiling yoke v0.8.3
+   Compiling darling_macro v0.23.0
+   Compiling zerovec v0.11.8
+   Compiling zerotrie v0.2.5
+   Compiling macro_magic_core v0.5.1
+   Compiling bitvec v1.1.1
+   Compiling darling v0.23.0
+   Compiling mysql-common-derive v0.32.2
+   Compiling bytemuck_derive v1.12.1
+   Compiling typed-builder-macro v0.22.0
+   Compiling tracing v0.1.44
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling macro_magic_macros v0.5.1
+   Compiling darling_macro v0.24.1
+   Compiling strum_macros v0.27.2
+   Compiling icu_collections v2.3.0
+   Compiling pin-project-internal v1.1.13
+   Compiling icu_locale_core v2.3.0
+   Compiling darling v0.24.1
+   Compiling serde_with_macros v3.24.0
+   Compiling macro_magic v0.5.1
+   Compiling derive_more-impl v2.1.1
+   Compiling sha2 v0.10.9
+   Compiling icu_provider v2.3.1
+   Compiling unicode-normalization v0.1.26
+   Compiling webpki-roots v1.0.9
+   Compiling serde_bytes v0.11.19
+   Compiling btoi v0.5.0
+   Compiling clickhouse-arrow v0.2.1
+   Compiling resolv-conf v0.7.6
+   Compiling icu_normalizer v2.3.0
+   Compiling icu_properties v2.3.0
+   Compiling byteorder v1.5.0
+   Compiling unicode-bidi v0.3.18
+   Compiling hex v0.4.3
+   Compiling chrono v0.4.45
+   Compiling ipnet v2.12.2
+   Compiling unicode-properties v0.1.4
+   Compiling saturating v0.1.0
+   Compiling bytemuck v1.25.2
+   Compiling typed-builder v0.22.0
+   Compiling serde_with v3.24.0
+   Compiling pin-project v1.1.13
+   Compiling mongodb-internal-macros v3.9.1
+   Compiling arc-swap v1.9.3
+   Compiling derive-where v1.7.0
+   Compiling prefix-trie v0.8.4
+   Compiling stringprep v0.1.5
+   Compiling strum v0.27.2
+   Compiling clickhouse-arrow-derive v0.2.1
+   Compiling derive_more v2.1.1
+   Compiling idna_adapter v1.2.2
+   Compiling hmac v0.13.0
+   Compiling idna v1.1.0
+   Compiling sha1 v0.11.0
+   Compiling pbkdf2 v0.13.0
+   Compiling sha2 v0.11.1
+   Compiling md-5 v0.11.0
+   Compiling crossbeam-queue v0.3.14
+   Compiling url v2.5.8
+   Compiling keyed_priority_queue v0.4.2
+   Compiling lru v0.18.5
+   Compiling cityhash-rs v1.0.1
+   Compiling rustc-hash v2.1.3
+   Compiling opentelemetry-semantic-conventions v0.31.0
+   Compiling take_mut v0.2.2
+   Compiling hickory-proto v0.26.3
+   Compiling half v2.7.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling tokio-util v0.7.20
+   Compiling tokio-stream v0.1.19
+   Compiling bb8 v0.9.1
+   Compiling dropwise v0.1.0 (/home/ava/Desktop/Dropwise)
+   Compiling rand_chacha v0.9.0
+   Compiling arrow-buffer v57.3.1
+   Compiling rand v0.9.5
+   Compiling mysql_async v0.37.1
+   Compiling hickory-net v0.26.3
+   Compiling arrow-data v57.3.1
+   Compiling bson v2.15.0
+   Compiling hickory-resolver v0.26.3
+   Compiling arrow-array v57.3.1
+   Compiling rustls-webpki v0.103.15
+   Compiling arrow-select v57.3.1
+   Compiling arrow-row v57.3.1
+   Compiling arrow-arith v57.3.1
+   Compiling arrow-ord v57.3.1
+   Compiling arrow-ipc v57.3.1
+   Compiling arrow-string v57.3.1
+   Compiling tokio-rustls v0.26.6
+   Compiling mongodb v3.9.1 (/home/ava/dropwise-phase3-work/mongodb-3.9.1-fixed)
+   Compiling arrow-cast v57.3.1
+   Compiling arrow-csv v57.3.1
+   Compiling arrow-json v57.3.1
+   Compiling arrow v57.3.1
+   Compiling prospective-phase3-db-clients v0.0.0 (/home/ava/dropwise-phase3-work/phase3/db-clients-mongodb-fixed)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.51s
+     Running tests/mongodb.rs (/home/ava/dropwise-phase3-work/phase3/db-clients-mongodb-fixed/target/debug/deps/mongodb-48e8d03b74a2f735)
+
+running 10 tests
+test mg1_b1 ... LADDER B1 MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg1_b2 ... LADDER B2 MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg1_b3 ... LADDER B3 MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg1_m ... LADDER M MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=12 mixed=0 neither=0 unknown=0
+LADDER-NOTE M MG1: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test mg1_m_residue ... LADDER M-residue MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=12 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue MG1: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test mg2_b1 ... LADDER B1 MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg2_b2 ... LADDER B2 MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg2_b3 ... LADDER B3 MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg2_m ... LADDER M MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M MG2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test mg2_m_residue ... LADDER M-residue MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue MG2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 41.43s
+

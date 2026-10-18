@@ -1,0 +1,11 @@
+--- /home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clickhouse-arrow-0.2.1/src/client/reader.rs	2006-07-24 10:21:28.000000000 +0900
++++ /home/ava/dropwise-phase3-work/clickhouse-arrow-0.2.1-chunked-fallback/src/client/reader.rs	2026-10-19 03:11:12.778728450 +0900
+@@ -226,7 +226,7 @@
+                     ChunkedProtocolMode::negotiate(srv_chunked_recv, cl_chunked_recv, "recv")?,
+                 )
+             } else {
+-                (ChunkedProtocolMode::default(), ChunkedProtocolMode::default())
++                (ChunkedProtocolMode::NotChunked, ChunkedProtocolMode::NotChunked)
+             };
+ 
+         tracing::trace!(

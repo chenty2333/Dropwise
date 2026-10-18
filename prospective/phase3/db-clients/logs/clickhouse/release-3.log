@@ -1,0 +1,31 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/clickhouse.rs (prospective/phase3/db-clients/target/debug/deps/clickhouse-0be6b66de13b5c9d)
+
+running 10 tests
+test ch1_b1 ... LADDER B1 CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test ch1_b2 ... LADDER B2 CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test ch1_b3 ... LADDER B3 CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test ch1_m ... LADDER M CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=4 mixed=0 neither=0 unknown=0
+ok
+test ch1_m_residue ... LADDER M-residue CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=4 mixed=0 neither=0 unknown=0
+CH-RESIDUE CH1: max=0 runs_nonzero=0
+ok
+test ch2_b1 ... LADDER B1 CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test ch2_b2 ... LADDER B2 CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test ch2_b3 ... LADDER B3 CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test ch2_m ... LADDER M CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M CH2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test ch2_m_residue ... LADDER M-residue CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue CH2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+CH-RESIDUE CH2: max=0 runs_nonzero=0
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 20.53s
+

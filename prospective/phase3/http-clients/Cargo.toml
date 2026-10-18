@@ -1,0 +1,41 @@
+[package]
+name = "phase3-http-clients"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Phase 3 (prospective/phase3/PLAN.md): cancellation-ablation ladder for the
+# HTTP/1.1 client targets. One crate, one test binary per target, a shared
+# in-process HTTP/1.1 server in tests/support/.
+[features]
+# M1-residue uses dropwise::net::Proxy. Off by default so the main runs need
+# no /proc socket inspection; the runner enables it for every mode.
+net = ["dropwise/net", "tokio/io-util"]
+
+[dependencies]
+dropwise = { path = "../../.." }
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time", "io-util"] }
+bytes = "1"
+http = "1"
+http-body-util = "0.1"
+
+# Target 1: hyper-util's legacy Client (the connection pool target). hyper is
+# merged into it per targets.md.
+hyper = { version = "=1.12.0", features = ["client", "http1"] }
+hyper-util = { version = "=0.1.21", features = ["client-legacy", "http1", "tokio"] }
+
+# Target 2: reqwest, plain origin-form HTTP; no TLS, no HTTP/2.
+reqwest = { version = "=0.13.5", default-features = false, features = ["charset"] }
+
+# Target 4: pingora-core's HTTP/1 client session and pingora-pool. Default
+# features empty: no TLS backend needed for plain HTTP/1.1.
+pingora-core = { version = "=0.9.0", default-features = false }
+pingora-pool = { version = "=0.9.0" }
+pingora-http = { version = "=0.9.0" }
+
+# Target 6: isahc over libcurl. static-curl builds libcurl from source; no
+# system libcurl on this host, and no TLS for these experiments.
+isahc = { version = "=2.0.1", default-features = false, features = ["static-curl"] }
+
+# Target 7: awc. No compression/cookies/TLS needed.
+awc = { version = "=3.10.0", default-features = false }

@@ -1,0 +1,6 @@
+2026.10.18 18:01:09.002577 [ 83 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:01:09.003576 [ 83 ] {} <Error> ServerErrorHandler: Code: 99. DB::Exception: Unknown packet 19 from client. (UNKNOWN_PACKET_FROM_CLIENT), Stack trace (when copying this message, always include the lines below):
+2026.10.18 18:01:31.856446 [ 83 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:01:31.902332 [ 83 ] {} <Error> ServerErrorHandler: Code: 99. DB::Exception: Unknown packet 19 from client. (UNKNOWN_PACKET_FROM_CLIENT), Stack trace (when copying this message, always include the lines below):
+2026.10.18 18:07:46.136878 [ 83 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:07:46.191079 [ 83 ] {} <Error> ServerErrorHandler: Code: 99. DB::Exception: Unknown packet 52 from client. (UNKNOWN_PACKET_FROM_CLIENT), Stack trace (when copying this message, always include the lines below):

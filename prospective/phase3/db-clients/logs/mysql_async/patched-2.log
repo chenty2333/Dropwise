@@ -1,0 +1,31 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.37s
+     Running tests/mysql_async.rs (/home/ava/dropwise-phase3-work/phase3/db-clients-mysql_async-fixed/target/debug/deps/mysql_async-7ab33adae9e24b4f)
+
+running 10 tests
+test my1_b1 ... LADDER B1 MY1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test my1_b2 ... LADDER B2 MY1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test my1_b3 ... LADDER B3 MY1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test my1_m ... LADDER M MY1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M MY1: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test my1_m_residue ... LADDER M-residue MY1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue MY1: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test my2_b1 ... LADDER B1 MY2 [patched]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test my2_b2 ... LADDER B2 MY2 [patched]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test my2_b3 ... LADDER B3 MY2 [patched]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test my2_m ... LADDER M MY2 [patched]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=0 unknown=0
+LADDER-NOTE M MY2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test my2_m_residue ... LADDER M-residue MY2 [patched]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue MY2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.15s
+

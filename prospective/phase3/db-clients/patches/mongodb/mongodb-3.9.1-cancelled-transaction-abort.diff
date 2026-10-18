@@ -1,0 +1,134 @@
+diff -ruN /home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mongodb-3.9.1/src/action/session.rs /home/ava/dropwise-phase3-work/mongodb-3.9.1-syncfix/src/action/session.rs
+--- a/src/action/session.rs
++++ b/src/action/session.rs
+@@ -53,6 +53,7 @@
+         if let Some(options) = &self.options {
+             options.validate()?;
+         }
++        self.client.wait_for_session_aborts().await;
+         Ok(ClientSession::new(self.client.clone(), self.options, false).await)
+     }
+ }
+diff -ruN /home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mongodb-3.9.1/src/client/session/action.rs /home/ava/dropwise-phase3-work/mongodb-3.9.1-syncfix/src/client/session/action.rs
+--- a/src/client/session/action.rs
++++ b/src/client/session/action.rs
+@@ -532,14 +532,17 @@
+                     write_concern,
+                     self.session.transaction.pinned.take(),
+                 );
+-                self.session.transaction.abort();
+                 // Errors returned from running an abortTransaction command should be ignored.
++                // The state is only marked Aborted after the command completes: if this future
++                // is cancelled before the command is sent, Drop can still see InProgress and
++                // send the abort itself.
+                 let _result = self
+                     .session
+                     .client
+                     .clone()
+                     .execute_operation(abort_transaction, &mut *self.session)
+                     .await;
++                self.session.transaction.abort();
+                 self.session.transaction.drop_span();
+                 Ok(())
+             }
+diff -ruN /home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mongodb-3.9.1/src/client/session.rs /home/ava/dropwise-phase3-work/mongodb-3.9.1-syncfix/src/client/session.rs
+--- a/src/client/session.rs
++++ b/src/client/session.rs
+@@ -425,6 +425,13 @@
+ 
+ impl Drop for ClientSession {
+     fn drop(&mut self) {
++        if self.transaction.state == TransactionState::Starting {
++            // A cancelled first in-transaction command can have reached the
++            // server before the client state advances to `InProgress`, so the
++            // Drop-time abort below would skip the open server transaction.
++            // Treat the session as in progress so the abort is sent.
++            self.transaction.state = TransactionState::InProgress;
++        }
+         if self.transaction.state == TransactionState::InProgress {
+             let dropped_session = DroppedClientSession {
+                 cluster_time: self.cluster_time.clone(),
+@@ -436,9 +443,12 @@
+                 snapshot_time: self.snapshot_time,
+                 operation_time: self.operation_time,
+             };
++            let client = self.client.clone();
++            client.inner.session_aborts.begin();
+             self.drop_token.spawn(async move {
+                 let mut session: ClientSession = dropped_session.into();
+                 let _result = session.abort_transaction().await;
++                client.inner.session_aborts.end();
+             });
+         } else {
+             let client = self.client.clone();
+diff -ruN /home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mongodb-3.9.1/src/client.rs /home/ava/dropwise-phase3-work/mongodb-3.9.1-syncfix/src/client.rs
+--- a/src/client.rs
++++ b/src/client.rs
+@@ -154,6 +154,7 @@
+     topology: Topology,
+     options: ClientOptions,
+     session_pool: ServerSessionPool,
++    session_aborts: SessionAborts,
+     shutdown: ClientShutdown,
+     dropped: AtomicBool,
+     end_sessions_token: std::sync::Mutex<AsyncDropToken>,
+@@ -166,6 +167,39 @@
+     disable_command_events: AtomicBool,
+ }
+ 
++#[derive(Debug, Default)]
++struct SessionAborts {
++    count: std::sync::atomic::AtomicUsize,
++    notify: tokio::sync::Notify,
++}
++
++impl SessionAborts {
++    /// Register a Drop-time abort before spawning it.
++    fn begin(&self) {
++        self.count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
++    }
++
++    /// Complete a Drop-time abort and wake sessions waiting for it.
++    fn end(&self) {
++        if self.count.fetch_sub(1, std::sync::atomic::Ordering::SeqCst) == 1 {
++            self.notify.notify_waiters();
++        }
++    }
++
++    /// Wait until every registered Drop-time abort has completed.
++    async fn wait(&self) {
++        loop {
++            let notified = self.notify.notified();
++            tokio::pin!(notified);
++            notified.as_mut().enable();
++            if self.count.load(std::sync::atomic::Ordering::SeqCst) == 0 {
++                return;
++            }
++            notified.await;
++        }
++    }
++}
++
+ #[derive(Debug)]
+ struct ClientShutdown {
+     pending_drops: TaskTracker,
+@@ -211,6 +245,7 @@
+         let inner = TrackingArc::new(ClientInner {
+             topology: Topology::new(options.clone())?,
+             session_pool: ServerSessionPool::new(),
++            session_aborts: SessionAborts::default(),
+             options,
+             shutdown: ClientShutdown {
+                 pending_drops: TaskTracker::new(),
+@@ -644,6 +679,11 @@
+         .ok()
+     }
+ 
++    /// Wait for Drop-time transaction aborts registered before this call.
++    pub(crate) async fn wait_for_session_aborts(&self) {
++        self.inner.session_aborts.wait().await;
++    }
++
+     pub(crate) fn options(&self) -> &ClientOptions {
+         &self.inner.options
+     }

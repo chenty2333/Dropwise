@@ -1,0 +1,5 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/mongodb.rs (target/debug/deps/mongodb-1966b516bbfa5fbc)
+
+running 1 test
+test mg2_b1 ... 

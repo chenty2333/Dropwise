@@ -1,0 +1,12 @@
+LADDER B1 CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B2 CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B3 CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER M CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=4 mixed=0 neither=0 unknown=0
+LADDER M-residue CH1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=4 mixed=0 neither=0 unknown=0
+LADDER B1 CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B2 CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B3 CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER M CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M CH2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+LADDER M-residue CH2 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue CH2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state

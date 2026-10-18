@@ -1,0 +1,14 @@
+--- a/src/conn/mod.rs
++++ b/src/conn/mod.rs
+@@ -402,6 +402,11 @@
+     where
+         F: Routine<T> + 'a,
+     {
++        // A dropped routine leaves `disconnected` set and its reply unread.
++        // Refuse a new command instead of letting it consume that reply.
++        if self.inner.disconnected {
++            return Err(crate::DriverError::ConnectionClosed.into());
++        }
+         self.inner.disconnected = true;
+         let result = f.call(&mut *self).await;
+         match result {

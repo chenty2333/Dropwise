@@ -1,0 +1,2 @@
+[patch.crates-io]
+mongodb = { path = "@WORK@/mongodb-3.9.1-fixed" }

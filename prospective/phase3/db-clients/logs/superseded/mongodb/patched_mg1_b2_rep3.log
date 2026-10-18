@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/mongodb.rs (patches/target/debug/deps/mongodb-7dfc19bd24d598c4)
+
+running 1 test
+test mg1_b2 ... LADDER B2 MG1 [release]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 5.64s
+

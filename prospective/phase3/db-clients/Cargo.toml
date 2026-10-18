@@ -1,0 +1,17 @@
+[package]
+name = "prospective-phase3-db-clients"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Phase 3's database targets (mongodb, mysql_async, clickhouse-arrow), each in
+# its own integration test. `dropwise/net` supplies the held-reply proxy: every
+# level of a target uses the same proxy delay to make the operation Pending, so
+# the four levels share one scenario skeleton and one Pending mechanism.
+[dependencies]
+dropwise = { path = "../../..", features = ["net"] }
+mongodb = "=3.9.1"
+mysql_async = "=0.37.1"
+clickhouse-arrow = { version = "=0.2.1", default-features = false, features = ["derive", "serde", "pool"] }
+futures-util = "0.3"
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time"] }

@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running tests/mysql_async.rs (target/debug/deps/mysql_async-d4979281c546a005)
+
+running 2 tests
+test my2_m ... LADDER M MY2 [release]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=0 unknown=0
+ok
+test my2_m_residue ... LADDER M-residue MY2 [release]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=0 unknown=0
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 5.28s
+

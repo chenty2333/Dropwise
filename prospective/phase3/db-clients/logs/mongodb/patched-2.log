@@ -1,0 +1,31 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.39s
+     Running tests/mongodb.rs (/home/ava/dropwise-phase3-work/phase3/db-clients-mongodb-fixed/target/debug/deps/mongodb-48e8d03b74a2f735)
+
+running 10 tests
+test mg1_b1 ... LADDER B1 MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg1_b2 ... LADDER B2 MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg1_b3 ... LADDER B3 MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg1_m ... LADDER M MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=12 mixed=0 neither=0 unknown=0
+LADDER-NOTE M MG1: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test mg1_m_residue ... LADDER M-residue MG1 [patched]: plans=12 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=12 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue MG1: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test mg2_b1 ... LADDER B1 MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg2_b2 ... LADDER B2 MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg2_b3 ... LADDER B3 MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test mg2_m ... LADDER M MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M MG2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test mg2_m_residue ... LADDER M-residue MG2 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M-residue MG2: target(s) #0: pre and post observations are equal (Obs { own: Ok(67890), visible: Ok(1), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 40.58s
+

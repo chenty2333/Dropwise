@@ -1,0 +1,44 @@
+2026.10.18 18:11:49.252763 [ 83 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.272769 [ 83 ] {} <Trace> TCP-Session: fa2c23de-0d67-4f5c-9cd7-8b35980aad8f Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.290556 [ 83 ] {5295a8ef2d8147be935d4278e5b37f35} <Debug> TCPHandler: Processed in 0.02412626 sec.
+2026.10.18 18:11:49.291292 [ 83 ] {} <Trace> TCP-Session: fa2c23de-0d67-4f5c-9cd7-8b35980aad8f Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.297197 [ 83 ] {18daf1281ec54395a3fcc25189168be4} <Debug> TCPHandler: Processed in 0.006137175 sec.
+2026.10.18 18:11:49.298014 [ 83 ] {} <Trace> TCP-Session: fa2c23de-0d67-4f5c-9cd7-8b35980aad8f Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.303246 [ 83 ] {ea26f076b7394a6f9bfafafe6b03b79e} <Debug> TCPHandler: Processed in 0.00535958 sec.
+2026.10.18 18:11:49.304766 [ 88 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.397624 [ 88 ] {} <Trace> TCP-Session: 2c2df261-c268-48c9-b06c-a05aff3dbabd Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.399777 [ 88 ] {9ee20f8a94f245c4b8642235130f8856} <Debug> TCPHandler: Processed in 0.002478533 sec.
+2026.10.18 18:11:49.453357 [ 88 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.454016 [ 88 ] {} <Trace> TCP-Session: 4e3f2154-5edd-4793-8e57-c4ca9d0f8fc4 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.454323 [ 88 ] {aa3e57b43a8f4f9f8c0721a346e4497a} <Debug> TCPHandler: Processed in 0.000467802 sec.
+2026.10.18 18:11:49.454761 [ 88 ] {} <Trace> TCP-Session: 4e3f2154-5edd-4793-8e57-c4ca9d0f8fc4 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.456536 [ 88 ] {eb23325852514d4cb74508289da89c70} <Debug> TCPHandler: Processed in 0.001875924 sec.
+2026.10.18 18:11:49.456923 [ 88 ] {} <Trace> TCP-Session: 4e3f2154-5edd-4793-8e57-c4ca9d0f8fc4 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.458004 [ 88 ] {9bc246ea178940898e9a3ed261b96d20} <Debug> TCPHandler: Processed in 0.001185732 sec.
+2026.10.18 18:11:49.459014 [ 83 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.512515 [ 88 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.513464 [ 88 ] {} <Trace> TCP-Session: 5b2a5154-8322-4992-83a5-bcb08e388688 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.513667 [ 88 ] {693e361f6c1442b4b4a9d459f306bd8e} <Debug> TCPHandler: Processed in 0.000328435 sec.
+2026.10.18 18:11:49.513878 [ 88 ] {} <Trace> TCP-Session: 5b2a5154-8322-4992-83a5-bcb08e388688 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.519518 [ 88 ] {37c792a6134040f9aace55f52c5f8fb7} <Debug> TCPHandler: Processed in 0.005689248 sec.
+2026.10.18 18:11:49.519930 [ 88 ] {} <Trace> TCP-Session: 5b2a5154-8322-4992-83a5-bcb08e388688 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.520914 [ 88 ] {5d59c88609894a73bbf329703c03ad7c} <Debug> TCPHandler: Processed in 0.001104769 sec.
+2026.10.18 18:11:49.521845 [ 83 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.576260 [ 88 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.577342 [ 88 ] {} <Trace> TCP-Session: 9f96070a-0566-468c-b885-92405cdadcea Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.577517 [ 88 ] {8fbac34c284e492c8fddb516899e1e0a} <Debug> TCPHandler: Processed in 0.000294751 sec.
+2026.10.18 18:11:49.577860 [ 88 ] {} <Trace> TCP-Session: 9f96070a-0566-468c-b885-92405cdadcea Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.580957 [ 88 ] {faeb9d5c56104cabb9c21985ffadde09} <Debug> TCPHandler: Processed in 0.00327122 sec.
+2026.10.18 18:11:49.581337 [ 88 ] {} <Trace> TCP-Session: 9f96070a-0566-468c-b885-92405cdadcea Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.582849 [ 88 ] {a7f9f38713af436c81eaa1432b65442c} <Debug> TCPHandler: Processed in 0.001624256 sec.
+2026.10.18 18:11:49.587631 [ 939 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.641701 [ 939 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.642714 [ 939 ] {} <Trace> TCP-Session: 791a3e41-40df-4e05-84e2-7b79c3e99805 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.643019 [ 939 ] {e29a53d7ad3148b6a59c6f6c630b4428} <Debug> TCPHandler: Processed in 0.000419122 sec.
+2026.10.18 18:11:49.643441 [ 939 ] {} <Trace> TCP-Session: 791a3e41-40df-4e05-84e2-7b79c3e99805 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.645387 [ 939 ] {03e1bba3f7fa460ca1788c167515eb24} <Debug> TCPHandler: Processed in 0.002080965 sec.
+2026.10.18 18:11:49.646014 [ 939 ] {} <Trace> TCP-Session: 791a3e41-40df-4e05-84e2-7b79c3e99805 Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.646991 [ 939 ] {0c20bb91fa07479d8f3c4f32b85fe7c2} <Debug> TCPHandler: Processed in 0.001148631 sec.
+2026.10.18 18:11:49.648118 [ 83 ] {} <Debug> TCPHandler: Connected ClickHouseArrow Rust 0.2.1 version 0.2.0, revision: 54479, user: default.
+2026.10.18 18:11:49.699701 [ 83 ] {} <Trace> TCP-Session: 2cd41895-2703-4f91-a84a-c92f181048cd Creating query context from session context, user_id: 94309d50-4f52-5250-31bd-74fecac179db, parent context user: default
+2026.10.18 18:11:49.700318 [ 83 ] {90ba5f529f8942cd9ffeee14925d6e7b} <Debug> TCPHandler: Processed in 0.000848941 sec.

@@ -1,0 +1,11 @@
+=== clickhouse ch1_b1 against the assignment's 24.8.14.39 on 127.0.0.1:32874 ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/clickhouse.rs (target/debug/deps/clickhouse-0be6b66de13b5c9d)
+
+running 1 test
+test ch1_b1 ... LADDER B1 CH1 [release]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0
+LADDER-ERROR B1 CH1 [release]: DROP DATABASE: timed out
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 3.06s
+

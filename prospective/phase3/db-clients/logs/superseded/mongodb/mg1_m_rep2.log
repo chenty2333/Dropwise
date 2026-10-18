@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/mongodb.rs (target/debug/deps/mongodb-1966b516bbfa5fbc)
+
+running 2 tests
+test mg1_m ... LADDER M MG1 [release]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0 pre=0 post=0 mixed=0 neither=0 unknown=0
+LADDER-ERROR M MG1 [release]: observer setup insert timed out
+ok
+test mg1_m_residue ... LADDER M-residue MG1 [release]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0 pre=0 post=0 mixed=0 neither=0 unknown=0
+LADDER-ERROR M-residue MG1 [release]: observer setup insert timed out
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 10.01s
+

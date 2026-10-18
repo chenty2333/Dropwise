@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.35s
+     Running tests/mysql_async.rs (target/debug/deps/mysql_async-d4979281c546a005)
+
+running 1 test
+test my2_b2 ... MY2 B2 retry returned 12345
+MY2 B2 retry returned 12345
+LADDER B2 MY2 [release]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.81s
+

@@ -1,0 +1,2 @@
+[patch.crates-io]
+mysql_async = { path = "@WORK@/mysql_async-0.37.1-fixed" }

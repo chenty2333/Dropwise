@@ -1,0 +1,3 @@
+packet id 0
+server ClickHouse
+major 24 minor 8 server revision 54469
