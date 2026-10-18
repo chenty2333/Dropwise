@@ -74,3 +74,33 @@ Kill-safe 的“幸存者”视角是本报告五份笔记都没有覆盖的，�
 1. **继续用“目标清单 + 幸存者 + 允许集合”这套组合扫更多库。** 成本低，已经证明能出结果。优先选在单条字节流上一问一答、并且带池化或复用的客户端。
 2. **把允许集合校准和幸存者模板收进 Dropwise API**，目前它们还是实验代码。只有确定 API 形态之后，CancelSan 这类零配置接入才有意义。
 3. 静止判定、futurelock、CancelSan 保留在 REPORT.md 的清单中，等前两项稳定后再评估。
+
+## Gemini 的建议与评估（2026-10-18）
+
+用户另外向 Gemini 询问了同一组问题（背景：被取消的交换污染了被复用的连接）。下面按“与我们的实测是否吻合”来评估，不是全文转录。凡是写“已核实”的，指本次检索或我们的实验确认过；其余均未核实。
+
+**与我们的发现直接吻合、值得马上采用：**
+
+- **“错误路径与 Drop 路径不一致”作为静态特征。** 如果某个 `.await` 之后的 `Err` 分支会把 `self` 标记为坏（例如 `is_broken`、`panic`、`tainted`、`closed`），而同一个挂起点的取消（drop）路径不做同样的标记，就说明作者已经承认“交换没完成时连接是脏的”，却漏掉了取消这条路径。我们已有的四个发现都完全符合这个特征：lettre 的 `try_smtp!` 只在出错时设置 `panic`；bb8-memcached 只在自身超时时标记 tainted；async-memcached 在 #91 中只为 meta 操作加了 guard；sqlx-mysql 的 `begin` 在出错和被取消时都没有清理。这个特征不需要 MIR，可以先用 syn 或文本启发式，在依赖 bb8、deadpool、mobc、r2d2 的 crate 中做普查。它类似 Rudra（SOSP'21）在 unwind 方向上的做法。
+- **不依赖协议知识的“残留字节”判定。** 连接空闲、或刚被借出还没写任何字节时，在静止之后，接收缓冲区应当为空（可以用 `FIONREAD` 或 `MSG_PEEK` 检查）。bb8-memcached、async-memcached 和 lettre 的 `354` 这三类问题，不用写任何协议相关的判定就能抓到。它抓不到 sqlx-mysql 这种“字节对齐但会话状态脏了”的情况；对于服务端主动推送的协议（pub/sub、通知），也必须先排除才能用。Gemini 说它“100% 确定”，这一点说过头了：前提是先确认对端已经静止。
+- **两个盲区：**
+  1. **测试框架在复用前等了一会儿。** lettre 场景在复用前固定 `sleep(50ms)`，bb8 场景也是等回复到达后才让后继者取用。“回复晚于下一位借用者的 poll 才到达”，以及“回收任务还没跑完就被复用”这两种顺序都没有覆盖。我们的 reply gate 和 Proxy 已经能控制回复到达的时刻，只需要把它变成一个可调度的维度。
+  2. **异步清理与下一位借用者之间的竞争。** sqlx 是把 ROLLBACK 排进队列，lettre 和 bb8 是 spawn 一个回收任务；如果下一位借用者抢在清理之前拿到连接，会怎样？#4445 也属于这一类。
+
+**有价值、但成本较高：**
+
+- **双生连接字节流差分：** 把后继者的请求字节在两条干净连接上重放，掩码掉动态字段之后比较回复。它能覆盖会话状态污染，但重放有副作用的请求需要隔离服务端状态（快照或独立容器），成本高。
+- **“多米诺效应”基准：** 注入 1 秒的延迟尖峰，画出错 key 率随时间变化的曲线，对比修复前后。适合用来说明严重性（issue、文章），但对找新 bug 帮助不大。
+- **扫描范围扩展到网络客户端之外：** 带状态的流包装器（`Framed`、压缩流、TLS 流上的 `write_all` 半途取消）、tower 的 `ready()` 之后取消导致的许可泄漏、对象存储的分块上传。可以作为目标清单的补充。
+
+**修复范式：** Gemini 推荐的“悲观投毒守卫”（开始交换前标记为脏，完整闭环后解除；被 drop 时直接丢弃连接），正是我们这四个补丁的共同做法：bb8 在 `is_valid` 期间标为 `Invalid`；lettre 用 `sending`；sqlx-mysql 先增加深度再用 `Rollback` guard。它对 AsyncDrop 的批评也成立：在析构时去排空 socket，会把触发了超时的调用方再卡一次。
+
+**跨语言先例：** 这些可以在 issue 里用来说明“连接一旦被打断就作废”是业界常规做法，均未逐条核对原文。
+- Java NIO 的 `ClosedByInterruptException`：线程被中断时，channel 自动关闭；
+- Go `database/sql` 的 `driver.ErrBadConn`、`SessionResetter`（Go 1.10）和 `Validator`（Go 1.15；Gemini 说的是 1.8/1.10，有误）；
+- .NET TDS 协议的 `RESETCONNECTION` 状态位，以及 PostgreSQL `ReadyForQuery` 的事务状态字节（我们在 sqlx 源码中已核实，见 4.2 节）；
+- MySQL 的 `COM_RESET_CONNECTION`；
+- PortSwigger 的 response queue poisoning；
+- CWE-226、CWE-672。
+
+Gemini 关于 .NET SqlClient 的细节（“内核态重置”“取消时直接置为 Broken”）有夸大或无法核实的部分，不要引用。
