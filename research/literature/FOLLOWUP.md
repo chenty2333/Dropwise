@@ -244,3 +244,47 @@ Gemini 说简单取消测试有三种常见写法，各有盲点。RESCAN 的回
 3. 记录两种方法各自的发现数，以及每个目标的适配代码行数、工时和花在哪里，重点看 Pending 制造器和观察者。
 
 第一步，即扫描器和候选清单，交给另一个会话做，产出放在 `prospective/candidate-scan/`。
+
+## Gemini 第五至七轮：论文定位、元概念与防御模式（2026-10-19）
+
+### 第五轮：适配成本与论文定位（多处有误，慎用）
+
+这一轮把 diesel-async 归成"静默的事务问题"（实际是回复错位，B3 全部能抓到）；编造了"每个目标接入只需 30~60 行"（实际实验文件 127~243 行）；说残留字节检查能"100%"抓到错位（忽略了池的 ping/NOOP 会先把残留读掉）；还把"跨租户串扰"说成已证实。可用的只有三点：把静态扫描改写成连接池回收卫生的生态普查；把结果干净的目标放进主表，检验"后台 I/O 任务 / 多路复用的架构天然安全"这一假设；两层工作流（先用报错、卡死、残留字节做便宜的筛查，再用完整模板查静默问题）作为方法章节的组织方式。
+
+### 第六轮：元概念、冷门同构工作与 Linux（质量高）
+
+**已核实的出处：**
+
+| 说法 | 核实结果 |
+|---|---|
+| 可线性化对未决调用的处理（Herlihy & Wing, TOPLAS 1990） | **属实，而且比转述更贴切。** 原文：“extending H to H’ captures the notion that some pending invocations may have taken effect even though their responses have not yet been returned to the caller … Restricting attention to complete(H’) captures the notion that the remaining pending invocations have not yet had an effect.” 每个未决调用各自要么算作已生效、要么算作没发生，正是我们的两条基线；多个 cut 时各自独立选择，正是 `Verdict::Mixed`。 |
+| Java 废弃 `Thread.stop()` 的理由 | **属实。** 官方文档：停止线程会释放它持有的所有 monitor，被保护的对象若正处于修改中途，其他线程会看到不一致的“damaged”对象；损坏可能在事后很久才显现。 |
+| I2C 总线卡死后发 9 个时钟脉冲恢复 | **属实（二手核实）。** 多个 Linux 内核 I2C 驱动补丁引用 UM10204 第 3.1.16 节“Bus clear”：SDA 被拉低时，主控发 9 个时钟脉冲，占住总线的设备应在其间释放。NXP 官网的 PDF 未能直接下载，原文措辞未逐字核对。 |
+| 内核 fail-nth 接口 | **属实，路径要更正。** 当前文档写的是 `/proc/<pid>/fail-nth` 和 `/proc/self/task/<tid>/fail-nth`（没有 `thread-self` 形式）；写入 N 让该任务第 N 次故障点失败，读回 0 表示已注入；按任务生效，覆盖所有故障类型（slab、futex 等）。 |
+| FIFUZZ（USENIX Security 2020） | **属实，但它测的是 9 个用户态 C 程序，不是内核；判定只靠崩溃和 ASan**（论文局限一节：“we only detect the bugs causing crashes and those reported by ASan”）。它是“错误路径系统注入”的代表工作，正好说明“幸存者 + 两条基线”这种判定在这条线上仍是空白（未做全面检索）。 |
+
+未逐一重新核对、但属于常识的：Honda 1993 会话类型、T.Y. Chen 1998 蜕变测试、Abrahams 的异常安全保证、Kettle 2019 的 HTTP Desync、Bronson 等 HotOS'21 的 metastable failures、Haskell 异步异常（Marlow 等 PLDI 2001）。
+
+**值得采纳的观点：**
+
+- **理论锚点：** 判定方式 = 在“资源被轮流借用”的场景下，检查被放弃的操作是否满足可线性化对未决调用的规则。
+- **根因：** Rust 的仿射所有权（值可随时丢弃）承载了线性的协议会话（必须走完），而 `Drop` 是同步的，无法异步补偿。
+- **与崩溃一致性的区别：** 崩溃时整个进程一起死、重启后有统一的恢复流程；取消时只有协程死了，内核缓冲区和远端会话都活着，没有任何恢复流程被触发，脏状态被“热交接”给下一个人。
+- **三元模型：** 短命执行体 / 长命共享基座 / 租约边界；残留字节检查推广为“交接时管道必须静止、排空”。
+- **Linux 原型路线：** fail-nth（或在可中断等待处用 eBPF 发信号）+ 通过 fork / 传 fd 共享对象的幸存者进程 + 两条基线。不用改内核。
+
+**夸大或有误：** 把安全影响说成已证实（“攻击者精确控制断开时机投毒”没有端到端演示）；把 diesel-async 算进“跨 key 读到脏数据”；现编的名词（“前缀双值性”“零在途熵”）和与 FLP 的类比只是修辞；“先测 kTLS/sockmap”是猜测；内核里的“引用计数增量”在用户态不能直接观察，需要调试接口或 eBPF。
+
+### 第七轮：防御模式（总体可靠，作讨论章节的骨架）
+
+- **“不可能三角”**（外部强制丢弃 + 同步 `Drop` + 跨 `.await` 的 `&mut` 借用）：准确，是对根因的好概括。
+- **AsyncDrop 不是银弹：** 清理本身可能在坏网络上挂起、隐式的中间状态没有守卫对象、`mem::forget` 和运行时关闭仍是逃生口。与我们之前对 AsyncDrop 的评估一致。
+- **四种防御模式：**
+  - 悲观标记（先置脏、走完才清）：就是我们 bb8、lettre、sqlx-mysql 补丁的做法；mysql_async 自己的 `disconnected` 也是这个模式，diesel-async#305 只是把它接到了池上。
+  - 按值传递所有权：即之前记录的 take-and-restore。
+  - 后台清洗队列：带硬超时、用协议的 reset 命令（`COM_RESET_CONNECTION`、`DISCARD ALL`）时可行，tokio-postgres 把 ROLLBACK 排进有序通道是先例；不带协议知识的“排空”仍不可行。
+  - 传输层静默检查：方向对，但有两点要纠正。
+- **需要纠正的：**
+  - 静默检查**抓不到服务端还在计算的回复**：被取消的是一个慢查询时（diesel-async 回归测试里的 `SLEEP(0.5)`），借出时缓冲区仍是空的，下一个查询照样读到旧结果。所以它只能作为“进行中”标志之外的补充，不能替代。
+  - 示例代码不能直接用（tokio 的 `try_io` 里调用 `peek` 的写法不对）；通用池也拿不到底层 socket 和编解码缓冲区，这个检查只能放在 manager 或客户端里。
+  - “Kotlin、Trio、Go 很少出现这类问题”说过头了：redis-py 的 CVE 正是在 Python asyncio 的异常式取消下发生的，Go 的 `database/sql` 也有 `ErrBadConn` 的历史。异常式取消只是让清理代码有机会运行，库仍然必须记得作废连接。
