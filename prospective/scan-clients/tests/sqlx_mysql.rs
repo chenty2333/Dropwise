@@ -6,15 +6,11 @@
 //! autocommit write through the same pool, counted by an independent connection.
 //! Environment: DW_MYSQL_URL (loopback server), SCAN_VARIANT (label only).
 
-#[path = "../../support/allowed.rs"]
-mod allowed;
-
 use std::future::Future;
 use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 use std::time::Duration;
 
-use allowed::{Expect, Mode, Tally, Verdict, calibrate, op};
-use dropwise::{Config, Ctx, Flavor, Race, Settle, explore};
+use dropwise::{explore_observed, Config, Ctx, Expect, Flavor, Race, Report, Settle, Verdict};
 use sqlx::mysql::{MySqlConnection, MySqlPool, MySqlPoolOptions};
 use sqlx::{AssertSqlSafe, Connection, Executor};
 
@@ -77,33 +73,39 @@ fn config() -> Config {
     }
 }
 
-fn rescan<S, Fut>(id: &str, mut scenario: S)
+/// One line per experiment, for the rescan log. The field names keep the old
+/// `allowed.rs` format; the counts now come from `Report` (trial verdicts only).
+fn summary(id: &str, report: &Report) -> String {
+    format!(
+        "RESCAN {id}: plans={} violations={} unrealized={} exhaustive={} baseline_errors={} verdicts(all runs) pre={} post={} neither={} unknown={}",
+        report.trials.len(),
+        report.violations().count(),
+        report.unrealized().count(),
+        report.exhaustive,
+        report.baseline_errors.len(),
+        report.verdict_count(Verdict::Pre),
+        report.verdict_count(Verdict::Post),
+        report.verdict_count(Verdict::Neither),
+        report.verdict_count(Verdict::Unknown),
+    )
+}
+
+fn rescan<S, Fut>(id: &str, scenario: S)
 where
-    S: FnMut(Ctx, Mode) -> Fut,
+    S: FnMut(Ctx) -> Fut,
     Fut: Future<Output = Result<i64, String>>,
 {
-    let calibration = calibrate(&config(), &mut scenario);
-    let tally = Tally::default();
-    let report = explore(&config(), |ctx| {
-        let fut = scenario(ctx, Mode::Run);
-        let (calibration, tally) = (&calibration, tally.clone());
-        async move {
-            let seen = fut.await?;
-            let checked = calibration.check(Expect::Atomic, &seen);
-            tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-            checked.map(drop)
-        }
-    });
+    let report = explore_observed(&config(), Expect::Atomic, scenario);
     let variant = std::env::var("SCAN_VARIANT").unwrap_or_else(|_| "release".into());
     println!("{report}");
-    println!("{}", tally.summary(&format!("{id} [{variant}]"), &report));
+    println!("{}", summary(&format!("{id} [{variant}]"), &report));
 }
 
 #[test]
 fn s1_pool_begin() {
-    rescan("S1 sqlx-mysql Pool::begin", |ctx, mode| async move {
+    rescan("S1 sqlx-mysql Pool::begin", |ctx| async move {
         let env = setup().await?;
-        if let Some(tx) = op(&ctx, mode, env.pool.begin()).await {
+        if let Some(tx) = ctx.target(env.pool.begin()).await {
             tx.map_err(e)?.rollback().await.map_err(e)?;
         }
         env.survive().await
@@ -112,14 +114,14 @@ fn s1_pool_begin() {
 
 #[test]
 fn s2_whole_transaction() {
-    rescan("S2 sqlx-mysql begin+insert+commit", |ctx, mode| async move {
+    rescan("S2 sqlx-mysql begin+insert+commit", |ctx| async move {
         let env = setup().await?;
         let work = async {
             let mut tx = env.pool.begin().await?;
             tx.execute(AssertSqlSafe(env.insert(100))).await?;
             tx.commit().await
         };
-        if let Some(r) = op(&ctx, mode, work).await {
+        if let Some(r) = ctx.target(work).await {
             r.map_err(e)?;
         }
         env.survive().await

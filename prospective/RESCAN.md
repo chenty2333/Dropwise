@@ -242,3 +242,47 @@ D4：deadpool-memcached 连接真实的 memcached 1.6，用户在 `get` 或 `set
 - **mysql_async、diesel-async、async-imap：** 已下载源码，本轮未分析。
 
 一处测试框架的错误：L2 的第一版各次运行共用 Mailpit 收件箱且主题没有打标签，于是在修复版上把上一次运行晚到的 A 误判为“A 出现两次”。改为按运行打标签后，这个现象消失。上面所有数字都来自修正后的版本。
+
+### 6.5 改用 Dropwise 判定 API（2026-10-18）
+
+S1/S2 与 L1/L2 已从实验内的 `allowed.rs` 判定改为库的 `explore_observed`（`Expect::Atomic`）：场景不再接收 `Mode`，`ctx.target` 直接标记操作；`pre` 由 `after_pending = 0` 的校准计划给出，`post` 是不取消任何东西的基线；两次采样不一致记为 Unknown，校准运行失败记入 `baseline_errors`，不判为违反。R2 的四个 cut 实验同样改用该 API；R2.2 没有 Dropwise 的 cut，继续使用 `allowed.rs` 的 `Calibration`，`allowed.rs` 也仍供 t1/t3 使用。改写前的 commit 为 `c32e302`。
+
+对照结果（`bash prospective/run-scan-clients.sh`，3 轮；之后修正多 cut 校准、合并 `explore` 与 `explore_observed` 的主循环后又跑 1 轮复核，结果相同。S1/S2/L1 每轮完全一致，L2 的计划数与 Pre/Post 分布随实时时间浮动）：
+
+| ID | 改写前 | 改写后 |
+|---|---|---|
+| S1 | 4 个计划，2 违反 | 4，2（0 Pre / 2 Post / 2 Neither） |
+| S2 | 8，2（4 Pre / 2 Post） | 8，2（4 Pre / 2 Post / 2 Neither） |
+| L1 | 10，2 | 10，2（6 Pre / 2 Post / 2 Neither） |
+| L2 | 16–22，8–10 | 16–18，9–10（6 Pre / 0–3 Post / 9–10 Neither；补丁版最多 3 个未实现） |
+| 补丁版 | 全部 0 | 全部 0 |
+
+R2.1/R2.1c/R2.3/R2.3c 在发布版上仍为 2/2、2/0、4/2、4/0，fixed 上全部 0。汇总行里的计数现在来自 `Report`（只统计取消计划，不含基线），字段名沿用旧格式。
+
+新增维度（可调度 gap、Proxy 残留字节）是单独的新实验，见 6.6，没有改动上面的对照组。
+
+### 6.6 新维度：可调度间隔与残留字节（2026-10-18，单独实验）
+
+运行入口 `NEW_DIMENSIONS=1 bash prospective/run-scan-clients.sh`（需要 `net` feature，仅限 Linux），发布版与补丁版各 2 轮，结果完全一致。两组都在 L1（16 字节正文）上做：
+
+- **L1-gap**：把复用前固定的 `sleep(50ms)` 换成 `ctx.gap(Gap::Sleep(50ms))`，另外探索 `Gap::Now` 和 `Gap::Yield(1)`。
+- **L1-residue**：SMTP 连接经过 `dropwise::net::Proxy`；被取消的 `send` 之后等 50ms，在 B、C 开始之前用 `FIONREAD` 读取客户端 socket 中未读的字节数，并把它加进观察值。
+
+| ID | 变体 | 计划 | 违反 | Pre / Post / Neither |
+|---|---|---:|---:|---|
+| L1-gap | 发布版 | 30 | 6 | 18 / 6 / 6 |
+| L1-gap | 补丁版 | 30 | 0 | 24 / 6 / 0 |
+| L1-residue | 发布版 | 10 | **8** | 2 / 0 / 8 |
+| L1-residue | 补丁版 | 10 | 0 | 8 / 2 / 0（残留始终为 0） |
+
+- **可调度间隔：** 三种间隔下，违反都落在 Pending #4（等待 `354`），各 2 个。在这个场景里，复用前等多久不改变结果。
+- **残留字节：** 对照组 L1 只有 Pending #4 的 2 个违反；加上残留字节后多出 6 个：
+
+  | 取消落点 | 残留字节 | 幸存者 B、C | 原观察的判定 |
+  |---|---:|---|---|
+  | Pending #2、#3（两种时机） | 14 | 都成功，A 未存储 | Pre |
+  | Pending #4 | 50 | 都卡住 | Neither（对照组已报） |
+  | Pending #5 | 48 | 都成功，A 已存储 | Post |
+
+  14 字节与 `250 2.1.0 Ok\r\n` 的长度相同（回复原文未逐字核对）。也就是说，连接被放回池时还欠着一条回复，此后每条命令读到的很可能是上一条命令的回复；因为这些回复都是 2xx，lettre 没有察觉。**推测（未验证）：** 遇到失败回复（例如收件人被拒）时，错误会被算到后面的某条命令上。补丁版（#1171，`send` 全程标记“发送中”）把这样的连接丢弃，残留为 0。
+- 两组都是新实验，计划数不能和对照组直接相加或比较。

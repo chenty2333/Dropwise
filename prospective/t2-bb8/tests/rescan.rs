@@ -12,9 +12,11 @@ mod allowed;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use allowed::{Calibration, Expect, Mode, Tally, Verdict, calibrate, op};
+use allowed::{Calibration, Expect};
 use bb8::{ManageConnection, Pool};
-use dropwise::{Config, Ctx, Race, explore};
+use dropwise::{
+    explore_observed, Config, Ctx, Expect as ObservedExpect, Race, Report, Verdict,
+};
 use tokio::sync::mpsc;
 
 pub struct Conn {
@@ -133,11 +135,11 @@ async fn survivor(pool: &Pool<Manager>, log: &Log) -> Obs {
     Obs { reply, server_answered }
 }
 
-async fn scenario(ctx: Ctx, mode: Mode, shape: Shape, careful: bool) -> Result<Obs, String> {
+async fn scenario(ctx: Ctx, shape: Shape, careful: bool) -> Result<Obs, String> {
     let (pool, log) = pool(careful, None, Duration::from_millis(500)).await?;
     match shape {
         Shape::Get => {
-            if let Some(conn) = op(&ctx, mode, pool.get()).await {
+            if let Some(conn) = ctx.target(pool.get()).await {
                 drop(conn.map_err(|e| format!("target get: {e:?}"))?);
             }
         }
@@ -146,7 +148,7 @@ async fn scenario(ctx: Ctx, mode: Mode, shape: Shape, careful: bool) -> Result<O
                 let mut conn = pool.get().await.map_err(|e| format!("target get: {e:?}"))?;
                 conn.call("ECHO borrower").await
             };
-            if let Some(reply) = op(&ctx, mode, request).await {
+            if let Some(reply) = ctx.target(request).await {
                 reply?;
             }
         }
@@ -167,20 +169,27 @@ fn variant() -> String {
     std::env::var("BB8_VARIANT").unwrap_or_else(|_| "release".into())
 }
 
+/// One line per experiment, for the rescan log. The field names keep the old
+/// `allowed.rs` format; the counts now come from `Report` (trial verdicts only).
+fn summary(id: &str, report: &Report) -> String {
+    format!(
+        "RESCAN {id}: plans={} violations={} unrealized={} exhaustive={} baseline_errors={} verdicts(all runs) pre={} post={} neither={} unknown={}",
+        report.trials.len(),
+        report.violations().count(),
+        report.unrealized().count(),
+        report.exhaustive,
+        report.baseline_errors.len(),
+        report.verdict_count(Verdict::Pre),
+        report.verdict_count(Verdict::Post),
+        report.verdict_count(Verdict::Neither),
+        report.verdict_count(Verdict::Unknown),
+    )
+}
+
 fn rescan(id: &str, shape: Shape, careful: bool) {
-    let calibration = calibrate(&config(), |ctx, mode| scenario(ctx, mode, shape, careful));
-    let tally = Tally::default();
-    let report = explore(&config(), |ctx| {
-        let (calibration, tally) = (&calibration, tally.clone());
-        async move {
-            let obs = scenario(ctx, Mode::Run, shape, careful).await?;
-            let checked = calibration.check(Expect::Atomic, &obs);
-            tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-            checked.map(drop)
-        }
-    });
+    let report = explore_observed(&config(), ObservedExpect::Atomic, |ctx| scenario(ctx, shape, careful));
     println!("{report}");
-    println!("{}", tally.summary(&format!("{id} [{}]", variant()), &report));
+    println!("{}", summary(&format!("{id} [{}]", variant()), &report));
 }
 
 #[test]

@@ -4,7 +4,8 @@
 # sqlx 0.9.0's MySQL driver against MariaDB and lettre 0.11.23's pooled async
 # SMTP transport against Mailpit, as released and with the fixes in
 # scan-clients/patches/ applied to copies in $DROPWISE_RESCAN_WORK (default
-# ~/dropwise-rescan-work). Requires Docker with local mariadb:11.4 and
+# ~/dropwise-rescan-work). NEW_DIMENSIONS=1 selects the new-dimension
+# experiments instead (see the end of this file). Requires Docker with local mariadb:11.4 and
 # axllent/mailpit:v1.27 images and cached crates; the servers listen on
 # loopback only and are stopped on exit.
 set -euo pipefail
@@ -73,5 +74,12 @@ export DW_SMTP_PORT DW_SMTP_API_PORT
 DW_SMTP_PORT=$(docker port "${containers[1]}" 1025/tcp | awk -F: '/^127\.0\.0\.1:/{print $NF; exit}')
 DW_SMTP_API_PORT=$(docker port "${containers[1]}" 8025/tcp | awk -F: '/^127\.0\.0\.1:/{print $NF; exit}')
 
-SCAN_VARIANT=release run "$ROOT/prospective/scan-clients" 'release' --locked --test sqlx_mysql --test lettre
-SCAN_VARIANT=fixed run "$WORK/scan-clients-fixed" 'fixed' --test sqlx_mysql --test lettre
+# NEW_DIMENSIONS=1 runs the separate new-dimension experiments (schedulable gap,
+# residual bytes through dropwise::net::Proxy) instead of the control group.
+if [[ "${NEW_DIMENSIONS:-0}" == 1 ]]; then
+    tests=(--features net --test lettre_gap --test lettre_residue)
+else
+    tests=(--test sqlx_mysql --test lettre)
+fi
+SCAN_VARIANT=release run "$ROOT/prospective/scan-clients" 'release' --locked "${tests[@]}"
+SCAN_VARIANT=fixed run "$WORK/scan-clients-fixed" 'fixed' "${tests[@]}"

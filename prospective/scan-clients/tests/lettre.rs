@@ -7,14 +7,10 @@
 //! through the same pool; independent observer: the subjects Mailpit stored.
 //! Environment: DW_SMTP_PORT, DW_SMTP_API_PORT (loopback Mailpit), SCAN_VARIANT (label only).
 
-#[path = "../../support/allowed.rs"]
-mod allowed;
-
 use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 use std::time::Duration;
 
-use allowed::{Expect, Mode, Tally, Verdict, calibrate, op};
-use dropwise::{Config, Ctx, Flavor, Race, Settle, explore};
+use dropwise::{explore_observed, Config, Ctx, Expect, Flavor, Race, Report, Settle, Verdict};
 use lettre::transport::smtp::PoolConfig;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -68,7 +64,7 @@ struct Obs {
     stored: Vec<String>,
 }
 
-async fn scenario(ctx: Ctx, mode: Mode, body_len: usize) -> Result<Obs, String> {
+async fn scenario(ctx: Ctx, body_len: usize) -> Result<Obs, String> {
     let run = RUN.fetch_add(1, SeqCst);
     let tagged = |letter: &str| format!("{letter}-{}-{run}", std::process::id());
     let mailer = AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous("127.0.0.1")
@@ -77,7 +73,7 @@ async fn scenario(ctx: Ctx, mode: Mode, body_len: usize) -> Result<Obs, String> 
         .build();
     // Warm one pooled connection.
     mailer.send(email("warm@example.com", &tagged("W"), 1)).await.map_err(|e| e.to_string())?;
-    if let Some(r) = op(&ctx, mode, mailer.send(email("a@example.com", &tagged("A"), body_len))).await {
+    if let Some(r) = ctx.target(mailer.send(email("a@example.com", &tagged("A"), body_len))).await {
         r.map_err(|e| e.to_string())?;
     }
     // Let the dropped connection be recycled before the next send.
@@ -107,21 +103,28 @@ fn config() -> Config {
     }
 }
 
+/// One line per experiment, for the rescan log. The field names keep the old
+/// `allowed.rs` format; the counts now come from `Report` (trial verdicts only).
+fn summary(id: &str, report: &Report) -> String {
+    format!(
+        "RESCAN {id}: plans={} violations={} unrealized={} exhaustive={} baseline_errors={} verdicts(all runs) pre={} post={} neither={} unknown={}",
+        report.trials.len(),
+        report.violations().count(),
+        report.unrealized().count(),
+        report.exhaustive,
+        report.baseline_errors.len(),
+        report.verdict_count(Verdict::Pre),
+        report.verdict_count(Verdict::Post),
+        report.verdict_count(Verdict::Neither),
+        report.verdict_count(Verdict::Unknown),
+    )
+}
+
 fn rescan(id: &str, body_len: usize) {
-    let calibration = calibrate(&config(), |ctx, mode| scenario(ctx, mode, body_len));
-    let tally = Tally::default();
-    let report = explore(&config(), |ctx| {
-        let (calibration, tally) = (&calibration, tally.clone());
-        async move {
-            let seen = scenario(ctx, Mode::Run, body_len).await?;
-            let checked = calibration.check(Expect::Atomic, &seen);
-            tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-            checked.map(drop)
-        }
-    });
+    let report = explore_observed(&config(), Expect::Atomic, |ctx| scenario(ctx, body_len));
     println!("{report}");
     let variant = std::env::var("SCAN_VARIANT").unwrap_or_else(|_| "release".into());
-    println!("{}", tally.summary(&format!("{id} [{variant}]"), &report));
+    println!("{}", summary(&format!("{id} [{variant}]"), &report));
 }
 
 #[test]
