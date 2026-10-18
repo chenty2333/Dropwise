@@ -36,6 +36,12 @@ dropwise::assert_cancel_correct(|ctx| async move {
 `ctx.target(fut)` is the lighter alternative: Dropwise drops the future itself
 and returns `None`, and the scenario code after it stands in for the caller.
 
+`explore_observed` is the same engine when the scenario returns a value that
+should be judged. Its plan calibrates the scenario twice, by dropping the cut
+targets before their first poll (`pre`) and by cancelling nothing (`post`), and
+each trial is classified against both; `Expect` says which of them the calling
+context allows. See [Observed outcomes](#features) below.
+
 What you mark and what you check afterwards decide what a run can find. See
 [Choosing what to cancel and what to observe](docs/choosing-targets.md) for a
 target checklist and survivor-style observations.
@@ -70,6 +76,47 @@ than counted as passes; `assert_cancel_correct` fails on them.
 - **Library models.** `dropwise::models::mpsc::{Receiver, UnboundedReceiver}` hand
   out messages as `Obligation`s; `models::oblige(fut, label)` does the same for
   any future. Outside a Dropwise run obligations are untracked.
+- **Observed outcomes.** `explore_observed(&config, expect, scenario)` scores the
+  scenario's own value against two calibrations of the same run: `pre` drops
+  every cut target before its first poll (a `Cut` with `after_pending == 0`,
+  which normal plans never contain), `post` cancels nothing and lets every target
+  complete. A plan with several cuts is also calibrated with every mixture of
+  skipped and completed targets (`Verdict::Mixed`). Each calibration is sampled
+  twice; disagreement is `Verdict::Unknown`, never a violation, and
+  `assert_observed` fails on it. `Expect::Atomic` allows `pre`, `post` or a
+  mixture, `Expect::Completed` only `post`, and `Expect::Undone` only `pre` for a
+  result that must reach the caller (a consumed message). A `ctx.race` target
+  whose program keeps polling the losing future cannot be skipped for `pre`: that
+  calibration times out and is reported as a calibration failure. The
+  contract is declared by the scenario author, never inferred. Calibration is
+  computed on demand and cached by target set and gap assignment; a failed calibration
+  run is a `baseline_error`, not a panic. Equal `pre`/`post` observations add a
+  `Report::notes` entry: that observation can see contamination, not whether the
+  operation happened.
+- **Repeated cancellation at one call site.** `Config::repeat_at_site` adds, for
+  each single cut, a plan that also cancels every later target created at the
+  same call site at its own `after_pending`-th `Pending`. `Trial::cancelled`
+  records how many instances this plan actually cancelled. Observe only the
+  survivor's own result: a mixture of partial effects from the cancelled
+  operations is equal to neither calibration and is reported as a violation.
+- **Schedulable gaps.** `Ctx::gap(default)` returns a future for the wait before
+  a shared object is reused, using `Gap::{Now, Yield(n), Sleep(d)}`. The scenario
+  passes what it does in production; `Config::gap_choices` substitutes each
+  choice at each gap site (numbered in `Ctx::gap` call order), so the
+  exploration covers both "the reply arrived first" and "it did not". The
+  assignment is recorded in `Trial::gaps` and included in the calibration cache
+  key. A fake-server task given a `Ctx` clone can call `ctx.gap` too, so its
+  reply delay is part of the explored assignment as well.
+- **Residual bytes (`net` feature, Linux).** `dropwise::net::Proxy` listens on
+  `127.0.0.1` only, forwards to one upstream, and counts bytes in both
+  directions per client connection. `Proxy::residue()` reports how many bytes
+  are unread in each client socket's receive buffer by matching
+  `/proc/self/fd` entries on local and peer address and asking the kernel with
+  `FIONREAD`; it never reads the data, blocks, closes the fd or changes its flags. Call it only while the
+  client is idle and the peer has stopped; fd reuse is a race, and server-push
+  protocols (pub/sub, notifications) are not applicable. The feature is off by
+  default, so core `cargo test --locked` needs no network: run
+  `cargo test --features net` for its tests.
 
 ### Reading a report
 
@@ -83,9 +130,12 @@ A run can come back without a violation for reasons that are not success. The
 | `unrealized()` | a planned `Pending` boundary was never reached, so that plan tested nothing |
 | `unsettled()`, `!baseline_settled` | `Settle::watchdog` cut the observation window short: late effects may be missing, so a clean result is inconclusive |
 | `!exhaustive` | `max_runs` did not cover the frontier, or the scenario marked no target at all |
+| `unknown()` | a calibration side's two samples disagreed, so `explore_observed` could not judge that plan; not a violation, but `assert_observed` fails |
+| `notes` | non-degenerate hints, e.g. this plan's `pre` and `post` observations are equal, so the observation cannot tell whether the operation happened |
 | `is_clean()` | no baseline error or trial violation was *observed* — does not imply realization, settling or exhaustive exploration |
 
 `assert_cancel_correct` requires all of them: clean, exhaustive, settled, realized.
+`assert_observed` additionally requires that no plan was left `Unknown`.
 
 ### What is and is not guaranteed
 
@@ -112,6 +162,7 @@ late completions) and `tests/explorer.rs`.
 ```sh
 cargo run --example quickstart   # the usage shape above, runnable end to end
 cargo test                       # harness tests
+cargo test --features net        # optional proxy/residue tests (Linux)
 cargo clippy --all-targets
 ```
 

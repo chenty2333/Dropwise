@@ -65,19 +65,17 @@ queries whose result is simply discarded.
 
 ## Template
 
-`prospective/support/allowed.rs` implements the calibration and verdicts used
-in the rescan. It is experiment code, not part of the Dropwise API yet.
+`explore_observed` implements the calibration and the verdicts. Mark the target
+with `ctx.target` or `ctx.race` as usual; the scenario returns the observation
+instead of taking a `Mode` argument.
 
 ```rust
-#[path = "../../support/allowed.rs"]
-mod allowed;
-use allowed::{calibrate, op, Expect, Mode};
+use dropwise::{explore_observed, Ctx, Expect};
 
-async fn scenario(ctx: Ctx, mode: Mode) -> Result<Observation, String> {
+async fn scenario(ctx: Ctx) -> Result<Observation, String> {
     let shared = setup().await?;
-    // The target: a call from the checklist above. `Mode::Skip` drops it
-    // before its first poll for the `pre` calibration.
-    if let Some(result) = op(&ctx, mode, shared.begin()).await {
+    // The target: a call from the checklist above.
+    if let Some(result) = ctx.target(shared.begin()).await {
         result?.rollback().await?;
     }
     // The survivor: real work on the same shared object, confirmed by an
@@ -86,9 +84,24 @@ async fn scenario(ctx: Ctx, mode: Mode) -> Result<Observation, String> {
     independent_observer_reads(&shared).await
 }
 
-let calibration = calibrate(&config, scenario);
-let report = dropwise::explore(&config, |ctx| async {
-    let seen = scenario(ctx, Mode::Run).await?;
-    calibration.check(Expect::Atomic, &seen).map(drop)
-});
+let report = explore_observed(&config, Expect::Atomic, scenario);
 ```
+
+`Expect` is the calling context's declared contract, not an inference. Use
+`Atomic` when the caller may abandon the operation (the observation must equal
+"never started" or "completed"; with several cuts, each cancelled operation
+independently), `Completed` when it retries or carries on (only
+"completed"), and `Undone` when the result must be handed to the caller: a
+message, job or token that was taken out of the shared object and then lost does
+not look different from completion, so only "never started" is allowed.
+
+Calibration re-runs the same scenario twice for each side, so scenario-local
+state must be constructible per run (the rescan experiments rebuild their pool
+and table each time). `pre` drops the cut targets with an internal
+`after_pending == 0` cut that never appears in the normal plans; if the two
+samples of a side disagree the plan is `Unknown`, not a violation.
+
+With `Config::repeat_at_site`, the plan also cancels every later target created
+at the same call site. Keep the observation to the survivor's own result: if it
+counts effects of the cancelled operations, a legitimate mixture (some of them
+ran, some did not) equals neither calibration and is reported as a violation.

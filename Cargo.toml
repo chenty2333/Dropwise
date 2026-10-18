@@ -3,5 +3,16 @@ name = "dropwise"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+# Optional TCP proxy and residue check for experiments that reuse a connection
+# after a cancellation (`dropwise::net`). Off by default: the core tests need
+# no network and no extra tokio features.
+net = ["tokio/net", "tokio/io-util", "dep:libc"]
+
 [dependencies]
 tokio = { version = "1.24", features = ["rt", "macros", "sync", "time", "test-util", "rt-multi-thread"] }
+
+# `net` only: FIONREAD for `Proxy::residue`. Already in the tree through tokio's
+# network driver, so the feature adds no new crate.
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = { version = "0.2", optional = true }

@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::fmt;
 use std::future::Future;
 use std::panic::Location;
@@ -44,6 +44,70 @@ impl fmt::Display for Race {
             Race::AfterWake => write!(f, "competitor ready once the target is woken"),
         }
     }
+}
+
+/// A pause a scenario asks for between an operation and the next use of the
+/// shared object.
+///
+/// The scenario passes the pause it would use in production to [`Ctx::gap`];
+/// [`Config::gap_choices`] can substitute other choices for a plan, so the
+/// exploration covers both "the reply arrives before the reuse" and "it does
+/// not". A gap is numbered by its `Ctx::gap` registration order within a run.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Gap {
+    /// Continue at once.
+    Now,
+    /// Yield to the Tokio scheduler this many times.
+    Yield(usize),
+    /// Wait for this much Tokio time (virtual under `Flavor::CurrentThread`).
+    Sleep(Duration),
+}
+
+impl fmt::Display for Gap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Gap::Now => write!(f, "now"),
+            Gap::Yield(n) => write!(f, "after {n} yield(s)"),
+            Gap::Sleep(d) => write!(f, "after {d:?}"),
+        }
+    }
+}
+
+/// What the calling context allows after an observed operation was cancelled.
+///
+/// This is the scenario author's explicit contract about the operation, not
+/// something Dropwise infers from the observation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Expect {
+    /// Abandoning is allowed: the observation must equal the "operation never
+    /// started" (`pre`) or "operation completed" (`post`) calibration.
+    Atomic,
+    /// The caller retries or carries on: the observation must equal `post`.
+    Completed,
+    /// The result must be handed to the caller (a consumed message, a dequeued
+    /// job): only `pre` is allowed. Use this when taking the value and then
+    /// being cancelled would lose it even though shared state looks complete.
+    Undone,
+}
+
+/// How one cancellation trial's observation compared with its calibration.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Verdict {
+    /// Equal to the "target dropped before its first poll" calibration.
+    Pre,
+    /// Equal to the "nothing cancelled" calibration. Also used when `pre` and
+    /// `post` are equal, since the observation cannot distinguish them.
+    Post,
+    /// Equal to a calibration in which some of the cut targets were dropped
+    /// before their first poll and the others completed (plans with several
+    /// cuts only). Each cancelled operation is individually "not started" or
+    /// "completed", which `Expect::Atomic` allows.
+    Mixed,
+    /// Equal to no calibration: a partial or contaminated state.
+    Neither,
+    /// Two samples of a calibration side disagreed, so the observation cannot
+    /// be judged. Not a violation.
+    Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -100,6 +164,23 @@ pub struct Config {
     pub max_cancellations: usize,
     /// Race modes tried at every cancellation point.
     pub races: Vec<Race>,
+    /// Also explore, for every single cut, a plan that cancels the target and
+    /// every later target created at the **same call site** at the same
+    /// `Pending` boundary. Off by default. A plan counts the instances it
+    /// actually cancelled in [`Trial::cancelled`].
+    ///
+    /// Use this for operations that leak a bounded amount per cancellation and
+    /// only fail after repeated reuse (a flow-control window, a cached handle).
+    /// The observation should reflect only the survivor's own result, not how
+    /// many of the cancelled operations took effect; otherwise a legitimate
+    /// mixture of partial effects is not equal to either calibration and is
+    /// reported as a violation.
+    pub repeat_at_site: bool,
+    /// Extra gap choices tried for every single-cut plan (see [`Gap`]). Empty
+    /// by default: the scenario's own default gap is used everywhere. Gap sites
+    /// are numbered in `Ctx::gap` call order, and the assignment is recorded in
+    /// [`Trial::gaps`] and part of the calibration cache key.
+    pub gap_choices: Vec<Gap>,
     pub flavor: Flavor,
     pub settle: Settle,
     /// Wall-clock bound on one scenario run. A scenario that does not finish is
@@ -120,6 +201,8 @@ impl Default for Config {
             max_runs: 1000,
             max_cancellations: 1,
             races: vec![Race::Immediate, Race::Reschedule(1)],
+            repeat_at_site: false,
+            gap_choices: Vec::new(),
             flavor: Flavor::CurrentThread,
             settle: Settle::default(),
             scenario_timeout: Duration::from_secs(30),
@@ -133,12 +216,34 @@ impl Default for Config {
 /// This is a *Pending boundary* of the marked future, not a source-level
 /// `.await`: one `.await` may return `Pending` many times, and awaits that
 /// complete immediately are never boundaries.
+///
+/// `after_pending == 0` means "dropped before the first poll". It is used only
+/// by [`explore_observed`]'s calibration, never generated as a normal plan.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Cut {
     /// Index of the target in `ctx.target`/`ctx.race` call order within the run.
     pub target: usize,
     pub after_pending: usize,
     pub race: Race,
+}
+
+/// One run's cancellation plan, including the optional dimensions that are not
+/// visible as separate [`Cut`]s.
+#[derive(Debug, Clone, Default)]
+struct Plan {
+    cuts: Vec<Cut>,
+    /// `cuts[0]` also applies to every later target created at the same call
+    /// site, at that target's own `after_pending`-th `Pending`.
+    repeat: bool,
+    /// Per `Ctx::gap` registration, the selected `Config::gap_choices` index;
+    /// `None` means the scenario's own default.
+    gaps: Vec<Option<usize>>,
+}
+
+impl Plan {
+    fn is_calibration_skip(&self) -> bool {
+        !self.cuts.is_empty() && self.cuts.iter().all(|c| c.after_pending == 0)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -165,9 +270,14 @@ struct TargetRecord {
 type Check = Box<dyn FnOnce() -> Result<(), String> + Send>;
 
 struct RunState {
-    plan: Vec<Cut>,
+    plan: Plan,
+    /// Snapshot of `Config::gap_choices`, for `Ctx::gap`.
+    gap_choices: Vec<Gap>,
     targets: Vec<TargetRecord>,
     checks: Vec<Check>,
+    /// The scenario's default for every `Ctx::gap` call so far, in call order:
+    /// the gap site index is the position.
+    gap_defaults: Vec<Gap>,
 }
 
 /// Handle given to each scenario run. Cheap to clone and `Send`, so it can be
@@ -187,6 +297,13 @@ impl Ctx {
     #[track_caller]
     pub fn target<F: Future>(&self, fut: F) -> Target<F> {
         let (core, cut) = TargetCore::register(self, Location::caller());
+        if cut.is_some_and(|c| c.after_pending == 0) {
+            // Calibration-only cut: dropped before its first poll.
+            drop(fut);
+            core.set(Status::Doomed);
+            core.set(Status::Cancelled);
+            return Target { core, cut, probe: None, phase: Phase::Skipped };
+        }
         Target { core, cut, probe: WakeProbe::for_cut(cut), phase: Phase::Running(Box::pin(fut)) }
     }
 
@@ -208,6 +325,17 @@ impl Ctx {
     pub fn race<F: Future>(&self, fut: F) -> (Raced<F>, Preempt) {
         let (core, cut) = TargetCore::register(self, Location::caller());
         let shared = Arc::new(Mutex::new(RaceShared::default()));
+        let skipped = cut.is_some_and(|c| c.after_pending == 0);
+        if skipped {
+            // Calibration-only cut: the target is dropped before its first
+            // poll, and the competitor is ready at once.
+            let mut sh = shared.lock().unwrap();
+            sh.skipped = true;
+            sh.doomed = true;
+            sh.doomed_at = Some(tokio::time::Instant::now());
+            drop(sh);
+            core.set(Status::Doomed);
+        }
         let probe = WakeProbe::for_cut(cut);
         let raced = Raced { core, cut, probe: probe.clone(), inner: Some(Box::pin(fut)), shared: shared.clone() };
         let preempt = Preempt {
@@ -221,10 +349,72 @@ impl Ctx {
         (raced, preempt)
     }
 
+    /// The pause between an operation and the next use of the shared object.
+    ///
+    /// `default` is what the scenario would do in production. The exploration
+    /// may substitute a choice from [`Config::gap_choices`]; calibration and
+    /// plans without a substitution use `default`.
+    ///
+    /// Sites are numbered in call order, so a calibration that skips a target
+    /// can change which later calls are reachable; keep gap calls on
+    /// unconditional paths. `Ctx` is `Clone + Send`, so a spawned in-process
+    /// server task can hold a clone and call this too, which puts its reply
+    /// delay under the same gap assignment.
+    pub fn gap(&self, default: Gap) -> GapWait {
+        let mut st = self.state.lock().unwrap();
+        let index = st.gap_defaults.len();
+        st.gap_defaults.push(default);
+        let chosen = st.plan.gaps.get(index).copied().flatten().map(|choice| st.gap_choices[choice]);
+        GapWait::new(chosen.unwrap_or(default))
+    }
+
     /// Run `check` after the settle phase, when late effects of cancelled work
     /// have had a chance to happen. Its error counts as an invariant violation.
     pub fn after_settle(&self, check: impl FnOnce() -> Result<(), String> + Send + 'static) {
         self.state.lock().unwrap().checks.push(Box::new(check));
+    }
+}
+
+/// Future returned by [`Ctx::gap`].
+pub struct GapWait {
+    gap: Gap,
+    yielded: usize,
+    /// The current `yield_now`, kept across polls: a fresh one every poll would
+    /// always return `Pending` and never complete.
+    yielding: Option<Pin<Box<dyn Future<Output = ()> + Send>>>,
+    sleep: Option<Pin<Box<tokio::time::Sleep>>>,
+}
+
+impl GapWait {
+    fn new(gap: Gap) -> Self {
+        Self { gap, yielded: 0, yielding: None, sleep: None }
+    }
+}
+
+impl Future for GapWait {
+    type Output = ();
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
+        let this = self.get_mut();
+        match this.gap {
+            Gap::Now => Poll::Ready(()),
+            Gap::Yield(n) => loop {
+                if this.yielded >= n {
+                    return Poll::Ready(());
+                }
+                let yield_now =
+                    this.yielding.get_or_insert_with(|| Box::pin(tokio::task::yield_now()));
+                if yield_now.as_mut().poll(cx).is_pending() {
+                    return Poll::Pending;
+                }
+                this.yielding = None;
+                this.yielded += 1;
+            },
+            Gap::Sleep(d) => {
+                let sleep = this.sleep.get_or_insert_with(|| Box::pin(tokio::time::sleep(d)));
+                sleep.as_mut().poll(cx)
+            }
+        }
     }
 }
 
@@ -240,7 +430,16 @@ impl TargetCore {
         let mut st = ctx.state.lock().unwrap();
         let index = st.targets.len();
         st.targets.push(TargetRecord { site, pendings: 0, status: Status::Running, lost_race: false });
-        let cut = st.plan.iter().find(|c| c.target == index).copied();
+        let cut = st.plan.cuts.iter().find(|c| c.target == index).copied().or_else(|| {
+            if !st.plan.repeat {
+                return None;
+            }
+            let start = st.plan.cuts.first().copied()?;
+            if index <= start.target || st.targets.get(start.target)?.site != site {
+                return None;
+            }
+            Some(Cut { target: index, after_pending: start.after_pending, race: start.race })
+        });
         (Self { state: ctx.state.clone(), index, seen: 0 }, cut)
     }
 
@@ -359,6 +558,8 @@ enum Phase<F> {
     Running(Pin<Box<F>>),
     /// Lost the race; kept alive (unpolled) until the competitor fires.
     Doomed { _inner: Pin<Box<F>>, delay: Delay },
+    /// Calibration-only cut: dropped before its first poll.
+    Skipped,
     Done,
 }
 
@@ -405,6 +606,10 @@ impl<F: Future> Future for Target<F> {
                     this.core.set(Status::Cancelled);
                     return Poll::Ready(None);
                 }
+                Phase::Skipped => {
+                    this.phase = Phase::Done;
+                    return Poll::Ready(None);
+                }
                 Phase::Done => panic!("dropwise::Target polled after completion"),
             }
         }
@@ -422,6 +627,8 @@ impl<F> Drop for Target<F> {
 
 #[derive(Default)]
 struct RaceShared {
+    /// Calibration-only cut: the target is dropped before its first poll.
+    skipped: bool,
     doomed: bool,
     /// When the target returned the planned `Pending`; `Race::After` counts from here.
     doomed_at: Option<tokio::time::Instant>,
@@ -447,6 +654,12 @@ impl<F: Future> Future for Raced<F> {
         let this = self.get_mut();
         {
             let mut sh = this.shared.lock().unwrap();
+            if sh.skipped {
+                // Never poll the inner future: this is the "operation did not
+                // start" calibration. The competitor is already ready.
+                sh.target_waker = Some(cx.waker().clone());
+                return Poll::Pending;
+            }
             if sh.doomed && !sh.fired {
                 // Between losing and the competitor firing: no progress, like a
                 // branch the real competitor is about to beat.
@@ -509,6 +722,13 @@ impl Future for Preempt {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
         let this = self.get_mut();
+        let skipped = this.shared.lock().unwrap().skipped;
+        if skipped {
+            // The calibration-only cut is already "lost": ready at once.
+            this.shared.lock().unwrap().fired = true;
+            this.mark_kept();
+            return Poll::Ready(());
+        }
         let doomed_at = {
             let mut sh = this.shared.lock().unwrap();
             if !sh.doomed || sh.fired {
@@ -527,18 +747,22 @@ impl Future for Preempt {
             sh.fired = true;
             sh.target_waker.take()
         };
-        {
-            let mut st = this.state.lock().unwrap();
-            let rec = &mut st.targets[this.index];
-            if rec.status == Status::Doomed {
-                rec.status = Status::Kept; // becomes Cancelled if the target is dropped
-            }
-        }
+        this.mark_kept();
         // A program that keeps the target alive must be able to poll it again.
         if let Some(w) = target_waker {
             w.wake();
         }
         Poll::Ready(())
+    }
+}
+
+impl Preempt {
+    fn mark_kept(&self) {
+        let mut st = self.state.lock().unwrap();
+        let rec = &mut st.targets[self.index];
+        if rec.status == Status::Doomed {
+            rec.status = Status::Kept; // becomes Cancelled if the target is dropped
+        }
     }
 }
 
@@ -580,6 +804,16 @@ pub struct Trial {
     pub sites: Vec<Option<&'static Location<'static>>>,
     /// Parallel to `plan`.
     pub outcomes: Vec<CutOutcome>,
+    /// How many target instances this plan actually cancelled. With
+    /// [`Config::repeat_at_site`] this can exceed `plan.len()`.
+    pub cancelled: usize,
+    /// Per `Ctx::gap` registration, the substituted gap; `None` means the
+    /// scenario's own default was used. Empty when no `Ctx::gap` was called.
+    pub gaps: Vec<Option<Gap>>,
+    /// How the observed value compared with the calibration, when the run was
+    /// started by [`explore_observed`]. `None` for [`explore`], or when the
+    /// scenario produced no observation.
+    pub verdict: Option<Verdict>,
     pub invariant: Result<(), String>,
     pub leaks: Vec<Leak>,
     /// False if the settle phase was cut short by the watchdog: late effects
@@ -610,6 +844,9 @@ pub struct Report {
     /// search short and at least one target was reached. Says nothing about
     /// source-level `.await`s, inputs or schedules that were not exercised.
     pub exhaustive: bool,
+    /// Non-degenerate hints, e.g. a calibration whose `pre` and `post` are
+    /// equal. Informational only; they do not affect [`Report::is_clean`].
+    pub notes: Vec<String>,
 }
 
 impl Report {
@@ -625,6 +862,17 @@ impl Report {
     /// Trials in which some planned cut never took effect.
     pub fn unrealized(&self) -> impl Iterator<Item = &Trial> {
         self.trials.iter().filter(|t| !t.is_realized())
+    }
+
+    /// Trials whose calibration could not judge the observation.
+    pub fn unknown(&self) -> impl Iterator<Item = &Trial> {
+        self.trials.iter().filter(|t| t.verdict == Some(Verdict::Unknown))
+    }
+
+    /// Number of trials with this verdict; always 0 for a plain [`explore`]
+    /// report, whose trials carry no verdict.
+    pub fn verdict_count(&self, verdict: Verdict) -> usize {
+        self.trials.iter().filter(|t| t.verdict == Some(verdict)).count()
     }
 
     /// Nothing was *observed* to go wrong: the baseline run reported no problem
@@ -643,7 +891,8 @@ impl Report {
 }
 
 fn describe(t: &Trial) -> String {
-    t.plan
+    let mut s = t
+        .plan
         .iter()
         .zip(&t.sites)
         .zip(&t.outcomes)
@@ -655,7 +904,20 @@ fn describe(t: &Trial) -> String {
             )
         })
         .collect::<Vec<_>>()
-        .join(" + ")
+        .join(" + ");
+    let gaps: Vec<_> = t
+        .gaps
+        .iter()
+        .enumerate()
+        .filter_map(|(i, gap)| gap.map(|g| format!("gap #{i} = {g}")))
+        .collect();
+    if !gaps.is_empty() {
+        s.push_str(&format!(" [{}]", gaps.join(", ")));
+    }
+    if t.cancelled > t.plan.len() {
+        s.push_str(&format!(" [{} instances cancelled]", t.cancelled));
+    }
+    s
 }
 
 impl fmt::Display for Report {
@@ -702,6 +964,28 @@ impl fmt::Display for Report {
             for t in unrealized {
                 writeln!(f, "    {}", describe(t))?;
             }
+        }
+        let decided = self.trials.iter().filter(|t| t.verdict.is_some()).count();
+        if decided > 0 {
+            writeln!(
+                f,
+                "  verdicts ({decided} plan(s)): pre={} post={} mixed={} neither={} unknown={}",
+                self.verdict_count(Verdict::Pre),
+                self.verdict_count(Verdict::Post),
+                self.verdict_count(Verdict::Mixed),
+                self.verdict_count(Verdict::Neither),
+                self.verdict_count(Verdict::Unknown),
+            )?;
+        }
+        let unknown: Vec<_> = self.unknown().collect();
+        if !unknown.is_empty() {
+            writeln!(f, "  {} plan(s) cannot be decided (unstable calibration):", unknown.len())?;
+            for t in unknown {
+                writeln!(f, "    {}", describe(t))?;
+            }
+        }
+        for note in &self.notes {
+            writeln!(f, "  note: {note}")?;
         }
         Ok(())
     }
@@ -774,6 +1058,8 @@ struct RunResult {
     invariant: Result<(), String>,
     leaks: Vec<Leak>,
     targets: Vec<TargetRecord>,
+    /// The default of every `Ctx::gap` registration in this run.
+    gap_defaults: Vec<Gap>,
 }
 
 /// Real-time bound for one bounded `block_on`.
@@ -845,14 +1131,20 @@ fn settle(rt: &tokio::runtime::Runtime, settle: Settle) -> bool {
     settled
 }
 
-fn run_once<S, Fut>(config: &Config, scenario: &mut S, plan: Vec<Cut>) -> RunResult
+fn run_once<S, Fut>(config: &Config, scenario: &mut S, plan: Plan) -> RunResult
 where
     S: FnMut(Ctx) -> Fut,
     Fut: Future<Output = Result<(), String>>,
 {
     let ledger = Arc::new(Ledger::default());
     let ctx = Ctx {
-        state: Arc::new(Mutex::new(RunState { plan, targets: Vec::new(), checks: Vec::new() })),
+        state: Arc::new(Mutex::new(RunState {
+            plan,
+            gap_choices: config.gap_choices.clone(),
+            targets: Vec::new(),
+            checks: Vec::new(),
+            gap_defaults: Vec::new(),
+        })),
     };
     let mut rt = RunRuntime::new(build_runtime(config.flavor, &ledger));
 
@@ -877,8 +1169,11 @@ where
     drop(_ledger);
     rt.close();
 
-    let targets = ctx.state.lock().unwrap().targets.clone();
-    RunResult { settled, invariant, leaks, targets }
+    let (targets, gap_defaults) = {
+        let st = ctx.state.lock().unwrap();
+        (st.targets.clone(), st.gap_defaults.clone())
+    };
+    RunResult { settled, invariant, leaks, targets, gap_defaults }
 }
 
 fn outcome(rec: Option<&TargetRecord>) -> CutOutcome {
@@ -889,6 +1184,97 @@ fn outcome(rec: Option<&TargetRecord>) -> CutOutcome {
             _ => CutOutcome::Kept,
         },
         _ => CutOutcome::Unrealized,
+    }
+}
+
+fn trial_from(config: &Config, plan: &Plan, res: &RunResult) -> Trial {
+    let sites = plan.cuts.iter().map(|c| res.targets.get(c.target).map(|t| t.site)).collect();
+    let outcomes = plan.cuts.iter().map(|c| outcome(res.targets.get(c.target))).collect();
+    let cancelled =
+        res.targets.iter().filter(|r| r.lost_race && r.status == Status::Cancelled).count();
+    let gaps = plan.gaps.iter().map(|choice| choice.map(|i| config.gap_choices[i])).collect();
+    Trial {
+        plan: plan.cuts.clone(),
+        sites,
+        outcomes,
+        cancelled,
+        gaps,
+        verdict: None,
+        invariant: res.invariant.clone(),
+        leaks: res.leaks.clone(),
+        settled: res.settled,
+    }
+}
+
+fn later_target_at_site(res: &RunResult, target: usize) -> bool {
+    let Some(rec) = res.targets.get(target) else { return false };
+    res.targets.iter().skip(target + 1).any(|later| later.site == rec.site)
+}
+
+/// Queue the plans one run makes reachable. With `repeat_at_site` and
+/// `gap_choices` off, this reproduces the breadth-first single/pair order.
+fn extend_queue(
+    config: &Config,
+    plan: &Plan,
+    res: &RunResult,
+    slots: usize,
+    queue: &mut VecDeque<Plan>,
+    truncated: &mut bool,
+) {
+    if plan.cuts.len() >= config.max_cancellations
+        || plan.repeat
+        || plan.gaps.iter().any(Option::is_some)
+        || plan.is_calibration_skip()
+    {
+        return;
+    }
+    // Only extend with later targets, so each combination is generated once.
+    let start = plan.cuts.last().map_or(0, |c| c.target + 1);
+    // Exactly `slots` plans can still be popped, and a pop frees one slot while
+    // a push takes one: a plan queued behind that many others can never run, so
+    // neither can its subtree. Skipping it keeps the queue proportional to the
+    // run budget instead of to the combinatorial frontier, and leaves the
+    // search non-exhaustive.
+    'plans: for (target, rec) in res.targets.iter().enumerate().skip(start) {
+        for after_pending in 1..=rec.pendings {
+            for &race in &config.races {
+                let cut = Cut { target, after_pending, race };
+                let mut next = plan.clone();
+                next.cuts.push(cut);
+                let mut variants = vec![next.clone()];
+                if next.cuts.len() == 1 {
+                    if config.repeat_at_site && later_target_at_site(res, target) {
+                        variants.push(Plan { repeat: true, ..next.clone() });
+                    }
+                    if !config.gap_choices.is_empty() {
+                        // One variant per gap site and substitution; the other
+                        // sites keep their scenario default, and a choice equal
+                        // to that site's default would only repeat the plan.
+                        let templates = variants.clone();
+                        for template in templates {
+                            for (gap, default) in res.gap_defaults.iter().enumerate() {
+                                for (choice, substitute) in config.gap_choices.iter().enumerate() {
+                                    if substitute == default {
+                                        continue;
+                                    }
+                                    let mut variant = template.clone();
+                                    variant.gaps.resize(gap + 1, None);
+                                    variant.gaps[gap] = Some(choice);
+                                    variants.push(variant);
+                                }
+                            }
+                        }
+                    }
+                }
+                for variant in variants {
+                    if queue.len() >= slots {
+                        *truncated = true;
+                        break 'plans;
+                    }
+                    queue.push_back(variant);
+                }
+            }
+        }
     }
 }
 
@@ -903,17 +1289,31 @@ where
     S: FnMut(Ctx) -> Fut,
     Fut: Future<Output = Result<(), String>>,
 {
+    search(config, |plan, _| (run_once(config, &mut scenario, plan.clone()), Judgement::default()))
+}
+
+/// What a search step adds to its trial beyond the run itself.
+#[derive(Default)]
+struct Judgement {
+    verdict: Option<Verdict>,
+    /// Appended to the trial's invariant result.
+    violation: Option<String>,
+}
+
+/// The breadth-first plan search shared by [`explore`] and [`explore_observed`].
+/// `step` runs one plan; it may add calibration errors and notes to the report.
+fn search(config: &Config, mut step: impl FnMut(&Plan, &mut Report) -> (RunResult, Judgement)) -> Report {
     let mut report = Report::default();
-    let mut queue: VecDeque<Vec<Cut>> = VecDeque::from([Vec::new()]);
+    let mut queue: VecDeque<Plan> = VecDeque::from([Plan::default()]);
     let mut runs = 0;
     let mut truncated = false;
 
     while runs < config.max_runs {
         let Some(plan) = queue.pop_front() else { break };
         runs += 1;
-        let res = run_once(config, &mut scenario, plan.clone());
+        let (res, judgement) = step(&plan, &mut report);
 
-        if plan.is_empty() {
+        if plan.cuts.is_empty() {
             report.baseline_targets = res.targets.len();
             report.baseline_settled = res.settled;
             if let Err(e) = &res.invariant {
@@ -921,45 +1321,384 @@ where
             }
             report.baseline_errors.extend(res.leaks.iter().map(|l| l.to_string()));
         } else {
-            let sites = plan.iter().map(|c| res.targets.get(c.target).map(|t| t.site)).collect();
-            let outcomes = plan.iter().map(|c| outcome(res.targets.get(c.target))).collect();
-            report.trials.push(Trial {
-                plan: plan.clone(),
-                sites,
-                outcomes,
-                invariant: res.invariant,
-                leaks: res.leaks,
-                settled: res.settled,
-            });
+            let mut trial = trial_from(config, &plan, &res);
+            trial.verdict = judgement.verdict;
+            if let Some(message) = judgement.violation {
+                trial.invariant = match trial.invariant {
+                    Ok(()) => Err(message),
+                    Err(prev) => Err(format!("{prev}; {message}")),
+                };
+            }
+            report.trials.push(trial);
         }
 
-        if plan.len() < config.max_cancellations {
-            // Only extend with later targets, so each combination is generated once.
-            let start = plan.last().map_or(0, |c| c.target + 1);
-            // Exactly `max_runs - runs` plans can still be popped, and a pop
-            // frees one slot while a push takes one: a plan queued behind that
-            // many others can never run, so neither can its subtree. Skipping it
-            // keeps the queue proportional to the run budget instead of to the
-            // combinatorial frontier, and leaves the search non-exhaustive.
-            let slots = config.max_runs - runs;
-            'plans: for (target, rec) in res.targets.iter().enumerate().skip(start) {
-                for after_pending in 1..=rec.pendings {
-                    for &race in &config.races {
-                        if queue.len() >= slots {
-                            truncated = true;
-                            break 'plans;
-                        }
-                        let mut next = plan.clone();
-                        next.push(Cut { target, after_pending, race });
-                        queue.push_back(next);
-                    }
-                }
-            }
-        }
+        let slots = config.max_runs - runs;
+        extend_queue(config, &plan, &res, slots, &mut queue, &mut truncated);
     }
 
     report.exhaustive = queue.is_empty() && !truncated && report.baseline_targets > 0;
     report
+}
+
+fn run_observed<T, S, Fut>(
+    config: &Config,
+    scenario: &mut S,
+    plan: Plan,
+) -> (RunResult, Option<Result<T, String>>)
+where
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    let slot = Arc::new(Mutex::new(None));
+    let mut wrapper = |ctx: Ctx| {
+        let slot = slot.clone();
+        let fut = scenario(ctx);
+        async move {
+            let out = fut.await;
+            *slot.lock().unwrap() = Some(out);
+            Ok(())
+        }
+    };
+    let mut res = run_once(config, &mut wrapper, plan);
+    let observed = slot.lock().unwrap().take();
+    // The wrapper maps to `()`, so put a scenario error back where the report
+    // shows it (baseline_errors for the baseline, the invariant for a trial).
+    if let Some(Err(e)) = &observed {
+        res.invariant = match std::mem::replace(&mut res.invariant, Ok(())) {
+            Ok(()) => Err(e.clone()),
+            Err(prev) => Err(format!("{prev}; {e}")),
+        };
+    }
+    (res, observed)
+}
+
+/// The target set a plan calibrated: the explicit cuts, or for a repeated site
+/// every instance that actually lost its race (falling back to the planned
+/// target when none was created).
+fn calibration_targets(plan: &Plan, res: &RunResult) -> Vec<usize> {
+    let mut targets: Vec<usize> = if plan.repeat {
+        let cut: Vec<_> = res
+            .targets
+            .iter()
+            .enumerate()
+            .filter(|(_, rec)| rec.lost_race)
+            .map(|(index, _)| index)
+            .collect();
+        if cut.is_empty() { plan.cuts.iter().map(|c| c.target).collect() } else { cut }
+    } else {
+        plan.cuts.iter().map(|c| c.target).collect()
+    };
+    targets.sort_unstable();
+    targets.dedup();
+    targets
+}
+
+/// One calibration side (or a combination of skipped/completed targets): the
+/// target indices, whether each is dropped before its first poll, and the gap
+/// assignment. Trailing default gaps are dropped so equivalent assignments
+/// share a cache entry.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct CalibrationKey {
+    targets: Vec<usize>,
+    skipped: Vec<bool>,
+    gaps: Vec<Option<usize>>,
+}
+
+impl CalibrationKey {
+    /// `targets` must be sorted and deduplicated, `skipped` parallel to it.
+    fn new(targets: &[usize], skipped: Vec<bool>, gaps: &[Option<usize>]) -> Self {
+        let mut gaps = gaps.to_vec();
+        while gaps.last() == Some(&None) {
+            gaps.pop();
+        }
+        Self { targets: targets.to_vec(), skipped, gaps }
+    }
+
+    fn side(&self) -> &'static str {
+        if self.skipped.iter().all(|s| *s) {
+            "pre"
+        } else if self.skipped.iter().all(|s| !*s) {
+            "post"
+        } else {
+            "mixed"
+        }
+    }
+
+    fn plan(&self) -> Plan {
+        let cuts = self
+            .targets
+            .iter()
+            .zip(&self.skipped)
+            .filter(|(_, skip)| **skip)
+            .map(|(target, _)| Cut { target: *target, after_pending: 0, race: Race::Immediate })
+            .collect();
+        Plan { cuts, repeat: false, gaps: self.gaps.clone() }
+    }
+
+    fn label(&self) -> String {
+        let targets = self
+            .targets
+            .iter()
+            .zip(&self.skipped)
+            .map(|(t, skip)| format!("#{t}{}", if *skip { " skipped" } else { "" }))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!("calibration {} for target(s) [{targets}]", self.side())
+    }
+}
+
+/// Two samples of one calibration side. `Stable` means both runs agreed.
+enum Side<T> {
+    Stable(T),
+    Unstable,
+    Absent,
+}
+
+impl<T: PartialEq> Side<T> {
+    fn from_samples(mut samples: Vec<T>) -> Self {
+        match samples.len() {
+            0 => Side::Absent,
+            _ if samples.windows(2).all(|w| w[0] == w[1]) => Side::Stable(samples.swap_remove(0)),
+            _ => Side::Unstable,
+        }
+    }
+
+    fn matches(&self, actual: &T) -> bool {
+        matches!(self, Side::Stable(v) if v == actual)
+    }
+
+    fn unstable(&self) -> bool {
+        matches!(self, Side::Unstable)
+    }
+}
+
+impl<T: fmt::Debug> Side<T> {
+    fn describe(&self) -> String {
+        match self {
+            Side::Stable(v) => format!("{v:?}"),
+            Side::Unstable => "unstable (the two samples disagree)".into(),
+            Side::Absent => "not calibrated".into(),
+        }
+    }
+}
+
+fn calibration_side<T, S, Fut>(
+    config: &Config,
+    scenario: &mut S,
+    key: &CalibrationKey,
+    errors: &mut Vec<String>,
+) -> Side<T>
+where
+    T: PartialEq + fmt::Debug,
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    let mut samples = Vec::new();
+    for _ in 0..2 {
+        let (res, observed) = run_observed(config, scenario, key.plan());
+        if let Err(e) = &res.invariant {
+            errors.push(format!("{} failed: {e}", key.label()));
+            return Side::Absent;
+        }
+        if !res.leaks.is_empty() {
+            let leaks = res.leaks.iter().map(ToString::to_string).collect::<Vec<_>>().join("; ");
+            errors.push(format!("{} leaked: {leaks}", key.label()));
+            return Side::Absent;
+        }
+        match observed {
+            Some(Ok(value)) => samples.push(value),
+            Some(Err(e)) => {
+                errors.push(format!("{} failed: {e}", key.label()));
+                return Side::Absent;
+            }
+            None => {
+                errors.push(format!("{} produced no observation", key.label()));
+                return Side::Absent;
+            }
+        }
+    }
+    Side::from_samples(samples)
+}
+
+fn ensure_calibrated<T, S, Fut>(
+    config: &Config,
+    scenario: &mut S,
+    cache: &mut HashMap<CalibrationKey, Side<T>>,
+    key: &CalibrationKey,
+    errors: &mut Vec<String>,
+) where
+    T: PartialEq + fmt::Debug,
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    if cache.contains_key(key) {
+        return;
+    }
+    let value = calibration_side(config, scenario, key, errors);
+    cache.insert(key.clone(), value);
+}
+
+fn classify<T: PartialEq>(pre: &Side<T>, post: &Side<T>, mixed: &[&Side<T>], actual: &T) -> Verdict {
+    if post.matches(actual) {
+        Verdict::Post
+    } else if pre.matches(actual) {
+        Verdict::Pre
+    } else if mixed.iter().any(|side| side.matches(actual)) {
+        Verdict::Mixed
+    } else if pre.unstable() || post.unstable() || mixed.iter().any(|side| side.unstable()) {
+        Verdict::Unknown
+    } else {
+        Verdict::Neither
+    }
+}
+
+fn allows(expect: Expect, verdict: Verdict) -> bool {
+    match expect {
+        Expect::Atomic => {
+            matches!(verdict, Verdict::Pre | Verdict::Post | Verdict::Mixed | Verdict::Unknown)
+        }
+        Expect::Completed => matches!(verdict, Verdict::Post | Verdict::Unknown),
+        Expect::Undone => matches!(verdict, Verdict::Pre | Verdict::Unknown),
+    }
+}
+
+fn degeneracy_note<T: PartialEq + fmt::Debug>(
+    targets: &[usize],
+    pre: &Side<T>,
+    post: &Side<T>,
+) -> Option<String> {
+    let (Side::Stable(a), Side::Stable(b)) = (pre, post) else { return None };
+    if a != b {
+        return None;
+    }
+    Some(format!(
+        "target(s) {}: pre and post observations are equal ({a:?}); this observation cannot tell whether the operation happened, only whether it contaminated shared state",
+        targets.iter().map(|t| format!("#{t}")).collect::<Vec<_>>().join(", ")
+    ))
+}
+
+/// The calibrations a trial is judged against: `pre` (every target skipped),
+/// `post` (none skipped), and for a plan with several explicit cuts judged
+/// under `Expect::Atomic`, every mixture in between. Repeated-site plans get
+/// only the two extremes: their instance count makes mixtures unaffordable,
+/// which is why `Config::repeat_at_site` asks for a survivor-only observation.
+fn calibration_keys(
+    targets: &[usize],
+    plan: &Plan,
+    expect: Expect,
+) -> (CalibrationKey, CalibrationKey, Vec<CalibrationKey>) {
+    let n = targets.len();
+    let pre = CalibrationKey::new(targets, vec![true; n], &plan.gaps);
+    let post = CalibrationKey::new(targets, vec![false; n], &plan.gaps);
+    let mut mixed = Vec::new();
+    if expect == Expect::Atomic && !plan.repeat && n >= 2 {
+        for mask in 1..(1u64 << n) - 1 {
+            let skipped = (0..n).map(|i| mask & (1 << i) != 0).collect();
+            mixed.push(CalibrationKey::new(targets, skipped, &plan.gaps));
+        }
+    }
+    (pre, post, mixed)
+}
+
+/// Like [`explore`], but the scenario returns an observation that is judged
+/// against a calibration of the same run.
+///
+/// The scenario marks its operation with [`Ctx::target`] or [`Ctx::race`] as
+/// usual; no `Mode` parameter is needed. For each plan, Dropwise calibrates by
+/// re-running the same scenario:
+///
+/// * `pre`: every cut target is dropped before its first poll
+///   (a [`Cut`] with `after_pending == 0`, never part of the normal plans);
+/// * `post`: nothing is cancelled and every target completes;
+/// * for a plan with several cuts under [`Expect::Atomic`], every mixture of
+///   skipped and completed targets ([`Verdict::Mixed`]): each cancelled
+///   operation may independently look not started or completed.
+///
+/// Each calibration is sampled twice; disagreement makes the verdict
+/// [`Verdict::Unknown`] instead of a violation. Calibration failures (the
+/// scenario returns `Err`, or leaks) are recorded in [`Report::baseline_errors`]
+/// rather than panicking. Samples are cached by target set, skip/complete
+/// assignment and gap assignment, so plans that differ only in `after_pending`
+/// or `race` share them. Calibration runs are not counted against
+/// `Config::max_runs` and do not appear as trials.
+///
+/// [`Expect`] is the scenario author's contract: `Atomic` allows `pre`, `post`
+/// or a mixture, `Completed` allows only `post`, and `Undone` allows only `pre`
+/// (for a value that must reach the caller). What to observe remains the
+/// author's choice; nothing here infers whether an operation is consuming.
+///
+/// Targets are numbered in creation order. Dropping one target before its
+/// first poll can change the control flow, and therefore the numbering of later
+/// targets; calibrations are keyed by the numbers used in the plan.
+///
+/// A [`Ctx::race`] target skipped for `pre` never polls its future, and its
+/// competitor is ready at once. If the program keeps the losing future and
+/// polls it again (a `select!` loop over `&mut op`), the skipped target never
+/// completes, so the calibration run ends at `Config::scenario_timeout` and is
+/// reported as a calibration failure: `pre` cannot be produced for that shape.
+pub fn explore_observed<T, S, Fut>(config: &Config, expect: Expect, mut scenario: S) -> Report
+where
+    T: PartialEq + fmt::Debug + Send + 'static,
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    let mut cache: HashMap<CalibrationKey, Side<T>> = HashMap::new();
+    search(config, |plan, report| {
+        let (res, observed) = run_observed(config, &mut scenario, plan.clone());
+        let mut judgement = Judgement::default();
+        let Some(Ok(actual)) = &observed else { return (res, judgement) };
+        let targets = calibration_targets(plan, &res);
+        if plan.cuts.is_empty() || targets.is_empty() {
+            return (res, judgement);
+        }
+        let (pre_key, post_key, mixed_keys) = calibration_keys(&targets, plan, expect);
+        for key in [&pre_key, &post_key].into_iter().chain(&mixed_keys) {
+            ensure_calibrated(config, &mut scenario, &mut cache, key, &mut report.baseline_errors);
+        }
+        let pre = &cache[&pre_key];
+        let post = &cache[&post_key];
+        let mixed: Vec<_> = mixed_keys.iter().map(|key| &cache[key]).collect();
+        let verdict = classify(pre, post, &mixed, actual);
+        if !allows(expect, verdict) {
+            let mixtures = if mixed.is_empty() {
+                String::new()
+            } else {
+                format!(", and {} mixed calibration(s)", mixed.len())
+            };
+            judgement.violation = Some(format!(
+                "{verdict:?} under {expect:?}: observed {actual:?}, pre={}, post={}{mixtures}",
+                pre.describe(),
+                post.describe()
+            ));
+        }
+        judgement.verdict = Some(verdict);
+        if let Some(note) = degeneracy_note(&targets, pre, post)
+            && !report.notes.contains(&note)
+        {
+            report.notes.push(note);
+        }
+        (res, judgement)
+    })
+}
+
+/// Like [`explore_observed`] with default config, panicking with the report on
+/// any violation, unknown verdict, unrealized plan, unsettled run, calibration
+/// failure, or incomplete search.
+#[track_caller]
+pub fn assert_observed<T, S, Fut>(expect: Expect, scenario: S)
+where
+    T: PartialEq + fmt::Debug + Send + 'static,
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    let report = explore_observed(&Config::default(), expect, scenario);
+    let ok = report.is_clean()
+        && report.exhaustive
+        && report.baseline_settled
+        && report.unrealized().next().is_none()
+        && report.unsettled().next().is_none()
+        && report.unknown().next().is_none();
+    assert!(ok, "{report}");
 }
 
 /// Like [`explore`] with default config, panicking with the report on any
