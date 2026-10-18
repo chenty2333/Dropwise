@@ -1,0 +1,1128 @@
+crate,version,file,line,pattern,guarded,confidence,detail,snippet
+amqprs,2.1.5,src/net/reader_handler.rs,128,A,no,medium,fn handle_frame: call `close` in error path after await; guard=none,"                info!(""close connection {} OK"", self.amqp_connection);
+
+                // Try to yield for last sent message to be scheduled.
+                yield_now().await;
+                Ok(())
+            }
+
+            // Method frames of asynchronous request
+            // Server request to close connection
+            Frame::Close(_, close) => {
+                if let Some(ref mut callback) = self.callback {
+                    if let Err(err) = callback.close(&self.amqp_connection, close).await {"
+amqprs,2.1.5,src/net/writer_handler.rs,83,A,no,medium,fn run_until_shutdown: call `close` in error path after await; guard=none,"                    info!(""received shutdown notification for connection {}"", self.amqp_connection);
+                    // try to give last chance for last message.
+                    yield_now().await;
+                    break;
+                }
+                else => {
+                    break;
+                }
+            }
+        }
+        self.amqp_connection.set_is_open(false);
+
+        if let Err(err) = self.stream.close().await {"
+async-bb8-diesel,0.3.0,src/connection_manager.rs,84,C,no,high,fn has_broken returns false / never marks breakage,        false
+async-nats,0.50.0,src/lib.rs,1328,A,no,medium,fn unsubscribe: call `close` in error path after await; guard=none,"                sid: self.sid,
+                max: None,
+            })
+            .await?;
+        self.receiver.close();
+        Ok(())"
+autumn-harvest,0.7.0,src/completion_trigger.rs,2606,B,no,medium,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2604,"            Some(metrics),
+            codecs,
+        )
+        .await
+        {
+            Ok(()) => processed_count += 1,"
+autumn-harvest,0.7.0,src/completion_trigger.rs,2747,B,no,medium,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2743,"                        stamp_outbox_relay_backoff(conn, task.id).await;
+                    }
+                    Ok(true) => {}
+                }
+                processed_count += 1;"
+autumn-harvest,0.7.0,src/dag.rs,1496,A,no,high,fn run_unified_dag: assign `status` in error path after await; guard=none,"                        while let Some((i, res)) = stream.next().await {
+                            match res {
+                                Ok(v) => results[i] = v,
+                                Err(err) => match &err {
+                                    HarvestError::ActivityFailed { .. }
+                                    | HarvestError::Timeout { .. } => {
+                                        status = TaskStatus::Failed;"
+autumn-harvest,0.7.0,src/debounce.rs,801,B,no,medium,fn fire_due_debounced_starts_on_conn_shard: `fired_count +=` after await at line 800,"                let fired = fire_due_on_conn(&mut shard_conn, Some(metrics), codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;"
+autumn-harvest,0.7.0,src/event_batch.rs,881,B,no,medium,fn fire_due_event_batches_on_conn_shard: `fired_count +=` after await at line 880,"                Some(metrics),
+                codecs,
+            )
+            .await?;
+            fired_count += fired.len();"
+autumn-harvest,0.7.0,src/mutex.rs,705,B,no,medium,fn reclaim_expired_leases_and_wake: `count +=` after await at line 703,"                    crate::queue::wake_workflow_task(conn, ExecutionId::from_uuid(head)).await?;
+                }
+                count += 1;"
+autumn-harvest,0.7.0,src/retention.rs,2851,A,no,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(_) => {}
+                Err(err) => {
+                    // Fail safe toward RETAINING on uncertainty (the retention
+                    // janitor's correct failure mode): do not archive/delete.
+                    has_failed = true;
+                    batch_failed = true;"
+autumn-harvest,0.7.0,src/retention.rs,3014,A,no,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                match crate::store::load_payload_refs(&mut conn, candidate_exec_id).await {
+                    Ok(refs) => refs,
+                    Err(err) => {
+                        has_failed = true;
+                        batch_failed = true;"
+autumn-harvest,0.7.0,src/retention.rs,3034,A,no,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                config.summary.as_ref(),
+                fence_key,
+            )
+            .await
+            {
+                Err(err) => {
+                    has_failed = true;
+                    batch_failed = true;"
+autumn-harvest,0.7.0,src/retention.rs,2602,B,no,medium,fn run_shard_tick: `deleted_count +=` after await at line 2601,"            .map_err(database_error)
+        }))
+        .await?;
+        outcome.deleted_count += reclaimed;"
+autumn-harvest,0.7.0,src/retention.rs,3084,B,no,medium,fn run_shard_tick: `summarized_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;"
+autumn-harvest,0.7.0,src/retention.rs,3088,B,no,medium,fn run_shard_tick: `deleted_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;
+                    }
+                }
+            }
+            outcome.deleted_count += 1;"
+autumn-harvest,0.7.0,src/scheduler.rs,3604,B,no,medium,fn cancel_in_flight_runs: `count +=` after await at line 3603,"        match cancel_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,"
+autumn-harvest,0.7.0,src/scheduler.rs,3635,B,no,medium,fn terminate_in_flight_runs: `count +=` after await at line 3634,"        match terminate_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,"
+autumn-harvest,0.7.0,src/throttle.rs,1729,B,no,medium,fn fire_due_throttled_starts_on_conn_shard: `fired_count +=` after await at line 1728,"                let fired = fire_due_on_conn(&mut shard_conn, metrics, codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;"
+autumn-harvest,0.7.0,src/timeout.rs,3159,B,no,medium,fn enforce_external_task_timeouts: `count +=` after await at line 3156,"                Ok(true)
+            }),
+        ))
+        .await;
+
+        match result {
+            Ok(true) => count += 1,"
+autumn-harvest,0.7.0,src/timeout.rs,4439,B,no,medium,fn enforce_external_signals_outbox: `count +=` after await at line 4434,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;"
+autumn-harvest,0.7.0,src/timeout.rs,5610,B,no,medium,fn enforce_external_awaits_outbox: `count +=` after await at line 5605,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;"
+autumn-harvest,0.7.0,src/timeout.rs,5800,B,no,medium,fn enforce_timeouts_pass: `count +=` after await at line 5796,"            find_timed_out_tasks_batch(conn, cursor, limit).await?,
+            Some(cursor),
+        ),
+    };
+    count += timed_out.len();"
+autumn-harvest,0.7.0,src/timeout.rs,6026,B,no,medium,fn enforce_timeouts_pass: `count +=` after await at line 5998,"        payload_codecs,
+        codec_rotation_batch_size,
+        metrics,
+    )
+    .await
+    {
+        // Deliberately NOT folded into `count`. That value is the
+        // timeout-enforcement total: the caller logs `warn!(""enforced timed-out
+        // tasks"")` whenever it is non-zero, and embedders read it as ""this many
+        // tasks timed out"". Adding rotation rewrites to it makes every
+        // productive sweep tick claim a timeout that never happened. Rotation
+        // reports itself through `harvest.codec.reencrypted` instead.
+        Ok(_swept) => {}
+        Err(e) => tracing::warn!(
+            error = %e,"
+autumn-harvest,0.7.0,src/worker.rs,29015,A,no,high,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::queue_depths(&mut conn, &queues).await {
+                    Ok(depths) => {
+                        for (queue_name, depth) in depths {
+                            *depth_by_queue.entry(queue_name).or_insert(0) += depth;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""queue depth sample failed"");
+                        read_failed = true;
+                    }
+                }"
+autumn-harvest,0.7.0,src/worker.rs,29027,A,no,high,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::oldest_pending_ages(&mut conn, &queues, &circuit_breaker_activities)
+                    .await
+                {
+                    Ok(ages) => {
+                        for (queue_name, age_secs) in ages {
+                            let slot = age_by_queue.entry(queue_name).or_insert(0.0);
+                            *slot = slot.max(age_secs);
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""oldest pending age sample failed"");
+                        read_failed = true;
+                    }
+                }"
+autumn-harvest,0.7.0,src/worker.rs,29432,A,no,high,fn spawn_queue_pause_sampler: assign `read_failed` in error path after await; guard=none,"                match crate::queue_pause::paused_queue_names(&mut conn).await {
+                    Ok(names) => currently_paused.extend(names),
+                    Err(error) => {
+                        read_failed = true;
+                        tracing::debug!(error = %error, ""queue pause sample failed"");"
+autumn-harvest,0.7.0,src/worker.rs,31052,A,no,high,fn spawn_history_oversized_sampler: assign `read_failed` in error path after await; guard=none,"                match sample_history_oversized_counts(&mut conn, soft_threshold).await {
+                    Ok(counts) => {
+                        for (workflow_name, count) in counts {
+                            *count_by_workflow.entry(workflow_name).or_insert(0) += count;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""history oversized sample failed"");
+                        read_failed = true;
+                    }
+                }"
+autumn-harvest,0.7.0,src/worker.rs,31338,A,no,high,fn spawn_workflow_active_sampler: assign `read_failed` in error path after await; guard=none,"                };
+
+                match sample_active_workflow_counts(&mut conn).await {
+                    Ok(rows) => per_shard.push(rows),
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""active workflow sample failed"");
+                        read_failed = true;
+                    }
+                }"
+autumn-harvest,0.7.0,src/worker.rs,42612,A,no,medium,fn run_with_listener_accepts_colocated_logical_shards: call `shutdown` in error path after await; guard=none,"            worker.run_with_listener(&pool, None),
+        )
+        .await;
+        assert!(
+            entered.is_err(),
+            ""a worker whose logical shards share one database must enter its poll loop, not \
+             refuse to start: one pool covers every assignment"",
+        );
+        worker.shutdown();"
+autumn-harvest-plugin,0.7.0,src/api.rs,13572,A,no,high,fn build_awaitables_report: assign `decode_failed` in error path after await; guard=none,"                        match offloader.inflate_event_value(&mut value).await {
+                            Ok(()) => {}
+                            Err(err) => {
+                                tracing::warn!(
+                                    execution_id = %exec_id,
+                                    error = %err,
+                                    ""awaitables: payload inflate failed; degrading to history-only""
+                                );
+                                decode_failed = true;
+                                break;"
+autumn-harvest-plugin,0.7.0,src/api.rs,40658,A,no,high,fn get_aggregated_scaling_signals: assign `in_flight` in error path after await; guard=none,"        let shard_counts = ::autumn_harvest::queue::queue_task_counts(&mut conn)
+            .await
+            .map_err(map_error)?;
+        for stat in shard_counts {
+            let entry = task_stats.entry(stat.queue.clone()).or_insert_with(|| {
+                ::autumn_harvest::queue::QueueTaskCounts {
+                    queue: stat.queue.clone(),
+                    backlog: 0,
+                    in_flight: 0,
+                    scheduled: 0,
+                }
+            });
+            entry.backlog += stat.backlog;
+            entry.in_flight += stat.in_flight;"
+autumn-harvest-plugin,0.7.0,src/api.rs,20366,B,no,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20359,"        let conn_result = db_conn_for_shard(&api_state, *shard).await;
+        let mut conn = match conn_result {
+            Ok(c) => c,
+            Err(e) => {
+                // All items on this shard are rejected due to connection failure.
+                let err_str = e.to_string();
+                for (idx, workflow_id) in shard_items {
+                    rejected_count += 1;"
+autumn-harvest-plugin,0.7.0,src/api.rs,20568,B,no,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20564,"                    &item.workflow_name,
+                    workflow_id,
+                    None,
+                )
+                .await
+                {
+                    Ok(skip) => skip,
+                    Err(e) => {
+                        rejected_count += 1;"
+autumn-harvest-plugin,0.7.0,src/api.rs,20840,B,no,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20838,"                                autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket)
+                                    .await;
+                        }
+                        rejected_count += 1;"
+autumn-harvest-plugin,0.7.0,src/api.rs,20880,B,no,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20878,"                            autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket).await;
+                    }
+                    rejected_count += 1;"
+autumn-harvest-plugin,0.7.0,src/api.rs,21317,B,no,medium,fn batch_reset_workflows: `reset_count +=` after await at line 21305,"                        Some(&runtime.registry),
+                    )
+                    .await
+                    {
+                        Ok(result) => {
+                            items.push(BatchResetItem {
+                                exec_id: exec_id_str,
+                                outcome: BatchResetOutcome::Reset,
+                                // Use the engine's authoritatively-resolved event id (under lock),
+                                // not the speculative value from resolve_batch_reset_one.
+                                resolved_event_id: Some(result.reset_to_event_id),
+                                new_exec_id: Some(result.new_exec_id.to_string()),
+                                skip_reason: None,
+                            });
+                            reset_count += 1;"
+autumn-harvest-plugin,0.7.0,src/api.rs,29118,B,no,medium,fn set_schedule_paused: `found_count +=` after await at line 29109,"                .get_result(&mut conn)
+                .await
+                .map_err(database_error)
+                .map_err(map_error)?;
+
+            if !exists {
+                continue; // not on this shard — try the next one
+            }
+            // Already in the requested state: idempotent no-op.
+        }
+        found_count += 1;"
+autumn-harvest-plugin,0.7.0,src/api.rs,29331,B,no,medium,fn delete_schedule: `deleted_count +=` after await at line 29328,"            .execute(&mut conn)
+            .await
+            .map_err(database_error)
+            .map_err(map_error)?;
+        deleted_count += n;"
+autumn-harvest-plugin,0.7.0,src/api.rs,37191,B,no,medium,fn apply_pause_across_shards: `held_task_count +=` after await at line 37187,"            reason,
+            actor,
+            scope_shard_id,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;"
+autumn-harvest-plugin,0.7.0,src/api.rs,37315,B,no,medium,fn apply_resume_across_shards: `released_task_count +=` after await at line 37311,"        match ::autumn_harvest::queue_pause::resume_queue(&mut conn, canonical_queue, actor).await {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;"
+autumn-harvest-plugin,0.7.0,src/api.rs,39481,B,no,medium,fn apply_activity_pause_across_shards: `held_task_count +=` after await at line 39477,"            reason,
+            paused_by,
+            // Always fleet-wide — see `activity_pause_target_pools`.
+            None,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;"
+autumn-harvest-plugin,0.7.0,src/api.rs,39601,B,no,medium,fn apply_activity_resume_across_shards: `released_task_count +=` after await at line 39596,"        match ::autumn_harvest::activity_pause::resume_activity(&mut conn, canonical_activity).await
+        {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;"
+autumn-harvest-plugin,0.7.0,src/api.rs,49959,B,no,medium,fn get_queue_eligibility: `global_pending_count +=` after await at line 49957,"        match evaluate_eligibility_for_shard(&api_state, shard_id, &queue_name, None).await {
+            Ok(res) => {
+                global_pending_count += res.pending_count;"
+autumn-harvest-plugin,0.7.0,src/bin/harvest_dev.rs,51,A,no,medium,fn main: call `shutdown` in error path after await; guard=none,"    print!(""{}"", runtime.banner());
+
+    DevRuntime::wait_for_shutdown_signal().await;
+    eprintln!(""\nharvest-dev: stopping and reclaiming ephemeral storage…"");
+    if let Err(error) = runtime.shutdown().await {"
+autumn-harvest-plugin,0.7.0,src/connector/runtime.rs,606,A,no,high,fn drain_in_flight: assign `in_flight` in error path after await; guard=none,"            self.permits.acquire_many(permits),
+        )
+        .await
+        .is_err()
+        {
+            // `available_permits` is a snapshot, but every holder is an
+            // in-flight dispatch, so it names the work being abandoned.
+            let in_flight = self
+                .binding
+                .max_in_flight"
+autumn-harvest-plugin,0.7.0,src/connector/sqs.rs,470,A,no,high,fn lag: assign `in_flight` in error path after await; guard=none,"            .attribute_names(QueueAttributeName::ApproximateNumberOfMessagesNotVisible)
+            .send()
+            .await
+            .ok()?;
+        let attributes = response.attributes?;
+        let read = |name: &QueueAttributeName| -> Option<i64> {
+            attributes.get(name).and_then(|v| v.parse::<i64>().ok())
+        };
+        let visible = read(&QueueAttributeName::ApproximateNumberOfMessages);
+        let in_flight = read(&QueueAttributeName::ApproximateNumberOfMessagesNotVisible);"
+autumn-harvest-plugin,0.7.0,src/dev/mod.rs,466,A,no,medium,fn start: call `shutdown` in error path after await; guard=none,"        if let Err(error) = runtime.wait_until_ready().await {
+            // Same rule: a runtime that never became usable must still take its
+            // cluster with it — and if it could not, say so rather than
+            // reporting only the readiness failure.
+            if let Err(teardown) = runtime.shutdown().await {"
+autumn-harvest-plugin,0.7.0,src/dev/mod.rs,759,A,no,medium,fn abandon_cluster: call `shutdown` in error path after await; guard=none,"    let taken = postgres.lock().await.take();
+    if let Some(postgres) = taken
+        && let Err(teardown) = postgres.shutdown().await
+    {"
+autumn-harvest-plugin,0.7.0,src/dev/postgres.rs,301,A,no,medium,fn provision: call `shutdown` in error path after await; guard=none,"        match started.finish_provisioning(&admin_url, session_dir).await {
+            Ok(version) => {
+                started.version = version;
+                Ok(started)
+            }
+            Err(error) => {
+                started.shutdown().await.ok();"
+autumn-harvest-plugin,0.7.0,src/runner.rs,1510,A,no,medium,fn stop: call `shutdown` in error path after await; guard=none,"            cancel.cancel();
+            if let Err(error) = handle.await {
+                tracing::warn!(
+                    error = %error,
+                    ""dispatch metrics sampler task failed during shutdown""
+                );
+            }
+        }
+
+        if let Some(worker) = worker {
+            worker.shutdown();
+        }
+        if let Some(scheduler) = scheduler {"
+autumn-harvest-plugin,0.7.0,src/runner.rs,1523,A,no,medium,fn stop: call `shutdown` in error path after await; guard=none,"            if let Err(error) = scheduler.join().await {
+                tracing::warn!(error = %error, ""harvest scheduler task failed during shutdown"");
+            }
+        }
+        if let Some(retention) = retention {
+            retention.shutdown();
+            if let Err(error) = retention.join().await {"
+autumn-harvest-plugin,0.7.0,src/ui.rs,1965,A,no,high,fn render_workflow_detail_page: assign `log_read_failed` in error path after await; guard=none,"                ..Default::default()
+            },
+        )
+        .await
+        {
+            Ok(rows) => log_truncated = !rows.is_empty(),
+            Err(err) => {
+                tracing::warn!(
+                    execution_id = %exec_id,
+                    error = ?err,
+                    ""workflow detail: durable log truncation probe failed""
+                );
+                log_read_failed = true;
+            }
+        }"
+autumn-web,0.8.0,src/app.rs,5849,A,no,medium,fn run: call `abort` in error path after await; guard=none,"        drain_phase_notify.notify_one();
+
+        // Wait for the server to drain all in-flight requests.  The drain
+        // watchdog in shutdown_task will force-exit if drain takes too long.
+        let server_result = server_task.await.unwrap_or_else(|e| {
+            tracing::error!(""Server task join error: {e}"");
+            // `process::exit` skips the `on_shutdown` hooks, so stop a managed
+            // Postgres child here to avoid orphaning it on an accept-loop/join
+            // failure (direct/foreground runs have no CLI reaper).
+            exit_stop_managed_pg();
+            std::process::exit(1);
+        });
+        // Drain completed within the deadline; abort the watchdog.
+        shutdown_task.abort();
+        server_result.unwrap_or_else(|e| {"
+autumn-web,0.8.0,src/session.rs,206,B,no,medium,fn touch: `dirty =` after await at line 206,        self.inner.write().await.dirty = true;
+autumn-web,0.8.0,src/session.rs,223,B,no,medium,fn insert: `dirty =` after await at line 221,"        let mut inner = self.inner.write().await;
+        inner.data.insert(key.into(), value.into());
+        inner.dirty = true;"
+autumn-web,0.8.0,src/session.rs,231,B,no,medium,fn remove: `dirty =` after await at line 228,"        let mut inner = self.inner.write().await;
+        let val = inner.data.remove(key);
+        if val.is_some() {
+            inner.dirty = true;"
+autumn-web,0.8.0,src/session.rs,240,B,no,medium,fn clear: `dirty =` after await at line 238,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.dirty = true;"
+autumn-web,0.8.0,src/session.rs,254,B,no,medium,fn rotate_id: `dirty =` after await at line 249,"        let mut inner = self.inner.write().await;
+        if inner.old_id.is_none() {
+            inner.old_id = Some(inner.id.clone());
+        }
+        inner.id = new_id;
+        inner.dirty = true;"
+autumn-web,0.8.0,src/session.rs,263,B,no,medium,fn destroy: `dirty =` after await at line 260,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.destroyed = true;
+        inner.dirty = true;"
+bb8,0.9.1,src/inner.rs,110,A,no,high,fn get: assign `state` in error path after await; guard=none,"                match self.inner.manager.is_valid(&mut conn).await {
+                    Ok(()) => return Ok(conn),
+                    Err(e) => {
+                        self.inner.statistics.record(StatsKind::ClosedInvalid);
+                        self.inner.forward_error(e);
+                        conn.state = ConnectionState::Invalid;"
+bb8-diesel,0.2.1,src/lib.rs,114,C,no,high,fn has_broken returns false / never marks breakage,        false
+bb8-lapin,0.8.1,src/lib.rs,87,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        let conn_status = conn.status();
+        conn_status.closed() || conn_status.errored()"
+bb8-ldap,0.4.1,src/lib.rs,237,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed()
+bb8-memcached,0.7.0,src/client.rs,143,A,no,medium,fn get: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.get(key)).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/client.rs,161,A,no,medium,fn get_multi: call `taint` in error path after await; guard=none,"                match timeout(read_timeout, self.connection.get_multi(keys)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/client.rs,177,A,no,medium,fn delete: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.delete(key)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/client.rs,198,A,no,medium,fn add: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.add(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/client.rs,219,A,no,medium,fn set: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.set(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/client.rs,239,A,no,medium,fn increment: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.increment(key, amount)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/client.rs,253,A,no,medium,fn version: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.version()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/client.rs,266,A,no,medium,fn flush: call `taint` in error path after await; guard=none,"            Some(write_timeout) => match timeout(write_timeout, self.connection.flush()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())"
+bb8-memcached,0.7.0,src/lib.rs,91,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_tainted()
+bb8-oracle,0.3.0,src/lib.rs,133,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        !matches!(conn.status(), Ok(oracle::ConnStatus::Normal))"
+bb8-postgres,0.9.0,src/lib.rs,69,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed()
+bb8-redis,0.26.0,src/lib.rs,76,C,no,high,fn has_broken returns false / never marks breakage,        false
+bb8-tiberius,0.16.0,src/lib.rs,208,C,no,high,fn has_broken returns false / never marks breakage,        false
+cdrs-tokio,9.0.2,src/transport.rs,164,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken()
+cdrs-tokio,9.0.2,src/transport.rs,263,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken()
+cdrs-tokio,9.0.2,src/transport.rs,329,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.is_broken.load(Ordering::Relaxed)
+clickhouse,0.15.3,src/inserter.rs,314,B,no,high,fn write: `in_transaction =` after await at line 304,"        if self.insert.is_none() {
+            self.init_insert().await?;
+        }
+
+        match self.insert.as_mut().unwrap().do_write(row) {
+            Ok(bytes) => {
+                self.pending.bytes += bytes as u64;
+                self.pending.rows += 1;
+
+                if !self.in_transaction {
+                    self.pending.transactions += 1;
+                    self.in_transaction = true;"
+clickhouse-arrow,0.2.1,src/client.rs,377,A,no,medium,fn shutdown: call `shutdown` in error path after await; guard=none,"        trace!(""shutting down client"");
+        self.conn().await?.shutdown().await"
+clickhouse-arrow,0.2.1,src/pool.rs,238,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        matches!(conn.status(), ConnectionStatus::Error | ConnectionStatus::Closed)"
+datafusion-table-providers-postgres,0.14.0,src/pool.rs,222,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed()
+deadpool,0.13.1,src/managed/pool.rs,196,B,no,medium,fn try_recycle: `recycle_count +=` after await at line 191,"        if let Err(_e) = self.inner.hooks.post_recycle.apply(inner).await {
+            // TODO log post_recycle error
+            return Ok(None);
+        }
+
+        inner.metrics.recycle_count += 1;"
+deadpool-memcached,0.5.0,src/lib.rs,46,C,no,high,fn recycle does I/O then accepts any positive/Ok reply,"        match conn.version().await {
+            Ok(_) => Ok(()),"
+deadpool-postgres,0.14.2,src/lib.rs,155,C,no,high,fn recycle does I/O then accepts any positive/Ok reply,"        if client.is_closed() {
+            tracing::warn!(target: ""deadpool.postgres"", ""Connection could not be recycled: Connection closed"");"
+deadpool-tiberius,0.1.9,src/lib.rs,122,C,no,high,fn recycle does I/O then accepts any positive/Ok reply,"        match obj.simple_query("""").await {
+            Ok(_) => Ok(()),"
+diesel,2.3.14,src/mysql/connection/mod.rs,286,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self)
+diesel,2.3.14,src/pg/connection/mod.rs,394,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self)
+diesel,2.3.14,src/r2d2.rs,275,C,no,high,fn is_broken returns false / never marks breakage,        false
+diesel,2.3.14,src/r2d2.rs,295,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken()
+diesel,2.3.14,src/sqlite/connection/mod.rs,319,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self)
+diesel-async,0.9.2,src/async_connection_wrapper.rs,330,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,            crate::pooled_connection::PoolableConnection::is_broken(&mut self.inner)
+diesel-async,0.9.2,src/pg/mod.rs,1059,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,"        use crate::TransactionManager;
+
+        Self::TransactionManager::is_broken_transaction_manager(self) || self.conn.is_closed()"
+diesel-async,0.9.2,src/pooled_connection/bb8.rs,90,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken()
+diesel-async,0.9.2,src/pooled_connection/mod.rs,209,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        Self::TransactionManager::is_broken_transaction_manager(self)
+diesel-async,0.9.2,src/sync_connection_wrapper/mod.rs,477,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,            Self::TransactionManager::is_broken_transaction_manager(self)
+esrs,0.18.0,src/bus/rabbit/mod.rs,43,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected()
+esrs,0.18.0,src/bus/rabbit/mod.rs,88,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected()
+fred,10.1.0,src/runtime/glommio/mod.rs,66,A,no,medium,fn spawn_into: call `detach` in error path after await; guard=none,"    let inner = glommio::spawn_local_into(
+      async move {
+        let result = ft.await;
+        _finished.replace(true);
+        result
+      },
+      tq,
+    )
+    .unwrap_or_else(|e| panic!(""Failed to spawn task into task queue {tq:?}: {e:?}""))
+    .detach();
+
+    JoinHandle { inner, finished }"
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,288,A,no,medium,fn next: call `close` in error path after await; guard=none,"            if let Err(e) = self.populate_pool().await? {
+                // Handle errors opening or reading from the stream.
+                match StreamRetryPolicy::on_midstream_error(e) {
+                    RetryResult::Continue(_) => {
+                        // The stream failed with a transient error. Reset the stream.
+                        self.stream = None;
+                        continue;
+                    }
+                    RetryResult::Permanent(e) | RetryResult::Exhausted(e) => {
+                        // The stream failed with a permanent error. Return the error.
+                        self.close();
+                        return Some(Err(e));"
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,664,A,no,medium,fn basic_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;"
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,774,A,no,medium,fn basic_success_exactly_once: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;"
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1343,A,no,medium,fn resume_midstream_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;"
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1409,A,no,medium,fn resume_midstream_hits_permanent_error: call `shutdown` in error path after await; guard=none,"        }
+        let err = stream
+            .next()
+            .await
+            .transpose()
+            .expect_err(""expected an error from stream"");
+        assert!(err.status().is_some(), ""{err:?}"");
+        let status = err.status().unwrap();
+        assert_eq!(
+            status.code,
+            google_cloud_gax::error::rpc::Code::FailedPrecondition
+        );
+        assert_eq!(status.message, ""fail"");
+
+        // Wait for the stream to join its background tasks."
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1659,A,no,medium,fn at_least_once_and_exactly_once: call `shutdown` in error path after await; guard=none,"        assert!(matches!(h, Handler::ExactlyOnce(_)), ""{h:?}"");
+
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;"
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1720,A,no,medium,fn cancel_midstream: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        let shutdown = tokio::spawn(async move {
+            shutdown_token.shutdown().await;"
+google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1784,A,no,medium,fn shutdown_without_next: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        // Note that the application does not have to call `stream.next()`, or
+        // `drop(stream)` to begin the shutdown procedure after a cancel.
+        shutdown_token.shutdown().await;"
+gremlin-client,0.8.10,src/connection.rs,307,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.broken
+gremlin-client,0.8.10,src/pool.rs,124,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_broken()
+h3,0.0.8,src/server/connection.rs,125,A,no,medium,fn accept: call `shutdown` in error path after await; guard=none,"        let stream = match poll_fn(|cx| self.poll_accept_request_stream_internal(cx)).await? {
+            Some(s) => FrameStream::new(BufRecvStream::new(s)),
+            None => {
+                // We always send a last GoAway frame to the client, so it knows which was the last
+                // non-rejected request.
+                self.shutdown(0).await?;"
+hdbconnect_async,0.33.0,src/bb8.rs,99,C,no,high,fn has_broken returns false / never marks breakage,        false
+hiqlite,0.15.3,src/client/mgmt.rs,556,A,no,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_cache.raft.shutdown().await?;
+            if let Some(handle) = &state.raft_cache.shutdown_handle {
+                handle.shutdown().await?;"
+hiqlite,0.15.3,src/client/mgmt.rs,579,A,no,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"                time::sleep(Duration::from_secs(1)).await;
+            }
+
+            // TODO as soon openraft-0.10 is out, we will be able to trigger a pre-emptive
+            //  leader switch if this node is the leader. This will smooth out things even more.
+
+            state.raft_db.is_raft_stopped.store(true, Ordering::Relaxed);
+
+            state.raft_db.raft.shutdown().await?;"
+hiqlite,0.15.3,src/client/mgmt.rs,587,A,no,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_db.raft.shutdown().await?;
+            info!(""Shutting down sqlite logs writer"");
+            state.raft_db.shutdown_handle.shutdown().await?;"
+hiqlite,0.15.3,src/network/api.rs,434,A,no,medium,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;"
+hiqlite,0.15.3,src/network/raft_client.rs,404,A,no,high,fn ws_handler: assign `in_flight` in error path after await; guard=none,"            let _ = tx_write.send_async(WritePayload::Close).await;
+
+            for (_, ack) in in_flight.drain() {
+                let _ = ack.send(Err(Error::Connect(""Raft WebSocket stream ended"".into())));
+            }
+            // reset to a reasonable size for the next start to keep memory usage under control
+            in_flight = HashMap::with_capacity(4);"
+hiqlite,0.15.3,src/server/proxy/handlers.rs,129,A,no,medium,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;"
+jsonrpsee-core,0.26.1,src/client/async_client/mod.rs,938,A,no,medium,fn send_task: call `close` in error path after await; guard=none,"				if let Err(err) = sender.send_ping().await {
+					tracing::debug!(target: LOG_TARGET, ""Send ws ping failed: {err}"");
+					break Err(Error::Transport(err.into()));
+				}
+			}
+		}
+	};
+
+	from_frontend.close();
+	let _ = sender.close().await;"
+klickhouse,0.16.0,src/manager.rs,48,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed()
+lapin,4.12.2,src/internal_rpc.rs,439,A,no,medium,fn run: call `close` in error path after await; guard=none,"                                .basic_cancel(consumer_tag, BasicCancelOptions::default())
+                                .await
+                        } else {
+                            Ok(())
+                        }
+                    })
+                }
+                CloseChannel(channel_id, reply_code, reply_text) => {
+                    if !self.channel_ok(channel_id) {
+                        continue;
+                    }
+                    let channel = get_channel(channel_id);
+                    self.register_internal_future(async move {
+                        channel?.close(reply_code, reply_text).await"
+ldap3,0.12.1,src/conn.rs,791,A,no,medium,fn turn: call `close` in error path after await; guard=none,"                                    if let Err(e) = self.stream.get_mut().shutdown().await {
+                                        warn!(""socket shutdown error: {}"", e);
+                                    }
+                                    if let Err(e) = self.stream.close().await {"
+lettre,0.11.23,src/transport/smtp/async_transport.rs,75,A,no,medium,fn send_raw: call `abort` in error path after await; guard=none,"        let result = conn.send(envelope, email).await?;
+
+        #[cfg(not(feature = ""pool""))]
+        conn.abort().await;"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,184,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 186; guard=none,"            self.command(Mail::new(envelope.from().cloned(), mail_options))
+                .await,
+            self
+        );
+
+        // Recipient
+        for to_address in envelope.to() {"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,192,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 193; guard=none,"                self.command(Rcpt::new(to_address.clone(), vec![])).await,
+                self
+            );
+        }"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,199,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 199; guard=none,"        try_smtp!(self.command(Data).await, self);
+
+        // Message content
+        let result = try_smtp!(self.message(email).await, self);"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,202,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 202; guard=none,"        let result = try_smtp!(self.message(email).await, self);
+        Ok(result)"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,227,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 227; guard=none,"            try_smtp!(self.command(Starttls).await, self);
+            self.stream.get_mut().upgrade_tls(tls_parameters).await?;"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,232,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 232; guard=none,"            try_smtp!(self.ehlo(hello_name).await, self);
+            Ok(())"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,241,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 241; guard=none,"        let ehlo_response = try_smtp!(self.command(Ehlo::new(hello_name.clone())).await, self);
+        self.server_info = try_smtp!(ServerInfo::from_response(&ehlo_response), self);"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,247,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 247; guard=none,"        Ok(try_smtp!(self.command(Quit).await, self))"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,294,A,no,high,macro try_smtp! Err arm marks bad; call's await at line 300; guard=none,"                    credentials.clone(),
+                    &response,
+                )?)
+                .await,
+                self
+            );
+        }"
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,206,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic
+lettre,0.11.23,src/transport/smtp/client/async_connection.rs,271,C,no,high,fn test_connected does I/O then accepts any positive/Ok reply,        self.command(Noop).await.is_ok()
+lettre,0.11.23,src/transport/smtp/client/connection.rs,133,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic
+loco-rs,1.2.0,src/scheduler.rs,363,A,no,medium,fn run: call `shutdown` in error path after await; guard=none,"        sched.start().await?;
+
+        tokio::signal::ctrl_c().await?;
+        sched.shutdown().await?;"
+loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,123,A,no,medium,fn copy: call `close` in error path after await; guard=none,"            let mut writer = self.opendal_impl.writer(&to).await?.into_bytes_sink();
+            writer
+                .send_all(&mut reader)
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;
+            writer
+                .close()
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;"
+loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,279,A,no,medium,fn upload_stream: call `close` in error path after await; guard=none,"            let chunk = chunk.map_err(|e| StorageError::Any(Box::new(e)))?;
+            // Use the native write method which handles the data more efficiently
+            writer.write(chunk).await?;
+        }
+
+        let meta = writer.close().await?;"
+mysql_async,0.37.1,src/conn/mod.rs,406,A,no,medium,fn routine: call `close` in error path after await; guard=none,"        let result = f.call(&mut *self).await;
+        match result {
+            result @ Ok(_) | result @ Err(crate::Error::Server(_)) => {
+                // either OK or non-fatal error
+                self.inner.disconnected = false;
+                result
+            }
+            Err(err) => {
+                if self.inner.stream.is_some() {
+                    self.take_stream().close().await?;"
+mysql_async,0.37.1,src/conn/mod.rs,454,A,no,medium,fn disconnect: call `close` in error path after await; guard=none,"            self.write_command_data(Command::COM_QUIT, &[]).await?;
+            let stream = self.take_stream();
+            stream.close().await?;"
+ntex,4.3.0,src/web/ws.rs,234,A,no,medium,fn call: call `close` in error path after await; guard=none,"                let result = ctx.call(&self.svc, item).await.map_err(WsError::Service);
+                if let Some(s) = s {
+                    rt::spawn(async move { s.io().close() });"
+ntex,4.3.0,src/ws/client.rs,462,A,no,medium,fn receiver: call `close` in error path after await; guard=none,"                        let _ = sink2.send(ws::Message::Close(Some(reply))).await;
+                    }
+                }
+                match tx.send(Ok(item)) {
+                    Ok(()) => (),
+                    Err(_) => io.close(),
+                }
+                Ok::<Option<ws::Message>, ()>(None)"
+object_store,0.14.2,src/upload.rs,232,A,no,medium,fn finish: call `abort` in error path after await; guard=none,"        if let Err(e) = self.wait_for_capacity(0).await {
+            self.abort().await?;"
+object_store,0.14.2,src/upload.rs,237,A,no,medium,fn finish: call `shutdown` in error path after await; guard=none,"        }
+
+        match self.upload.complete().await {
+            Err(e) => {
+                self.tasks.shutdown().await;"
+object_store,0.14.2,src/upload.rs,239,A,no,medium,fn finish: call `abort` in error path after await; guard=none,"            Err(e) => {
+                self.tasks.shutdown().await;
+                self.upload.abort().await?;"
+pict-rs,0.5.24,src/file.rs,21,A,no,medium,fn write_from_stream: call `close` in error path after await; guard=none,"    file.write_from_stream(stream)
+        .with_poll_timer(""write-from-stream"")
+        .await?;
+    file.close().await?;"
+pict-rs,0.5.24,src/lib.rs,2106,A,no,medium,fn launch: call `abort` in error path after await; guard=none,"        server.bind_rustls_0_23(address, config)?.run().await?;
+
+        handle.abort();
+        let _ = handle.await;"
+pict-rs,0.5.24,src/process.rs,228,A,no,medium,fn wait: call `kill` in error path after await; guard=none,"        let res = child.wait().with_timeout(timeout).await;
+
+        extras
+            .consume()
+            .await
+            .map_err(|e| ProcessError::Cleanup(command.clone(), e))?;
+
+        match res {
+            Ok(Ok(status)) if status.success() => {
+                guard.disarm();
+
+                Ok(())
+            }
+            Ok(Ok(status)) => Err(ProcessError::Status(command, status)),
+            Ok(Err(e)) => Err(ProcessError::Other(command, e)),"
+pict-rs,0.5.24,src/process.rs,306,A,no,medium,fn drive: call `kill` in error path after await; guard=none,"            };
+
+            match child_fut.with_timeout(timeout).await {
+                Ok(Ok(status)) if status.success() => {
+                    guard.disarm();
+                    Ok(())
+                }
+                Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                Err(_) => {
+                    child
+                        .kill()
+                        .with_timeout(Duration::from_secs(1))"
+pict-rs,0.5.24,src/process.rs,410,A,no,medium,fn pipe: call `kill` in error path after await; guard=none,"                };
+
+                match child_fut.with_timeout(timeout).await {
+                    Ok(Ok(status)) if status.success() => {
+                        guard.disarm();
+                        Ok(())
+                    }
+                    Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                    Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                    Err(_) => {
+                        child
+                            .kill()
+                            .await
+                            .map_err(|e| ProcessError::Other(command2.clone(), e))?;"
+pict-rs,0.5.24,src/queue/cleanup.rs,148,A,no,medium,fn alias: call `abort` in error path after await; guard=none,"        let hash = repo.hash(&alias).await.retry()?;
+
+        // already deleted
+        if hash.is_none() {
+            return Ok(());
+        }
+    }
+
+    if !saved_delete_token.is_some_and(|t| t.ct_eq(&token)) {
+        return Err(UploadError::InvalidToken).abort();
+    }
+
+    let hash = repo.hash(&alias).await.retry()?;"
+pict-rs,0.5.24,src/queue/cleanup.rs,164,A,no,medium,fn alias: call `abort` in error path after await; guard=none,"    repo.remove_alias_access(alias.clone()).await.retry()?;
+    repo.cleanup_alias(&alias).await.retry()?;
+
+    let hash = hash.ok_or(UploadError::MissingAlias).abort()?;
+
+    if repo"
+pict-rs,0.5.24,src/queue/cleanup.rs,217,A,no,medium,fn outdated_variants: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} variant cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");"
+pict-rs,0.5.24,src/queue/cleanup.rs,249,A,no,medium,fn outdated_proxies: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} alias cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");"
+pict-rs,0.5.24,src/queue/cleanup.rs,213,B,no,medium,fn outdated_variants: `count +=` after await at line 211,"        super::cleanup_variants(repo, hash, Some(variant))
+            .await
+            .retry()?;
+        count += 1;"
+pict-rs,0.5.24,src/queue/cleanup.rs,240,B,no,medium,fn outdated_proxies: `count +=` after await at line 239,"            super::cleanup_alias(repo, alias, token).await.retry()?;
+            count += 1;"
+pict-rs,0.5.24,src/queue/cleanup.rs,321,B,no,medium,fn prune: `count +=` after await at line 319,"                            super::cleanup_hash(&repo, hash).await?;
+
+                            count += 1;"
+pict-rs,0.5.24,src/queue/cleanup.rs,349,B,no,medium,fn prune: `count +=` after await at line 337,"            .instrument(span),
+        ))
+        .await;
+
+        match res {
+            Ok(Ok(updated)) => count = updated,
+            Ok(Err(e)) => {
+                tracing::warn!(""Prune missing identifier failed - {e:?}"");
+            }
+            Err(_) => {
+                tracing::warn!(""Prune missing identifier panicked."");
+            }
+        }
+
+        count += 1;"
+pict-rs,0.5.24,src/queue/process.rs,161,A,no,medium,fn process_ingest: call `abort` in error path after await; guard=none,"        .repo
+        .complete_upload(upload_id, result)
+        .await
+        .retry()?;
+
+    if let Some(e) = err {
+        return Err(e).abort();
+    }
+
+    guard.disarm();"
+pict-rs,0.5.24,src/queue/process.rs,184,A,no,medium,fn generate: call `abort` in error path after await; guard=none,"    let hash = state
+        .repo
+        .hash(&source)
+        .await
+        .retry()?
+        .ok_or(UploadError::MissingAlias)
+        .abort()?;
+
+    let identifier_opt = state"
+pict-rs,0.5.24,src/queue/process.rs,210,A,no,medium,fn generate: call `abort` in error path after await; guard=none,"        variant,
+        process_args,
+        &original_details,
+        hash,
+    )
+    .await
+    .abort()?;
+
+    Ok(())"
+pict-rs,0.5.24,src/repo/migrate.rs,264,B,no,medium,fn do_migrate_hash: `aliases_count +=` after await at line 261,"            new_repo.set_accessed_alias(alias, timestamp).await?;
+        }
+
+        aliases_count += 1;"
+pict-rs,0.5.24,src/repo/postgres.rs,342,A,no,medium,fn connect: call `abort` in error path after await; guard=none,"        embedded::migrations::runner()
+            .run_async(&mut client)
+            .await
+            .map_err(Box::new)
+            .map_err(ConnectPostgresError::Migration)?;
+
+        handle.abort();
+        let _ = handle.await;"
+pict-rs,0.5.24,src/store/file_store.rs,197,A,no,medium,fn safe_save_stream: call `close` in error path after await; guard=none,"        file.write_from_stream(input)
+            .with_poll_timer(""write-from-stream"")
+            .await?;
+
+        file.close().await?;"
+pict-rs,0.5.24,src/store/object_store.rs,222,A,no,medium,fn save_stream: call `abort` in error path after await; guard=none,"                .map_err(ObjectError::from)?;
+
+            Ok(())
+        }
+        .await;
+
+        match res {
+            Ok(()) => Ok(object_id),
+            Err(e) => {
+                multipart
+                    .abort()
+                    .with_metrics(crate::init_metrics::OBJECT_STORAGE_ABORT_MULTIPART_REQUEST)"
+pict-rs,0.5.24,src/store/object_store.rs,105,C,no,high,fn health_check does I/O then accepts any positive/Ok reply,"        let mut tags = TagSet::default();
+        if self.tag_healthz {"
+pict-rs,0.5.24,src/stream.rs,147,B,no,medium,fn take: `count +=` after await at line 145,"            tracing::trace!(""take: looping"");
+
+            yielder.yield_(item).await;
+
+            count += 1;"
+pingora-core,0.9.0,src/protocols/http/v1/server.rs,1247,A,no,high,fn read_body_or_idle: assign `half_closed` in error path after await; guard=none,"            let (probe, read) = self
+                .read_idle_probe(""during HTTP body-or-idle state"")
+                .await?;
+            if read == 0 {
+                self.half_closed = true;
+                self.set_keepalive(None);"
+rbdc,4.9.10,src/pool/manager.rs,65,C,no,high,fn check does I/O then accepts any positive/Ok reply,"        match conn.ping().await {
+            Ok(_) => Ok(()),"
+rbdc-mysql,4.9.6,src/connection/mod.rs,68,A,no,medium,fn do_close: call `shutdown` in error path after await; guard=none,"        self.stream.send_packet(Quit).await?;
+        self.stream.shutdown().await?;"
+redis,1.7.1,src/bb8.rs,28,C,no,high,fn has_broken returns false / never marks breakage,                false
+redis,1.7.1,src/r2d2.rs,23,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,                !conn.is_open()
+rsmq_async,18.0.0,src/pooled_facade.rs,37,C,no,high,fn has_broken returns false / never marks breakage,        false
+rumqttc,0.25.1,src/framed.rs,52,B,no,medium,fn readb: `count =` after await at line 51,"        let mut res = self.framed.next().await;
+        let mut count = 1;"
+rumqttc,0.25.1,src/v5/framed.rs,53,B,no,medium,fn readb: `count =` after await at line 52,"        let mut res = self.framed.next().await;
+        let mut count = 1;"
+rustis,0.27.1,src/client/monitor_stream.rs,36,A,no,high,fn close: assign `closed` in error path after await; guard=none,"        self.client.reset().await?;
+        self.closed = true;
+        Ok(())"
+rustis,0.27.1,src/client/pooled_client_manager.rs,86,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        client.inner().is_terminated()
+rustis,0.27.1,src/client/pub_sub_stream.rs,300,A,no,high,fn close: assign `closed` in error path after await; guard=none,"            }
+            self.client.sunsubscribe(args).await?;
+            self.shardchannels.clear();
+        }
+
+        self.closed = true;
+
+        Ok(())"
+rustis,0.27.1,src/network/cluster_topology.rs,76,A,no,high,fn feed: assign `is_dirty` in error path after await; guard=none,"        self.connection.feed(command, &[]).await?;
+        self.is_dirty = true;
+        Ok(())"
+rusty-sidekiq,0.15.2,src/redis.rs,83,C,no,high,fn has_broken returns false / never marks breakage,        false
+scylla,1.9.0,src/cluster/metadata/update.rs,871,C,no,medium,fn is_broken reads a flag that is not pessimistically set before an await,"        matches!(metadata.keyspaces.get(name), Some(Err(_)))"
+sea-orm,2.0.4,src/driver/sqlx_mysql.rs,270,C,no,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;
+sea-orm,2.0.4,src/driver/sqlx_postgres.rs,309,C,no,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;
+sea-orm,2.0.4,src/driver/sqlx_sqlite.rs,292,C,no,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;
+sqlx-core,0.9.0,src/net/socket/buffered.rs,138,A,no,medium,fn shutdown: call `shutdown` in error path after await; guard=none,"        self.flush().await?;
+        self.socket.shutdown().await"
+sqlx-core,0.9.0,src/pool/inner.rs,487,A,no,medium,fn check_idle_conn: call `close` in error path after await; guard=none,"        match test(&mut conn.live.raw, meta).await {
+            Ok(false) => {
+                // connection was rejected by user-defined hook, close nicely
+                return Err(conn.close().await);"
+sqlx-core,0.9.0,src/testing/mod.rs,201,A,no,medium,fn run_test_with_pool: call `close` in error path after await; guard=none,"        let res = test_fn(pool.clone()).await;
+
+        let close_timed_out = crate::rt::timeout(Duration::from_secs(10), pool.close())
+            .await"
+sqlx-core,0.9.0,src/testing/mod.rs,268,A,no,medium,fn setup_test_db: call `close` in error path after await; guard=none,"        (&mut conn)
+            .execute(fixture.contents)
+            .await
+            .unwrap_or_else(|e| panic!(""failed to apply test fixture {:?}: {:?}"", fixture.path, e));
+    }
+
+    conn.close()
+        .await
+        .expect(""failed to close setup connection"");"
+sqlx-mysql,0.9.0,src/connection/mod.rs,74,A,no,medium,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send_packet(Quit).await?;
+        self.inner.stream.shutdown().await?;"
+sqlx-mysql,0.9.0,src/testing/mod.rs,86,A,no,medium,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"        query.push("")"").build().execute(&mut conn).await?;
+
+        let _ = conn.close().await;"
+sqlx-mysql,0.9.0,src/transaction.rs,31,B,no,high,fn begin: `transaction_depth +=` after await at line 27,"        };
+        conn.execute(statement).await?;
+        if !conn.in_transaction() {
+            return Err(Error::BeginFailed);
+        }
+        conn.inner.transaction_depth += 1;"
+sqlx-mysql,0.9.0,src/transaction.rs,41,B,no,high,fn commit: `transaction_depth =` after await at line 40,"            conn.execute(commit_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;"
+sqlx-mysql,0.9.0,src/transaction.rs,52,B,no,high,fn rollback: `transaction_depth =` after await at line 51,"            conn.execute(rollback_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;"
+sqlx-postgres,0.9.0,src/connection/executor.rs,134,B,no,medium,fn wait_for_close_complete: `count -=` after await at line 126,"            match self.inner.stream.recv().await? {
+                message if message.format == BackendMessageFormat::PortalSuspended => {
+                    // there was an open portal
+                    // this can happen if the last time a statement was used it was not fully executed
+                }
+
+                message if message.format == BackendMessageFormat::CloseComplete => {
+                    // successfully closed the statement (and freed up the server resources)
+                    count -= 1;"
+sqlx-postgres,0.9.0,src/connection/mod.rs,168,A,no,medium,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send(Terminate).await?;
+        self.inner.stream.shutdown().await?;"
+sqlx-postgres,0.9.0,src/connection/mod.rs,113,B,no,medium,fn recv_ready_for_query: `pending_ready_for_query_count -=` after await at line 111,"        let r: ReadyForQuery = self.inner.stream.recv_expect().await?;
+
+        self.inner.pending_ready_for_query_count -= 1;"
+sqlx-postgres,0.9.0,src/listener.rs,324,B,no,medium,fn try_recv: `pending_ready_for_query_count -=` after await at line 324,"                BackendMessageFormat::ReadyForQuery => {
+                    self.connection().await?.inner.pending_ready_for_query_count -= 1;"
+sqlx-postgres,0.9.0,src/testing/mod.rs,79,A,no,medium,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"            .bind(&deleted_db_names)
+            .execute(&mut conn)
+            .await?;
+
+        let _ = conn.close().await;"
+sqlx-postgres,0.9.0,src/transaction.rs,45,B,no,high,fn commit: `transaction_depth -=` after await at line 43,"            conn.execute(commit_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;"
+sqlx-postgres,0.9.0,src/transaction.rs,56,B,no,high,fn rollback: `transaction_depth -=` after await at line 54,"            conn.execute(rollback_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;"
+sqlx-sqlite,0.9.0,src/connection/mod.rs,227,A,no,medium,fn close: call `shutdown` in error path after await; guard=none,"            self.execute(AssertSqlSafe(pragma_string)).await?;
+        }
+        let shutdown = self.worker.shutdown();
+        // Drop the statement worker, which should
+        // cover all references to the connection handle outside of the worker thread
+        drop(self);"
+sqlx-sqlite,0.9.0,src/migrate.rs,33,A,no,medium,fn create_database: call `close` in error path after await; guard=none,"            opts = opts.journal_mode(SqliteJournalMode::Wal);
+        }
+
+        // Opening a connection to sqlite creates the database
+        opts.connect()
+            .await?
+            // Ensure WAL mode tempfiles are cleaned up
+            .close()
+            .await?;"
+surrealdb,3.3.4,src/engine/remote/grpc.rs,1039,A,no,medium,fn session_task: call `detach` in error path after await; guard=none,"				engine.publish(new, engine.establish_clone(log).await);
+			}
+			SessionId::Drop(id) => {
+				// Only a session that was established has anything to release.
+				// Ending it also fails anything still waiting on it, which is
+				// what keeps a request that outlived its handle from waiting on
+				// a session that has just gone away.
+				match engine.sessions.end(id) {
+					Some(Ok(session)) => {
+						if let Err(error) = engine.detach(session.server).await {"
+surrealdb,3.3.4,src/engine/remote/grpc.rs,1325,A,no,medium,fn kill: call `kill` in error path after await; guard=none,"			let context = self.ready(ctx).await?;
+			self.client()
+				.kill(self.checked(rpc::KillRequest {"
+surrealdb,3.3.4,src/engine/remote/grpc.rs,1799,A,no,medium,fn pump_export_to_channel: call `close` in error path after await; guard=none,"		if bytes.send(Ok(chunk.to_vec())).await.is_err() {
+			// The reader is gone; stop pulling the export.
+			return;
+		}
+	}
+	bytes.close();"
+surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1035,A,no,medium,fn clear_pending_requests: call `close` in error path after await; guard=none,"			request.response_channel.send(Err(err)).await.ok();
+			request.response_channel.close();
+		}
+		state.pending_requests.clear();"
+surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1056,A,no,medium,fn clear_live_queries: call `close` in error path after await; guard=none,"			sender.send(Err(err)).await.ok();
+			sender.close();
+		}
+		state.live_queries.clear();"
+surrealdb,3.3.4,src/method/query.rs,202,A,no,medium,fn stream_items: call `close` in error path after await; guard=none,"						if out_tx.send(Ok(item)).await.is_err() {
+							// The caller stopped reading. Closing the execution's
+							// channel is what unparks it: it is bounded, and this
+							// loop was the only thing draining it.
+							raw_rx.close();
+							return;"
+taos-query,0.12.4,src/lib.rs,184,C,no,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !self.deref().ready()
+toasty,0.11.0,src/engine/exec/delete_by_key.rs,37,B,no,medium,fn exec_delete_by_key: `total_count +=` after await at line 34,"                let res = self.connection.exec(&self.engine.schema, op.into()).await?;
+
+                match res.values {
+                    Rows::Count(n) => total_count += n,"
+toasty,0.11.0,src/engine/exec.rs,104,B,no,high,fn exec_plan: `in_transaction =` after await at line 103,"            exec.connection.exec(&self.schema, begin.into()).await?;
+            exec.in_transaction = true;"
+tokio-postgres,0.7.18,src/cancel_query_raw.rs,27,A,no,medium,fn cancel_query_raw: call `shutdown` in error path after await; guard=none,"    stream.write_all(&buf).await.map_err(Error::io)?;
+    stream.flush().await.map_err(Error::io)?;
+    stream.shutdown().await.map_err(Error::io)?;"
+turso,0.8.3,src/transaction.rs,171,A,no,high,fn _commit: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""COMMIT"", ()).await?;
+        self.in_progress = false;
+        Ok(())"
+turso,0.8.3,src/transaction.rs,184,A,no,high,fn _rollback: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""ROLLBACK"", ()).await?;
+        self.in_progress = false;
+        Ok(())"
+zookeeper-client,0.11.2,src/session/connection.rs,147,A,no,medium,fn command: call `close` in error path after await; guard=none,"        let mut reader = BufReader::new(self);
+        reader.read_line(&mut line).await?;
+        reader.close().await.ignore();"

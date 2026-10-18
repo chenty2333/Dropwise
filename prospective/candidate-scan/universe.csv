@@ -1,0 +1,816 @@
+rank,crate,version,downloads_90d,covered,selected,origin,repository,description
+1,hyper,1.12.0,238649968,,yes,client-seed,https://github.com/hyperium/hyper,A protective and efficient HTTP library for all.
+2,reqwest,0.13.5,220341013,,yes,client-seed,https://github.com/seanmonstar/reqwest,higher level HTTP client library
+3,h2,0.4.20,194492784,,yes,client-seed,https://github.com/hyperium/h2,An HTTP/2 client and server
+4,hyper-util,0.1.21,173159480,,yes,client-seed,https://github.com/hyperium/hyper-util,hyper utilities
+5,quinn,0.11.12,126743324,,yes,client-seed,https://github.com/quinn-rs/quinn,Versatile QUIC transport protocol implementation
+6,tonic,0.14.6,97789761,,yes,client-seed,https://github.com/hyperium/tonic,"A gRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility. "
+7,tokio-tungstenite,0.30.0,91375160,yes,yes,client-seed,https://github.com/snapview/tokio-tungstenite,"Tokio binding for Tungstenite, the Lightweight stream-based WebSocket implementation"
+8,aws-smithy-http,0.64.1,54243909,,yes,client-seed,https://github.com/smithy-lang/smithy-rs,Smithy HTTP logic for smithy-rs.
+9,sqlx-core,0.9.0,48053448,,yes,client-seed,https://github.com/launchbadge/sqlx,"Core of SQLx, the rust SQL toolkit. Not intended to be used directly."
+10,sqlx,0.9.0,46982403,,yes,client-seed,https://github.com/launchbadge/sqlx,"🧰 The Rust SQL Toolkit. An async, pure Rust SQL crate featuring compile-time checked queries without a DSL. Supports PostgreSQL, MySQL, and SQLite."
+11,sqlx-postgres,0.9.0,45986479,yes,yes,client-seed,https://github.com/launchbadge/sqlx,PostgreSQL driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.
+12,sqlx-sqlite,0.9.0,43640804,,yes,client-seed,https://github.com/launchbadge/sqlx,SQLite driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.
+13,sqlx-mysql,0.9.0,42568773,yes,yes,client-seed,https://github.com/launchbadge/sqlx,MySQL driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.
+14,aws-smithy-runtime,1.16.0,41826410,,yes,client-seed,https://github.com/smithy-lang/smithy-rs,The new smithy runtime crate
+15,deadpool,0.13.1,41463820,,yes,pool-seed;rev:deadpool-runtime,https://github.com/deadpool-rs/deadpool,Dead simple async pool
+16,deadpool-runtime,0.3.1,39793858,,yes,pool-seed,https://github.com/deadpool-rs/deadpool,Dead simple async pool utilities for async runtimes
+17,redis,1.7.1,30378035,yes,yes,client-seed;rev:bb8,https://github.com/redis-rs/redis-rs,Redis driver for Rust.
+18,wiremock,0.6.5,27535831,,yes,rev:deadpool,https://github.com/LukeMathWalker/wiremock-rs,HTTP mocking to test Rust applications.
+19,aws-sdk-s3,1.152.0,25367593,,yes,client-seed,https://github.com/awslabs/aws-sdk-rust,AWS SDK for Amazon Simple Storage Service
+20,object_store,0.14.2,23865413,,yes,client-seed,https://github.com/apache/arrow-rs-object-store,"A generic object store interface for uniformly interacting with AWS S3, Google Cloud Storage, Azure Blob Storage and local files."
+21,tokio-postgres,0.7.18,21187038,yes,yes,client-seed,https://github.com/rust-postgres/rust-postgres,"A native, asynchronous PostgreSQL client"
+22,azure_core,1.1.0,11028407,,yes,client-seed,https://github.com/azure/azure-sdk-for-rust,Rust wrappers around Microsoft Azure REST APIs - Core crate
+23,diesel,2.3.14,9548247,,yes,client-seed,https://github.com/diesel-rs/diesel,"A safe, extensible ORM and Query Builder for PostgreSQL, SQLite, and MySQL"
+24,bb8,0.9.1,9267014,yes,yes,pool-seed,https://github.com/djc/bb8,Full-featured async (tokio-based) connection pool (like r2d2)
+25,rdkafka,0.39.0,8136703,,yes,client-seed,https://github.com/fede1024/rust-rdkafka,Rust wrapper for librdkafka
+26,google-cloud-storage,1.20.0,7810633,,yes,client-seed,https://github.com/googleapis/google-cloud-rust/tree/main,Google Cloud Client Libraries for Rust - Storage
+27,lettre,0.11.23,7672068,yes,yes,client-seed,https://github.com/lettre/lettre,Email client
+28,deadpool-postgres,0.14.2,6822955,yes,yes,pool-seed;rev:deadpool,https://github.com/deadpool-rs/deadpool,Dead simple async pool for tokio-postgres
+29,aws-sdk-sqs,1.114.0,6487284,,yes,client-seed,https://github.com/awslabs/aws-sdk-rust,AWS SDK for Amazon Simple Queue Service
+30,aws-sdk-dynamodb,1.130.0,6320567,,yes,client-seed,https://github.com/awslabs/aws-sdk-rust,AWS SDK for Amazon DynamoDB
+31,async-nats,0.50.0,5832912,yes,yes,client-seed,https://github.com/nats-io/nats.rs,A async Rust NATS client
+32,opendal,0.59.5,5658916,,yes,client-seed,https://github.com/apache/opendal,"Apache OpenDAL™: One Layer, All Storage."
+33,clickhouse,0.15.3,5471627,,yes,client-seed,https://github.com/ClickHouse/clickhouse-rs,Official Rust client for ClickHouse DB
+34,diesel-async,0.9.2,5304616,,yes,client-seed;rev:bb8;rev:deadpool;rev:mobc,https://github.com/weiznich/diesel_async,"An async extension for Diesel the safe, extensible ORM and Query Builder"
+35,mongodb,3.9.1,5048081,,yes,client-seed,https://github.com/mongodb/mongo-rust-driver,The official MongoDB driver for Rust
+36,sea-orm,2.0.4,4923381,,yes,client-seed,https://github.com/SeaQL/sea-orm,🐚 An async & dynamic ORM for Rust
+37,soketto,0.8.1,4274122,,yes,client-seed,https://github.com/paritytech/soketto,A websocket protocol implementation.
+38,postgres-native-tls,0.5.3,4105591,,yes,client-seed,https://github.com/rust-postgres/rust-postgres,TLS support for tokio-postgres via native-tls
+39,jsonrpsee-core,0.26.1,3929474,,yes,client-seed,https://github.com/paritytech/jsonrpsee,Utilities for jsonrpsee
+40,postgres,0.19.14,3910928,,yes,client-seed,https://github.com/rust-postgres/rust-postgres,"A native, synchronous PostgreSQL client"
+41,jsonrpsee,0.26.1,3839622,,yes,client-seed,https://github.com/paritytech/jsonrpsee,JSON-RPC client/server framework
+42,deadpool-redis,0.23.1,3694601,,yes,client-seed;pool-seed;rev:deadpool,https://github.com/deadpool-rs/deadpool,Dead simple async pool for redis
+43,etcd-client,0.21.0,3143558,,yes,client-seed,https://github.com/etcdv3/etcd-client.git,An etcd v3 API client
+44,jsonrpsee-client-transport,0.26.1,3005931,,yes,client-seed,https://github.com/paritytech/jsonrpsee,JSON-RPC client transports
+45,jsonrpsee-ws-client,0.26.1,2992740,,yes,client-seed,https://github.com/paritytech/jsonrpsee,JSON-RPC websocket client
+46,jsonrpsee-http-client,0.26.1,2740056,,yes,client-seed,https://github.com/paritytech/jsonrpsee,JSON-RPC HTTP client
+47,fred,10.1.0,2488397,,yes,client-seed,https://github.com/aembke/fred.rs,An async client for Redis and Valkey.
+48,rumqttc,0.25.1,2207165,,yes,client-seed,https://github.com/bytebeamio/rumqtt,An efficient and robust mqtt client for your connected devices
+49,lapin,4.12.2,2110042,,yes,client-seed,https://github.com/amqp-rs/lapin,AMQP client library
+50,google-cloud-pubsub,1.6.0,2102965,,yes,client-seed,https://github.com/googleapis/google-cloud-rust/tree/main,Google Cloud Client Libraries for Rust - Pub/Sub
+51,pingora-pool,0.9.0,2019481,,yes,client-seed,https://github.com/cloudflare/pingora,A connection pool system for connection reuse. 
+52,scylla,1.9.0,1845292,,yes,client-seed,https://github.com/scylladb/scylla-rust-driver,"Async CQL driver for Rust, optimized for ScyllaDB, fully compatible with Apache Cassandra™"
+53,gcp-bigquery-client,0.28.0,1797193,,yes,rev:deadpool,https://github.com/lquerel/gcp-bigquery-client,An ergonomic async client library for GCP BigQuery. 
+54,fastwebsockets,0.10.0,1722895,,yes,client-seed,https://github.com/denoland/fastwebsockets,A fast RFC6455 WebSocket server implementation
+55,h3,0.0.8,1651322,,yes,client-seed,https://github.com/hyperium/h3,An async HTTP/3 implementation.
+56,mysql_async,0.37.1,1641643,,yes,client-seed,https://github.com/blackbeam/mysql_async,Tokio based asynchronous MySql client library.
+57,tarpc,0.38.0,1392745,,yes,client-seed,https://github.com/google/tarpc,An RPC framework for Rust with a focus on ease of use.
+58,ldap3,0.12.1,1344308,,yes,client-seed,https://github.com/inejge/ldap3,Pure-Rust LDAP Client
+59,bb8-redis,0.26.0,1343906,,yes,client-seed;rev:bb8,https://github.com/djc/bb8,Full-featured async (tokio-based) redis connection pool (like r2d2)
+60,pingora-core,0.9.0,1237278,,yes,client-seed,https://github.com/cloudflare/pingora,Pingora's APIs and traits for the core network protocols. 
+61,bb8-postgres,0.9.0,1204081,,yes,rev:bb8,https://github.com/djc/bb8,Full-featured async (tokio-based) postgres connection pool (like r2d2)
+62,isahc,2.0.1,1184724,,yes,client-seed,https://github.com/sagebind/isahc,The practical HTTP client that is fun to use.
+63,pingora,0.9.0,1112022,,yes,client-seed,https://github.com/cloudflare/pingora,"A framework to build fast, reliable and programmable networked systems at Internet scale. "
+64,aws-sdk-sns,1.116.0,1067482,,yes,client-seed,https://github.com/awslabs/aws-sdk-rust,AWS SDK for Amazon Simple Notification Service
+65,awc,3.10.0,1050229,,yes,client-seed,https://github.com/actix/actix-web,Async HTTP and WebSocket client library
+66,async-imap,0.12.0,957884,,yes,client-seed,https://github.com/async-email/async-imap,Async IMAP client for Rust
+67,clickhouse-arrow,0.2.1,932234,,yes,rev:bb8,https://github.com/georgeleepatterson/clickhouse-arrow,ClickHouse Arrow Client for Rust
+68,libsql,0.10.0,839803,,yes,client-seed,https://github.com/tursodatabase/libsql,The libSQL database library
+69,tiberius,0.13.0,818928,,yes,client-seed,https://github.com/prisma/tiberius,A TDS (MSSQL) driver
+70,data-connector,2.4.0,816462,,yes,rev:deadpool;rev:deadpool-postgres;rev:deadpool-redis,https://github.com/smg-project/smg,Storage backends for conversations and responses
+71,mysql,28.0.4,792932,,yes,client-seed,https://github.com/blackbeam/rust-mysql-simple,Mysql client library implemented in rust
+72,deadpool-sync,0.2.0,761126,,yes,client-seed;pool-seed;rev:deadpool;rev:deadpool-runtime,https://github.com/deadpool-rs/deadpool,Dead simple async pool utilities for sync managers
+73,http-client,6.5.3,692413,,yes,rev:deadpool,https://github.com/http-rs/http-client,Types and traits for http clients.
+74,turso,0.8.3,669529,,yes,client-seed,https://github.com/tursodatabase/turso,Turso Rust API
+75,surrealdb,3.3.4,561660,,yes,client-seed,https://github.com/surrealdb/surrealdb,"A scalable, distributed, collaborative, document-graph database, for the realtime web"
+76,surf,2.3.2,534678,,yes,client-seed,https://github.com/http-rs/surf,Surf the web - HTTP client framework
+77,pulsar,6.9.1,532032,,yes,client-seed,https://github.com/streamnative/pulsar-rs,Rust client for Apache Pulsar
+78,teloxide,0.17.0,482566,,yes,rev:deadpool-redis,https://github.com/teloxide/teloxide,An elegant Telegram bots framework for Rust
+79,memcache-async,0.10.1,439509,,yes,client-seed,https://github.com/vavrusa/memcache-async,A no-frills async memcached client for Rust.
+80,actix-session,0.11.0,426151,,yes,rev:deadpool-redis,https://github.com/actix/actix-extras,Session management for Actix Web
+81,tokio-modbus,0.17.0,395362,,yes,client-seed,https://github.com/slowtec/tokio-modbus,Tokio-based Modbus library
+82,neo4rs,0.8.0,392235,,yes,client-seed;rev:deadpool,https://github.com/neo4j-labs/neo4rs,Rust driver for Neo4j
+83,paho-mqtt,0.14.0,342077,,yes,client-seed,https://github.com/eclipse/paho.mqtt.rust,The Official Eclipse Paho MQTT Rust Client Library. This is a wrapper around the Paho C library. 
+84,redis-macros,1.0.1,292660,,yes,rev:deadpool-redis,https://github.com/daniel7grant/redis-macros,Simple macros and wrappers to redis-rs to automatically serialize and deserialize structs with serde.
+85,matrix-sdk-sqlite,0.19.1,279691,,yes,rev:deadpool;rev:deadpool-sync,https://github.com/matrix-org/matrix-rust-sdk,Sqlite storage backend for matrix-sdk
+86,s2n-quic,1.91.0,214019,,yes,client-seed,https://github.com/aws/s2n-quic,A Rust implementation of the IETF QUIC protocol
+87,mobc,0.9.0,208315,,yes,pool-seed,https://github.com/importcjj/mobc,A generic connection pool with async/await support
+88,deadpool-sqlite,0.14.0,206624,,yes,client-seed;pool-seed;rev:deadpool;rev:deadpool-sync,https://github.com/deadpool-rs/deadpool,Dead simple async pool for rusqlite
+89,async-bb8-diesel,0.3.0,197590,,yes,client-seed;rev:bb8,https://github.com/oxidecomputer/async-bb8-diesel,async bb8 connection manager for Diesel
+90,bb8-tiberius,0.16.0,163534,,yes,client-seed;rev:bb8,https://github.com/kardeiz/bb8-tiberius,bb8 connection manager for Tiberius
+91,async-smtp,0.10.2,142588,,yes,client-seed,https://github.com/async-email/async-smtp,SMTP client
+92,tikv-client,0.4.0,131253,,yes,client-seed,https://github.com/tikv/client-rust,The Rust language implementation of TiKV client.
+93,klickhouse,0.16.0,127448,,yes,rev:bb8,https://github.com/Protryon/klickhouse,Klickhouse is a pure Rust SDK for working with Clickhouse with the native protocol in async environments with minimal boilerplate and maximal performance.
+94,deadpool-diesel,0.7.0,127078,,yes,client-seed;pool-seed;rev:deadpool;rev:deadpool-sync,https://github.com/deadpool-rs/deadpool,Dead simple async pool for diesel
+95,loco-rs,1.2.0,123756,,yes,rev:bb8,https://github.com/loco-rs/loco,The one-person framework for Rust
+96,mssql-tiberius-bridge,0.2.0,109718,,yes,rev:deadpool,https://github.com/saurabh500/mssql-tiberius-bridge,A tiberius-compatible API bridge over Microsoft's mssql-tds crate. Migrate from tiberius with minimal code changes.
+97,ntex,4.3.0,109621,,yes,client-seed,https://github.com/ntex-rs/ntex,Framework for composable network services
+98,deadpool-lapin,0.14.0,107625,,yes,client-seed;pool-seed;rev:deadpool,https://github.com/deadpool-rs/deadpool,Dead simple async pool for lapin
+99,amqprs,2.1.5,106592,,yes,client-seed,https://github.com/gftea/amqprs,AMQP 0-9-1 client implementation for RabbitMQ
+100,autumn-web,0.8.0,95874,,yes,rev:deadpool,https://github.com/autumn-foundation/autumn,"An opinionated, convention-over-configuration web framework for Rust"
+101,ignite-v2-client,1.0.1,89640,,yes,rev:deadpool,https://github.com/JohnSColeman/ignite-v2-client.git,Apache Ignite v2 Client
+102,cosmian_sse_memories,8.0.2,83869,,yes,rev:deadpool-postgres,https://github.com/Cosmian/findex/,Symmetric Searchable Encryption
+103,zookeeper-client,0.11.2,82980,,yes,client-seed,https://github.com/kezhuw/zookeeper-client-rust/,ZooKeeper async client
+104,mobc-redis,0.9.0,72992,,yes,rev:mobc,https://github.com/importcjj/mobc,Redis support for the mobc connection pool
+105,nats,0.26.0,59701,,yes,client-seed,https://github.com/nats-io/nats.rs,A Rust NATS client (deprecated — use async-nats instead)
+106,influxdb,0.8.0,57019,,yes,client-seed,https://github.com/influxdb-rs/influxdb-rust,InfluxDB Driver for Rust
+107,toasty,0.11.0,56892,,yes,rev:deadpool,https://github.com/tokio-rs/toasty,An async ORM for Rust supporting SQL and NoSQL databases
+108,redis_pool,0.10.1,52740,,yes,client-seed,https://github.com/AscendingCreations/RedisPool,Library to Provide a redis client and cluster client pools.
+109,influx_db_client,0.7.0,43295,,yes,client-seed,https://github.com/driftluo/InfluxDBClient-rs,InfluxDB Rust driver
+110,graphile_worker,0.14.1,39992,,yes,rev:deadpool-postgres,https://github.com/leo91000/graphile_worker_rs,High performance Rust/PostgreSQL job queue (also suitable for getting jobs generated by PostgreSQL triggers/functions out into a different work queue)
+111,influxdb2,0.5.2,38372,,yes,client-seed,https://github.com/aprimadi/influxdb2,Influxdb 2 client library for rust
+112,cdrs-tokio,9.0.2,38036,,yes,client-seed,https://github.com/krojew/cdrs-tokio,Async Cassandra DB driver written in Rust
+113,amiquip,0.4.2,36942,,yes,client-seed,https://github.com/jgallagher/amiquip,Pure Rust RabbitMQ client
+114,graphile_worker_database,0.1.8,36854,,yes,rev:deadpool-postgres,https://github.com/leo91000/graphile_worker_rs,Database driver abstraction for graphile_worker
+115,diesel-dtrace,0.5.0,34992,,yes,rev:bb8,https://github.com/oxidecomputer/diesel-dtrace.git,Add dtrace probes to Diesel connections
+116,async-memcached,0.8.1,34795,,yes,client-seed,https://github.com/Shopify/async-memcached,An Tokio-based memcached client for Rust.
+117,bb8-diesel,0.2.1,34107,,yes,client-seed;rev:bb8,https://github.com/overdrivenpotato/bb8-diesel,bb8 connection manager for Diesel
+118,rocket_db_pools,0.2.0,31297,,yes,rev:deadpool;rev:deadpool-postgres;rev:deadpool-redis,https://github.com/rwf2/Rocket/tree/v0.5/contrib/db_pools,Rocket async database pooling support
+119,praxis-policy-session-valkey,0.3.1,30689,,yes,rev:deadpool-redis,https://github.com/praxis-proxy/policy,PPE session store — Valkey/Redis-backed distributed session labels.
+120,bb8-lapin,0.8.1,29957,,yes,client-seed;rev:bb8,https://github.com/adrianbenavides/bb8-lapin,"r2d2-lapin, but for async tokio based connections"
+121,rustis,0.27.1,27095,,yes,rev:bb8,https://github.com/dahomey-technologies/rustis,Redis async driver for Rust
+122,hdbconnect_async,0.33.0,23217,,yes,rev:bb8,https://github.com/emabee/rust-hdbconnect,An asynchronous pure rust database driver for SAP HANA(TM)
+123,rbdc,4.9.10,22818,,yes,client-seed,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+124,praxis-policy-builtins,0.5.0,22663,,yes,rev:deadpool-redis,https://github.com/praxis-proxy/policy,"PPE bundled extensions — Cedar, CEL and OPA decision points, JWT and API-key identity, OAuth and Vault delegation, CIBA elicitation, Valkey sessions, Vault secr"
+125,imap-client,0.3.1,22610,,yes,client-seed,https://github.com/pimalaya/imap-client/,Rust library to manage IMAP clients
+126,rsmq_async,18.0.0,21972,,yes,client-seed;rev:bb8,https://github.com/DavidBM/rsmq-async-rs,Async RSMQ port to rust. RSMQ is a simple redis queue system that works in any redis v2.4+. It contains the same methods as the original one in https://github.c
+127,redis-async,0.18.0,18914,,yes,client-seed,https://github.com/benashford/redis-async-rs,An asynchronous futures based Redis client for Rust using Tokio
+128,clickhouse-rs,0.1.21,17597,,yes,client-seed,https://github.com/suharev7/clickhouse-rs,Asynchronous Yandex ClickHouse client library.
+129,bb8-oracle,0.3.0,16389,,yes,client-seed;rev:bb8,https://github.com/RavuAlHemio/bb8-oracle,Oracle support for the bb8 connection pool
+130,rbatis,4.9.8,16051,,yes,client-seed,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+131,libsql-client,0.33.4,14878,,yes,client-seed,https://github.com/libsql/libsql-client-rs,HTTP-based client for libSQL and sqld
+132,connectorx,0.4.6,14107,,yes,rev:bb8,https://github.com/sfu-db/connector-x,"Load data from databases to dataframes, the fastest way."
+133,miden-client-sqlite-store,0.17.3,12108,,yes,rev:deadpool;rev:deadpool-sync,https://github.com/0xMiden/rust-sdk,SQLite-backed Store implementation for miden-client
+134,zookeeper-async,5.0.0,12010,,yes,client-seed,https://github.com/krojew/rust-zookeeper,An async ZooKeeper client
+135,rusty-sidekiq,0.15.2,11798,,yes,rev:bb8,https://github.com/film42/sidekiq-rs.git,A rust sidekiq server and client using tokio
+136,plurality,0.2.2,11375,,yes,rev:deadpool,https://github.com/microsoft/oxidizer/tree/main/crates/plurality,A highly efficient pooling memory allocator
+137,gremlin-client,0.8.10,10364,,yes,rev:mobc,https://github.com/wolf4ood/gremlin-rs,A Rust client for Apache TinkerPop™
+138,deadpool-tiberius,0.1.9,10179,,yes,client-seed;pool-seed;rev:deadpool,https://github.com/Geo-W/deadpool-tiberius,Async ms sql server connection pool simple impl of deadpool
+139,rbdc-mysql,4.9.6,9756,,yes,client-seed,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+140,esrs,0.18.0,8782,,yes,rev:bb8,https://github.com/primait/event_sourcing.rs,A Prima.it-opinionated library to achieve cqrs/es
+141,bb8-ldap,0.4.1,8691,,yes,client-seed;rev:bb8,https://github.com/iainh/bb8-ldap,A bb8 connection pool manager for ldap3 async LDAP connections
+142,hiqlite,0.15.3,8673,,yes,rev:deadpool,https://github.com/sebadob/hiqlite,"Hiqlite - highly-available, embeddable, raft-based SQLite + cache"
+143,datafusion-table-providers-postgres,0.14.0,8640,,yes,rev:bb8,https://github.com/datafusion-contrib/datafusion-table-providers,DataFusion postgres table provider
+144,autumn-harvest,0.7.0,7843,,yes,rev:deadpool,https://github.com/autumn-foundation/autumn-harvest,Durable workflow orchestration engine core
+145,redis-kiss,0.1.4,7600,,yes,rev:mobc,,A really stupid approach to managing Redis PubSub.
+146,autumn-harvest-plugin,0.7.0,6905,,yes,rev:deadpool,https://github.com/autumn-foundation/autumn-harvest,Autumn plugin for autumn-harvest durable workflows
+147,pict-rs,0.5.24,6809,,yes,rev:bb8,https://git.asonix.dog/asonix/pict-rs,A simple image hosting service
+148,reinhardt-utils,0.3.24,6706,,yes,rev:deadpool-redis,https://github.com/kent8192/reinhardt-web,Utility functions aggregator for Reinhardt
+149,taos-query,0.12.4,6388,,yes,rev:deadpool,,Driver for TDengine - a timeseries database and analysis platform
+150,lemmy_db_schema,0.19.20,6364,,yes,rev:deadpool,https://github.com/LemmyNet/lemmy,A link aggregator for the fediverse
+151,mobc-postgres,0.9.0,5757,,,client-seed;rev:mobc,https://github.com/importcjj/mobc-postgres,Postgres support for the mobc connection pool
+152,rbdc-pg,4.9.6,5026,,,client-seed,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+153,martin-core,0.13.0,4918,,,rev:deadpool;rev:deadpool-postgres,https://github.com/maplibre/martin,Basic building blocks of MapLibre's Martin tile server.
+154,tantivy-cache,0.9.0,4573,,,rev:deadpool-redis,,tantivy caching for faster searching
+155,gel-tokio,0.11.0,4550,,,client-seed,,    Gel database client implementation for tokio.     Formerly published as gel-tokio. 
+156,async-amqp,2.0.0,4286,,,client-seed,https://github.com/amqp-rs/lapin,lapin integration with async-std
+157,cpex-session-valkey,0.2.3,4227,,,rev:deadpool-redis,https://github.com/contextforge-org/cpex,CPEX session store — Valkey/Redis-backed distributed session labels.
+158,yazi-vfs,26.5.6,4119,,,rev:deadpool,https://github.com/sxyazi/yazi,Yazi virtual file system
+159,apalis-amqp,1.0.0,3907,,,rev:deadpool;rev:deadpool-lapin,https://github.com/apalis-dev/apalis-amqp,Message queuing backend for Rust using apalis and Amqp
+160,effectum,0.7.0,3783,,,rev:deadpool-sqlite,https://github.com/dimfeld/effectum,An embeddable task queue based on SQLite
+161,unreql_deadpool,0.2.1,3550,,,rev:deadpool,https://github.com/vettich/un-rethinkdb-rs.git,Deadpool for UnReQL
+162,rbdc-mssql,4.9.5,3464,,,client-seed,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+163,miden-node-db,0.17.6,3375,,,rev:deadpool;rev:deadpool-sync,https://github.com/0xMiden/node,Shared database capabilities for Miden node
+164,mairie360_api_lib,3.4.0,3311,,,rev:deadpool-redis,https://github.com/mairie360/API_lib,Lib for mairie360 APIs
+165,cot,0.7.0,3232,,,rev:deadpool-redis,https://github.com/cot-rs/cot,The Rust web framework for lazy developers.
+166,async-pop,1.1.3,3189,,,client-seed,https://github.com/Dust-Mail/async-pop,A simple Pop3 compatible client
+167,rbdc-sqlite,4.9.5,3115,,,client-seed,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+168,wicked-estate-store,0.30.0,3109,,,rev:deadpool,https://github.com/mikeparcewski/wicked-estate,GraphStore impls. MemStore (Wave 0 reference); SQLite+FTS5+sqlite-vec & SurrealDB land at Wave 1.5.
+169,llama-gguf,0.14.0,3021,,,rev:deadpool-postgres,https://github.com/Lexmata/llama-gguf,A high-performance Rust implementation of llama.cpp - LLM inference engine with full GGUF support
+170,switchy_database,0.5.0,3004,,,rev:deadpool-postgres,https://github.com/MoosicBox/MoosicBox,Switchy database package
+171,smooai-smooth-operator-adapter-postgres,1.66.0,2830,,,rev:deadpool-postgres,https://github.com/SmooAI/smooth-operator,"Postgres + pgvector StorageAdapter for smooth-operator — the dogfood backend (Postgres OLTP, PostgresCheckpointStore, pgvector hybrid retrieval)."
+172,acton-service,0.47.0,2488,,,rev:bb8;rev:deadpool-redis,https://github.com/Govcraft/acton-service,Production-ready Rust backend framework with type-enforced API versioning
+173,bolt-client,0.11.0,2367,,,client-seed,https://github.com/0xSiO/bolt-rs,A client that sends messages using the Bolt protocol.
+174,swiftide-integrations,0.33.0,2317,,,rev:deadpool,https://github.com/bosun-ai/swiftide,"Composable LLM agents, typed task graphs, and streaming RAG pipelines in Rust"
+175,celery-rs,0.6.3,2279,,,rev:deadpool-redis,https://github.com/GaiaNet-AI/celery-rs,Community-maintained Rust implementation of Celery (fork of rusty-celery)
+176,deadpool-libsql,0.1.1,2217,,,client-seed;pool-seed;rev:deadpool,https://github.com/deadpool-rs/deadpool,Dead simple async pool for libsql
+177,thrift-pool,1.5.0,2163,,,rev:bb8,https://github.com/midnightexigent/thrift-pool-rs,Easily make Connection Pools compatible with r2d2 and bb8 from any Thrift Client
+178,switchy_database_connection,0.5.0,2137,,,rev:deadpool-postgres,https://github.com/MoosicBox/MoosicBox,Switchy database connection package
+179,picodata,2.0.3,2128,,,rev:deadpool-postgres,https://git.picodata.io/core/drivers/picodata-rust,A native asyncronous cluster-aware Picodata client
+180,agentplane,0.47.0,1987,,,rev:deadpool-postgres,https://github.com/hupe1980/agentplane,"Durable, replayable agent runtime — the journal is the plan of record"
+181,doe,1.1.90,1971,,,rev:deadpool-tiberius,https://gitlink.org.cn/dnrops/doe,doe is a powerful Rust crate designed to enhance development workflow by providing an extensive collection of useful macros and utility functions. It not only s
+182,bestool-postgres,1.2.4,1947,,,rev:mobc,https://github.com/beyondessential/bestool/tree/main/crates/postgres,PostgreSQL connection pool utilities for BES tooling
+183,helios-persistence,0.2.4,1921,,,rev:deadpool-postgres,https://github.com/HeliosSoftware/hfs,Polyglot persistence layer for Helios FHIR Server
+184,consulrs,0.1.0,1917,,,client-seed,https://github.com/jmgilman/consulrs,An asynchronous Rust client library for the Hashicorp Consul API.
+185,octofhir-canonical-manager,0.2.3,1912,,,rev:deadpool-sqlite,https://github.com/octofhir/canonical-manager-rs,FHIR Canonical Manager - Library-first FHIR package management
+186,alloydbconn,0.2.0,1876,,,rev:deadpool,https://github.com/tailor-platform/alloydb-connector-rs,AlloyDB connector for Rust
+187,cloudsqlconn,0.2.0,1873,,,rev:deadpool,https://github.com/tailor-platform/cloud-sql-connector-rs,Cloud SQL connector for Rust
+188,rust-nebula,0.0.2,1685,,,rev:bb8,https://github.com/nebula-contrib/rust-nebula,A Rust client for NebulaGraph database.
+189,oxana,2.3.0,1669,,,rev:deadpool-redis,https://github.com/pragmaplatform/oxana,A simple & fast job queue system.
+190,simple-ldap,11.0.1,1659,,,rev:deadpool,https://github.com/keaz/simple-ldap,A high-level LDAP client for Rust
+191,skytable,0.8.12,1616,,,rev:bb8,https://github.com/skytable/client-rust,Official Rust client driver for Skytable
+192,toolu-orm-connection,0.12.0,1585,,,rev:deadpool-postgres,https://github.com/Falconiere/toolu-orm,"Connection adapters (libsql, rusqlite, Postgres, Lance) for toolu-orm"
+193,qm-redis,0.0.84,1572,,,rev:deadpool-redis,https://github.com/hd-gmbh-dev/quick-microservice-rs,Redis helper functions
+194,barnacle-rs,0.5.3,1563,,,rev:deadpool-redis,https://github.com/zyphelabs/barnacle-rs,"Advanced rate limiting middleware for Axum with Redis backend, API key validation, and custom key extraction"
+195,broccoli_queue,0.4.6,1550,,,rev:deadpool;rev:deadpool-lapin,https://github.com/densumesh/broccoli,"Broccoli is a simple, fast, and reliable job queue for Rust."
+196,typedpg,0.4.0,1439,,,rev:bb8;rev:deadpool-postgres,https://github.com/cubos/typedpg,Typed PostgreSQL access with compile-time verification
+197,hiqlite-patched,0.15.0-patched.4,1393,,,rev:deadpool,https://github.com/bartekus/hiqlite,"Hiqlite - highly-available, embeddable, raft-based SQLite + cache. Downstream patched build of Hiqlite, from the fork at bartekus/hiqlite. Not affiliated with o"
+198,bb8-redis-cluster,0.1.1,1349,,,rev:bb8,https://github.com/0xWOF/bb8-redis-cluster,Full-featured async (tokio-based) redis cluster connection pool (like r2d2)
+199,dgraph-tonic,0.11.0,1288,,,client-seed,https://github.com/selmeci/dgraph-tonic,A rust async/sync client for Dgraph database build with Tonic crate
+200,layer-climb-core,0.9.0,1284,,,rev:deadpool,https://github.com/Lay3rLabs/climb,Core sub-crate for Climb
+201,dinoco_engine,2.1.7,1267,,,rev:deadpool-postgres;rev:deadpool-sqlite,https://github.com/dinoco-rs/dinoco,"Database adapters, query execution, and migration engine components for Dinoco."
+202,noetl-tools,4.2.0,1262,,,rev:deadpool-postgres,https://github.com/noetl/noetl,NoETL Tool Library - Shared tool implementations for workflow execution
+203,mobc-bolt,0.2.0,1260,,,rev:mobc,https://github.com/0xSiO/bolt-rs,A bolt-client manager for the mobc connection pool.
+204,cloacina,0.12.0,1153,,,rev:deadpool;rev:deadpool-diesel,https://github.com/colliery-io/cloacina,A Rust library for resilient task execution and orchestration.
+205,wireframe,0.3.0,1135,,,rev:bb8,https://github.com/leynos/wireframe,Simplify building servers and clients for custom binary protocols.
+206,orama-js-pool,0.4.3,1082,,,rev:deadpool,https://github.com/oramasearch/orama-js-pool,Create a pool of JavaScript engines to invoke JavaScript code concurrently.
+207,orientdb-client,0.6.0,1074,,,rev:mobc,https://github.com/wolf4ood/orientdb-rs,A Rust client for OrientDB™
+208,mqtt-async-client,0.3.1,1056,,,client-seed,https://github.com/fluffysquirrels/mqtt-async-client-rs,"An MQTT 3.1.1 client written in Rust, using async functions and tokio."
+209,faucet-common-mssql,1.2.0,943,,,rev:bb8,https://github.com/faucet-hq/faucet-stream,"Shared configuration, TLS, and connection-pool types for the faucet-stream MSSQL source and sink connectors"
+210,telers,1.0.0-beta.9,937,,,rev:deadpool-redis,https://github.com/Desiders/telers,An asynchronous framework for Telegram Bot API written in Rust
+211,dwctl,8.94.2,917,,,rev:deadpool-redis,,The Doubleword Control Layer - A self-hostable observability and analytics platform for LLM applications
+212,foxtive,1.4.2,884,,,rev:deadpool;rev:deadpool-lapin;rev:deadpool-redis,https://github.com/foxtive/foxtive,Foxtive Framework
+213,deadpool-amqprs,0.3.0,847,,,pool-seed;rev:deadpool,https://github.com/Cryptex-github/deadpool-amqprs,Dead simple async pool for amqprs
+214,deadpool-memcached,0.5.0,840,yes,yes,client-seed;pool-seed;rev:deadpool,https://github.com/deadpool-rs/deadpool,Dead simple async pool for memcached
+215,obeli-sk-concepts,0.41.5,838,,,rev:deadpool-postgres,https://github.com/obeli-sk/obelisk,Internal package of obelisk
+216,rust-task-queue,0.1.5,824,,,rev:deadpool-redis,https://github.com/longbowou/rust-task-queue,"Production-ready Redis task queue with intelligent auto-scaling, Actix Web integration, and enterprise-grade observability for high-performance async Rust appli"
+217,lemmy_diesel_utils,1.0.0-test-fix-publish-3,822,,,rev:deadpool,https://github.com/LemmyNet/lemmy,A link aggregator for the fediverse
+218,arche,4.17.3,816,,,rev:bb8,https://github.com/sinha-sahil/arche,"An opinionated backend foundation for Axum applications, providing batteries-included integrations for cloud services, databases, authentication, middleware, an"
+219,tansu-storage,0.6.0,811,,,rev:deadpool;rev:deadpool-postgres,https://github.com/tansu-io/tansu,"Storage abstraction for PostgreSQL, libSQL and ObjectStore (S3 or memory)"
+220,faucet-source-mssql,1.6.0,791,,,rev:bb8,https://github.com/faucet-hq/faucet-stream,Microsoft SQL Server query source connector for the faucet-stream ecosystem
+221,faucet-sink-mssql,1.7.0,779,,,rev:bb8,https://github.com/faucet-hq/faucet-stream,Microsoft SQL Server sink connector for the faucet-stream ecosystem
+222,edgedb-tokio,0.6.0,774,,,client-seed,,    EdgeDB database client implementation for tokio.     This crate has been renamed to gel-tokio. 
+223,tansu-service,0.6.0,763,,,rev:deadpool,https://github.com/tansu-io/tansu,Tansu protocol services and layers
+224,deadpool-oracle,0.1.1,754,,,pool-seed;rev:deadpool,https://github.com/stiang/deadpool-oracle,Deadpool connection pool for oracle-rs
+225,armature-redis,0.3.0,749,,,rev:bb8,https://github.com/quinnjr/armature-redis,"Redis client integration for Armature - connection pooling, pub/sub, and DI-ready"
+226,teaql-provider-postgres,5.0.7,743,,,rev:deadpool-postgres,https://github.com/teaql/teaql-rs,PostgreSQL provider adapter for TeaQL runtime
+227,stac-server,0.5.8,722,,,rev:bb8,https://github.com/stac-utils/rustac,SpatioTemporal Asset Catalog (STAC) API server
+228,prax-postgres,0.12.5,720,,,rev:deadpool-postgres,https://github.com/quinnjr/prax,PostgreSQL driver for the Prax ORM with connection pooling
+229,versatiles_pipeline,5.4.0,702,,,rev:deadpool,https://github.com/versatiles-org/versatiles-rs,"A toolbox for converting, checking and serving map tiles in various formats."
+230,tansu-client,0.6.0,684,,,rev:deadpool,https://github.com/tansu-io/tansu,A Service/Layer based Kafka client
+231,tishlang_pg,4.2.5,683,,,rev:deadpool;rev:deadpool-postgres,https://github.com/tishlang/tish,PostgreSQL driver for the Tish native runtime — tokio-postgres + deadpool
+232,grpc_graphql_gateway,1.2.5,680,,,rev:bb8,https://github.com/Protocol-Lattice/grpc_graphql_gateway,A Rust implementation of gRPC-GraphQL gateway - generates GraphQL execution code from gRPC services
+233,resident-utils,0.7.0,671,,,rev:deadpool-postgres;rev:deadpool-redis,https://github.com/aoyagikouhei/resident-utils-rs,Resident program library.
+234,diesel-dualdb,0.2.0,658,,,rev:deadpool,https://github.com/colliery-io/diesel-dualdb,"Write Diesel query code once, run it on both PostgreSQL and SQLite."
+235,llama-rs,0.23.1,658,,,rev:deadpool-postgres,https://github.com/Lexmata/llama-rs,A high-performance Rust implementation of llama.cpp - LLM inference engine with full GGUF support
+236,ora,0.14.0,636,,,rev:deadpool-postgres,https://github.com/tamasfe/ora/tree/master,Part of the Ora scheduler framework.
+237,darkredis,0.8.0,633,,,client-seed,https://github.com/Bunogi/darkredis,Async Redis client using std::future
+238,omniqueue,0.3.0,625,,,rev:bb8,https://github.com/svix/omniqueue-rs/,An abstraction layer over various queue backends
+239,fraiseql-db,2.16.0,621,,,rev:deadpool;rev:deadpool-postgres,https://github.com/fraiseql/fraiseql,Database abstraction layer for FraiseQL v2
+240,dr-metrix-postgres,0.1.0,620,,,rev:deadpool-diesel,https://github.com/neiam/dr-metrix,PostgreSQL Prometheus metrics collector for dr-metrix
+241,tardis,0.1.0-rc.19,618,,,rev:deadpool-redis,https://github.com/ideal-world/tardis,"Elegant, clean Rust development framework"
+242,layer-climb-cli,0.9.0,614,,,rev:deadpool,https://github.com/Lay3rLabs/climb,Cli helpers for Climb
+243,athena_rs,5.1.1,595,,,rev:deadpool-postgres,https://github.com/xylex-group/athena,Hyper performant polyglot Database driver
+244,nexql-conn,0.5.0,595,,,rev:deadpool-postgres,https://github.com/NexQL-OSS/mcp,"Connection resolution ladder, pool, credential providers"
+245,rbdc-pool-mobc,4.5.7,594,,,rev:mobc,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+246,test-containers-util,0.1.4,590,,,rev:bb8,https://github.com/dnp1/test-containers-util,"Ergonomic, reusable Testcontainers helpers for integration tests (PostgreSQL, Redis, Valkey, AWS Moto)"
+247,brainwires-storage,0.11.0,586,,,rev:deadpool-postgres,https://github.com/Brainwires/brainwires-framework,"Backend-agnostic storage, tiered memory, and document management for the Brainwires Agent Framework"
+248,tandem-memory,0.7.2,586,,,rev:deadpool-postgres,https://github.com/frumu-ai/tandem,Memory storage and embedding utilities for Tandem
+249,fraiseql-core,2.16.0,583,,,rev:deadpool;rev:deadpool-postgres,https://github.com/fraiseql/fraiseql,Core execution engine for FraiseQL v2 - Compiled GraphQL over SQL
+250,nisshi-storage,0.7.0,579,,,rev:deadpool;rev:deadpool-postgres,https://github.com/nisshi-io/nisshi,"Storage abstraction for PostgreSQL, libSQL and ObjectStore (S3 or memory)"
+251,ora-backend-postgres,0.14.0,559,,,rev:deadpool-postgres,https://github.com/tamasfe/ora/tree/master,Part of the Ora scheduler framework.
+252,majra,1.0.4,552,,,rev:deadpool-postgres,https://github.com/MacCracken/majra,"Distributed queue & multiplex engine — pub/sub, priority queues, relay, IPC, heartbeat, and rate limiting for Rust"
+253,newton-core,0.7.4,534,,,rev:deadpool-postgres,https://github.com/newt-foundation/newton-prover-avs,newton protocol core sdk
+254,good-ormning,0.6.0,532,,,rev:deadpool-postgres,https://github.com/andrewbaxter/good-ormning,Maybe an ORM
+255,deadpool-redis-cluster,0.1.1,529,,,pool-seed;rev:deadpool,https://github.com/bikeshedder/deadpool,Dead simple async pool for redis-cluster
+256,excelstream,0.20.2,516,,,rev:deadpool-postgres,https://github.com/KSD-CO/excelstream,High-performance streaming Excel & CSV library with S3/GCS cloud support and Parquet conversion - Ultra-low memory usage
+257,vmemcached,0.5.0,516,,,rev:bb8,https://github.com/vinted/vmemcached-rs,Memcached client for Rust
+258,kora-lib,2.0.5,510,,,rev:deadpool-redis,,Core library for Kora gasless relayer
+259,retrom-db,0.7.52,508,,,rev:deadpool,https://github.com/JMBeresford/retrom,Database layer for Retrom
+260,a3s-orm,0.3.1,494,,,rev:deadpool-postgres,https://github.com/A3S-Lab/ORM,"A type-safe, executor-neutral SQL query builder for Rust"
+261,bb8-tonic,0.4.0,494,,,rev:bb8,https://github.com/systemxlabs/bb8-tonic,Tonic support for bb8 connection pool
+262,benzin,0.7.0,492,,,rev:bb8;rev:deadpool,https://github.com/evilbluebeaver/benzin,"An async extension for Diesel the safe, extensible ORM and Query Builder"
+263,dutils,0.1.14,492,,,rev:deadpool-postgres,,I am speed
+264,tansu-broker,0.6.0,489,,,rev:deadpool-postgres,https://github.com/tansu-io/tansu,Tansu Kafka API compatible broker
+265,surreal-client,1.0.1,484,,,rev:mobc,https://github.com/romaninsh/vantage,CBOR-based SurrealDB client for the Vantage data framework
+266,nisshi-service,0.7.0,478,,,rev:deadpool,https://github.com/nisshi-io/nisshi,Tansu protocol services and layers
+267,durable-actors,0.8.0,469,,,rev:deadpool-postgres,https://github.com/TerseAI/durable-actors,"Standalone regional durable-actors control plane, host, and durability runtime"
+268,callysto,0.1.11,467,,,rev:deadpool;rev:deadpool-postgres,https://github.com/vertexclique/callysto,Stream processing framework.
+269,quaint,0.1.13,462,,,rev:mobc,https://github.com/prisma/quaint/,An abstraction layer for SQL databases.
+270,sozu-client,0.6.1,462,,,rev:bb8,https://github.com/CleverCloud/sozu-client,This library provides a client to interact with Sōzu.
+271,opencrabs,0.5.11,461,,,rev:deadpool-sqlite,https://github.com/opencrabs/opencrabs,"The autonomous, self-improving AI agent. Single Rust binary. Every channel. Recommended: the 40MB prebuilt binary for macOS, Linux and Windows: https://github.c"
+272,xitca-postgres,0.4.0,454,,,rev:bb8,https://github.com/HFQR/xitca-web,an async postgres client
+273,ormer,0.2.22,451,,,rev:bb8,https://github.com/fawdlstty/ormer,"A minimalist ORM framework that supports SQLite, PostgreSQL, MySQL, and SqlServer"
+274,gm-tls,0.2.16,445,,,rev:deadpool-redis,https://github.com/GM-Engineers/gm,"TLS 1.3 core library with SM (国密) cipher suites — SM2/SM3/SM4, optional gRPC integration. TLCP (GB/T 38636-2020) lives in the standalone gm-tlcp crate."
+275,mobc-lapin,0.9.0,442,,,rev:mobc,https://git.sr.ht/~zupzup/mobc-lapin,RabbitMQ support for the async mobc connection pool
+276,nexql-tools,0.5.0,442,,,rev:deadpool-postgres,https://github.com/NexQL-OSS/mcp,"MCP tool registry, JSON schemas, executors"
+277,ankurah-storage-postgres,0.9.3,431,,,rev:bb8,https://github.com/ankurah/ankurah,Ankurah storage engine using Postgres
+278,tank-core,0.44.0,430,,,rev:deadpool,https://github.com/TankHQ/tank,Core of Tank: the Rust data layer. This is intended to be used by drivers to implement a backend.
+279,newton-prover-core,0.1.38,421,,,rev:deadpool-postgres,https://github.com/newt-foundation/newton-prover-avs,newton protocol core sdk
+280,nisshi-client,0.7.0,406,,,rev:deadpool,https://github.com/nisshi-io/nisshi,A Service/Layer based Kafka client
+281,stygian-graph,0.17.0,405,,,rev:deadpool-redis,https://github.com/greysquirr3l/stygian,"High-performance graph-based web scraping engine with AI extraction, multi-modal support, and anti-bot capabilities"
+282,deadpool_imap,0.1.3,398,,,rev:deadpool,https://github.com/primait/imap.rs,A deadpool implementation for IMAP connections. Uses `imap_session` as a backend
+283,hippox-drivers,0.4.47,391,,,rev:deadpool-postgres,https://github.com/0xhappyboy/hippox/tree/main/hippox-drivers,🦛All indivisible atomic driver units in Hippox.
+284,deadpool-ldap,0.3.1,389,,,client-seed;pool-seed;rev:deadpool,https://github.com/c0dearm/deadpool-ldap,LDAP support for the deadpool connection pool
+285,cosmian_kms_server_database,5.28.0,374,,,rev:deadpool-postgres,https://github.com/Cosmian/kms,Crate containing the database for the Cosmian KMS server and the supported stores
+286,oltcore,0.2.36,374,,,rev:bb8,https://github.com/wuzi/oltcore,"A Rust library for interacting with OLT devices (Huawei, ZTE, etc.) via SSH"
+287,tibba-cache,0.3.0,374,,,rev:deadpool,https://github.com/vicanso/tibba,cache for tibba
+288,coqui-stt,1.0.2,361,,,rev:deadpool;rev:deadpool-sync,https://github.com/tazz4843/coqui-stt,Safe wrapper around the Coqui STT C library
+289,oxisql-postgres,0.4.1,360,,,rev:deadpool-postgres,https://github.com/cool-japan/oxisql,"Pure-Rust PostgreSQL backend for OxiSQL via tokio-postgres + OxiTLS (no libpq, no OpenSSL)"
+290,hyperdb-api,0.7.3,358,,,rev:deadpool,https://github.com/tableau/hyper-api-rust,Pure Rust API for Hyper database
+291,little-durable-objects,0.1.25,357,,,rev:deadpool-postgres,https://github.com/TerseAI/little-durable-objects,"Standalone regional durable-object control plane, host, and durability runtime"
+292,sqlite-kit,0.2.1,348,,,rev:deadpool;rev:deadpool-sqlite,https://github.com/hotnsoursoup/sqlite-kit,"High-performance SQLite connection pool with read/write split, WAL monitoring, and migration support"
+293,li-http-client,6.5.5,340,,,rev:deadpool,https://github.com/http-rs/http-client,Types and traits for http clients.
+294,diesel-enums,0.2.2,339,,,rev:deadpool-diesel;rev:deadpool-sync,https://github.com/Rick-Phoenix/diesel-enums,"🔢 Seamless mapping between rust enums and custom postgres types or regular lookup tables, with automatically generated consistency checks."
+295,sqlserver-mcp,0.6.9,335,,,rev:bb8,https://github.com/guercheLE/sqlserver-mcp-rs,"SQL Server 2025/2022/2019/2017 - master/msdb/model combined catalog MCP server, generated by mcpify."
+296,degen-sql,0.2.17,334,,,rev:deadpool;rev:deadpool-postgres,,A postgres database engine for rust that builds on top of tokio-postgres and deadpool
+297,corium-store-postgres,0.1.90,327,,,rev:deadpool-postgres,,PostgreSQL storage backend for Corium
+298,edgehog-device-runtime-store,0.13.0,322,,,rev:deadpool,https://github.com/edgehog-device-manager/edgehog-device-runtime,"Edgehog Device Runtime is a portable middleware, that enables remote device management on Linux-based systems."
+299,agentstategraph-storage,1.3.1,319,,,rev:deadpool-postgres,https://github.com/agentstatelabs/agentstategraph,Pluggable storage backends for AgentStateGraph
+300,rullama-storage,0.12.0,316,,,rev:deadpool-postgres,https://github.com/Brainwires/rullama-framework,"Backend-agnostic storage, tiered memory, and document management for the rullama agent framework"
+301,spacegate-ext-redis,0.2.0-alpha.4,315,,,rev:deadpool-redis,https://github.com/ideal-world/spacegate,"A library-first, lightweight, high-performance, cloud-native supported API gateway"
+302,fraiseql-federation,2.16.0,311,,,rev:deadpool;rev:deadpool-postgres,https://github.com/fraiseql/fraiseql,"Apollo Federation v2 support for FraiseQL — entity resolution, multi-subgraph composition"
+303,ruprizzle,1.6.0,306,,,rev:deadpool-postgres,https://github.com/vaibhavgupta9877/ruprizzle-orm,"A schema-first ORM for Rust: typed queries, relations, and automatic migrations"
+304,pg-tide-relay,0.54.0,304,,,rev:deadpool-postgres,https://github.com/trickle-labs/pg-tide,"Production PostgreSQL outbox relay for inbox, NATS, Kafka, HTTPS webhooks, and diagnostics"
+305,fraiseql-cli,2.16.0,302,,,rev:deadpool-postgres,https://github.com/fraiseql/fraiseql,CLI tools for FraiseQL v2 - Schema compilation and development utilities
+306,sqlite-pool,0.1.0-alpha.0,296,,,rev:deadpool,https://github.com/superfly/corrosion,Async pool for rusqlite connection
+307,http-client-2,6.6.3,291,,,rev:deadpool,https://github.com/http-rs/http-client,Types and traits for http clients.
+308,bitbazaar,0.8.0,290,,,rev:deadpool-redis,,An assortment of publicly available cross-language utilities useful to my projects.
+309,forester-utils,2.0.0,287,,,rev:bb8,https://github.com/lightprotocol/light-protocol,Utility library for Light's Forester node implementation
+310,corro-api-types,0.2.0-alpha.0,285,,,rev:deadpool,https://github.com/superfly/corrosion,common API types for corrosion
+311,ergol,0.1.9,285,,,rev:deadpool,https://github.com/polymny/ergol/tree/dev/ergol,an async ORM for Rust
+312,little-actors,0.2.3,276,,,rev:deadpool-postgres,https://github.com/TerseAI/little-actors,"Standalone regional durable-object control plane, host, and durability runtime"
+313,rok-auth,0.6.1,273,,,rev:deadpool-redis,https://github.com/ateeq1999/axum-rok-http,JWT authentication and RBAC for the rok ecosystem
+314,wick-sql,0.3.0,273,,,rev:bb8,https://github.com/candlecorp/wick,SQL Database component for the wick project.
+315,omnia-postgres,0.30.0,272,,,rev:deadpool-postgres,https://github.com/augentic/omnia-backends,Postgres resource provider
+316,h5i-app-pg,0.1.1,271,,,rev:deadpool-postgres,https://github.com/h5i-dev/h5i,"PostgreSQL engine for h5i-app: tenant-scoped snapshots, SERIALIZABLE execution with retry, idempotency"
+317,saola-quaint,0.2.0-alpha.14,270,,,rev:mobc,https://github.com/ravi-sivaraaman/prisma,"An abstraction layer for SQL databases (PostgreSQL, MySQL, SQLite, MSSQL)"
+318,oxtel-sql,0.3.1,268,,,rev:deadpool-postgres,https://github.com/agentstatelabs/oxtel,"Database client spans and metrics for rusqlite, tokio-postgres and sqlx, following the OpenTelemetry semantic conventions"
+319,headgate-postgres,0.1.10,266,,,rev:deadpool-postgres,https://github.com/mujhtech/headgate,"A policy-aware job queue with PostgreSQL, MySQL, Redis, and SQLite backends."
+320,rustvello-postgres,0.8.0,255,,,rev:deadpool-postgres,https://github.com/pynenc/rustvello,PostgreSQL backend implementations for Rustvello
+321,arysn,0.5.5,254,,,rev:deadpool;rev:deadpool-postgres,https://github.com/quek/arysn,ORM code generator
+322,bb8-bolt,0.8.0,254,,,rev:bb8,https://github.com/0xSiO/bolt-rs,A bolt-client adaptor for the bb8 connection pool.
+323,circus-common,0.14.0,254,,,rev:deadpool-postgres,https://github.com/manic-systems/circus,Shared models and utilities for Circus
+324,obeli-sk-db-postgres,0.41.5,252,,,rev:deadpool-postgres,https://github.com/obeli-sk/obelisk,Internal package of obelisk
+325,omry-db,0.22.0,252,,,rev:deadpool-sqlite,https://forgejo.e37a.net/flora/omry,Database abstractions used by the Omry backend.
+326,foxtive-worker,0.7.0,239,,,rev:deadpool-lapin;rev:deadpool-redis,https://github.com/foxtive/foxtive,Foxtive Worker - Background worker framework for message processing
+327,butane,0.8.1,231,,,rev:deadpool,https://github.com/Electron100/butane,"An ORM with a focus on simplicity and on writing Rust, not SQL."
+328,rust-pgdatadiff,0.1.9,231,,,rev:deadpool-postgres,https://github.com/pavlospt/rust-pgdatadiff,Rust library for comparing two PostgreSQL databases
+329,c3p0_postgres,0.72.6,223,,,rev:deadpool;rev:deadpool-postgres,https://github.com/ufoscout/c3p0,A good friend for r2d2
+330,ironclaw,0.24.0,222,,,rev:deadpool-postgres,https://github.com/nearai/ironclaw,Secure personal AI assistant that protects your data and expands its capabilities on the fly
+331,spacegate-config,0.2.0-alpha.4,222,,,rev:deadpool-redis,https://github.com/ideal-world/spacegate,"A library-first, lightweight, high-performance, cloud-native supported API gateway"
+332,asjeeves-telemetry,0.2.1,221,,,rev:bb8,https://github.com/Ameelio/asjeeves/,"Metrics, Logging and Tracing"
+333,bb8-gaussdb,0.1.0,220,,,rev:bb8,https://github.com/systemxlabs/bb8-gaussdb,A GaussDB / openGauss adaptor for bb8 connection pool
+334,fhir-postgresql-store,0.6.3,220,,,rev:deadpool-postgres,https://github.com/fhir-rust/fhir-rust/,"PostgreSQL storage layer for fhir-postgresql. HL7®, and FHIR® are the registered trademarks of Health Level Seven International and their use of these trademark"
+335,chaindexing,0.1.80,214,,,rev:bb8,https://github.com/chaindexing/chaindexing-rs,Index any EVM chain and query in SQL
+336,laminar-connectors,0.32.0,207,,,rev:deadpool-postgres,https://github.com/laminardb/laminardb,"External system connectors for LaminarDB - Kafka, CDC, lookup tables"
+337,flowgentra-ai,0.3.4,206,,,rev:bb8,https://github.com/oussamabenhariz/flowgentra-ai,A Rust library for building AI agents with graphs
+338,aiw,0.6.0,205,,,rev:deadpool,https://github.com/putao520/agentic-warden,"AIW (AI Warden) - Universal AI CLI management platform with intelligent process tracking, semantic memory, and provider coordination."
+339,bb8-mongodb,1.4.1,204,,,client-seed;rev:bb8,https://github.com/rustyhorde/bb8-mongodb,bb8 connection pooling impmentation for the MongoDB database
+340,daimon-plugin-pgvector,0.25.0,199,,,rev:deadpool-postgres,https://github.com/Lexmata/daimon,pgvector-backed VectorStore plugin for the Daimon AI agent framework
+341,hive_pubsub,0.5.0,195,,,rev:mobc,https://gitlab.insrt.uk/insert/hive,Generic Pub/Sub library.
+342,c3p0_pg,0.53.0,193,,,rev:deadpool;rev:deadpool-postgres,https://github.com/ufoscout/c3p0,A good friend for r2d2
+343,pg-api,0.3.14,191,,,rev:deadpool-postgres,https://gitlab.com/aerunti/pg-api,"A high-performance PostgreSQL REST API driver with rate limiting, connection pooling, and observability"
+344,akita,0.7.0,187,,,rev:deadpool;rev:deadpool-sync,https://github.com/wslongchen/akita,Akita - Mini orm for rust.
+345,tusker-query,0.4.0,186,,,rev:deadpool-postgres,https://github.com/bikeshedder/tusker,Lightweight query layer for tokio-postgres with derive-based SQL bindings and checked query metadata
+346,dms-cdc-operator,0.1.26,184,,,rev:deadpool-postgres,https://github.com/nikoshet/rust-dms-cdc-operator,The dms-cdc-operator is a Rust-based utility for comparing the state of a list of tables in an Amazon RDS database with data stored in Parquet files on Amazon S
+347,prax-mssql,0.12.5,180,,,rev:bb8,https://github.com/quinnjr/prax,Microsoft SQL Server database driver for Prax ORM
+348,metrom-commons,1.41.1,179,,,rev:deadpool-postgres,,A collection of common utilities for Metrom-related projects.
+349,apollo-redis-client,0.6.4,177,,,rev:bb8,https://github.com/apollographql/apollo-platform-rs,Redis client for Apollo platform
+350,teloxide-ng,0.17.1,173,,,rev:deadpool-redis,https://github.com/teloxide/teloxide,An elegant Telegram bots framework for Rust
+351,deadpool-tiberius-rustls,0.1.12,170,,,pool-seed;rev:deadpool,https://github.com/Geo-W/deadpool-tiberius,Async ms sql server connection pool simple impl of deadpool
+352,aj_core,0.9.1,169,,,rev:deadpool-postgres,https://github.com/cptrodgers/aj,Background Job Library for Rust
+353,litedbmodel_runtime,2.2.8,169,,,rev:deadpool-postgres,https://github.com/foo-ogawa/litedbmodel,Native SQL execution core shared by generated litedbmodel Rust modules.
+354,solo-storage,0.11.5,166,,,rev:deadpool-sqlite,https://github.com/CallMeJones/solo,Solo: SQLite + SQLCipher persistence layer
+355,loomweave-storage,1.6.1,165,,,rev:deadpool-sqlite,https://github.com/foundryside-dev/loomweave,"Loomweave storage: SQLite persistence (writer-actor + reader-pool), schema/migrations, summary cache, and SEI tokens."
+356,pg_ripple_http,0.136.0,164,,,rev:deadpool-postgres,https://github.com/trickle-labs/pg-ripple,SPARQL 1.1 Protocol HTTP endpoint for pg_ripple — connects PostgreSQL 18 RDF triple store to the web
+357,vellaveto-cluster,6.1.1,163,,,rev:deadpool-redis,https://github.com/paolovella/vellaveto,Distributed state backend for Vellaveto clustering (Redis or local)
+358,bee_orm,1.3.0,159,,,rev:deadpool-postgres,https://github.com/erikwang2013/bee-rust,"A production-grade web framework for Rust, inspired by Go's Beego"
+359,orpheus,0.1.3,158,,,rev:deadpool,https://github.com/ajac-zero/orpheus,A blazing fast OpenRouter SDK
+360,oxisql-pool,0.4.1,158,,,rev:deadpool;rev:deadpool-postgres,https://github.com/cool-japan/oxisql,"Async connection pooling for OxiSQL — deadpool-postgres, custom MySQL manager, embedded no-op (Pure Rust)"
+361,citadel_user,0.14.0,156,,,rev:mobc,https://github.com/Avarok-Cybersecurity/Citadel-Protocol,User backend library for the Citadel Protocol
+362,memcached,0.4.4,156,,,rev:mobc,https://github.com/umonkey/memcached,async memcached rust client
+363,retrom-grpc-service,0.7.51,156,,,rev:deadpool,https://github.com/JMBeresford/retrom,The Retrom video game library gRPC service handlers
+364,authzen-diesel-core,0.1.0-alpha.0,151,,,rev:mobc,https://github.com/tlowerison/authzen,Core utilities for easier integration of diesel into async backend services.
+365,rbdc-pool-deadpool,4.5.7,151,,,rev:deadpool,https://github.com/rbatis/rbatis,"The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
+366,ankurah-storage-sqlite,0.9.3,150,,,rev:bb8,https://github.com/ankurah/ankurah,Ankurah storage engine using SQLite
+367,pylon-db-pgcon,0.7.0,147,,,rev:deadpool-postgres,https://github.com/jaldisdev/pylon,"PostgreSQL connection layer for Pylon: pooling, binary wire decoding, LISTEN/NOTIFY"
+368,rustdata-core,0.1.2,145,,,rev:deadpool-tiberius,https://github.com/hugomf/rustdata,Spring Data-style generic CRUD repository for sqlx with multi-dialect support
+369,rustdata-migrations,0.1.2,144,,,rev:deadpool-tiberius,https://github.com/hugomf/rustdata,"Generic SQL transpilation engine — Dialect enum, type mappings, multi-pass transpiler, and zero-boilerplate migrate! macro"
+370,ferrox-database-redis,0.8.1,143,,,rev:bb8,https://github.com/AI-Autistic-Intelligence/Ferrox,"In-memory key-value cache client, connection pool manager, and Pub/Sub helper for Redis."
+371,mapepire,0.7.2,143,,,rev:deadpool,https://github.com/MeridianGroupInt/mapepire-rs,Async Rust client for Mapepire — Db2 for IBM i over secure WebSockets
+372,tianshu,0.1.0,142,,,rev:deadpool-postgres,https://github.com/Desicool/Tianshu-rs,Async Rust workflow engine — define workflows as trait implementations and run them on a pluggable scheduler
+373,oxify-authz,0.1.0,137,,,rev:deadpool-redis,https://github.com/cool-japan/oxify,ReBAC (Relationship-Based Access Control) authorization engine - Google Zanzibar implementation
+374,jedi,0.2.3,136,,,rev:bb8,https://github.com/KBVE/kbve/tree/main/packages/jedi,Jedi is the Juggernaut Electronic Data Interchange package. This library provides a data exchange layer extended through the holy crate.
+375,llm-optimizer-processor,0.1.1,135,,,rev:deadpool-redis,https://github.com/globalbusinessadvisors/llm-auto-optimizer,Data processing and transformation pipeline
+376,malwaredb-server,0.3.9,135,,,rev:deadpool-postgres,https://github.com/malwaredb/malwaredb-rs,Server data storage logic for MalwareDB.
+377,rikka-mq,0.1.3,135,,,rev:deadpool-redis,https://github.com/turtton/RikkaMQ,A simple message queue library for Rust.
+378,bubble-db,0.1.0,134,,,rev:bb8;rev:deadpool,https://github.com/0xhappyboy/bubble/tree/main/bubble-db,Bubble Framework is a database abstraction layer.
+379,pg_filters,0.1.18,133,,,rev:deadpool;rev:deadpool-postgres,https://github.com/kingsleyh/pg_filters,"A simple rust helper to generate postgres sql for pagination, sorting and filtering"
+380,xdl-database,0.1.1,133,,,rev:deadpool;rev:deadpool-postgres,https://github.com/turingworks/xdl,"Database connectivity module for XDL - supports PostgreSQL, MySQL, DuckDB, SQLite, ODBC, Redis, and more"
+381,bb8-memcached,0.7.0,132,yes,yes,client-seed;rev:bb8,https://github.com/dqminh/bb8-memcached,"async connection pool for memcached, based on bb8 and memcache-async"
+382,nexus-common,0.4.1,132,,,rev:deadpool-redis,https://github.com/pubky/pubky-nexus,Nexus common utils
+383,datafusion-remote-table,0.26.0,130,,,rev:bb8,https://github.com/systemxlabs/datafusion-remote-table,A DataFusion table provider for executing SQL on remote databases
+384,redis-async-pool,0.2.4,130,,,rev:deadpool,https://github.com/zenria/redis-async-pool,Deadpool manager for asynchronous Redis connections
+385,huiyu-db-mapper-sqlite,0.1.4,129,,,rev:deadpool-sqlite,https://github.com/nihility23/huiyu-db-mapper.git,Database Query Tool with Deadpool. Query Wrapper Tool. Orm Tool. Like mybatis plus
+386,rustauth-deadpool-postgres,0.3.2,129,,,rev:deadpool-postgres,https://github.com/salasebas/rustauth,deadpool-postgres database adapter for RustAuth.
+387,huiyu-db-mapper-oracle,0.1.4,126,,,rev:deadpool-oracle,https://github.com/nihility23/huiyu-db-mapper.git,Database Query Tool with Deadpool. Query Wrapper Tool. Orm Tool. Like mybatis plus
+388,huiyu-db-mapper-postgres,0.1.4,126,,,rev:deadpool;rev:deadpool-postgres;rev:deadpool-sync,https://github.com/nihility23/huiyu-db-mapper.git,Database Query Tool with Deadpool. Query Wrapper Tool. Orm Tool. Like mybatis plus
+389,fhir-mssql-store,0.6.2,125,,,rev:bb8,https://github.com/fhir-rust/fhir-rust/,"SQL Server storage layer for fhir-mssql (Store level: live-verified against azure-sql-edge, 33/33 tests - audit.md F-65; TLS advisories fixed by switching to th"
+390,tower-embed-core,0.5.0,125,,,rev:bb8,https://github.com/mattiapenati/tower-embed,Core functionalities of tower-embed
+391,nervemq-actix-session,0.10.2,123,,,rev:deadpool-redis,https://github.com/actix/actix-extras,Session management for Actix Web
+392,klukai-types,0.4.0,122,,,rev:deadpool,https://github.com/halcyonnouveau/klukai,Core types and utilities for Klukai Corrosion
+393,neocrates,0.2.6,121,,,rev:bb8;rev:deadpool;rev:deadpool-diesel,https://github.com/ooiai/neocrates.git,A comprehensive Rust library for various utilities and helpers
+394,retrom-service,0.7.51,120,,,rev:deadpool,https://github.com/JMBeresford/retrom,The Retrom video game library service
+395,lonkero,3.7.3,119,,,rev:deadpool-postgres;rev:deadpool-redis,https://github.com/bountyyfi/lonkero,"Web scanner built for actual pentests. Fast, modular, Rust."
+396,oxigeo-postgis,0.2.4,119,,,rev:deadpool-postgres,https://github.com/cool-japan/oxigeo,PostgreSQL/PostGIS integration for OxiGeo - Spatial database workflows with connection pooling and async operations
+397,rustfs-targets,1.0.1,119,,,rev:deadpool-postgres,https://github.com/rustfs/rustfs,Notification target abstraction and implementations for RustFS
+398,bbox-map-server,0.6.1,118,,,rev:deadpool,https://github.com/bbox-services/bbox,BBOX map server
+399,infraqueue-lib,0.1.1,118,,,rev:deadpool-redis,https://github.com/helloimalemur/infraqueue,Core library for INFRAQUEUE
+400,talos_certifier_adapters,0.3.18,118,,,rev:deadpool-postgres,https://github.com/kindredgroup/talos,Adapters used in Talos Certifier
+401,aa-storage-redis,0.0.1-rc.7,117,,,rev:deadpool-redis,https://github.com/ai-agent-assembly/agent-assembly,"Redis L2 shared-cache storage driver (SessionStore, RateLimitCounter, PolicyStore) for Agent Assembly"
+402,opendal-unofficial,0.54.0-alpha.1,116,,,rev:bb8,https://github.com/awol2005ex/opendal/tree/awol2005ex-my,"Apache OpenDAL™: One Layer, All Storage."
+403,zotero-mcp,0.3.2,116,,,rev:deadpool-sqlite,https://github.com/richardjlyon/zotero-mcp,"Local-first MCP server bridging Claude to your Zotero library — search, read, cite, enrich, write — over stdio or streamable-HTTP with OAuth 2.1."
+404,batch-processing,0.1.17,114,,,rev:deadpool-postgres,https://github.com/luiz-eduardo14/batch-processing,A batch library for processing a list of items in parallel
+405,oxanus,2.0.0,114,,,rev:deadpool-redis,https://github.com/pragmaplatform/oxana,DEPRECATED: renamed to oxana. Use oxana 2.x instead.
+406,authzen-session,0.1.0-alpha.0,113,,,rev:deadpool,https://github.com/tlowerison/authzen,Utilities for integrating session management with different web frameworks and support for different session storage backends. 
+407,axum_rate_limiter,0.1.1,113,,,rev:deadpool-redis,https://github.com/makselll/axum_rate_limiter,"A flexible and powerful rate limiting middleware for Axum web framework with support for multiple strategies including IP, URL, Headers, Query parameters, and R"
+408,flare-dht,0.1.26,112,,,rev:mobc,https://github.com/pawissanutt/flare-dht,The library to create distributed data management. (Not ready to be used in production.)
+409,oxigeo-services,0.2.4,112,,,rev:deadpool-postgres,https://github.com/cool-japan/oxigeo,"OGC Web Services (WFS, WCS, WPS, CSW) for OxiGeo"
+410,photon-evt,0.1.0,112,,,rev:deadpool-postgres,https://github.com/photon-grove/evt,Event sourcing for Rust with DynamoDB and PostgreSQL event logs that are wire-compatible with the Go evt framework.
+411,rust-ef-postgres,1.8.4,111,,,rev:deadpool-postgres,https://github.com/Rust-Framework/rust-ef,PostgreSQL provider for Rust Entity Framework
+412,teil,0.5.1,111,,,rev:deadpool;rev:deadpool-postgres,,A simple framework for database usage
+413,reallyme-postgres-kit,0.3.3,110,,,rev:bb8,https://github.com/reallyme/platform,Production PostgreSQL connection and transaction primitives for ReallyMe Platform
+414,flowshield-resp,0.2.0,109,,,rev:deadpool-redis,https://github.com/devcalm/flowshield,"Shared RESP (Redis/Valkey) backend logic for FlowShield — atomic, server-side rate-limit state via Lua."
+415,dibs,0.1.1,108,,,rev:deadpool-postgres,https://github.com/facet-rs/facet,"Postgres toolkit for Rust, powered by facet reflection"
+416,kleos-lib,1.10.0,107,,,rev:deadpool-sqlite,https://github.com/Ghost-Frame/Kleos,Core library for Kleos -- persistent semantic memory and cognitive infrastructure for AI agents
+417,chuchi-postgres,0.3.1,106,,,rev:deadpool;rev:deadpool-postgres,https://github.com/chuchi-dev/chuchi-postgres,A wrapper around tokio-postgres to simplify working with Postgres databases.
+418,schema-registry-storage,0.1.0,106,,,rev:deadpool-postgres,https://github.com/globalbusinessadvisors/llm-schema-registry,"Storage backends for the LLM Schema Registry (PostgreSQL, S3, Redis)"
+419,yang-db,0.2.0,106,,,rev:deadpool-redis,https://github.com/ImYangJiaJun/lib_yang,个人使用数据库操作
+420,tork-orm-core,0.1.0,105,,,rev:deadpool-postgres,https://github.com/tork-rs/tork,"Core runtime for the Tork ORM: dialect-agnostic query model, typed columns, and database drivers."
+421,llm-registry-db,0.1.0,104,,,rev:deadpool,https://github.com/globalbusinessadvisors/llm-registry,Database layer for the LLM Registry - PostgreSQL integration with migrations and repository patterns
+422,herolib-osis,0.3.13,103,,,rev:deadpool-redis,https://forge.ourworld.tf/lhumina_code/herolib,"OSIS - Object Storage with SmartID. Distributed, human-readable IDs and object storage."
+423,grapple_db,0.5.0,102,,,rev:deadpool-redis,https://github.com/grapple228/rust_grapple_db.git,Library with clients for different databases with lightweight interface
+424,miden-note-transport-node,0.4.1,102,,,rev:deadpool;rev:deadpool-diesel;rev:deadpool-sync,https://github.com/0xMiden/miden-note-transport,Miden Note Transport Node
+425,acton-service-mssql,0.47.0,100,,,rev:bb8,https://github.com/Govcraft/acton-service,Independent mssql contracts and implementation for acton-service
+426,bb8-nebula,0.9.0,98,,,rev:bb8,https://github.com/bk-rs/nebula-rs,bb8 Nebula Graph/Meta/Storage pool
+427,clickhouse-dfe,0.1.2,98,,,rev:deadpool,https://github.com/hyperi-io/clickhouse-dfe,"HyperI extensions for the official ClickHouse Rust client: TCP transport, dynamic inserts, unified client"
+428,djogi,0.1.0-alpha.17,95,,,rev:deadpool-postgres,https://github.com/TarunvirBains/djogi,Model-first web framework for Rust — web-framework-agnostic core; Axum integration opt-in via the `axum` feature flag
+429,rio-rs,0.7.2,95,,,rev:bb8,https://github.com/rcelha/rio-rs,Distributed stateful service framework
+430,medullah-web,0.38.1,94,,,rev:deadpool;rev:deadpool-lapin;rev:deadpool-redis,https://github.com/spiralover/medullah-web,Micro-Framework Based on Ntex
+431,pipi-rs,0.1.1,93,,,rev:bb8,https://github.com/sllt/pipi,Pipi web framework for Rust
+432,multi-level-cache,0.1.1,91,,,rev:deadpool-redis,https://github.com/mo7984130/multi-level-cache,Multi-level async cache: in-process L1 (Moka) + distributed L2 backend with batch pipeline and DB loader fallback
+433,weir-server,4.0.1,91,,,rev:deadpool-postgres,https://github.com/miki-przygoda/weir,The weir daemon
+434,ip2location-bin-format,0.4.0,90,,,rev:deadpool,https://github.com/bk-rs/ip2location-rs,IP2Location BIN Format
+435,uorm,0.9.5,90,,,rev:deadpool-postgres,https://github.com/uporm/uorm,Rust 下的轻量级 ORM 框架，借鉴了 Java MyBatis 的设计理念，强调 SQL 与业务逻辑分离。它结合 Rust 的类型系统与宏机制，支持编写原生 SQL 并自动映射结果，兼容 async/await，兼顾性能与可控性。
+436,open-chess-server,0.1.7,87,,,rev:deadpool,https://github.com/OffeneDatenmodellierung/open-chess,"A Lichess-compatible chess server: the Board, Bot, Challenge and OAuth APIs on Postgres, with post-game fair-play screening"
+437,deadpool-r2d2,0.4.2,86,,,client-seed;pool-seed;rev:deadpool;rev:deadpool-sync,https://github.com/deadpool-rs/deadpool,Dead simple async pool for r2d2 managers
+438,zero4rs,2.0.0,86,,,rev:deadpool;rev:deadpool-lapin,https://github.com/chunhui2001/zero4rs,"zero4rs is a powerful, pragmatic, and extremely fast web framework for Rust "
+439,che-orm,0.2.3,85,,,rev:deadpool-sqlite,https://github.com/che4web/che-orm,Typed SQLite ORM primitives for che-rest applications
+440,clickhouse-connection-pool,0.1.8,85,,,rev:deadpool,https://github.com/ranger-finance/clickhouse-pool,"A connection pooling library for ClickHouse in Rust, built on top of deadpool."
+441,ftnet-utils,0.1.1,85,,,rev:bb8,,ftnet utilities
+442,pmcp-toolkit-postgres,0.4.0,85,,,rev:deadpool-postgres,https://github.com/paiml/rust-mcp-sdk,Postgres connector for pmcp-server-toolkit (config-driven MCP servers)
+443,redust,0.4.0,85,,,rev:deadpool,https://github.com/appellation/redust,A simple Redis client for Rust.
+444,by-loco,0.15.1,84,,,rev:bb8,https://github.com/niceskylei/loco,The one-person framework for Rust
+445,circus-codegen,0.14.0,84,,,rev:deadpool-postgres,https://github.com/manic-systems/circus,Generated PostgreSQL bindings for Circus
+446,rust_wheel,0.1.18,84,,,rev:mobc,,A project to define some public component.
+447,bulwark-host,0.6.0,82,,,rev:deadpool-redis,https://github.com/bulwark-security/bulwark,The WebAssembly host environment for the Bulwark security engine.
+448,oxigdal-postgis,0.1.7,82,,,rev:deadpool-postgres,https://github.com/cool-japan/oxigdal,PostgreSQL/PostGIS integration for OxiGDAL - Spatial database workflows with connection pooling and async operations
+449,drogue-bazaar,0.3.0,81,,,rev:deadpool;rev:deadpool-postgres,https://github.com/drogue-iot/drogue-bazaar,A place to find tools for building your Rust application
+450,data-modelling-core,2.4.0,80,,,rev:deadpool-postgres,https://github.com/OffeneDatenmodellierung/data-modelling-sdk,Core SDK library for model operations across platforms
+451,fire-postgres,0.2.0,80,,,rev:deadpool-postgres,,A wrapper around tokio-postgres to simplify working with Postgres databases.
+452,miraland-deadpool-sqlite,0.8.3,80,,,rev:deadpool;rev:deadpool-sync,https://github.com/bikeshedder/deadpool,"Miraland patch for deadpool unreleased rev. e6de358 and after which have not been published to crates.io, requird as deps and should exist on crates.io. Dead si"
+453,mobc-boltrs,0.2.2,80,,,rev:mobc,https://github.com/maldrake/mobc-boltrs,A bolt-client adapter for the mobc connection pool
+454,openvet-server,0.6.0,80,,,rev:deadpool;rev:deadpool-sqlite;rev:deadpool-sync,https://gitlab.com/openvet-org/openvet,Reference HTTP server for hosting OpenVet logs.
+455,owlrora-server,0.0.4,80,,,rev:deadpool-redis,https://github.com/owlfoundry/owlrora,Identity and management server for the OwlRora AI gateway
+456,tsqlx-db,0.4.1,80,,,rev:bb8,https://github.com/nt2311-vn/tsqlx,Database driver boundaries for TSQL.
+457,episteme,0.3.13,78,,,rev:deadpool-redis,https://github.com/epicsagas/Episteme,"Knowledge graph for software engineering — design patterns, refactorings, and laws for AI agents"
+458,essence,0.7.0,78,,,rev:deadpool-redis,https://github.com/AdaptChat/essence,Essential models and database logic for the Adapt chat platform.
+459,sql-orm-tiberius,0.1.0,78,,,rev:bb8,https://github.com/Estebanarteaga94/sql-orm,Tiberius execution adapter for sql-orm.
+460,openauth-deadpool-postgres,0.0.6,77,,,rev:deadpool-postgres,https://github.com/sebasxsala/openauth-rs,deadpool-postgres database adapter for OpenAuth.
+461,workhorse,0.8.0,77,,,rev:deadpool-postgres,https://github.com/stablemates/workhorse,"Rust SDK for Workhorse, a durable task queue whose state lives in PostgreSQL"
+462,armature-diesel,0.3.0,76,,,rev:bb8;rev:deadpool,https://github.com/quinnjr/armature-diesel,Diesel async database integration for the Armature framework
+463,marg-storage,0.1.5,76,,,rev:deadpool-redis,https://github.com/SarthiAI/Marg,"Marg storage trait and backend implementations (SQLite default, Postgres recommended, Redis hot store)"
+464,maven-haste,0.3.0,76,,,rev:deadpool-sqlite,https://github.com/Leawind/maven-haste,"A lightweight, self-hosted local Maven repository proxy cache."
+465,queen-engine,1.3.0,76,,,rev:deadpool-postgres,https://github.com/queen-mq/queen,"The QueenMQ broker engine: a PostgreSQL-backed message broker with partitions, consumer groups, transactions and streams — embeddable in-process as queen::Broke"
+466,rockraft,0.1.8,76,,,rev:mobc,https://github.com/lichuang/rockraft,A strong consistency KV service library base on Raft and Rocksdb
+467,skp-cache-storage,0.1.0,76,,,rev:bb8,https://github.com/setulabs/skp-cache,Storage backends for skp-cache
+468,rest-model-postgres,0.1.3,75,,,rev:bb8,https://github.com/kuyoonjo/rest-model-rs.git,db for crate rest-model
+469,allex-postgres,0.1.0,74,,,rev:deadpool;rev:deadpool-postgres,https://codeberg.org/andrija/allex,Pooled Postgres access (deadpool) with a FromRow derive for allex services.
+470,land-runtime,0.0.4,74,,,rev:deadpool,https://github.com/fuxiaohei/runtime.land,Database migration for Runtime Land
+471,multitool-hg,0.1.3,74,,,rev:bb8,https://github.com/humangrass/multitool,Useful module for creating services on Rust.
+472,wae-database,0.0.2,74,,,rev:deadpool-postgres,https://github.com/oovm/wae/tree/main/backends/wae-database,WAE Database - 数据库服务抽象层，支持 Turso/PostgreSQL/MySQL
+473,fbc-starter,0.1.24,73,,,rev:deadpool-redis,https://github.com/fangbc5/fbc-starter,"A production-ready web server starter for Rust based on Axum, with built-in configuration, logging, CORS, database and Redis support"
+474,ngb-postgres-helper,0.3.1,73,,,rev:deadpool-postgres,,Dapper-like PostgreSQL executor.
+475,roadster,0.8.1,73,,,rev:bb8,https://github.com/roadster-rs/roadster,"A ""Batteries Included"" web framework for rust designed to get you moving fast."
+476,shaperail-runtime,0.16.0,72,,,rev:deadpool-redis,https://github.com/shaperail/shaperail,"Actix-web runtime for Shaperail — HTTP, DB, cache, auth, jobs, events, storage"
+477,cc-utils,0.2.22,71,,,rev:bb8,https://github.com/markcda/cc-utils,"Rust Fullstack utils (strict error handling, `Consider` trait, MessagePack support, etc.) for Salvo and Yew/Dioxus/Leptos/*"
+478,oxigeo-db-connectors,0.2.4,71,,,rev:deadpool-postgres,https://github.com/cool-japan/oxigeo,"Database connectors for OxiGeo (MySQL, SQLite, MongoDB, ClickHouse, TimescaleDB, Cassandra)"
+479,ydb-unofficial,0.6.7,71,,,rev:deadpool,https://github.com/bool-rus/ydb-unofficial,Unofficial Ydb client library written on rust
+480,caslex-extra,0.2.8,70,,,rev:deadpool-postgres,https://github.com/mkbeh/caslex,Tools for creating web services
+481,oxigeo-etl,0.2.4,70,,,rev:deadpool-postgres,https://github.com/cool-japan/oxigeo,Streaming ETL framework for continuous geospatial data processing with OxiGeo
+482,geocode-csv,1.4.0,69,,,rev:bb8,https://github.com/faradayio/geocode-csv,CLI tool to bulk geocode CSV data using the Smarty API or libpostal
+483,event-sourcing,0.1.20,68,,,rev:bb8,https://github.com/flowionab/event-sourcing,Event sourcing made ease!
+484,bb8-failsafe,0.1.21,67,,,rev:bb8,https://github.com/jobs62/bb8-failsafe,thin wapper of failsafe-rs to provide circuit breaker captilites to bb8
+485,faucet-server,2.1.0,67,,,rev:deadpool;rev:deadpool-postgres,https://github.com/ixpantia/faucet,"Welcome to Faucet, your go-to solution for deploying Plumber APIs and Shiny Applications with blazing speed and efficiency. Faucet is a high-performance server "
+486,tellurion-postgis,0.1.0,67,,,rev:deadpool-postgres,https://github.com/ccancellieri/tellurion,"PostGIS storage driver for the Tellurion geospatial serving engine: catalog introspection, feature queries, and MVT tile production via ST_AsMVT."
+487,butterfly-bot,0.8.0,66,,,rev:deadpool-sqlite,https://github.com/truemagic-coder/butterfly-bot,"Butterfly Bot is an opinionated personal-ops AI assistant built for people who want results, not setup overhead."
+488,pgorm-check,0.3.0,66,,,rev:deadpool-postgres,,Runtime SQL vs schema checks for pgorm (with optional local schema cache)
+489,turbofuro_runtime,0.1.31,66,,,rev:deadpool-postgres;rev:deadpool-redis,https://github.com/turbofuro/turbofuro,Runtime for Turbofuro visual programming language
+490,dojo-orm,0.2.2,65,,,rev:bb8,https://github.com/tokenspan/dojo,A simple ORM for Rust
+491,riak-async,0.3.1,65,,,rev:deadpool,https://github.com/evilbluebeaver/riak-rust-client-async,A Riak client for Rust.
+492,kojin-redis,0.4.0,64,,,rev:deadpool-redis,https://github.com/jiayun/kojin,Redis broker backend for the kojin task queue
+493,stalwart-lite,0.16.0,64,,,rev:deadpool;rev:deadpool-postgres,https://github.com/arkiecompany/stalwart-lite,A rewrite of Stalwart Mail Server as an embeddable Rust crate.
+494,skyzen-azure,0.3.0,63,,,rev:deadpool-tiberius,https://github.com/zen-rs/skyzen,Azure service implementations for the Skyzen framework
+495,ts-webapi,0.4.11,63,,,rev:bb8,https://codeberg.org/trentshailer/ts-lib,Library for my web API projects
+496,pop-fork,0.14.0,62,,,rev:bb8,https://github.com/r0gue-io/pop-cli,Library for forking live Substrate chains.
+497,background-jobs-postgres,0.20.0,61,,,rev:deadpool,https://git.asonix.dog/asonix/background-jobs,Postgres storage backend for background-jobs
+498,nntp-rs,0.3.0,61,,,rev:bb8,https://github.com/jvz-devx/nntp-rs,High-performance async NNTP client with compression and connection pooling
+499,medea-coturn-telnet-client,0.1.1,60,,,rev:deadpool,https://github.com/instrumentisto/medea/tree/master/crates/medea-coturn-telnet-client,Coturn TURN server telnet client
+500,rustf,1.0.0-rc2,60,,,rev:deadpool-redis,https://github.com/numerum-tech/rustf,A simple MVC web framework inspired by Total.js
+501,datafusion-dist-network-tonic,0.4.0,59,,,rev:bb8,https://github.com/systemxlabs/datafusion-dist,A Tonic network implementation for datafusion-dist
+502,wedb_raft,0.1.0,59,,,rev:mobc,https://github.com/webc-site/wedb,OpenRaft-based replication engine for WeDb
+503,datafusion-dist-cluster-postgres,0.4.0,58,,,rev:bb8,https://github.com/systemxlabs/datafusion-dist,A PostgreSQL cluster implementation for datafusion-dist
+504,sandhole,0.10.3,58,,,rev:deadpool,https://codeberg.org/sandhole/sandhole,Expose HTTP/SSH/TCP services through SSH port forwarding.
+505,tusk-rs,0.99.11,58,,,rev:deadpool-postgres,https://github.com/jacksonzamorano/tusk,Postgres-backed Web APIs
+506,worklane-postgres,0.2.2,58,,,rev:deadpool-postgres,https://github.com/tacticaldoll/worklane,PostgreSQL-backed durable worklane broker for production services.
+507,amqp-manager,1.3.1,57,,,rev:deadpool-lapin,https://github.com/adrianbenavides/amqp-manager,Lapin wrapper that encapsulates the use of connections/channels and creation of amqp objects
+508,autumn-harvest-redis,0.7.0,57,,,rev:deadpool,https://github.com/autumn-foundation/autumn-harvest,Redis Streams dispatch channel and standalone task queue for autumn-harvest
+509,bulwark-ext-processor,0.6.0,57,,,rev:deadpool-redis,https://github.com/bulwark-security/bulwark,An Envoy external processor for the Bulwark security engine.
+510,blixt,0.5.0,56,,,rev:deadpool-redis,https://github.com/ripkitten-co/blixt,"Blixt core framework — compile-time templates, type-safe SQL, Datastar SSE integration"
+511,dce-session,1.8.0,55,,,rev:deadpool-redis,https://github.com/idrunk/dce-rust,A session lib with user binding and renewable.
+512,engram-core,0.21.1,55,,,rev:deadpool-sqlite,https://github.com/aiconnai/engram,AI Memory Infrastructure - Persistent memory for AI agents with semantic search
+513,enigmatick,0.4.1,55,,,rev:deadpool-diesel,https://gitlab.com/enigmatick,"Enigmatick is a social media platform that integrates with servers that implement the ActivityPub protocol (e.g., Mastodon)"
+514,ownpg-core,0.1.2,55,,,rev:deadpool,https://github.com/devops-infinity/ownpg-releases,Core engine behind the OwnPG PostgreSQL server for AI clients
+515,db-pool,0.7.0,54,,,rev:bb8;rev:deadpool;rev:deadpool-postgres;rev:mobc,https://github.com/yasamoka/db-pool,A thread-safe database pool for running database-tied integration tests in parallel
+516,ecat-data-mssql,7.0.0,54,,,rev:deadpool,https://github.com/erikwang2013/e-cat,Microsoft SQL Server client for e-cat (tiberius-ng + deadpool)
+517,hdbconnect-mcp,0.3.14,54,,,rev:deadpool,https://github.com/bug-ops/pyhdb-rs,MCP server for SAP HANA database
+518,spatiotemporal-tiles,0.8.0,54,,,rev:deadpool-postgres,https://github.com/BertCh/spatiotemporal-tiles,SpatioTemporal Tiles (STT): animated space-time tile archives — umbrella crate re-exporting the stt-* libraries and shipping the stt-build/stt-optimize/stt-vali
+519,tagstudio_db,0.3.0,54,,,rev:deadpool,https://github.com/RustyNova016/tagstudio_db,Rust bindings for TagStudio databases
+520,bevy_persistence_database,0.6.0,53,,,rev:deadpool-postgres,https://github.com/JViggiani/bevy_persistence_database,A persistence and database integration solution for the Bevy game engine
+521,djogi-cli,0.1.0-alpha.17,53,,,rev:deadpool-postgres,https://github.com/TarunvirBains/djogi,"CLI for the Djogi framework — migrations, shell, db reset, status"
+522,mobc-redis-cluster,0.1.1,53,,,rev:mobc,https://github.com/rogeriob2br/mobc-redis-cluster,Redis support for the mobc connection pool
+523,cargo-ninety-nine,0.4.3,51,,,rev:deadpool-postgres,https://github.com/glottologist/ninety-nine,A cargo plugin for finding and tracking flaky tests
+524,engram-lib,0.3.1,51,,,rev:deadpool-sqlite,https://github.com/Ghost-Frame/Engram-rust,Core library for Engram -- persistent semantic memory for AI agents
+525,postgres-tx-retry,0.0.3,51,,,rev:deadpool;rev:deadpool-postgres,https://github.com/martingallagher/postgres-tx-retry.git,Transaction retry helpers for PostgreSQL compatibale databases
+526,mutant-lib,0.6.2,50,,,rev:deadpool,https://github.com/Champii/MutAnt,Core library for MutAnt distributed mutable key value storage over Autonomi network
+527,recursive-agent,0.8.3,50,,,rev:deadpool-redis,https://github.com/jeffkit/recursive,"A Rust coding-agent platform: kernel, tools, multi-agent orchestration, HTTP API, MCP, and TUI"
+528,nativeclick,0.26.9,49,,,rev:bb8,https://github.com/Sn0wAlice/nativeclick,Nativeclick is a pure Rust SDK for working with Clickhouse with the native protocol in async environments with minimal boilerplate and maximal performance.
+529,coyote,0.1.1,48,,,rev:deadpool-postgres,https://github.com/zerotier/coyote,Embeddable ACME server with programmable challenges and storage
+530,rama-cli,0.4.0,48,,,rev:bb8,https://github.com/plabayo/rama,rama cli to move and transform network packets
+531,deadpool-fantoccini,0.4.0,47,,,pool-seed;rev:deadpool,https://github.com/OpenByteDev/deadpool-fantoccini,Dead simple async session pool for fantoccini.
+532,helios-hts,0.2.4,47,,,rev:deadpool-postgres,https://github.com/HeliosSoftware/hfs,Helios Terminology Server — FHIR Terminology Operations
+533,oxigdal-services,0.1.7,47,,,rev:deadpool-postgres,https://github.com/cool-japan/oxigdal,"OGC Web Services (WFS, WCS, WPS, CSW) for OxiGDAL"
+534,amore-core,1.1.0,45,,,rev:bb8,https://github.com/antonio-amore-akiki/amore,"Amore core — local-first hybrid retrieval (BM25 + vector) engine, WAL, qdrant adapter, machine-key keyring for the Amore MCP agent memory backbone."
+535,dyolo-kya-redis,2.0.0,45,,,rev:deadpool-redis,https://github.com/dyologician/dyolo-kya,Redis-backed RevocationStore and NonceStore for dyolo-kya production deployments
+536,tina-core,0.0.2,45,,,rev:deadpool,,Tina platform
+537,freighter-auth,1.0.0,44,,,rev:deadpool-postgres,https://github.com/cloudflare/freighter,Cloudflare's third-party Rust registry implementation
+538,feint-core,0.2.0,43,,,rev:deadpool-postgres,https://github.com/immanuwell/feint,"Deterministic, Postgres-native synthetic test data"
+539,tower-sessions-postgres-store,0.1.1,43,,,rev:deadpool-postgres,,tower-sessions store backed by tokio-postgres
+540,flash_rust_ws,0.5.2,42,,,rev:deadpool,https://github.com/User65k/flash_rust_ws,"General purpose Webserver with TLS, File, FCGI, DAV and Websocket support"
+541,oxn,0.3.0,42,,,rev:deadpool-redis,https://github.com/monzeromer-lab/oxn,"Redis-backed async job queue for Rust: typed jobs, flows, distributed schedulers, rate limits, metrics, an HTTP API and a web dashboard."
+542,redis-objects,2.0.0,42,,,rev:bb8,https://github.com/cybercentreCanada/assemblyline-rust,Object oriented wrapper around redis client for the Assemblyline malware analysis platform.
+543,rok-cache,0.6.0,42,,,rev:deadpool-redis,https://github.com/ateeq1999/axum-rok-http,"Cache façade for the rok ecosystem — Memory/Redis drivers, Cache::get/set/remember"
+544,rrelayer_core,0.7.0,42,,,rev:bb8,https://github.com/joshstevens19/rrelayer,Core types and functionality for rrelayer - a powerful blockchain transaction relay service
+545,squashfs-async,0.1.2,42,,,rev:deadpool,https://github.com/cpg314/squashfs-async,"Parsing and reading of SquashFS archives, on top of any implementor of the tokio::io::AsyncRead and tokio::io::AsyncSeek traits."
+546,capybara-core,0.0.1-alpha.1,41,,,rev:deadpool,https://github.com/jjeffcaii/capybara,"A reverse proxy in Rust, which is inspired from Nginx/OpenResty/Envoy."
+547,houseflow-db,0.1.1,41,,,rev:deadpool-postgres,https://github.com/gbaranski/houseflow,Server for Houseflow
+548,parsql-deadpool-postgres,0.5.0,41,,,rev:deadpool-postgres,https://github.com/yazdostum-nettr/parsql,Deneyimsel bir sql yardımcı küfesidir.
+549,samling-clorinde,0.12.0,41,,,rev:deadpool-postgres,https://github.com/hyperkliv/samling,Database queries etc for the `samling` crate
+550,secureops-api,0.0.2,41,,,rev:deadpool-postgres;rev:deadpool-redis,https://github.com/aryasoni98/secureops,"SecureOps platform HTTP API: axum REST + WebSocket, Ed25519 license activation, JWT/API-key auth, Cedar tier gating, Postgres/Redis-backed store (PRODUCT.md Pha"
+551,epoch-journal,0.1.1,40,,,rev:bb8,https://github.com/Shearerbeard/Epoch,Event sourcing with deciders and pluggable event repositories
+552,signaldock-storage,2026.5.0,40,,,rev:deadpool,https://github.com/kryptobaseddev/signaldock,Storage traits and Diesel database adapters (SQLite + PostgreSQL) for SignalDock
+553,thread-flow,0.1.0,40,,,rev:deadpool-postgres,https://github.com/knitli/thread,"Thread dataflow integration for data processing pipelines, using CocoIndex."
+554,freighter-pg-index,1.0.0,39,,,rev:deadpool-postgres,https://github.com/cloudflare/freighter,Cloudflare's third-party Rust registry implementation
+555,llm-cost-ops-api,0.1.0,39,,,rev:deadpool,https://github.com/globalbusinessadvisors/llm-cost-ops,REST API and data ingestion for LLM Cost Ops
+556,nexus-webapi,0.4.1,39,,,rev:deadpool-redis,https://github.com/pubky/pubky-nexus,Nexus API exposes a social-media-like API capable of powerful Web-of-Trust inference
+557,data_vault,0.3.4,38,,,rev:deadpool-postgres;rev:deadpool-redis,https://github.com/chmoder/data_vault/,"Data Vault is a modular, pragmatic, credit card vault for Rust."
+558,durust,0.2.3,38,,,rev:deadpool-postgres,https://github.com/danthegoodman1/durust,A durable workflow runtime for Rust services.
+559,mobc-diesel,1.0.0,38,,,rev:mobc,https://github.com/FreeReacts/mobc-diesel,mobc support for Diesel
+560,parsql-migrations,0.5.0,38,,,rev:deadpool-postgres,https://github.com/yazdostum-nettr/parsql,Migration system for parsql - type-safe database migrations
+561,postgres-static-analyzer-reflect-queries,0.1.0,38,,,rev:deadpool-postgres,https://github.com/blainehansen/postgres-static-analyzer,Reflection queries for postgres-static-analyzer.
+562,testkit-postgres,0.1.1,38,,,rev:deadpool-postgres,https://github.com/auser/testkit,PostgreSQL support for the testkit database testing library
+563,warpgrapher,0.11.2,38,,,rev:mobc,https://github.com/warpforge/warpgrapher,Automate web service creation with GraphQL and Graph Databases
+564,nisshi-storage-sql,0.7.0,37,,,rev:deadpool;rev:deadpool-postgres,https://github.com/nisshi-io/nisshi,Nisshi storage backends for PostgreSQL and libSQL (SQLite)
+565,rgenai,0.1.1,37,,,rev:deadpool-postgres,https://github.com/DevMaan707/rgenai,"RGen is a comprehensive Rust library for AWS Bedrock that provides easy-to-use clients for text generation, image generation, embeddings, and vector storage. Bu"
+566,rsmc-core,0.4.0,37,,,rev:deadpool,https://github.com/crestonbunch/rsmc,Library for runtime-agnostic async memcached clients
+567,ruvector-cli,2.3.0,37,,,rev:deadpool-postgres,https://github.com/ruvnet/ruvector,CLI and MCP server for Ruvector
+568,bb8-async-ssh2-lite,0.4.0,36,,,rev:bb8,https://github.com/bk-rs/ssh-rs,Asynchronous ssh2 connection pool.
+569,shaperail-cli,0.16.0,36,,,rev:deadpool-redis,https://github.com/shaperail/shaperail,"CLI for Shaperail — shaperail init, generate, serve, build, migrate, and more"
+570,taskchampion-sync-server-storage-postgres,0.7.1,36,,,rev:bb8,https://github.com/GothenburgBitFactory/taskchampion-sync-server,Postgres backend for TaskChampion-sync-server
+571,tokio-imap,0.5.0,36,,,client-seed,https://github.com/djc/tokio-imap,"Tokio-based IMAP protocol (client, for now) implementation"
+572,actix-jwt-session,1.0.7,35,,,rev:deadpool;rev:deadpool-redis,,Full featured JWT session managment for actix
+573,deadpool-ldap3,0.1.1,35,,,pool-seed;rev:deadpool;rev:deadpool-sync,https://github.com/logicin/deadpool-ldap3,Dead simple async pool for ldap
+574,lily_postgresql,0.1.0,35,,,rev:deadpool,https://github.com/lily-platform/lilyrs,Asynchronous Diesel PostgreSQL integration with pooling and scoped transactions
+575,catga-flow-store,0.2.0,34,,,rev:bb8,https://github.com/Cricle/Catga,"Composable CQRS, event-sourcing, workflow, and distributed-runtime components for Rust"
+576,deadpool-apexbase,0.1.2,33,,,pool-seed;rev:deadpool;rev:deadpool-sync,https://github.com/microtimber/deadpool-apexbase,Dead simple pool for ApexBase embedded database
+577,fr-rust,0.2.2,33,,,rev:deadpool-postgres;rev:deadpool-redis,https://github.com/sayed-anower/fr-rust,"A comprehensive framework/utility library for Actix-web, Postgres, Redis, and authentication."
+578,lib-hyper-organizator,0.4.5,33,,,rev:deadpool-postgres,https://github.com/ovidiu-ionescu/organizator-3/tree/master/Backend/Server/lib-hyper-organizator,A minimalistic set of features for building web services with Rust and Hyper
+579,redis-oxide,0.2.6,33,,,rev:deadpool,https://github.com/nghiaphamln/redis-oxide,"High-performance async Redis client for Rust with automatic cluster support, multiplexing, and advanced features"
+580,tower-sessions-stores-oracle-bb8,0.3.0,33,,,rev:bb8,https://github.com/opensource-inemar-net/tower-sessions-stores-oracle-bb8.git,Oracle session stores for `tower-sessions`.
+581,pg-query-builder,0.1.0,32,,,rev:bb8;rev:deadpool-postgres,https://github.com/thotsaphon/pg-query-builder,"A SQL query builder for PostgreSQL 18+, producing (String, params) ready for tokio-postgres."
+582,lithair-postgres,0.1.2,31,,,rev:deadpool-postgres,https://github.com/lithair/lithair,Experimental opt-in PostgreSQL document storage for Lithair models
+583,ddd_dapr,1.1.0,30,,,rev:deadpool-runtime,,整合DDD与Dapr 兼容基于 Eventuate 的Java 项目 
+584,amqpsy,0.1.0,29,,,rev:deadpool-lapin,https://github.com/mustakimali/amqpsy,Extremely opinionated AMQP PubSub library
+585,corro-types,0.1.0-alpha.1,29,,,rev:bb8,,common types for corrosion
+586,deadpool-citadeldb,0.1.2,29,,,pool-seed;rev:deadpool;rev:deadpool-sync,https://github.com/microtimber/deadpool-citadeldb,Dead simple pool for CitadelDB
+587,margaret_database,0.5.0,29,,,rev:deadpool-postgres,https://github.com/intentee/margaret,"The Postgres database a Margaret application declares, shared by the framework and the application."
+588,hexeract-outbox-postgres,0.4.0,28,,,rev:deadpool-postgres,https://github.com/nubster-opensources/hexeract,PostgreSQL backend for the Hexeract outbox via deadpool_postgres
+589,kiomq,0.2.1,28,,,rev:deadpool-redis,https://github.com/KioHQ/kiomq,An all-in-one task-queue and orchestration library for Rust
+590,mobc-surrealdb,0.2.0,28,,,rev:mobc,https://github.com/noah123dkg/mobc-surrealdb,Surrealdb support for the mobc connection pool
+591,woddle,0.6.0,28,,,rev:mobc,https://git.sr.ht/~zupzup/woddle,"An async, synchronized, database-backed Rust job scheduler"
+592,asurada,0.3.1,27,,,rev:deadpool-postgres,https://github.com/WebchemistCorp/asurada,"Asurada — a memory + cognition daemon that grows with the user. Local-first, BYOK, shared by Devist/Webchemist Core/etc."
+593,bb8-nebula-graph,0.4.4,27,,,rev:bb8,https://github.com/bk-rs/nebula-rs,bb8 Nebula Graph pool
+594,context-creator,1.5.0,27,,,rev:deadpool,https://github.com/matiasvillaverde/context-creator,High-performance CLI tool to convert codebases to Markdown for LLM context
+595,indexlake-catalog-postgres,0.6.0,27,,,rev:bb8,https://github.com/systemxlabs/indexlake,IndexLake postgres catalog
+596,eventlogs,0.2.1,26,,,rev:deadpool-postgres;rev:deadpool-redis,https://github.com/davestearns/eventlogs,"High-Performance, Batteries-Included, Event Sourcing for Rust"
+597,mobc-sqlx,3.0.0,26,,,rev:mobc,https://github.com/NikSneMC/mobc-sqlx,SQLx support for the mobc connection pool 
+598,ttvendor,0.1.24,26,,,rev:deadpool-redis,,sdk
+599,async-wechat,1.0.10,25,,,rev:deadpool-redis,https://github.com/cleveng/wechat.git,Wechat SDK for Rust
+600,barrzen-axum-infra,0.1.10,25,,,rev:deadpool-redis,https://github.com/Barrzen/barrzen-axum-kit,"Infrastructure integrations for Barrzen Axum: database, cache, search, broker"
+601,mcmc-rs,0.8.0,25,,,rev:deadpool,https://github.com/ArtemIsmagilov/mcmc-rs,Minimal rust client for memcached
+602,pyra-streams,0.9.3,25,,,rev:deadpool-redis,https://github.com/pyra-labs/pyra-rust-sdk,Redis Stream consumer infrastructure for Pyra services
+603,bb8-arangodb,0.2.0,24,,,rev:bb8,https://github.com/gabor-boros/bb8-arangodb,ArangoDB driver for bb8 based on the arangors crate.
+604,pyra-redis,0.9.3,24,,,rev:deadpool-redis,https://github.com/pyra-labs/pyra-rust-sdk,"Shared Redis client, key builders, and common operations for Pyra services"
+605,ronami,1.1.0,24,,,rev:deadpool-redis,https://github.com/ZethRise/Ronami,A full-featured Telegram bots framework for Rust
+606,traefikctl,0.3.2,24,,,rev:deadpool,https://github.com/auser/traefikctl,A CLI for managing traefik with etcd (and more)
+607,better-ctx,3.1.0,23,,,rev:deadpool-postgres,https://github.com/jadzeino/betterctx-client,"Context Intelligence Engine with CCP. 34 MCP tools, 8 read modes, 90+ compression patterns, cross-session memory (CCP), persistent AI knowledge with temporal fa"
+608,chrono-merkle,1.2.0,23,,,rev:bb8,https://github.com/clockinchain/chrono-merkle,Time-aware Merkle tree with delta-based updates and programmable nodes
+609,fraiseql-saga,2.16.0,23,,,rev:deadpool;rev:deadpool-postgres,https://github.com/fraiseql/fraiseql,"Distributed saga orchestration for FraiseQL — forward execution, compensation and crash recovery over the mutation chokepoint"
+610,sql-middleware,0.9.0,23,,,rev:bb8;rev:deadpool,https://github.com/derekfrye/sql-middleware,"Lightweight async wrappers for tokio-postgres, rusqlite, turso, and tiberius."
+611,adns-server,0.3.1,22,,,rev:bb8,https://github.com/protryon/adns,ADNS Server Library & Binary
+612,crabdance,0.3.0,22,,,rev:deadpool-sqlite,https://github.com/dyc3/cadence-rust-client,A Rust client for Uber Cadence workflow engine
+613,sshx-server,0.4.1,22,,,rev:deadpool;rev:deadpool-redis,https://github.com/ekzhang/sshx,"A secure web-based, collaborative terminal."
+614,blazegram,0.4.2,21,,,rev:deadpool-redis,https://github.com/sl4ppleware/blazegram,"Telegram bot framework: clean chats, zero garbage, declarative screens, pure Rust MTProto."
+615,dog-queue,0.3.0,21,,,rev:bb8,https://github.com/Jitpomi/dogrs,"Tenant-scoped jobs with durable ledgers, lease-based processing, and broker integrations"
+616,lily_redis,0.1.0,21,,,rev:deadpool,https://github.com/lily-platform/lilyrs,"Redis cache integration with pooling, namespaced keys, and bounded operations"
+617,mll-axum-utils,0.2.2,21,,,rev:bb8,https://github.com/mllcms/axum-utils,一个 Axum 的工具库
+618,vkontakte,0.1.0,21,,,rev:deadpool-redis,https://github.com/KotEngine/vk-rs,Async VK Bot API framework for Rust.
+619,deadpool-bolt,0.2.0,20,,,client-seed;pool-seed;rev:deadpool,https://github.com/0xSiO/bolt-rs,A bolt-client manager for the deadpool connection pool.
+620,fcnetd-client,0.2.4,20,,,rev:deadpool,https://github.com/rust-firecracker/fcnet,A daemon-based Firecracker microVM networking backend based on fcnet-types.
+621,mobc-arangors,0.3.0,20,,,rev:mobc,https://github.com/inzanez/mobc-arangors,ArangoDB support for the async mobc connection pool
+622,mobc-reql,0.6.4,20,,,rev:mobc,https://github.com/rethinkdb/rethinkdb-rs/tree/main/mobc,RethinkDB support for the mobc connection pool
+623,bulwark-cli,0.6.0,19,,,rev:deadpool-redis,https://github.com/bulwark-security/bulwark,"Bulwark is a fast, modern, open-source web application security engine."
+624,c3p0_pg_async,0.44.0,19,,,rev:bb8,https://github.com/ufoscout/c3p0,A good friend for r2d2
+625,cuttlestore,0.3.0,19,,,rev:bb8,https://github.com/SeriousBug/cuttlestore,A generic API for interacting with key-value stores that can be selected at runtime.
+626,loong-redis,0.1.0,19,,,rev:deadpool-redis,https://gitee.com/seekdome/loong-frame,Global Redis connection pool (deadpool-redis) for the Loong framework.
+627,san-mateo-postgres,0.1.0,19,,,rev:deadpool,https://github.com/autumn-foundation/san-mateo,"Postgres store for San Mateo, with diesel-async and embedded migrations"
+628,litedbmodel,0.4.5,18,,,rev:deadpool-postgres,https://github.com/foo-ogawa/litedbmodel.rs,Production-safe SQL-first Database Access Layer for Rust
+629,loong-x,0.1.0,18,,,rev:deadpool-redis,https://gitee.com/seekdome/loong-frame,"A batteries-included web framework (JWT, cron, HTTP, MySQL, Redis, MongoDB, logging, config, utilities) in a single crate."
+630,pow-captcha-rs,0.1.0,18,,,rev:bb8,https://github.com/PaulDotSH/pow-captcha,"A proof-of-work statefull or stateless captcha library with optional stores (Redis, Skytable, Diesel) and Ed25519 signing"
+631,tower-redis-cell,0.3.0,18,,,rev:deadpool-redis,https://github.com/rustworthy/tower-redis-cell.git,Rust bindings for the Redis Cell module
+632,bb8-redis-break-with-error,0.12.0,17,,,rev:bb8,https://github.com/bk-rs/redis-rs,Full-featured async (tokio-based) redis connection pool (like r2d2)
+633,i5h-pg,0.1.0,17,,,rev:deadpool-postgres,https://github.com/h5i-dev/i5h,"PostgreSQL engine for i5h: tenant-scoped snapshots, SERIALIZABLE execution with retry, idempotency"
+634,nsq-async-rs,0.1.10,17,,,rev:deadpool,https://github.com/liudiandesilv/nsq-async-rs,An asynchronous Rust NSQ client library with support for concurrent message processing
+635,aegis-waf,3.3.1,16,,,rev:bb8,,simple web application firewall
+636,force-sync,0.4.0,16,,,rev:deadpool-postgres,https://github.com/madmax983/force-rs,Correctness-first bidirectional Salesforce and Postgres sync engine
+637,gorm,0.1.4,16,,,rev:deadpool-postgres,https://github.com/MaderNoob/gorm,An orm that is simple to use and prevents all mistakes at compile time
+638,lssd,0.5.1,16,,,rev:deadpool-postgres,https://gitlab.com/lightning-signer/validating-lightning-signer,The Lightning Storage Server Daemon
+639,mycommon-utils,0.2.3,16,,,rev:deadpool-redis,,"Common utilities library for database operations, Redis caching and system utilities"
+640,rindexer,0.1.0,16,,,rev:bb8;rev:deadpool;rev:deadpool-lapin,https://github.com/joshstevens19/rindexer,A no-code or framework to build blazing fast EVM indexers - built in rust.
+641,teloxide-fork,0.18.0,16,,,rev:deadpool-redis,https://github.com/teloxide-fork/teloxide,An elegant Telegram bots framework for Rust
+642,bb8-aykroyd,0.3.1,15,,,rev:bb8,https://git.sr.ht/~couch/aykroyd,Aykroyd micro-ORM for the bb8 connection pool.
+643,deadpool-aykroyd,0.3.1,15,,,pool-seed;rev:deadpool;rev:deadpool-postgres,https://git.sr.ht/~couch/aykroyd,Aykroyd micro-ORM for the deadpool connection pool.
+644,journio-postgres,0.1.0,15,,,rev:deadpool-postgres,https://github.com/a5i/journio,Postgres and CockroachDB storage backend for the journio durable workflow orchestration engine
+645,pgbatis,0.1.51,15,,,rev:deadpool;rev:deadpool-postgres,https://gitee.com/buddycoder/pgbatis,pgbaits 用于操作数据库数据的增删改查
+646,async-dingtalk,1.0.2,14,,,rev:deadpool-redis,https://github.com/cleveng/dingtalk.git,Dingtalk SDK for Rust
+647,carrot-cake,0.1.4,14,,,rev:deadpool,https://github.com/TrueLayer/carrot-cake,An a-peeling pub/sub framework
+648,json-register,0.3.0,14,,,rev:deadpool;rev:deadpool-postgres,https://github.com/telicent-oss/json-register,A Rust library for registering JSON objects in PostgreSQL with canonicalisation and caching
+649,async-pop3,0.1.0,13,,,client-seed,https://github.com/yorodm/async-pop3,An async async version of rust-pop3
+650,cache-kit,0.9.1,13,,,rev:deadpool-memcached;rev:deadpool-redis,https://github.com/agentsfleet/cache-kit.rs,"A type-safe, fully generic, production-ready caching framework for Rust"
+651,deadpool-sqlite-cbs,0.1.3,13,,,pool-seed;rev:deadpool;rev:deadpool-sync,https://github.com/jorgeajimenezl/deadpool-sqlite-cbs,Dead simple async pool for Cloud Backed SQLite (rusqlite over the blockcachevfs VFS)
+652,event_hex,0.0.3,13,,,rev:bb8,https://github.com/develnk/event_hex.git,A pragmatic Rust toolkit for Domain-Driven Design with first-class support for event sourcing and CQRS.
+653,hanzo-database,1.1.13,13,,,rev:deadpool;rev:deadpool-runtime,https://github.com/hanzonet/network,"Multi-backend database abstraction for Hanzo Node - Supports LanceDB, DuckDB, PostgreSQL, and more"
+654,kulfi-utils,0.1.3,13,,,rev:bb8,https://github.com/fastn-stack/kulfi,Kulfi utilities
+655,operon,0.7.0,13,,,rev:deadpool-postgres,https://github.com/Asteromorph-Corp/operon,"A workflow engine for parallel, incremental scheduling of DAG-defined multiplex tasks."
+656,oxigdal-etl,0.1.7,13,,,rev:deadpool-postgres,https://github.com/cool-japan/oxigdal,Streaming ETL framework for continuous geospatial data processing with OxiGDAL
+657,tiders-x402-server,0.3.3,13,,,rev:deadpool-postgres,https://github.com/yulesa/tiders-x402-server,Payment-enabled database API server that connects different databases with the x402 payment protocol to create a pay-per-query data marketplace.
+658,uri-register,0.3.0,13,,,rev:deadpool-postgres,https://github.com/telicent-oss/uri-register,A high-performance PostgreSQL-backed URI dictionary service for assigning unique integer IDs to URIs
+659,bb8-rusqlite,0.1.0,12,,,rev:bb8,https://github.com/LawnGnome/bb8-rusqlite,A bb8 connection manager for rusqlite
+660,bb8-surrealdb,0.1.3,12,,,client-seed;rev:bb8,https://github.com/blakeanedved/bb8-surrealdb,SurrealDB driver for bb8 based on the surrealdb crate
+661,eventful-sql-server,0.2.1,12,,,rev:bb8,https://github.com/stevewillcock/eventful,A library for event sourcing in Rust
+662,eventific_postgres,0.1.3,12,,,rev:bb8,https://github.com/Joatin/eventific,Eventific is a tool that gives you the needed building blocks for event sourcing
+663,prefect,0.2.0,12,,,rev:deadpool-sqlite,https://github.com/dimfeld/effectum,An embeddable task queue based on SQLite (renamed to effectum)
+664,pyx,0.3.0,12,,,rev:deadpool,https://github.com/psychonautwiki/pyx,High-performance reverse proxy with h2o configuration compatibility
+665,sabi_redis,0.8.0,12,,,rev:deadpool;rev:deadpool-redis,https://github.com/sttk/sabi_redis-rust,The sabi data access library for Redis in Rust
+666,sequelles,0.2.0,12,,,rev:deadpool,https://github.com/RustyNova016/sequelles,Bunch of utilities to deal with SQLx data. Very opinionated
+667,zerodns,0.1.0-alpha.10,12,,,rev:deadpool,https://github.com/jjeffcaii/zerodns,"A DNS server in Rust, which is inspired from chinadns/dnsmasq."
+668,acton-dx,1.0.0-beta.10,11,,,rev:deadpool-redis,https://github.com/GovCraft/acton-dx,Acton DX - Developer experience focused web framework for HTMX applications in Rust
+669,alkstore-postgres,0.1.0,11,,,rev:deadpool-postgres,https://git.alk.dev/alkdev/alkstore,"Postgres engine for alkstore: multi-host native, natively async over tokio-postgres + deadpool-postgres with LISTEN-driven wake and a dedicated LISTEN connectio"
+670,async_deadpool_redis_session,0.3.0,11,,,rev:deadpool-redis,https://github.com/iamsauravsharma/async_deadpool_redis_session,deadpool redis async session
+671,axum-postgres-tx,0.3.0,11,,,rev:deadpool;rev:deadpool-postgres,https://github.com/danbluhmhansen/axum-postgres-tx,Request-scoped PostgreSQL transactions for axum
+672,bullrs,0.0.3,11,,,rev:deadpool-redis,https://github.com/julianbuettner/bullrs,A BullMQ compatible Job Queue based on Redis
+673,db-redis,0.1.2,11,,,rev:deadpool,https://github.com/kuyoonjo/db-redis.git,redis client
+674,easy-rmq-rs,1.0.2,11,,,rev:deadpool,,Easy-to-use RabbitMQ library for Rust
+675,spaghettinuum,0.2.2,11,,,rev:deadpool-sqlite,https://github.com/andrewbaxter/spaghettinuum,The future of the internet is al dente
+676,bb8-libsql,0.1.2,10,,,rev:bb8,https://github.com/NFuller721/bb88-libsql,A simple connection pooling manager for libsql using bb8.
+677,bb8-ruarango,0.1.1,10,,,rev:bb8,https://github.com/rustyhorde/bb8-ruarango,bb8 connection pooling impmentation for the ArangoDB database
+678,datafusion-table-providers-oracle,0.14.0,10,,,rev:bb8,https://github.com/datafusion-contrib/datafusion-table-providers,DataFusion oracle table provider
+679,deadpool-surrealdb,0.1.2,10,,,pool-seed;rev:deadpool,https://github.com/Project-Campground/backend/,Dead simple async pool for surrealdb
+680,harvest-camel,0.1.0,10,,,rev:deadpool,https://github.com/autumn-foundation/harvest-camel,Bridge rust-camel's connectors and routing into autumn-harvest's durable workflows
+681,incrededup,0.3.1,10,,,rev:deadpool-postgres,https://github.com/mpr1255/incrededup,Incremental document deduplication using MinHash LSH
+682,mobc-nebula,0.9.0,10,,,rev:mobc,https://github.com/bk-rs/nebula-rs,mobc Nebula Graph/Meta/Storage pool
+683,oxigdal-db-connectors,0.1.7,10,,,rev:bb8;rev:deadpool;rev:deadpool-postgres,https://github.com/cool-japan/oxigdal,"Database connectors for OxiGDAL (MySQL, SQLite, MongoDB, ClickHouse, TimescaleDB, Cassandra)"
+684,uxum-pools,0.3.4,10,,,rev:bb8;rev:deadpool,https://github.com/unikmhz/uxum,Generic instrumented resource pools for use in uxum framework
+685,agrum,0.4.0,9,,,rev:bb8,https://github.com/chanmix51/agrum,This is an OMM database layer.
+686,bb8-skytable,0.3.1,9,,,rev:bb8,https://github.com/heliumbrain/bb8-skytable,Async bb8 connection pool for Skytable
+687,budget-warden,0.1.3,9,,,rev:deadpool-redis,https://github.com/boniface/budget-warden,Policy-based protection for scarce external API budgets.
+688,bytecon_data_store,0.1.1,9,,,rev:deadpool-postgres,https://github.com/AustinHellerRepo/bytecon_data_store.git,A library for storing ByteConverter implementations conveniently.
+689,csh-ldap,0.2.1,9,,,rev:deadpool,https://github.com/galenguyer/csh-ldap.rs,LDAP bindings for CSH projects
+690,db-driver,0.1.0,9,,,rev:deadpool;rev:deadpool-postgres,,"DuckDB extension for querying PostgreSQL, MySQL, and SQL Server from inside DuckDB SQL"
+691,flair,0.0.2,9,,,rev:deadpool-sqlite,https://github.com/basedcount/flair/,"Flair is an augmentation for Lemmy, adding user flairs like Reddit"
+692,picodata-driver,3.0.0,9,,,rev:deadpool-postgres,https://git.picodata.io/core/drivers/picodata-rust,A native asyncronous cluster-aware Picodata client
+693,venturi,0.4.0,9,,,rev:deadpool-postgres,https://github.com/jakobwesthoff/venturi,"A durable, PostgreSQL-backed job queue for Rust — controlled flow from backlog to worker."
+694,actix-idempotent,0.1.1,8,,,rev:deadpool-redis,https://github.com/ppoliani/actix-idempotent,A middleware for handling idempotent requests in actix-web applications.
+695,bb8-sqlite,0.1.0,8,,,rev:bb8,https://github.com/reji-zero/bb8_sqlite,A bb8 connection manager for rusqlite
+696,bb8-valkey,0.0.0-alpha2,8,,,rev:bb8,,A connection pool for Valkey
+697,infraqueue,0.1.1,8,,,rev:deadpool-redis,https://github.com/helloimalemur/infraqueue,A lightweight Redis-backed message queue server
+698,infraqueue-client,0.1.1,8,,,rev:deadpool-redis,https://github.com/helloimalemur/infraqueue,CLI client for INFRAQUEUE
+699,mobc-nebula-graph,0.4.4,8,,,rev:mobc,https://github.com/bk-rs/nebula-rs,mobc Nebula Graph pool
+700,mobc-tonic,0.2.4,8,,,rev:mobc,https://github.com/tyrchen/mobc-tonic,A connection pool for tonic GRPC client. 
+701,pict-rs-postgres-repo,0.1.2,8,,,rev:bb8,https://git.asonix.dog/asonix/pict-rs,PostgreSQL repo for pict-rs
+702,platform_common,0.4.96,8,,,rev:bb8,https://gitlab.com/sim2381847/libs/rust/platform_common,"Common utilities and middleware for microservices: trace-id, structured logging, HTTP propagation, RabbitMQ with auto-reconnect"
+703,schema_guard,1.9.1,8,,,rev:bb8,https://github.com/vkrinitsyn/schema_guard,Schema Guard: Relation Database (Schema) Management tool
+704,ssql,0.2.0,8,,,rev:deadpool-tiberius,https://github.com/Geo-W/ssql,Async ms sql server basic orm
+705,alkblobs,0.1.0,7,,,rev:deadpool-postgres,https://git.alk.dev/alkdev/alkblobs,"Content-addressed blob storage: multi-hash put/get/verify store with pluggable backends, transport- and protocol-agnostic"
+706,espg,0.2.0,7,,,rev:deadpool-postgres,,An event sourcing library for Rust with PostgreSQL support
+707,fastn-net,0.1.2,7,,,rev:bb8,,Network utilities for fastn
+708,freighter-server,1.0.0,7,,,rev:deadpool-postgres,https://github.com/cloudflare/freighter,Cloudflare's third-party Rust registry implementation
+709,hippox-atomic-skills,0.2.0,7,,,rev:deadpool-postgres,https://github.com/0xhappyboy/hippox/tree/main/hippox-atomic-skills,🦛Hippox indivisible atomic skill unit..
+710,iop-client,1.0.2,7,,,rev:deadpool-redis,https://github.com/cleveng/iop-client.git,Alibaba Trade SDK for Rust
+711,kora-rpc,1.0.3,7,,,rev:deadpool-redis,,RPC server for Kora gasless relayer
+712,mootranscode,0.9.1,7,,,rev:bb8,https://github.com/softdevca/mootranscode,Video and audio transcoding for Moodle
+713,nanoctrl,0.1.0,7,,,rev:deadpool-redis,https://github.com/JimyMa/NanoDeploy,NanoInfra control plane server
+714,pg-rest-server-tokio-postgres-deadpool,0.2.0,7,,,rev:deadpool-postgres,https://github.com/joshburgess/pg-rest-server,"PostgREST-compatible REST API server backed by tokio-postgres and deadpool-postgres (pure tokio-postgres data path, no pg-wired)."
+715,roundabout_orm,0.1.3,7,,,rev:deadpool-postgres,https://github.com/Parallel-Tech-PTY-LTD/roundabout_orm,"Macro-driven, Payload-style CQRS ORM: declare entities as structs, auto-generate Postgres-backed REST + WebSocket endpoints."
+716,actix-limiter,0.1.0,6,,,rev:deadpool-redis,https://github.com/meszmate/actix-limiter,"Rate limiter using a fixed window counter for arbitrary keys, created for Actix Web"
+717,bootrust,0.1.0,6,,,rev:bb8,https://github.com/tianzeshi-study/bootrust,"An elegant macroless  data access layer abstraction, simple and easy-use  object-relational mapping powered by the Serde serialization framework. 一个优雅的无宏的数据访问层抽"
+718,catenary-backend,0.1.1,6,,,rev:bb8,,import and backend for gtfs data
+719,clickhouse-bb8,0.1.0,6,,,rev:bb8,https://github.com/calavera/clickhouse-bb8,ClickHouse client pool manager compatible with BB8
+720,medea,0.2.0,6,,,rev:deadpool;rev:deadpool-redis,https://github.com/instrumentisto/medea,Medea media server
+721,meilibridge,0.1.6,6,,,rev:deadpool-postgres,https://github.com/binary-touch/MeiliBridge,High-performance PostgreSQL to Meilisearch connector
+722,nirv-engine,0.1.0,6,,,rev:deadpool;rev:deadpool-postgres,https://github.com/nirv/nirv-engine,"Universal data virtualization and compute orchestration engine with SQL Server, PostgreSQL, REST API, and file system connectors"
+723,rostrum,14.0.1,6,,,rev:bb8,https://gitlab.com/BitcoinUnlimited/rostrum,An efficient implementation of Electrum Server with token support
+724,rust-rule-miner,0.2.2,6,,,rev:bb8,https://github.com/KSD-CO/rust-rule-miner,"Automatic rule discovery from historical data using association rule mining, sequential pattern mining, and graph-based pattern matching. Generates and executes"
+725,skp-ratelimit,0.1.2,6,,,rev:deadpool-redis,https://github.com/setulabs/skp-ratelimit,"Advanced, modular, extensible rate limiting library with GCRA, per-route quotas, and composite keys"
+726,turbograph,0.5.0,6,,,rev:deadpool-postgres,https://github.com/mdsadiqueinam/Turbograph,Automatic GraphQL API generation from PostgreSQL schemas in Rust
+727,acton-htmx,1.0.0-beta.7,5,,,rev:deadpool-redis,https://github.com/GovCraft/acton-htmx,Opinionated Rust web framework for HTMX applications
+728,adbc-taos,0.1.0,5,,,rev:deadpool,https://github.com/greatwallisme/adbc-taos.git,"A high-performance Rust driver for TDengine time-series database, implementing the ADBC standard"
+729,bb8_surrealdb2,0.3.0,5,,,rev:bb8,https://github.com/gravityismagnetism/bb8_surrealdb2,Surrealdb support for the async bb8 connection pool
+730,brume-daemon,0.1.0,5,,,rev:deadpool-diesel,https://github.com/nsarlin/brume,A daemon that synchronizes files in the background using Brume
+731,nntp-proxy,0.5.1,5,,,rev:deadpool,https://github.com/mjc/nntp-proxy,"NNTP proxy server with per-command backend multiplexing, caching, metrics, and TUI dashboard"
+732,picodata-rust,1.0.0,5,,,rev:deadpool-postgres,https://git.picodata.io/picodata/core/picodata-rust,A native asyncronous cluster-aware Picodata client
+733,redisson,0.1.0,5,,,rev:deadpool,https://github.com/wslongchen/redisson.rs,A Redis-based distributed synchronization and data structures library for Rust
+734,rigatoni-stores,0.2.0,5,,,rev:deadpool;rev:deadpool-redis,https://github.com/valeriouberti/rigatoni,"State store implementations for Rigatoni CDC/Data Replication: Memory, File, Redis for distributed state management"
+735,tower-sessions-deadpool-sqlite-store,0.1.1,5,,,rev:deadpool;rev:deadpool-sqlite,,deadpool-sqlite session store for `tower-sessions`
+736,wechat-mp,0.1.4,5,,,rev:bb8,https://github.com/wechat-rs/wechat-sdk,"微信公众号（包括订阅号和服务号）sdk版本(开发中), 基于2020年7月的微信文档开发."
+737,baichun-framework-cache,0.1.0,4,,,rev:deadpool-redis,https://github.com/fangbaichun/ruoyi-rust,Cache module for Baichun-Rust framework
+738,bb8-tikv,0.1.0,4,,,rev:bb8,https://github.com/shenek/bb8-tikv,bb8 adapter for TiKV client
+739,django-rs-db-backends,0.1.0,4,,,rev:deadpool-postgres,https://github.com/snejati86/django-rs,"Database backends for django-rs: PostgreSQL, MySQL, and SQLite drivers"
+740,ftnet,0.1.0,4,,,rev:bb8,,FTNet: FifthTry Network
+741,js_sidecar,0.1.0,4,,,rev:deadpool,https://github.com/dimfeld/js_sidecar,Run a pool of JavaScript engines
+742,lamo,0.2.4,4,,,rev:bb8,https://github.com/wmydz1/lamo,for Rust
+743,memento_cache,0.1.0,4,,,rev:deadpool-redis,https://github.com/crcn/memento-rs,A flexible caching library with pluggable storage strategies
+744,saas-zmq,0.1.3,4,,,rev:deadpool,,ZeroMQ tools by using Publish-Federation.
+745,toi_server,0.1.1,4,,,rev:bb8,https://github.com/theOGognf/toi,A personal assistant server
+746,valve-rs,0.1.3,4,,,rev:deadpool,https://github.com/JosiahParry/valve,"Auto-scale R {plumber} APIs concurrently using Tokio, Axum, and Deadpool"
+747,wae-cache,0.0.2,4,,,rev:deadpool-redis,https://github.com/oovm/wae/tree/main/backends/wae-cache,WAE Cache - 缓存服务抽象层，支持内存缓存
+748,bb8-redis-cluster-async,0.1.0,3,,,rev:bb8,https://github.com/hellojaewon/bb8-redis-cluster-async,async redis cluster connection pool
+749,deadpool-lettre,0.0.0,3,,,pool-seed,https://github.com/jdrouet/deadpool-lettre,This crate implements a deadpool manager for lettre.
+750,hashpoo,0.8.0,3,,,rev:deadpool-postgres,https://github.com/miraland-labs/hashpoo,"Hashpower pool only, for PoW believers. Public pool dedicated to ORE mining."
+751,mayhem,0.1.0-beta.2,3,,,rev:deadpool-postgres,https://github.com/RedstoneWizard08/mayhem,"A Discord-like chat application for security, stability, speed, and ultimate customization. "
+752,ocypod,0.8.0,3,,,rev:deadpool;rev:deadpool-redis,https://github.com/davechallis/ocypod,Ocypod is a Redis-backed service for orchestrating background jobs.
+753,pgrsql,0.1.4,3,,,rev:deadpool-postgres,https://github.com/muk2/pgrsql,A beautiful TUI SQL editor for PostgreSQL
+754,pleme-codegen,0.1.2,3,,,rev:deadpool-redis,https://github.com/pleme-io/pleme-codegen,Code generation macros for Pleme services with Brazilian market features
+755,riceprompt-engine,0.1.0,3,,,rev:deadpool-postgres,https://github.com/jieyefriic/rp-engine,YAML-native Agent workflow execution engine
+756,rkt_db_pools,0.3.2,3,,,rev:deadpool;rev:deadpool-postgres;rev:deadpool-redis,https://github.com/rustfoo/rkt/tree/main/contrib/db_pools,rkt async database pooling support.
+757,rsession,0.2.1,3,,,rev:deadpool-redis,https://github.com/GitDataAi/rsession,A simple session manager for Rust
+758,stackduck,0.1.3,3,,,rev:deadpool-redis,https://github.com/6amson/stackduck,High-performance distributed queue system
+759,surreal_bb8,0.1.0,3,,,rev:bb8,https://github.com/toadslop/surreal_bb8,An async connection pool for SurrealDB built on top of the bb8 library.
+760,tcproxy,0.1.1,3,,,rev:deadpool,https://github.com/amalshaji/tcproxy,A TCP proxy for PostgreSQL connections with SSH tunnel support and runtime target switching
+761,tiberius-helper,0.0.2,3,,,rev:deadpool-tiberius,,A helper crate for the tiberius that enables easy data retrieval and pooling.
+762,token-enforcer-rs,0.1.1,3,,,rev:deadpool-redis,https://github.com/hamzaelmarjani/token-enforcer-rs,Per-tenant LLM token budget enforcement library for Rust apps
+763,x-server-stats,0.1.2,3,,,rev:deadpool-postgres,,A simple web server to display server stats over HTTP and Websockets
+764,nextsql-tokio-postgres-adapter,0.5.0,2,,,rev:deadpool-postgres,https://github.com/shirakawayohane/next-sql,tokio-postgres / deadpool-postgres adapter for NextSQL runtime
+765,noether-grid-broker,0.8.2,2,,,rev:deadpool-postgres,https://github.com/alpibrusl/noether,"RESEARCH — noether-grid broker: pools worker LLM capacity, dispatches jobs"
+766,opendal_obs,0.50.4,2,,,rev:bb8,https://github.com/FayeSpica/opendal_obs,"[FORK]Apache OpenDAL™: Access data freely, painlessly, and efficiently."
+767,openvet-mirror,0.6.0,2,,,rev:deadpool;rev:deadpool-sqlite;rev:deadpool-sync,https://gitlab.com/openvet-org/openvet,Validating mirror for OpenVet logs.
+768,ora-storage-sqlite,0.4.1,2,,,rev:deadpool,https://github.com/tamasfe/ora/tree/master,Part of the Ora scheduler framework.
+769,patoka,0.1.0,2,,,rev:bb8,,Try this if you can decompose your problem into actors
+770,petl,0.1.2,2,,,rev:deadpool-postgres,,Framework of piped ETL
+771,pg-worm,0.7.0,2,,,rev:deadpool-postgres,https://github.com/Einliterflasche/pg-worm,"An async, fully-typed and straightforward ORM for PostgreSQL databases"
+772,pg_connector,1.0.1,2,,,rev:bb8,https://github.com/PTechSoftware/pg_connector,A powerful and easy-to-use PostgreSQL connector for Rust with connection pooling and read/write cluster support.
+773,prefix-register,0.2.2,2,,,rev:deadpool-postgres,https://github.com/telicent-oss/prefix-register,A PostgreSQL-backed namespace prefix registry for CURIE expansion and prefix management
+774,privchat,0.1.0,2,,,rev:bb8,https://github.com/privchat/privchat,High-performance instant messaging server built on msgtrans
+775,qm-customer,0.0.43,2,,,rev:deadpool-redis,https://github.com/hd-gmbh-dev/quick-microservice-rs,Default schema for customers
+776,redis-sentinel-pool,0.1.0,2,,,rev:bb8,https://github.com/luodaolv/redis-sentinel-pool-rs,"An async Redis Sentinel-aware connection pool built on top of redis-rs and bb8, with transparent master failover."
+777,rok-auth-session,0.1.0,2,,,rev:deadpool-redis,https://github.com/ateeq1999/axum-rok-http,Cookie-based session guard for the rok ecosystem — Memory/Database/Redis/Cookie drivers
+778,rust-db-driver,0.3.0,2,,,rev:deadpool;rev:deadpool-postgres,,"DuckDB extension for querying PostgreSQL, MySQL, and SQL Server from inside DuckDB SQL"
+779,schist,0.1.0,2,,,rev:deadpool-postgres,https://codeberg.org/oftheforest/schist,A search engine of curated links
+780,skopje,0.1.0,2,,,rev:deadpool-postgres,,ETL framework
+781,sqlint,0.2.2,2,,,rev:mobc,https://github.com/khulnasoft/sqlint/,An abstraction layer for SQL databases.
+782,sshkit_rs,0.1.0,2,,,rev:bb8,https://github.com/MonkeyDLabs/sshkit.rs,A Rust library to execute commands on remote hosts using SSH
+783,tchannel_rs,0.0.2,2,,,rev:bb8,https://github.com/pwalski/tchannel-rust,Network multiplexing and framing RPC protocol
+784,tianshu-postgres,0.1.0,2,,,rev:deadpool-postgres,https://github.com/Desicool/Tianshu-rs,PostgreSQL CaseStore + StateStore adapter for workflow-engine
+785,tiberius-mssql-broker,0.1.3,2,,,rev:deadpool,https://github.com/mjm918/tiberius-mssql-broker,Real time change listener for MSSQL
+786,vesperi,0.2.0,2,,,rev:deadpool-redis,,"a framework for eventing driven applications in CQRS style, organized hexgonally."
+787,vornix-core,0.1.0,2,,,rev:deadpool,https://github.com/tu_usuario/microservice_utilities,"Librería de utilidades para microservicios en Rust, incluyendo conexión asincrónica a bases de datos, manejo de respuestas y más."
+788,walnut-dns,0.1.0,2,,,rev:bb8,https://github.com/alexrudy/walnut-dns,Additions and helpers for flexible hickory-dns servers
+789,msaver,0.2.0,1,,,rev:deadpool-sqlite,,A lib for Rust to save or read data from mongodb
+790,neocrates-response,0.1.1,1,,,rev:deadpool-diesel,https://github.com/ooiai/neocrates.git,Response utilities and Axum integrations for the neocrates workspace
+791,notbot,0.6.13,1,,,rev:deadpool-postgres,https://codeberg.org/arachnist/notbot,"Matrix chatbot, primarily used around the Warsaw Hackerspace channels and spaces"
+792,ood_persistence,0.3.1,1,,,rev:bb8,https://github.com/pleshevskiy/ood_persistence,Asynchronous and synchronous interfaces and persistence implementations for your OOD architecture
+793,opencrates,3.0.1,1,,,rev:deadpool-redis,https://github.com/opencrates/opencrates,"Enterprise-grade AI-powered Rust development companion with comprehensive automation, monitoring, and deployment capabilities"
+794,opentalk-database,0.28.2,1,,,rev:deadpool-runtime,https://gitlab.opencode.de/opentalk/controller,OpenTalk database functionality
+795,orchestra-toolkit,0.6.3,1,,,rev:bb8,,"Client to interract with Orchestra system, uses HGTP protocol"
+796,ore-private-pool-srv,1.0.2,1,,,rev:deadpool-postgres,https://github.com/miraland-labs/ore-private-pool-srv,A lightweight release of Ore mining private pool server. derived from and credited to ore-hq-server.
+797,pco_store,0.2.0,1,,,rev:deadpool-postgres,https://github.com/pganalyze/pco_store,Easy to use numeric compression
+798,petro,0.0.37,1,,,rev:deadpool-postgres,,My Pet Rust ORM
+799,pgorm,0.3.0,1,,,rev:deadpool-postgres,,"A model-definition-first, AI-friendly PostgreSQL ORM for Rust"
+800,pokedex_rs,0.2.0,1,,,rev:deadpool,https://github.com/clechasseur/pokerust,Pokedex implemented in Rust 🦀
+801,raft4rs,0.1.4,1,,,rev:deadpool,,Rust impl for raft
+802,raio,0.2.0,1,,,rev:deadpool,https://github.com/aphorisme/raio-rs.git,A neo4j+bolt driver written in Rust.
+803,redis-sdk,0.1.0,1,,,rev:bb8,https://github.com/rooct/redis-sdk.git,library for redis
+804,rframe,0.1.1,1,,,rev:deadpool-redis,,A lightweight framework implemented in Rust
+805,sinan,0.1.0,1,,,rev:bb8,https://github.com/jiannei/sinan,A Boilerplate for Rapid Axum Web Service Deployment.
+806,sqlm-postgres,0.1.0,1,,,rev:deadpool-postgres,https://github.com/rkusa/sqlm,`sql!` macro to write compile-time checked database queries similar to how `format!` works
+807,orcinus,0.3.0,0,,,rev:bb8,https://github.com/Pctg-x8/orcinus,async-ready mysql protocol implementation / wrapper libraries
+808,orma-mobc,0.3.3,0,,,rev:mobc,https://github.com/RedSoftwareSystems/rust-orma,"Connection pool for Orma, based on mobc"
+809,pooly,0.2.1,0,,,rev:deadpool;rev:deadpool-postgres,https://github.com/mrrabbitte/pooly,A protobuf to Postgres adapter + connection pooling middleware.
+810,postgres_queue,0.1.0,0,,,rev:deadpool-postgres,https://github.com/fcoury/postgres_queue,A library for managing and executing tasks in a PostgreSQL-backed queue
+811,postgrpc,0.1.2,0,,,rev:deadpool-postgres,https://github.com/boilerplatter/postgrpc,A JSON-transcoding-ready gRPC server for querying Postgres databases
+812,remote-ssl-renewal,0.1.0,0,,,rev:deadpool-sqlite,https://github.com/dimfeld/remote-ssl-renewal,A CLI tool to help with renewing LetsEncrypt SSL certificates
+813,restapi,1.1.14,0,,,rev:bb8,https://github.com/jay-johnson/restapi,"A secure-by-default rest api using hyper, tokio, bb8, kafka-threadpool, postgres, and prometheus for monitoring"
+814,rocket-gitee-pictures,0.0.2,0,,,rev:deadpool-redis,https://gitee.com/awol2010ex/rocket-gitee-pictures,rocket use gitee for images repo
+815,rust-cli-commands,0.1.0,0,,,rev:mobc,https://github.com/AmdRyZen/rust-cli.git,rust-cli-commands

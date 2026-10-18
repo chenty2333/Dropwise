@@ -1,0 +1,1128 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,guarded,detail,snippet,review,note
+H001,99,106592,amqprs,2.1.5,src/net/reader_handler.rs,128,A,medium,no,fn handle_frame: call `close` in error path after await; guard=none,"                info!(""close connection {} OK"", self.amqp_connection);
+
+                // Try to yield for last sent message to be scheduled.
+                yield_now().await;
+                Ok(())
+            }
+
+            // Method frames of asynchronous request
+            // Server request to close connection
+            Frame::Close(_, close) => {
+                if let Some(ref mut callback) = self.callback {
+                    if let Err(err) = callback.close(&self.amqp_connection, close).await {",误报,"reader_handler.rs:128 是 `yield_now().await`（让出调度），不是网络往返。附近 `callback.close(&self.amqp_connection, close).await`（:136）是用户回调，失败即 `return Err(Error::Callback)`，run_until_shutdown 随即 break 并在 :325-326 无条件 `set_is_open(false)` + 通知 shutdown；连接由 reader/writer 任务独占，无池复用。"
+H002,99,106592,amqprs,2.1.5,src/net/writer_handler.rs,83,A,medium,no,fn run_until_shutdown: call `close` in error path after await; guard=none,"                    info!(""received shutdown notification for connection {}"", self.amqp_connection);
+                    // try to give last chance for last message.
+                    yield_now().await;
+                    break;
+                }
+                else => {
+                    break;
+                }
+            }
+        }
+        self.amqp_connection.set_is_open(false);
+
+        if let Err(err) = self.stream.close().await {",误报,writer_handler.rs:83 是 `yield_now().await`；`self.stream.close().await`（:93）作用在 writer 任务独占的本地 BufIoWriter（自身 Drop 也关 socket），且循环退出后 :91 无条件 `set_is_open(false)`，正常关闭/读写出错/任务取消三条路径一致；该连接不入池。
+H003,89,197590,async-bb8-diesel,0.3.0,src/connection_manager.rs,84,C,high,no,fn has_broken returns false / never marks breakage,        false,误报,connection_manager.rs:84-89 `has_broken` 恒 false（注释：无法非阻塞调用）。bb8 默认 test_on_check_out=true（bb8-0.9.1/src/api.rs:240），每次取用走 :75-82 `is_valid`→`spawn_blocking`（:48-58）发 diesel `SELECT 1`（diesel-2.3.14/src/r2d2.rs:291）；drop 不中断阻塞查询，回复总被读完，错误与取消两路都不置位。另：panic 后 Mutex 中毒连接仍回池，下次 `lock().unwrap()` panic。
+H004,31,5832912,async-nats,0.50.0,src/lib.rs,1328,A,medium,no,fn unsubscribe: call `close` in error path after await; guard=none,"                sid: self.sid,
+                max: None,
+            })
+            .await?;
+        self.receiver.close();
+        Ok(())",误报,lib.rs:1323-1329 的 `self.sender.send(Command::Unsubscribe{..}).await` 是发往连接任务的 tokio mpsc 命令队列，不是 broker 往返（真正 UNSUB 由后台任务写 wire）；`self.receiver.close()`（1330）只关本地消息通道。问题 1 不成立，future 被丢弃不影响共享 client，也不涉及池化连接复用。
+H005,144,7843,autumn-harvest,0.7.0,src/completion_trigger.rs,2606,B,medium,no,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2604,"            Some(metrics),
+            codecs,
+        )
+        .await
+        {
+            Ok(()) => processed_count += 1,",误报,Q2 不成立：processed_count 是 completion_trigger.rs:2493 的局部 usize，2621 行 `Ok(()) => processed_count += 1`，2784 行返回给调用方统计本批中继数；不在任何连接或事务上置坏，取消后没有可复用的坏对象。
+H006,144,7843,autumn-harvest,0.7.0,src/completion_trigger.rs,2747,B,medium,no,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2743,"                        stamp_outbox_relay_backoff(conn, task.id).await;
+                    }
+                    Ok(true) => {}
+                }
+                processed_count += 1;",误报,Q2 不成立：2766 行 `processed_count += 1` 位于 PayloadTooLarge 永久失败分支；前置 2738 行 transaction 的 Err 已回滚（源码注释 2757），计数仍是 2493 的局部变量，不是连接状态。
+H007,144,7843,autumn-harvest,0.7.0,src/dag.rs,1496,A,high,no,fn run_unified_dag: assign `status` in error path after await; guard=none,"                        while let Some((i, res)) = stream.next().await {
+                            match res {
+                                Ok(v) => results[i] = v,
+                                Err(err) => match &err {
+                                    HarvestError::ActivityFailed { .. }
+                                    | HarvestError::Timeout { .. } => {
+                                        status = TaskStatus::Failed;",误报,Q2 不成立：status 是 dag.rs:1456 的局部 TaskStatus，1502/1512 行在 Err 分支置 `TaskStatus::Failed`，随返回元组交给上层；DAG 节点状态不是池化连接/事务状态，取消后无可复用坏对象。
+H008,144,7843,autumn-harvest,0.7.0,src/debounce.rs,801,B,medium,no,fn fire_due_debounced_starts_on_conn_shard: `fired_count +=` after await at line 800,"                let fired = fire_due_on_conn(&mut shard_conn, Some(metrics), codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;",误报,Q2 不成立：fired_count 是 debounce.rs:780 的局部 usize，802 行 `fired_count += spawn_fired(...).await`，812 行 `Ok(fired_count)` 返回；shard_conn 由 connect_or_reuse 借出，本行不置坏。
+H009,144,7843,autumn-harvest,0.7.0,src/event_batch.rs,881,B,medium,no,fn fire_due_event_batches_on_conn_shard: `fired_count +=` after await at line 880,"                Some(metrics),
+                codecs,
+            )
+            .await?;
+            fired_count += fired.len();",误报,Q2 不成立：event_batch.rs:854 `let mut fired_count = 0usize;`，882 行 `fired_count += fired.len()` 只是本 tick 已触发批次数，895 行返回；Err 只经 `?` 传播，不改连接标志。
+H010,144,7843,autumn-harvest,0.7.0,src/mutex.rs,705,B,medium,no,fn reclaim_expired_leases_and_wake: `count +=` after await at line 703,"                    crate::queue::wake_workflow_task(conn, ExecutionId::from_uuid(head)).await?;
+                }
+                count += 1;",误报,Q2 不成立：mutex.rs:755 `let mut count = 0usize;`，776 行 `count += 1` 统计回收的过期租约，780 行 `Ok(count)`；conn 是调用方传入的 &mut 引用，本函数不缓存也不标记它。
+H011,144,7843,autumn-harvest,0.7.0,src/retention.rs,2851,A,high,no,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(_) => {}
+                Err(err) => {
+                    // Fail safe toward RETAINING on uncertainty (the retention
+                    // janitor's correct failure mode): do not archive/delete.
+                    has_failed = true;
+                    batch_failed = true;",误报,Q2 不成立：has_failed 是 retention.rs:2523 的局部 bool（另有 2700 行 batch_failed），2862 行在 read_candidate_hold 的 Err 分支置位，只影响 outcome.next_cursor 与本批是否中止，不触碰连接。
+H012,144,7843,autumn-harvest,0.7.0,src/retention.rs,3014,A,high,no,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                match crate::store::load_payload_refs(&mut conn, candidate_exec_id).await {
+                    Ok(refs) => refs,
+                    Err(err) => {
+                        has_failed = true;
+                        batch_failed = true;",误报,Q2 不成立：3021 行 `has_failed = true` 在 load_payload_refs 的 Err 分支，仍是 2523 的局部失败标志，决定是否 break/回退游标；3012 行 fenced_checkout 取得的 conn 未被标记。
+H013,144,7843,autumn-harvest,0.7.0,src/retention.rs,3034,A,high,no,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                config.summary.as_ref(),
+                fence_key,
+            )
+            .await
+            {
+                Err(err) => {
+                    has_failed = true;
+                    batch_failed = true;",误报,Q2 不成立：3041 行 `has_failed = true` 在 delete_candidate_execution 的 Err 分支后 break，局部 bool（2523）只回报失败；outcome 是统计结构，取消后不存在被污染的连接。
+H014,144,7843,autumn-harvest,0.7.0,src/retention.rs,2602,B,medium,no,fn run_shard_tick: `deleted_count +=` after await at line 2601,"            .map_err(database_error)
+        }))
+        .await?;
+        outcome.deleted_count += reclaimed;",误报,Q2 不成立：2606 行 `outcome.deleted_count += reclaimed`，outcome 是 2257-2268 的 ShardTickOutcome（tick 统计，返回调用方），reclaimed 来自 2605 行事务结果；计数器不是连接状态。
+H015,144,7843,autumn-harvest,0.7.0,src/retention.rs,3084,B,medium,no,fn run_shard_tick: `summarized_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;",误报,Q2 不成立：3088 行 `outcome.summarized_count += 1` 仅在 `CandidateDeleteOutcome::Deleted { summarized }` 时累加摘要数；该字段（2267）是 tick 回报统计。
+H016,144,7843,autumn-harvest,0.7.0,src/retention.rs,3088,B,medium,no,fn run_shard_tick: `deleted_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;
+                    }
+                }
+            }
+            outcome.deleted_count += 1;",误报,Q2 不成立：3092 行 `outcome.deleted_count += 1` 在删除成功分支自增；ShardTickOutcome.deleted_count（2259）是 tick 统计，本命中没有任何连接/事务状态被置坏。
+H017,144,7843,autumn-harvest,0.7.0,src/scheduler.rs,3604,B,medium,no,fn cancel_in_flight_runs: `count +=` after await at line 3603,"        match cancel_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,",误报,Q2 不成立：scheduler.rs:3627 `let mut count: u32 = 0;`，3631 行 `Ok(_) => count += 1` 统计成功取消数，3641 行返回；conn 由调用方持有，本函数不标记。
+H018,144,7843,autumn-harvest,0.7.0,src/scheduler.rs,3635,B,medium,no,fn terminate_in_flight_runs: `count +=` after await at line 3634,"        match terminate_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,",误报,Q2 不成立：3658 行同样是局部 count，3662 行 `Ok(_) => count += 1`，3672 行返回；与 cancel_in_flight_runs 同构的纯计数，无连接状态。
+H019,144,7843,autumn-harvest,0.7.0,src/throttle.rs,1729,B,medium,no,fn fire_due_throttled_starts_on_conn_shard: `fired_count +=` after await at line 1728,"                let fired = fire_due_on_conn(&mut shard_conn, metrics, codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;",误报,Q2 不成立：throttle.rs:1727 `let mut fired_count = 0usize;`，1744 行 `fired_count += spawn_fired(...).await`，末尾返回本 tick 计数；与 debounce/event_batch 同构。
+H020,144,7843,autumn-harvest,0.7.0,src/timeout.rs,3159,B,medium,no,fn enforce_external_task_timeouts: `count +=` after await at line 3156,"                Ok(true)
+            }),
+        ))
+        .await;
+
+        match result {
+            Ok(true) => count += 1,",误报,Q2 不成立：timeout.rs:3112 `let mut count = 0usize;`，3246 行 `Ok(true) => count += 1` 仅在事务返回 true 时计数，3260 行返回；Err 分支 3248-3256 只记日志后 return Err，不标连接。
+H021,144,7843,autumn-harvest,0.7.0,src/timeout.rs,4439,B,medium,no,fn enforce_external_signals_outbox: `count +=` after await at line 4434,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;",误报,Q2 不成立：4248 行 `let mut count = 0`，4528 行 `if processed { count += 1; }`，4547 行返回；skipped_id 也只进本地 excluded_event_ids，均是扫描器局部量。
+H022,144,7843,autumn-harvest,0.7.0,src/timeout.rs,5610,B,medium,no,fn enforce_external_awaits_outbox: `count +=` after await at line 5605,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;",误报,Q2 不成立：5440 行局部 count，5703 行 `if processed { count += 1; }`，5717 行返回；与 signals outbox 扫描同构，纯局部计数。
+H023,144,7843,autumn-harvest,0.7.0,src/timeout.rs,5800,B,medium,no,fn enforce_timeouts_pass: `count +=` after await at line 5796,"            find_timed_out_tasks_batch(conn, cursor, limit).await?,
+            Some(cursor),
+        ),
+    };
+    count += timed_out.len();",误报,Q2 不成立：enforce_timeouts_pass 5863 行 `let mut count = 0usize;`，5894 行 `count += timed_out.len()`；count 汇总各 resident 产出供调用方记录，不是连接状态。
+H024,144,7843,autumn-harvest,0.7.0,src/timeout.rs,6026,B,medium,no,fn enforce_timeouts_pass: `count +=` after await at line 5998,"        payload_codecs,
+        codec_rotation_batch_size,
+        metrics,
+    )
+    .await
+    {
+        // Deliberately NOT folded into `count`. That value is the
+        // timeout-enforcement total: the caller logs `warn!(""enforced timed-out
+        // tasks"")` whenever it is non-zero, and embedders read it as ""this many
+        // tasks timed out"". Adding rotation rewrites to it makes every
+        // productive sweep tick claim a timeout that never happened. Rotation
+        // reports itself through `harvest.codec.reencrypted` instead.
+        Ok(_swept) => {}
+        Err(e) => tracing::warn!(
+            error = %e,",误报,Q2 不成立：同 enforce_timeouts_pass，5946-6032 行一串 `count += ...await?` 只是把各 pass 计数相加供调用方使用；它只表示本轮超时执行总数，并非连接/事务状态。
+H025,144,7843,autumn-harvest,0.7.0,src/worker.rs,29015,A,high,no,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::queue_depths(&mut conn, &queues).await {
+                    Ok(depths) => {
+                        for (queue_name, depth) in depths {
+                            *depth_by_queue.entry(queue_name).or_insert(0) += depth;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""queue depth sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：29158 行 `let mut read_failed = false;`，29170/29192 置位，29211 行 `if read_failed` 跳过本次 gauge 发射；取消分支 29166-29171 也置 read_failed，无 Err/取消不对称。
+H026,144,7843,autumn-harvest,0.7.0,src/worker.rs,29027,A,high,no,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::oldest_pending_ages(&mut conn, &queues, &circuit_breaker_activities)
+                    .await
+                {
+                    Ok(ages) => {
+                        for (queue_name, age_secs) in ages {
+                            let slot = age_by_queue.entry(queue_name).or_insert(0.0);
+                            *slot = slot.max(age_secs);
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""oldest pending age sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：29206 行 `read_failed = true`（oldest_pending_ages 的 Err 分支），read_failed 是 29158 的局部 bool，只决定是否发布聚合 gauge；不是连接状态。
+H027,144,7843,autumn-harvest,0.7.0,src/worker.rs,29432,A,high,no,fn spawn_queue_pause_sampler: assign `read_failed` in error path after await; guard=none,"                match crate::queue_pause::paused_queue_names(&mut conn).await {
+                    Ok(names) => currently_paused.extend(names),
+                    Err(error) => {
+                        read_failed = true;
+                        tracing::debug!(error = %error, ""queue pause sample failed"");",误报,Q2 不成立：29581 行 `let mut read_failed = false;`，29594/29598/29604 置位，29616 行传给 compute_queue_pause_emissions 仅用于抑制零填充；采样器局部标志。
+H028,144,7843,autumn-harvest,0.7.0,src/worker.rs,31052,A,high,no,fn spawn_history_oversized_sampler: assign `read_failed` in error path after await; guard=none,"                match sample_history_oversized_counts(&mut conn, soft_threshold).await {
+                    Ok(counts) => {
+                        for (workflow_name, count) in counts {
+                            *count_by_workflow.entry(workflow_name).or_insert(0) += count;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""history oversized sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：31199 行局部 read_failed，31211/31221/31234 置位，31239 行 `if read_failed { ... continue; }` 跳过整 tick；历史超限 gauge 采样器局部状态。
+H029,144,7843,autumn-harvest,0.7.0,src/worker.rs,31338,A,high,no,fn spawn_workflow_active_sampler: assign `read_failed` in error path after await; guard=none,"                };
+
+                match sample_active_workflow_counts(&mut conn).await {
+                    Ok(rows) => per_shard.push(rows),
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""active workflow sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：31489 行局部 read_failed，31501/31511/31520 置位，31528 行据此不合并分片计数、31534 行不发射 gauge；同系列采样器局部标志。
+H030,144,7843,autumn-harvest,0.7.0,src/worker.rs,42612,A,medium,no,fn run_with_listener_accepts_colocated_logical_shards: call `shutdown` in error path after await; guard=none,"            worker.run_with_listener(&pool, None),
+        )
+        .await;
+        assert!(
+            entered.is_err(),
+            ""a worker whose logical shards share one database must enter its poll loop, not \
+             refuse to start: one pool covers every assignment"",
+        );
+        worker.shutdown();",误报,Q2 不成立：42869 行 worker.shutdown() 在 `#[cfg(test)] mod tests`（39043 起）的测试 run_with_listener_accepts_colocated_logical_shards 内，位于 `tokio::time::timeout(...).await` 之后；测试代码 + CancellationToken。
+H031,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,13572,A,high,no,fn build_awaitables_report: assign `decode_failed` in error path after await; guard=none,"                        match offloader.inflate_event_value(&mut value).await {
+                            Ok(()) => {}
+                            Err(err) => {
+                                tracing::warn!(
+                                    execution_id = %exec_id,
+                                    error = %err,
+                                    ""awaitables: payload inflate failed; degrading to history-only""
+                                );
+                                decode_failed = true;
+                                break;",误报,Q2 不成立：13590 行 `let mut decode_failed = false;`，13603/13620 在 payload inflate/decode 失败时置位，13626 行降级为 history_only 报告；conn 已在 13571 行 drop(conn)，无坏连接复用。
+H032,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,40658,A,high,no,fn get_aggregated_scaling_signals: assign `in_flight` in error path after await; guard=none,"        let shard_counts = ::autumn_harvest::queue::queue_task_counts(&mut conn)
+            .await
+            .map_err(map_error)?;
+        for stat in shard_counts {
+            let entry = task_stats.entry(stat.queue.clone()).or_insert_with(|| {
+                ::autumn_harvest::queue::QueueTaskCounts {
+                    queue: stat.queue.clone(),
+                    backlog: 0,
+                    in_flight: 0,
+                    scheduled: 0,
+                }
+            });
+            entry.backlog += stat.backlog;
+            entry.in_flight += stat.in_flight;",误报,Q2 不成立：40812 行 `entry.in_flight += stat.in_flight` 累加的是 40804-40809 初始化的本地 QueueTaskCounts（来自 queue_task_counts 查询），最终序列化为 scaling signal。
+H033,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20366,B,medium,no,fn batch_start_workflows: `rejected_count +=` after await at line 20359,"        let conn_result = db_conn_for_shard(&api_state, *shard).await;
+        let mut conn = match conn_result {
+            Ok(c) => c,
+            Err(e) => {
+                // All items on this shard are rejected due to connection failure.
+                let err_str = e.to_string();
+                for (idx, workflow_id) in shard_items {
+                    rejected_count += 1;",误报,Q2 不成立：20076 行 `let mut rejected_count = pre_rejected_idxs.len();`，20338 行 gate 拒绝后自增，20989 行写入 batch_span；请求级计数，用于响应/审计/span。
+H034,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20568,B,medium,no,fn batch_start_workflows: `rejected_count +=` after await at line 20564,"                    &item.workflow_name,
+                    workflow_id,
+                    None,
+                )
+                .await
+                {
+                    Ok(skip) => skip,
+                    Err(e) => {
+                        rejected_count += 1;",误报,Q2 不成立：20410（分片连接失败整批拒绝）与 20451（schema 校验失败）两处 `rejected_count += 1`，仍是 20076 的局部计数；conn 由 db_conn_for_shard 取得且本函数不标记。
+H035,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20840,B,medium,no,fn batch_start_workflows: `rejected_count +=` after await at line 20838,"                                autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket)
+                                    .await;
+                        }
+                        rejected_count += 1;",误报,Q2 不成立：20638（load-shed 拒绝）与 20658（输入超 cap）两处 `rejected_count += 1`，都是 20076 的请求级计数器，只影响 BatchStartItemStatus::Rejected 与审计。
+H036,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20880,B,medium,no,fn batch_start_workflows: `rejected_count +=` after await at line 20878,"                            autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket).await;
+                    }
+                    rejected_count += 1;",误报,Q2 不成立：20884 行 attach 已存在执行时 `rejected_count += 1`（前一行退回限流 token），同 20076 局部计数，不涉及连接或事务状态。
+H037,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,21317,B,medium,no,fn batch_reset_workflows: `reset_count +=` after await at line 21305,"                        Some(&runtime.registry),
+                    )
+                    .await
+                    {
+                        Ok(result) => {
+                            items.push(BatchResetItem {
+                                exec_id: exec_id_str,
+                                outcome: BatchResetOutcome::Reset,
+                                // Use the engine's authoritatively-resolved event id (under lock),
+                                // not the speculative value from resolve_batch_reset_one.
+                                resolved_event_id: Some(result.reset_to_event_id),
+                                new_exec_id: Some(result.new_exec_id.to_string()),
+                                skip_reason: None,
+                            });
+                            reset_count += 1;",误报,Q2 不成立：21217 行 `let mut reset_count = 0usize;`，21363 行 reset_workflow_execution 成功后 `reset_count += 1`，21425 行写入响应；纯响应统计。
+H038,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,29118,B,medium,no,fn set_schedule_paused: `found_count +=` after await at line 29109,"                .get_result(&mut conn)
+                .await
+                .map_err(database_error)
+                .map_err(map_error)?;
+
+            if !exists {
+                continue; // not on this shard — try the next one
+            }
+            // Already in the requested state: idempotent no-op.
+        }
+        found_count += 1;",误报,Q2 不成立：29121 行 `let mut found_count = 0usize;`，29191 行找到 schedule 后自增，29212 行 `if found_count == 0` 决定 404；路由级计数，非连接状态。
+H039,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,29331,B,medium,no,fn delete_schedule: `deleted_count +=` after await at line 29328,"            .execute(&mut conn)
+            .await
+            .map_err(database_error)
+            .map_err(map_error)?;
+        deleted_count += n;",误报,Q2 不成立：29350 行 `let mut deleted_count = 0usize;`，29407 行 `deleted_count += n` 累加 delete 影响行数，29429 行据此决定 404；响应统计。
+H040,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,37191,B,medium,no,fn apply_pause_across_shards: `held_task_count +=` after await at line 37187,"            reason,
+            actor,
+            scope_shard_id,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;",误报,Q2 不成立：PauseApplication（37262-37276）是跨分片汇总结构，37313 行 `applied.held_task_count += outcome.held_task_count` 累加各分片挂起数用于响应；conn 由 acquire_conn 取得后不缓存。
+H041,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,37315,B,medium,no,fn apply_resume_across_shards: `released_task_count +=` after await at line 37311,"        match ::autumn_harvest::queue_pause::resume_queue(&mut conn, canonical_queue, actor).await {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;",误报,Q2 不成立：ResumeApplication（37420 初始化）局部汇总，37437 行 `applied.released_task_count += outcome.released_task_count`；与 pause 同构的响应统计。
+H042,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,39481,B,medium,no,fn apply_activity_pause_across_shards: `held_task_count +=` after await at line 39477,"            reason,
+            paused_by,
+            // Always fleet-wide — see `activity_pause_target_pools`.
+            None,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;",误报,Q2 不成立：ActivityPauseApplication（39591-39594）局部汇总，39616 行 `applied.held_task_count += outcome.held_task_count`；活动暂停的响应统计。
+H043,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,39601,B,medium,no,fn apply_activity_resume_across_shards: `released_task_count +=` after await at line 39596,"        match ::autumn_harvest::activity_pause::resume_activity(&mut conn, canonical_activity).await
+        {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;",误报,Q2 不成立：ActivityResumeApplication（39716-39722）局部汇总，39736 行 `applied.released_task_count += outcome.released_task_count`；响应统计，非连接/事务状态。
+H044,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,49959,B,medium,no,fn get_queue_eligibility: `global_pending_count +=` after await at line 49957,"        match evaluate_eligibility_for_shard(&api_state, shard_id, &queue_name, None).await {
+            Ok(res) => {
+                global_pending_count += res.pending_count;",误报,Q2 不成立：50138 行 `let mut global_pending_count = 0;`，50149 行跨分片求和 `global_pending_count += res.pending_count`，最终放入 QueueEligibilityResponse；只读聚合。
+H045,146,6905,autumn-harvest-plugin,0.7.0,src/bin/harvest_dev.rs,51,A,medium,no,fn main: call `shutdown` in error path after await; guard=none,"    print!(""{}"", runtime.banner());
+
+    DevRuntime::wait_for_shutdown_signal().await;
+    eprintln!(""\nharvest-dev: stopping and reclaiming ephemeral storage…"");
+    if let Err(error) = runtime.shutdown().await {",误报,Q1/Q2 不成立：53 行 `runtime.shutdown().await` 回收 ephemeral Postgres 与 dev server（DevRuntime::shutdown 550-557），前面 51 行只是等退出信号；进程级清理，非池化连接。
+H046,146,6905,autumn-harvest-plugin,0.7.0,src/connector/runtime.rs,606,A,high,no,fn drain_in_flight: assign `in_flight` in error path after await; guard=none,"            self.permits.acquire_many(permits),
+        )
+        .await
+        .is_err()
+        {
+            // `available_permits` is a snapshot, but every holder is an
+            // in-flight dispatch, so it names the work being abandoned.
+            let in_flight = self
+                .binding
+                .max_in_flight",误报,"Q1/Q2 不成立：616 行 drain_in_flight 的 await 是 618-623 行 `timeout(..., self.permits.acquire_many(permits)).await`（Semaphore，非网络往返）；627 行 `let in_flight = ...available_permits()` 只是日志用局部 u32。"
+H047,146,6905,autumn-harvest-plugin,0.7.0,src/connector/sqs.rs,470,A,high,no,fn lag: assign `in_flight` in error path after await; guard=none,"            .attribute_names(QueueAttributeName::ApproximateNumberOfMessagesNotVisible)
+            .send()
+            .await
+            .ok()?;
+        let attributes = response.attributes?;
+        let read = |name: &QueueAttributeName| -> Option<i64> {
+            attributes.get(name).and_then(|v| v.parse::<i64>().ok())
+        };
+        let visible = read(&QueueAttributeName::ApproximateNumberOfMessages);
+        let in_flight = read(&QueueAttributeName::ApproximateNumberOfMessagesNotVisible);",误报,Q2 不成立：471-473 行 `get_queue_attributes().send().await.ok()?` 是 SQS 往返，但 479 行 `let in_flight = read(...)` 只把响应解析成本地 Option<i64>；Err 被 .ok()? 丢弃，不标记任何客户端状态。
+H048,146,6905,autumn-harvest-plugin,0.7.0,src/dev/mod.rs,466,A,medium,no,fn start: call `shutdown` in error path after await; guard=none,"        if let Err(error) = runtime.wait_until_ready().await {
+            // Same rule: a runtime that never became usable must still take its
+            // cluster with it — and if it could not, say so rather than
+            // reporting only the readiness failure.
+            if let Err(teardown) = runtime.shutdown().await {",误报,"Q2 不成立：419 行 DevRuntime::start 的 449/461/470 行失败路径调用 `abandon_cluster(&postgres, error).await`，回收的是 437 行 provision_storage 得到的临时 Postgres 句柄，不是池化连接。"
+H049,146,6905,autumn-harvest-plugin,0.7.0,src/dev/mod.rs,759,A,medium,no,fn abandon_cluster: call `shutdown` in error path after await; guard=none,"    let taken = postgres.lock().await.take();
+    if let Some(postgres) = taken
+        && let Err(teardown) = postgres.shutdown().await
+    {",误报,Q1/Q2 不成立：781 行先 `postgres.lock().await.take()` 把集群句柄移出，783 行再 `postgres.shutdown().await`；对象是本地 Postgres 集群（pg_ctl stop），不是连接。
+H050,146,6905,autumn-harvest-plugin,0.7.0,src/dev/postgres.rs,301,A,medium,no,fn provision: call `shutdown` in error path after await; guard=none,"        match started.finish_provisioning(&admin_url, session_dir).await {
+            Ok(version) => {
+                started.version = version;
+                Ok(started)
+            }
+            Err(error) => {
+                started.shutdown().await.ok();",误报,Q2 不成立：302 行 `started.finish_provisioning(...).await` 失败后 308 行 `started.shutdown().await.ok()`，对象是构造中的 EphemeralPostgres（pg_ctl stop），非池化连接。
+H051,146,6905,autumn-harvest-plugin,0.7.0,src/runner.rs,1510,A,medium,no,fn stop: call `shutdown` in error path after await; guard=none,"            cancel.cancel();
+            if let Err(error) = handle.await {
+                tracing::warn!(
+                    error = %error,
+                    ""dispatch metrics sampler task failed during shutdown""
+                );
+            }
+        }
+
+        if let Some(worker) = worker {
+            worker.shutdown();
+        }
+        if let Some(scheduler) = scheduler {",误报,Q1/Q2 不成立：1508 行 stop(self) 中 1534-1541 的 `cancel.cancel()` + `handle.await` 是 JoinHandle join，随后是 worker/scheduler 的 shutdown()；任务是句柄，不是网络往返或连接。
+H052,146,6905,autumn-harvest-plugin,0.7.0,src/runner.rs,1523,A,medium,no,fn stop: call `shutdown` in error path after await; guard=none,"            if let Err(error) = scheduler.join().await {
+                tracing::warn!(error = %error, ""harvest scheduler task failed during shutdown"");
+            }
+        }
+        if let Some(retention) = retention {
+            retention.shutdown();
+            if let Err(error) = retention.join().await {",误报,Q1/Q2 不成立：同 stop：1549/1555 行 `join().await`、1560 行 `batch.shutdown().await` 都是任务/子系统收尾；storage_pool 只被 drop，不标记连接坏。
+H053,146,6905,autumn-harvest-plugin,0.7.0,src/ui.rs,1965,A,high,no,fn render_workflow_detail_page: assign `log_read_failed` in error path after await; guard=none,"                ..Default::default()
+            },
+        )
+        .await
+        {
+            Ok(rows) => log_truncated = !rows.is_empty(),
+            Err(err) => {
+                tracing::warn!(
+                    execution_id = %exec_id,
+                    error = ?err,
+                    ""workflow detail: durable log truncation probe failed""
+                );
+                log_read_failed = true;
+            }
+        }",误报,Q2 不成立：1945 行 `let mut log_read_failed = false;`，1976/2001 在日志读取失败时置位，仅控制面板空态；2009 行 drop(conn) 释放池槽，无连接被标记。
+H054,100,95874,autumn-web,0.8.0,src/app.rs,5849,A,medium,no,fn run: call `abort` in error path after await; guard=none,"        drain_phase_notify.notify_one();
+
+        // Wait for the server to drain all in-flight requests.  The drain
+        // watchdog in shutdown_task will force-exit if drain takes too long.
+        let server_result = server_task.await.unwrap_or_else(|e| {
+            tracing::error!(""Server task join error: {e}"");
+            // `process::exit` skips the `on_shutdown` hooks, so stop a managed
+            // Postgres child here to avoid orphaning it on an accept-loop/join
+            // failure (direct/foreground runs have no CLI reaper).
+            exit_stop_managed_pg();
+            std::process::exit(1);
+        });
+        // Drain completed within the deadline; abort the watchdog.
+        shutdown_task.abort();
+        server_result.unwrap_or_else(|e| {",误报,Q1/Q2 不成立：5897 行 `server_task.await.unwrap_or_else(...)` 是 JoinHandle join，错误分支 5902-5903 调 exit_stop_managed_pg() 后 process::exit(1)；5906 行 shutdown_task.abort() 是任务句柄。
+H055,100,95874,autumn-web,0.8.0,src/session.rs,206,B,medium,no,fn touch: `dirty =` after await at line 206,        self.inner.write().await.dirty = true;,误报,Q1 不成立：206 行 `self.inner.write().await.dirty = true` 的 await 是 tokio RwLock::write()，不是网络往返；dirty 是内存 SessionInner 字段，取消只丢本次置位。
+H056,100,95874,autumn-web,0.8.0,src/session.rs,223,B,medium,no,fn insert: `dirty =` after await at line 221,"        let mut inner = self.inner.write().await;
+        inner.data.insert(key.into(), value.into());
+        inner.dirty = true;",误报,Q1 不成立：221 行 `self.inner.write().await` 取写锁，222-223 行改 data/dirty；锁保护的内存 session，无连接或远端会话被污染。
+H057,100,95874,autumn-web,0.8.0,src/session.rs,231,B,medium,no,fn remove: `dirty =` after await at line 228,"        let mut inner = self.inner.write().await;
+        let val = inner.data.remove(key);
+        if val.is_some() {
+            inner.dirty = true;",误报,Q1 不成立：228 行取写锁，230-231 行 `inner.dirty = true`；同 session.rs 的内存锁语义，不是池化会话/连接。
+H058,100,95874,autumn-web,0.8.0,src/session.rs,240,B,medium,no,fn clear: `dirty =` after await at line 238,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.dirty = true;",误报,Q1 不成立：238 行 `self.inner.write().await`，239-240 行 `data.clear(); dirty = true`；内存 session 状态，await 不是往返。
+H059,100,95874,autumn-web,0.8.0,src/session.rs,254,B,medium,no,fn rotate_id: `dirty =` after await at line 249,"        let mut inner = self.inner.write().await;
+        if inner.old_id.is_none() {
+            inner.old_id = Some(inner.id.clone());
+        }
+        inner.id = new_id;
+        inner.dirty = true;",误报,Q1 不成立：249 行 `self.inner.write().await` 后 250-254 行改 old_id/id/dirty；uuid 生成在取锁前完成，锁内无网络 await。
+H060,100,95874,autumn-web,0.8.0,src/session.rs,263,B,medium,no,fn destroy: `dirty =` after await at line 260,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.destroyed = true;
+        inner.dirty = true;",误报,Q1 不成立：260 行取写锁，261-263 行 `destroyed = true; dirty = true`；内存 session 标志，无连接状态。
+H061,24,9267014,bb8,0.9.1,src/inner.rs,110,A,high,no,fn get: assign `state` in error path after await; guard=none,"                match self.inner.manager.is_valid(&mut conn).await {
+                    Ok(()) => return Ok(conn),
+                    Err(e) => {
+                        self.inner.statistics.record(StatsKind::ClosedInvalid);
+                        self.inner.forward_error(e);
+                        conn.state = ConnectionState::Invalid;",可疑,"inner.rs:110 `is_valid(&mut conn).await` 前 conn 是 state=Present 的 PooledConnection（api.rs:497）；Err 分支才在 115 行置 Invalid，取消（含 124 行 connection_timeout）走 api.rs:531-541 的 Drop → `put_back(conn, self.state)`（inner.rs:143-157）→ 以 Present 入池。put_back 只问 manager.has_broken，看不到在途验证，残留验证回复被下一位继承。即 bb8 #324。"
+H062,117,34107,bb8-diesel,0.2.1,src/lib.rs,114,C,high,no,fn has_broken returns false / never marks breakage,        false,误报,has_broken 恒 false（lib.rs:114-119），但 is_valid（103-112）经 `run_blocking_in_place`（81-86 的 `task::block_in_place`）在阻塞段内一次 poll 跑完，future 无法在往返中途被 drop；坏连接由下一次取用的 is_valid 判 Err、inner.rs:115 标 Invalid 丢弃。不存在异步取消窗口。
+H063,120,29957,bb8-lapin,0.8.1,src/lib.rs,87,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,"        let conn_status = conn.status();
+        conn_status.closed() || conn_status.errored()",误报,is_valid（lib.rs:75-85）只读 `conn.status()`，没有任何 await，不存在“await 前未置坏”的窗口；has_broken（87-90）读 closed/errored。lapin::Connection 是后台 IO 任务的多路复用句柄，单条流不会因取消而错位。
+H064,141,8691,bb8-ldap,0.4.1,src/lib.rs,237,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,is_valid（lib.rs:223-235）的 search 由 ldap3 多路复用驱动处理（connect 里 215 行 `ldap3::drive!(conn)`，回复按 msgid 路由，conn.rs:784-786），丢弃 search future 不会让后续命令读错回复；has_broken（237-241）的 `conn.is_closed()` 只查发送通道，会话状态在驱动里，无可污染的池化字节流。
+H065,381,132,bb8-memcached,0.7.0,src/client.rs,143,A,medium,no,fn get: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.get(key)).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(read_timeout, self.connection.get(key)).await`（client.rs:143）；`taint()` 只在内部超时的 `Err(_elapsed_err)` 分支（144-146）调用，外部取消不走该分支，`is_tainted()`（281-283）仍 false。单条 memcache 流上残留的 VALUE/END 被下一位读到，memcache-async 解析 get 不核对 key（RESCAN 4.2），可静默返回别的 key 的值。"
+H066,381,132,bb8-memcached,0.7.0,src/client.rs,161,A,medium,no,fn get_multi: call `taint` in error path after await; guard=none,"                match timeout(read_timeout, self.connection.get_multi(keys)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(read_timeout, self.connection.get_multi(keys)).await`（client.rs:161）；taint 只在 162-165 的内部超时分支。取消后 tainted 仍 false，多 key 的 VALUE..END 块残留在流上，下一位的 get 把前一条回复当自己的，memcache-async 不核对 key（RESCAN 4.2）。"
+H067,381,132,bb8-memcached,0.7.0,src/client.rs,177,A,medium,no,fn delete: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.delete(key)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.delete(key)).await`（client.rs:177）；taint 只在 178-181。取消时可能只写出半条 delete 命令或留下未读回复，tainted 仍 false，连接被 put_back 放行（bb8 inner.rs:149），下一条命令的字节被服务端接在半条命令后面。"
+H068,381,132,bb8-memcached,0.7.0,src/client.rs,198,A,medium,no,fn add: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.add(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.add(key,val,expiration)).await`（client.rs:198）；taint 只在 199-202 的内部超时分支。取消后 tainted 仍 false，`STORED/NOT_STORED` 残留回复留在流上，下一位请求读到前一条回复，错位会一直延续。"
+H069,381,132,bb8-memcached,0.7.0,src/client.rs,219,A,medium,no,fn set: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.set(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.set(key,val,expiration)).await`（client.rs:219）；taint 只在 220-223。set 走 noreply，取消可能把 header/值写到一半，tainted 仍 false → 连接回池；下一条命令的字节被当作上一条 set 的剩余值，后续回复整体错位。"
+H070,381,132,bb8-memcached,0.7.0,src/client.rs,239,A,medium,no,fn increment: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.increment(key, amount)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.increment(key,amount)).await`（client.rs:239）；taint 只在 240-243 的内部超时分支。取消后 tainted 仍 false，数字回复残留在流上，下一位把旧值当自己的结果（increment 这类有副作用命令尤其危险）。"
+H071,381,132,bb8-memcached,0.7.0,src/client.rs,253,A,medium,no,fn version: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.version()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(read_timeout, self.connection.version()).await`（client.rs:253）；taint 只在 254-257。取消后 tainted 仍 false，`VERSION ...` 回复残留在流上；下一次 is_valid 的 version()（lib.rs:88）正好读到这条残留并判为验证通过，连接继续留在池里。"
+H072,381,132,bb8-memcached,0.7.0,src/client.rs,266,A,medium,no,fn flush: call `taint` in error path after await; guard=none,"            Some(write_timeout) => match timeout(write_timeout, self.connection.flush()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.flush()).await`（client.rs:266）；taint 只在 267-270。取消后 tainted 仍 false，`OK` 回复残留在流上，下一位请求读到它；flush_all 已在服务端生效但客户端状态不明，连接被回收复用。"
+H073,381,132,bb8-memcached,0.7.0,src/lib.rs,91,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_tainted(),可疑,lib.rs:91-93 的 `has_broken` 只看 `conn.is_tainted()`，而 tainted 只在 client.rs 各方法内部超时的 `Err(_elapsed_err)` 分支置位（如 143-146）；外部取消（调用方 drop 或 bb8 的 connection_timeout）不置位，put_back（inner.rs:149）因此放行。is_valid 的 version() 还会把残留的 VERSION 回复当验证通过。
+H074,129,16389,bb8-oracle,0.3.0,src/lib.rs,133,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,"        !matches!(conn.status(), Ok(oracle::ConnStatus::Normal))",不确定,is_valid（lib.rs:121-131）用 `spawn_blocking(move || conn_clone.ping())` 把 Arc<Connection> 克隆进阻塞线程：取消只丢弃 JoinHandle，ping 继续跑，而 bb8 的 PooledConnection::drop 已把同一连接放回池，下一位可能与 ping 并发使用。是否损坏取决于 oracle crate 的 ODPI-C 线程模型，其源码未下载，RESCAN 4.2 记为未检查。
+H075,61,1204081,bb8-postgres,0.9.0,src/lib.rs,69,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,Connection 是 tokio_postgres::Client，connect 时把连接任务 spawn 出去（lib.rs:57-62），请求按 id 多路复用；取消 simple_query（65-67）不会让流错位，残留回复由后台任务消费。has_broken 的 `is_closed()`（69-71）只做快速判断，坏连接下次 is_valid 报 Err。RESCAN 4.2 动态干净。
+H076,59,1343906,bb8-redis,0.26.0,src/lib.rs,76,C,high,no,fn has_broken returns false / never marks breakage,        false,误报,Connection 是 `MultiplexedConnection`（lib.rs:61），redis 内部按请求 id 多路复用，取消 PING 不会在共享流上留下错位回复；is_valid（68-74）严格比对 `PONG`。has_broken 恒 false（76-78）只是不提前淘汰坏连接，下次 is_valid 的 PING 会失败。RESCAN 4.2 动态干净。
+H077,90,163534,bb8-tiberius,0.16.0,src/lib.rs,208,C,high,no,fn has_broken returns false / never marks breakage,        false,不确定,has_broken 恒 false（208-210），风险取决于 tiberius：bb8-tiberius 0.16.0 的 Cargo.lock 锁 tiberius 0.12.3，但扫到的源码只有 0.13.0。0.13.0 在 send 写包前置 `poisoned`（connection.rs:287）、flush_stream 先 `ensure_not_poisoned`（474），取消写会让下一次请求失败；0.12.3 是否同样无法核对。RESCAN 4.2 仅静态看过。
+H078,112,38036,cdrs-tokio,9.0.2,src/transport.rs,164,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken(),误报,is_broken 只是转发 AsyncTransport 的标志（transport.rs:164-165→330），该标志只在后台 writer/reader 的 try_join 出错时才置位（transport.rs:393-397）。取消点是 write_envelope 的 oneshot（366）；请求已按 stream id 登记 handler（518-522），回复由 reader 按 id 取走并丢弃（692-700），socket 上不会留下未读回复。多路复用驱动，取消不污染连接。
+H079,112,38036,cdrs-tokio,9.0.2,src/transport.rs,263,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken(),误报,同 H078：TransportRustls::is_broken（transport.rs:263-264）同样转发 330 行的标志，只在读写任务出错时置 true（393-397）。write_envelope 的取消只丢 oneshot（366），回复仍由 reader 按 stream id 消费丢弃（692-700），连接池（connection_pool.rs:543-559）拿到的仍是干净连接。
+H080,112,38036,cdrs-tokio,9.0.2,src/transport.rs,329,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        self.is_broken.load(Ordering::Relaxed),误报,AsyncTransport::is_broken 读 AtomicBool（transport.rs:329-330），只在后台 try_join 出错时置位（393-397），确实没有“在途请求”标记。但 cdrs 按 stream id 多路复用：handler 先入表（518-522），回复由 reader 按 id 取走（425/492/692-700），取消不改连接状态、不留半截帧，后继者读不到别人的回复。
+H081,33,5471627,clickhouse,0.15.3,src/inserter.rs,314,B,high,no,fn write: `in_transaction =` after await at line 304,"        if self.insert.is_none() {
+            self.init_insert().await?;
+        }
+
+        match self.insert.as_mut().unwrap().do_write(row) {
+            Ok(bytes) => {
+                self.pending.bytes += bytes as u64;
+                self.pending.rows += 1;
+
+                if !self.in_transaction {
+                    self.pending.transactions += 1;
+                    self.in_transaction = true;",误报,取消点是 init_insert 的 client.insert().await（inserter.rs:303-304/375-386），默认校验开启时它只是元数据查询（lib.rs:778-812），返回尚未发起的 Insert；in_transaction 是 Inserter 本地批次计数（inserter.rs:34/312-314，仅用于 commit 的 transactions 计数），不是服务端事务/会话。取消后 self.insert 仍 None、in_transaction 仍 false，重试会重跑 init_insert；Inserter 不被池化。
+H082,67,932234,clickhouse-arrow,0.2.1,src/client.rs,377,A,medium,no,fn shutdown: call `shutdown` in error path after await; guard=none,"        trace!(""shutting down client"");
+        self.conn().await?.shutdown().await",误报,两处 await 都不是会话往返：conn() 直接返回 &self.connection（client.rs:1002-1005）；Connection::shutdown 只是 state.channel.send(Message::Shutdown) 的 mpsc 发送（connection.rs:342-361），随后 abort_all。取消最多少发一条 Shutdown，对象仍由 Drop（connection.rs:491-495）abort io_task 并关 socket；无池复用。
+H083,67,932234,clickhouse-arrow,0.2.1,src/pool.rs,238,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,"        matches!(conn.status(), ConnectionStatus::Error | ConnectionStatus::Closed)",误报,has_broken 只看 status（pool.rs:238-240）；is_valid 默认不 ping（check_health=false，pool.rs:40/47），只剩同步的 check_channel，没有挂起点。即使 with_check 开启 ping，后台 IO 任务在 run 里发完 ping 立即 receive_ping 消费 Pong（internal.rs:156-163/400+），调用方取消只丢 oneshot，Pong 不会留给下一位。
+H084,143,8640,datafusion-table-providers-postgres,0.14.0,src/pool.rs,222,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,"has_broken 只查 conn.is_closed()（pool.rs:223-224），is_valid 是 conn.simple_query("""")（pool.rs:215-220）。tokio-postgres 由后台 connection task 多路复用、按请求分发回复，请求 future 被 drop 后回复由连接任务丢弃，协议不会错位。RESCAN.md §4.2 对同款 manager（bb8-postgres 0.9.0，代码相同）做过动态验证：外部取消与 bb8 自身超时都干净。"
+H085,15,41463820,deadpool,0.13.1,src/managed/pool.rs,196,B,medium,no,fn try_recycle: `recycle_count +=` after await at line 191,"        if let Err(_e) = self.inner.hooks.post_recycle.apply(inner).await {
+            // TODO log post_recycle error
+            return Ok(None);
+        }
+
+        inner.metrics.recycle_count += 1;",误报,`inner.metrics.recycle_count += 1`（pool.rs:196）是对象指标，不是连接状态；且 try_recycle 全程由 `UnreadyObject`（166）持有，future 在 post_recycle await 处被丢弃时其 Drop（495-502）会 `slots.size -= 1` 并 `manager.detach`，对象被丢弃而不是放回池。少记一次指标不产生污染。
+H086,214,840,deadpool-memcached,0.5.0,src/lib.rs,46,C,high,no,fn recycle does I/O then accepts any positive/Ok reply,"        match conn.version().await {
+            Ok(_) => Ok(()),",可疑,recycle 只做 `conn.version().await` 且 `Ok(_) => Ok(())`（lib.rs:46-51）。async-memcached 的 version() 只要求响应行 ≥8 字节并截掉前 8 字符、不校验 `VERSION ` 前缀（0.8.1 lib.rs:172-173 仍是此写法），`STORED` 之类的 8 字节残留也能通过。用户中途取消后 Object::drop 无条件放回（object.rs:85-92），下一位持续报错且写入已生效（RESCAN 5.2 D4）。
+H087,28,6822955,deadpool-postgres,0.14.2,src/lib.rs,155,C,high,no,fn recycle does I/O then accepts any positive/Ok reply,"        if client.is_closed() {
+            tracing::warn!(target: ""deadpool.postgres"", ""Connection could not be recycled: Connection closed"");",误报,Connection 是 tokio_postgres::Client（连接任务在 create 里 spawn），多路复用；默认 Fast 模式 recycle 只查 `client.is_closed()` 后直接 Ok（lib.rs:156-168，config.rs:314-315 为默认值），自定义 Verified 模式的 simple_query 也按 id 路由。取消不会让流错位。RESCAN 5.2 记录该 manager 安全。
+H088,138,10179,deadpool-tiberius,0.1.9,src/lib.rs,122,C,high,no,fn recycle does I/O then accepts any positive/Ok reply,"        match obj.simple_query("""").await {
+            Ok(_) => Ok(()),",不确定,"recycle 用 `obj.simple_query("""")` 且 `Ok(_)` 即通过（lib.rs:127-129）。是否会被取消残留欺骗取决于 tiberius：Cargo.lock 锁 0.12.3，而源码只扫到 0.13.0（0.13.0 在 send 前置 poisoned、flush_stream 先 ensure_not_poisoned，会让 recycle 返回 Err 从而丢弃对象）。0.12.3 无源码，不下结论。"
+H089,23,9548247,diesel,2.3.14,src/mysql/connection/mod.rs,286,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),误报,diesel 2.3.14 是同步 crate，is_broken 无 await、无 future 可 drop。AnsiTransactionManager::is_broken_transaction_manager（src/connection/transaction_manager.rs:83-100）只在 InError 或有未关闭事务时为真，由查询结束时的同步更新置位；同步取消=panic，已被 src/r2d2.rs:295 的 std::thread::panicking() 覆盖。
+H090,23,9548247,diesel,2.3.14,src/pg/connection/mod.rs,394,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),误报,同 H089：diesel 2.3.14 同步，src/pg/connection/mod.rs:394 的 is_broken 无 await；标志由 update_transaction_manager_status 在同步查询结束时置位（src/connection/transaction_manager.rs:83-100），panic 路径由 src/r2d2.rs:295 的 std::thread::panicking() 覆盖。
+H091,23,9548247,diesel,2.3.14,src/r2d2.rs,275,C,high,no,fn is_broken returns false / never marks breakage,        false,误报,src/r2d2.rs:275 是 R2D2Connection::is_broken 的 trait 默认实现，注释（src/r2d2.rs:269-274）明说默认不认为连接坏；mysql/pg/sqlite 均覆写（如 src/mysql/connection/mod.rs:286）。它是给第三方 backend 的可选钩子，不是错误/取消分支，也不绑定具体连接。
+H092,23,9548247,diesel,2.3.14,src/r2d2.rs,295,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken(),误报,src/r2d2.rs:295 的 has_broken 是 r2d2 的同步 ManageConnection 钩子，取用/归还时同步调用，没有 await 或可 drop 的 future；同步代码的取消等价物是 panic，这里正好前置 std::thread::panicking()。误报。
+H093,23,9548247,diesel,2.3.14,src/sqlite/connection/mod.rs,319,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),误报,同 H089：diesel 2.3.14 同步，src/sqlite/connection/mod.rs:319 的 is_broken 无 await；状态由 is_broken_transaction_manager（src/connection/transaction_manager.rs:83-100）在查询结束时同步更新，panic 由 src/r2d2.rs:295 的 std::thread::panicking() 覆盖。
+H094,34,5304616,diesel-async,0.9.2,src/async_connection_wrapper.rs,330,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,            crate::pooled_connection::PoolableConnection::is_broken(&mut self.inner),误报,AsyncConnectionWrapper 是 r2d2 的同步适配层：操作经 self.runtime.block_on(f) 跑完（src/async_connection_wrapper.rs:285），没有在挂起点被 drop 的 future；330 行只是同步委托 PoolableConnection::is_broken 读事务状态。r2d2 的 has_broken 也是同步调用。
+H095,34,5304616,diesel-async,0.9.2,src/pg/mod.rs,1059,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,"        use crate::TransactionManager;
+
+        Self::TransactionManager::is_broken_transaction_manager(self) || self.conn.is_closed()",误报,AsyncPgConnection 包装 tokio_postgres::Client（src/pg/mod.rs:168），establish 里 drive_connection(connection) 起后台驱动（src/pg/mod.rs:282-286），回复由驱动按请求分发；drop 查询 future 不会把未读回复留给下一位。is_broken 里的 is_closed() 负责死连接（src/pg/mod.rs:1064-1068）。
+H096,34,5304616,diesel-async,0.9.2,src/pooled_connection/bb8.rs,90,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken(),可疑,diesel-async 的 bb8 manager 只用默认 is_broken（TransactionManagerStatus，src/pooled_connection/mod.rs:209-211）；AsyncMysqlConnection 未覆写（src/mysql/mod.rs:366），不查 mysql_async 的 disconnected（src/conn/mod.rs:405-411）。取消在等首包时 pending_result 尚未设置（src/conn/routines/helpers.rs:44-73），clean_dirty 排不掉，下一次 Verified ping 会把旧回复当自己的结果。
+H097,34,5304616,diesel-async,0.9.2,src/pooled_connection/mod.rs,209,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        Self::TransactionManager::is_broken_transaction_manager(self),可疑,默认 is_broken 只查 diesel 的 TransactionManagerStatus（src/pooled_connection/mod.rs:209-211）；AsyncMysqlConnection 的空 impl（src/mysql/mod.rs:366）没有覆写它去查 mysql_async 的 disconnected。取消落在 mysql_async read_packet 等首包时，pending_result 仍为 None（src/conn/routines/helpers.rs:44-73），旧回复留在 socket；bb8/deadpool 的 Verified ping 可能把它当 SELECT 1 的结果，随后连接以错位状态回池。
+H098,34,5304616,diesel-async,0.9.2,src/sync_connection_wrapper/mod.rs,477,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,            Self::TransactionManager::is_broken_transaction_manager(self),误报,已防护：SyncConnectionWrapper 的查询在 spawn_blocking 中执行，CancelWrapper::drop 在未完成时 block_in_place(|| handle.block_on(future)) 等它结束（src/sync_connection_wrapper/mod.rs:548-557），future 被 drop 不会打断 diesel 的同步调用，TransactionManagerStatus 必在阻塞任务内更新；477 行读到的状态完整。
+H099,140,8782,esrs,0.18.0,src/bus/rabbit/mod.rs,43,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected(),误报,is_valid 是纯同步判断（mod.rs:36-41：if self.has_broken(conn) { Err } else { Ok }），整个函数没有 await，bb8 的 is_valid().await 首次 poll 即 Ready，取消落不进这个窗口。has_broken 读 lapin 的 conn.status().connected()（mod.rs:43-45），是驱动状态位。
+H100,140,8782,esrs,0.18.0,src/bus/rabbit/mod.rs,88,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected(),误报,同 H099：RabbitChannelManager::is_valid（mod.rs:81-86）同样只是同步的 has_broken 判断，没有 await/挂起点；has_broken 读 Channel::status().connected()（mod.rs:88-90）。bb8 的取消窗口在 is_valid 内部，这里不存在。
+H101,47,2488397,fred,10.1.0,src/runtime/glommio/mod.rs,66,A,medium,no,fn spawn_into: call `detach` in error path after await; guard=none,"    let inner = glommio::spawn_local_into(
+      async move {
+        let result = ft.await;
+        _finished.replace(true);
+        result
+      },
+      tq,
+    )
+    .unwrap_or_else(|e| panic!(""Failed to spawn task into task queue {tq:?}: {e:?}""))
+    .detach();
+
+    JoinHandle { inner, finished }",误报,这里是 `spawn_into`：`ft.await`（glommio/mod.rs:66）在 spawn 出去的任务内部，调用方不会在这个挂起点被 drop；`.detach()`（73）是任务句柄操作，`_finished.replace(true)`（67）只是本地 `Rc<Cell<bool>>` 完成标志，供 JoinHandle 轮询，不是连接/会话状态，也无池复用。
+H102,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,288,A,medium,no,fn next: call `close` in error path after await; guard=none,"            if let Err(e) = self.populate_pool().await? {
+                // Handle errors opening or reading from the stream.
+                match StreamRetryPolicy::on_midstream_error(e) {
+                    RetryResult::Continue(_) => {
+                        // The stream failed with a transient error. Reset the stream.
+                        self.stream = None;
+                        continue;
+                    }
+                    RetryResult::Permanent(e) | RetryResult::Exhausted(e) => {
+                        // The stream failed with a permanent error. Return the error.
+                        self.close();
+                        return Some(Err(e));",误报,message_stream.rs:288 的 `populate_pool().await` 是 gRPC 流读取；:298 `self.close()` 是同步本地状态迁移（:406-410 `stream=Closed; pool.clear(); shutdown.cancel()`），只在永久错误时结束流，不是把连接标坏。MessageStream 由调用方独占、不入池；取消 next() 后流仍 Active 可继续用，没有第二个使用者。
+H103,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,664,A,medium,no,fn basic_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,message_stream.rs:664 所在函数位于 `#[cfg(test)] mod tests`（:460-461）；:668 `shutdown_token().shutdown()` 等的是 lease 任务 join 与 ack 刷新，不是网络往返。测试代码，无复用对象。
+H104,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,774,A,medium,no,fn basic_success_exactly_once: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,同 H103：:774 在 `#[cfg(test)] mod tests`（:461）内；`shutdown_token().shutdown()` 对后台任务 join，不是连接会话交换，无池化复用。
+H105,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1343,A,medium,no,fn resume_midstream_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,同 H103：:1343 在 `#[cfg(test)] mod tests`（:461）内；shutdown 等待 lease 任务结束，属任务 join 而非网络往返，测试代码。
+H106,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1409,A,medium,no,fn resume_midstream_hits_permanent_error: call `shutdown` in error path after await; guard=none,"        }
+        let err = stream
+            .next()
+            .await
+            .transpose()
+            .expect_err(""expected an error from stream"");
+        assert!(err.status().is_some(), ""{err:?}"");
+        let status = err.status().unwrap();
+        assert_eq!(
+            status.code,
+            google_cloud_gax::error::rpc::Code::FailedPrecondition
+        );
+        assert_eq!(status.message, ""fail"");
+
+        // Wait for the stream to join its background tasks.",误报,同 H103：:1409 在 `#[cfg(test)] mod tests`（:461）内；`next()` 拿到永久错误后的 shutdown 只是任务 join，测试代码，无连接复用。
+H107,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1659,A,medium,no,fn at_least_once_and_exactly_once: call `shutdown` in error path after await; guard=none,"        assert!(matches!(h, Handler::ExactlyOnce(_)), ""{h:?}"");
+
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,同 H103：:1659 在 `#[cfg(test)] mod tests`（:461）内；`shutdown_token().shutdown()` 是后台任务 join，测试代码。
+H108,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1720,A,medium,no,fn cancel_midstream: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        let shutdown = tokio::spawn(async move {
+            shutdown_token.shutdown().await;",误报,同 H103：:1720（cancel_midstream）在 `#[cfg(test)] mod tests`（:461）内；`shutdown_token.shutdown().await` 从一个 spawn 的闭包里等任务结束，不是连接往返。
+H109,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1784,A,medium,no,fn shutdown_without_next: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        // Note that the application does not have to call `stream.next()`, or
+        // `drop(stream)` to begin the shutdown procedure after a cancel.
+        shutdown_token.shutdown().await;",误报,同 H103：:1784（shutdown_without_next）在 `#[cfg(test)] mod tests`（:461）内；测试断言不调 next() 也能 shutdown，`shutdown().await` 等后台任务，非网络往返。
+H110,137,10364,gremlin-client,0.8.10,src/connection.rs,307,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,        self.broken,误报,connection.rs:307 `is_broken` 读 `self.broken`，但这里是同步 tungstenite 连接：`send`/`recv` 都是普通 fn（:289-305），没有 .await，也就没有 future 被 drop 的取消路径；`broken` 在 send 和 recv 的 Err 分支都置位（:292、:301），两条路径一致。
+H111,137,10364,gremlin-client,0.8.10,src/pool.rs,124,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_broken(),误报,pool.rs:124-126 `has_broken` → `conn.is_broken()`，与 H110 同：r2d2 同步池 + 同步 websocket（connection.rs:289-305 无 await），没有可取消的挂起点；send/recv 出错都置 broken，不存在标记不一致。
+H112,55,1651322,h3,0.0.8,src/server/connection.rs,125,A,medium,no,fn accept: call `shutdown` in error path after await; guard=none,"        let stream = match poll_fn(|cx| self.poll_accept_request_stream_internal(cx)).await? {
+            Some(s) => FrameStream::new(BufRecvStream::new(s)),
+            None => {
+                // We always send a last GoAway frame to the client, so it knows which was the last
+                // non-rejected request.
+                self.shutdown(0).await?;",误报,server/connection.rs:125 的 await 是 `poll_fn(poll_accept_request_stream_internal)`；:130 `shutdown(0)` 只在无新流时调用。真正的标记在 connection.rs:343 `*sent_closing = Some(max_id)`，位于 :352 写 GOAWAY 之前（悲观标记）；该 Connection 由服务端 accept 循环独占、不入池，future 丢掉后整条连接被丢弃。
+H113,122,23217,hdbconnect_async,0.33.0,src/bb8.rs,99,C,high,no,fn has_broken returns false / never marks breakage,        false,不确定,has_broken 恒为 false（bb8.rs:99），复用的唯一关口是 is_valid 里的 ValidityChecker(conn.clone()) 轮询 conn.is_broken()（bb8.rs:88-116）；而 Connection 来自 hdbconnect_impl（lib.rs:100），本仓看不到 is_broken 是否只读状态位、单流协议在被取消的请求后是否留下未读回复；且 ValidityChecker::poll 每次 poll 重建 future（108）。证据不足，不猜后继者状态。
+H114,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,556,A,medium,no,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_cache.raft.shutdown().await?;
+            if let Some(handle) = &state.raft_cache.shutdown_handle {
+                handle.shutdown().await?;",误报,shutdown_execute 是整节点一次性 teardown：此处 await 是 openraft 的 raft.shutdown()（本地核心任务 join），随后 hiqlite_wal::ShutdownHandle::shutdown()（app_state.rs:92），都不是网络往返；且 is_raft_stopped 在 await 前就置 true（mgmt.rs:552-555），management 入口据此拒绝新请求（network/management.rs:43）。不是会被复用的连接/会话。
+H115,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,579,A,medium,no,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"                time::sleep(Duration::from_secs(1)).await;
+            }
+
+            // TODO as soon openraft-0.10 is out, we will be able to trigger a pre-emptive
+            //  leader switch if this node is the leader. This will smooth out things even more.
+
+            state.raft_db.is_raft_stopped.store(true, Ordering::Relaxed);
+
+            state.raft_db.raft.shutdown().await?;",误报,命中行是 time::sleep(Duration::from_secs(1)).await（mgmt.rs:579），只是等 leader 的本地定时器，不是网络往返；后面 raft_db.raft.shutdown() 也是本地核心任务 join。节点 teardown 路径，没有池化连接或会话被下一个使用者接管。
+H116,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,587,A,medium,no,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_db.raft.shutdown().await?;
+            info!(""Shutting down sqlite logs writer"");
+            state.raft_db.shutdown_handle.shutdown().await?;",误报,同 H114：raft_db.raft.shutdown() 是 openraft 本地 join，shutdown_handle.shutdown() 是 WAL 任务 join（app_state.rs:112），且 is_raft_stopped 已在 585 行先置 true。错误或取消只会让节点半关，不存在复用者。
+H117,142,8673,hiqlite,0.15.3,src/network/api.rs,434,A,medium,no,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;",误报,每连接一个 server 侧 WebSocket 任务：命中行 write.write_frame(...).await（api.rs:434）写的是本连接 socket；循环结束才 handle_read.abort() 并发 Close（444-445）。future 被 drop 时 socket 与两个 half 一起丢弃，没有池化复用；abort 是 JoinHandle 操作，不在本缺陷类。
+H118,142,8673,hiqlite,0.15.3,src/network/raft_client.rs,404,A,high,no,fn ws_handler: assign `in_flight` in error path after await; guard=none,"            let _ = tx_write.send_async(WritePayload::Close).await;
+
+            for (_, ack) in in_flight.drain() {
+                let _ = ack.send(Err(Error::Connect(""Raft WebSocket stream ended"".into())));
+            }
+            // reset to a reasonable size for the next start to keep memory usage under control
+            in_flight = HashMap::with_capacity(4);",误报,"命中行 tx_write.send_async(WritePayload::Close).await（raft_client.rs:404）是 flume 通道发送，不是网络往返；in_flight 是 ws_handler 的局部 HashMap（216-219），取消时随任务 drop，ack sender 掉线使调用方得 RecvError，与 406-408 的显式 Err 同类；reader/writer 另有 AbortOnDrop（181-196,303-310）。无复用连接状态。"
+H119,142,8673,hiqlite,0.15.3,src/server/proxy/handlers.rs,129,A,medium,no,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;",误报,与 H117 同模式：proxy 的 /listen 处理循环里 write.write_frame(frame).await（handlers.rs:129-132）写本连接 socket，结束后才 handle_read.abort() 并发 Close（139-140）。future 被丢弃即丢 socket，无池化连接；abort 是 JoinHandle 操作。
+H120,39,3929474,jsonrpsee-core,0.26.1,src/client/async_client/mod.rs,938,A,medium,no,fn send_task: call `close` in error path after await; guard=none,"				if let Err(err) = sender.send_ping().await {
+					tracing::debug!(target: LOG_TARGET, ""Send ws ping failed: {err}"");
+					break Err(Error::Transport(err.into()));
+				}
+			}
+		}
+	};
+
+	from_frontend.close();
+	let _ = sender.close().await;",误报,async_client/mod.rs:938 是 `sender.send_ping().await`；:946-947 `from_frontend.close()` 是 mpsc，`let _ = sender.close().await` 在循环后无条件执行，作用于 send_task 独占的传输 sink。send_task 由 :342 `tokio::spawn` 启动，取消只发生在整个 client 关闭时，sink 随任务 drop，无第二使用者。
+H121,93,127448,klickhouse,0.16.0,src/manager.rs,48,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,has_broken 只看 sender.is_closed()（client.rs:604-605），socket 由后台任务独占。is_valid 的 select '' 被取消时，查询已在后台登记：后台继续读包，current.send(Ok(block)).await.ok() 丢弃，EndOfStream 后再取 pending（client.rs:160-190），帧不会错位；bb8 放回池的连接对下一位仍是干净的。
+H122,49,2110042,lapin,4.12.2,src/internal_rpc.rs,439,A,medium,no,fn run: call `close` in error path after await; guard=none,"                                .basic_cancel(consumer_tag, BasicCancelOptions::default())
+                                .await
+                        } else {
+                            Ok(())
+                        }
+                    })
+                }
+                CloseChannel(channel_id, reply_code, reply_text) => {
+                    if !self.channel_ok(channel_id) {
+                        continue;
+                    }
+                    let channel = get_channel(channel_id);
+                    self.register_internal_future(async move {
+                        channel?.close(reply_code, reply_text).await",误报,internal_rpc.rs:439 是 `channel.basic_cancel(...).await`，非 close；CloseChannel 的 `channel?.close(...)`（:451）同样在 `register_internal_future` 里，该函数用 `self.runtime.spawn`（:343-352）把 future 交给独立任务，用户 future 的 drop 取消不到它；出错走 `handle.set_connection_error(err)`。AMQP 通道多路复用，连接状态由 io 任务维护。
+H123,58,1344308,ldap3,0.12.1,src/conn.rs,791,A,medium,no,fn turn: call `close` in error path after await; guard=none,"                                    if let Err(e) = self.stream.get_mut().shutdown().await {
+                                        warn!(""socket shutdown error: {}"", e);
+                                    }
+                                    if let Err(e) = self.stream.close().await {",误报,conn.rs:791 `self.stream.get_mut().shutdown().await` / :794 `close()` 位于 `LdapOp::Unbind` 分支，不是错误分支；`turn(mut self)` 由驱动任务独占，`self.stream` 就是该任务自己的 TLS/TCP 流。unbind 后不再使用，drop 时流一并关闭，无池化复用。
+H124,27,7672068,lettre,0.11.23,src/transport/smtp/async_transport.rs,75,A,medium,no,fn send_raw: call `abort` in error path after await; guard=none,"        let result = conn.send(envelope, email).await?;
+
+        #[cfg(not(feature = ""pool""))]
+        conn.abort().await;",可疑,"`conn.send(envelope, email).await?`（async_transport.rs:75）后，默认 feature `pool` 下 78 行 `conn.abort()` 被 `#[cfg(not(feature = ""pool""))]` 编译掉；取消时又走不到 try_smtp! 的 Err 分支，`panic` 仍 false，PooledConnection::drop 会 spawn recycle（async_impl.rs:319-329）→ has_broken 假 → 入池。残留 354/正文使下一位 NOOP 读错或挂起（RESCAN 6.2）。"
+H125,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,184,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 186; guard=none,"            self.command(Mail::new(envelope.from().cloned(), mail_options))
+                .await,
+            self
+        );
+
+        // Recipient
+        for to_address in envelope.to() {",可疑,try_smtp! 只有 Err 分支才 `self.abort().await` 置 panic（26-36、250-257）；取消在 `self.command(Mail::new(..)).await`（184-188）时 panic 仍 false，has_broken（206-208）报健康，PooledConnection::drop 把连接回收进池。服务端已进入邮件事务，下一位的 NOOP 读到残留 250 判健康，随后的 MAIL 得到 503。
+H126,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,192,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 193; guard=none,"                self.command(Rcpt::new(to_address.clone(), vec![])).await,
+                self
+            );
+        }",可疑,同样在 try_smtp! 的 `command(Rcpt::new(..)).await`（192-196）被取消：panic 未置位（仅 Err 分支 26-36 的 abort 会置），连接被 recycle 回池。服务端已收下该收件人，残留的 RCPT 250 被下一位 test_connected 的 NOOP 当成本次回复，事务状态与客户端视图不一致。
+H127,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,199,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 199; guard=none,"        try_smtp!(self.command(Data).await, self);
+
+        // Message content
+        let result = try_smtp!(self.message(email).await, self);",可疑,"`try_smtp!(self.command(Data).await, self)`（199）：取消落在等 354 时服务端已进入 DATA 状态，而 panic 未置位（只有 Err 分支 26-36 会 abort），连接被回收。下一位的 NOOP 被服务端当作正文，永远等不到回复（RESCAN 6.2 Pending #4），调用方无超时则池位挂死。"
+H128,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,202,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 202; guard=none,"        let result = try_smtp!(self.message(email).await, self);
+        Ok(result)",可疑,"`let result = try_smtp!(self.message(email).await, self)`（202）：取消在写正文/等最终 250 时 panic 未置位，连接被回收。服务端仍在读 DATA，下一位 NOOP 得不到回复而挂起（RESCAN 6.2「写正文中途取消」）；连接直到因别的原因关闭前一直占着池位。"
+H129,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,227,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 227; guard=none,"            try_smtp!(self.command(Starttls).await, self);
+            self.stream.get_mut().upgrade_tls(tls_parameters).await?;",误报,starttls 在连接建立阶段调用，连接尚未进入 lettre 池；不是可复用连接的交换。
+H130,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,232,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 232; guard=none,"            try_smtp!(self.ehlo(hello_name).await, self);
+            Ok(())",误报,ehlo 在连接建立/STARTTLS 升级阶段调用，连接尚未进入池。
+H131,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,241,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 241; guard=none,"        let ehlo_response = try_smtp!(self.command(Ehlo::new(hello_name.clone())).await, self);
+        self.server_info = try_smtp!(ServerInfo::from_response(&ehlo_response), self);",误报,ehlo 同上；多行回复残留只在建连阶段，连接随后才入池。
+H132,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,247,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 247; guard=none,"        Ok(try_smtp!(self.command(Quit).await, self))",误报,quit 在 async-std 的 send_raw 末尾调用；cancel 只会丢掉 221 等待。quit 后仍入池是另一类缺陷（非取消特有），不在本目标内。
+H133,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,294,A,high,no,macro try_smtp! Err arm marks bad; call's await at line 300; guard=none,"                    credentials.clone(),
+                    &response,
+                )?)
+                .await,
+                self
+            );
+        }",误报,AUTH 只在连接建立阶段调用，连接尚未进入池。
+H134,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,206,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic,可疑,`has_broken` 只读 `self.panic`（206-208）；panic 仅在 `abort()` 的 252-253 置位，而 abort 只在 try_smtp! 的 Err 分支（31）或池 recycle 时调用。任何 await 被取消都不会置位，has_broken 因此报健康，连接被池回收复用（RESCAN 6.2 的根因）。
+H135,27,7672068,lettre,0.11.23,src/transport/smtp/client/connection.rs,133,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic,误报,这是同步 `Connection` 的 has_broken（connection.rs:133-135），整条路径没有 await、没有可被 drop 的 future；命令失败时 try_smtp! 的 Err 分支会调 abort（connection.rs:25-35），abort 里 `self.panic = true`（178-185）。异步取消路径不存在，不属于本类缺陷。
+H136,95,123756,loco-rs,1.2.0,src/scheduler.rs,363,A,medium,no,fn run: call `shutdown` in error path after await; guard=none,"        sched.start().await?;
+
+        tokio::signal::ctrl_c().await?;
+        sched.shutdown().await?;",误报,scheduler.rs:363 是 `tokio::signal::ctrl_c().await`（信号，不是网络往返）；:364 `sched.shutdown().await` 是 tokio-cron-scheduler 的任务关闭。sched 是本地任务句柄集合，不是连接/会话，drop 不留被复用状态。
+H137,95,123756,loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,123,A,medium,no,fn copy: call `close` in error path after await; guard=none,"            let mut writer = self.opendal_impl.writer(&to).await?.into_bytes_sink();
+            writer
+                .send_all(&mut reader)
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;
+            writer
+                .close()
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;",误报,opendal_adapter.rs:120-128：`writer` 是本次 copy 新建的局部对象（`self.opendal_impl.writer(&to)`），`close()` 只完成这次 multipart；取消时 writer 被 drop，由 opendal 的 Writer Drop 收尾（在 opendal crate，本仓未 vendored），loco-rs 内没有复用路径。
+H138,95,123756,loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,279,A,medium,no,fn upload_stream: call `close` in error path after await; guard=none,"            let chunk = chunk.map_err(|e| StorageError::Any(Box::new(e)))?;
+            // Use the native write method which handles the data more efficiently
+            writer.write(chunk).await?;
+        }
+
+        let meta = writer.close().await?;",误报,opendal_adapter.rs:272-282：`writer` 是 upload_stream 的局部对象，`writer.write(chunk).await`（:279）与 `close()`（:282）只作用于本次上传；无池化会话，取消时 writer 被 drop，不会把半截状态留给下一个使用者。
+H139,56,1641643,mysql_async,0.37.1,src/conn/mod.rs,406,A,medium,no,fn routine: call `close` in error path after await; guard=none,"        let result = f.call(&mut *self).await;
+        match result {
+            result @ Ok(_) | result @ Err(crate::Error::Server(_)) => {
+                // either OK or non-fatal error
+                self.inner.disconnected = false;
+                result
+            }
+            Err(err) => {
+                if self.inner.stream.is_some() {
+                    self.take_stream().close().await?;",误报,已防护：routine 在 await 前就置 self.inner.disconnected = true（src/conn/mod.rs:405），仅 Ok/非致命 Server 错误恢复 false（408-411）；future 在 f.call(...).await（406）被 drop 时该标志保持 true，mysql_async 自身 Pool 的 recycler 对 disconnected 连接直接丢弃（src/conn/pool/recycler.rs:88-95），不会回到可用队列。
+H140,56,1641643,mysql_async,0.37.1,src/conn/mod.rs,454,A,medium,no,fn disconnect: call `close` in error path after await; guard=none,"            self.write_command_data(Command::COM_QUIT, &[]).await?;
+            let stream = self.take_stream();
+            stream.close().await?;",误报,disconnect(mut self) 是消费型关闭路径：453 行先置 self.inner.disconnected = true，454 行写 COM_QUIT 后取流关闭，连接不会回池；即使 drop 在 454，self 被丢弃、socket 由 Drop 关闭。这里也没有 Err 分支。
+H141,97,109621,ntex,4.3.0,src/web/ws.rs,234,A,medium,no,fn call: call `close` in error path after await; guard=none,"                let result = ctx.call(&self.svc, item).await.map_err(WsError::Service);
+                if let Some(s) = s {
+                    rt::spawn(async move { s.io().close() });",误报,"ws.rs:234 `ctx.call(&self.svc, item).await` 调用户服务；:236 `rt::spawn(async move { s.io().close() })` 只关闭本连接的 Io（ntex 本地句柄），且无论 result 成败都执行。future 被 drop 时 Dispatcher 连带丢弃 IO，没有第二使用者。"
+H142,97,109621,ntex,4.3.0,src/ws/client.rs,462,A,medium,no,fn receiver: call `close` in error path after await; guard=none,"                        let _ = sink2.send(ws::Message::Close(Some(reply))).await;
+                    }
+                }
+                match tx.send(Ok(item)) {
+                    Ok(()) => (),
+                    Err(_) => io.close(),
+                }
+                Ok::<Option<ws::Message>, ()>(None)",误报,ws/client.rs:462 是 peer 发 Close 时的重试发送；`sink2.send(...).await` 与 :465-468 `tx.send(Err(_)) => io.close()` 都作用于本连接的普通 sink/IO。整段在 :448 `rt::spawn` 的 dispatcher 任务内，取消即任务结束、连接一起丢弃，无池化复用。
+H143,20,23865413,object_store,0.14.2,src/upload.rs,232,A,medium,no,fn finish: call `abort` in error path after await; guard=none,"        if let Err(e) = self.wait_for_capacity(0).await {
+            self.abort().await?;",误报,upload.rs:232 `wait_for_capacity(0).await` 是 JoinSet 任务 join（非网络往返）；:233 `self.abort().await` 是错误路径清理。`finish(mut self)` 消耗对象，drop 会连带 drop upload；:79-84 文档明确 S3/GCS 无法在 drop 时清理、建议 lifecycle 规则——不是可复用连接的状态。
+H144,20,23865413,object_store,0.14.2,src/upload.rs,237,A,medium,no,fn finish: call `shutdown` in error path after await; guard=none,"        }
+
+        match self.upload.complete().await {
+            Err(e) => {
+                self.tasks.shutdown().await;",误报,upload.rs:239 `self.tasks.shutdown().await` 是 `JoinSet::shutdown`（:130 `tasks: JoinSet<Result<()>>`），中止并 join 子任务，按指南属任务句柄、非网络往返；没有连接或会话被标记或复用。
+H145,20,23865413,object_store,0.14.2,src/upload.rs,239,A,medium,no,fn finish: call `abort` in error path after await; guard=none,"            Err(e) => {
+                self.tasks.shutdown().await;
+                self.upload.abort().await?;",误报,upload.rs:240 `self.upload.abort().await?` 是错误路径对本次 multipart 的清理（abort 自身 :220-223 也是 tasks.shutdown + upload.abort）；取消路径靠 drop 与文档化的 lifecycle 兜底（:79-90），不涉及被复用的连接。
+H146,147,6809,pict-rs,0.5.24,src/file.rs,21,A,medium,no,fn write_from_stream: call `close` in error path after await; guard=none,"    file.write_from_stream(stream)
+        .with_poll_timer(""write-from-stream"")
+        .await?;
+    file.close().await?;",误报,误报：File::create(path)（src/file.rs:19）后 file.close().await?（file.rs:22）是本地文件 I/O，不是网络/会话往返（问题1不成立）；File 是栈上局部值，Drop 即关闭，也没有会被复用的连接（问题2不成立）。取消后磁盘上只留半截临时文件。
+H147,147,6809,pict-rs,0.5.24,src/lib.rs,2106,A,medium,no,fn launch: call `abort` in error path after await; guard=none,"        server.bind_rustls_0_23(address, config)?.run().await?;
+
+        handle.abort();
+        let _ = handle.await;",误报,误报：handle 是 watch_keys 返回的 JoinHandle（src/lib.rs:2098），handle.abort()（2108）只结束证书监听任务；它由 abort_on_drop 包装（2050），错误路径丢弃时 Drop 里同样 abort（sync.rs:24-28）。任务句柄不是连接/会话，无池复用。
+H148,147,6809,pict-rs,0.5.24,src/process.rs,228,A,medium,no,fn wait: call `kill` in error path after await; guard=none,"        let res = child.wait().with_timeout(timeout).await;
+
+        extras
+            .consume()
+            .await
+            .map_err(|e| ProcessError::Cleanup(command.clone(), e))?;
+
+        match res {
+            Ok(Ok(status)) if status.success() => {
+                guard.disarm();
+
+                Ok(())
+            }
+            Ok(Ok(status)) => Err(ProcessError::Status(command, status)),
+            Ok(Err(e)) => Err(ProcessError::Other(command, e)),",误报,误报：child 是 tokio Child 进程句柄，child.kill()（src/process.rs:240）只在 with_timeout 超时分支杀子进程，与连接/会话无关；spawn 时已 kill_on_drop(true)（process.rs:191），future 被 drop 时子进程同样终止。
+H149,147,6809,pict-rs,0.5.24,src/process.rs,306,A,medium,no,fn drive: call `kill` in error path after await; guard=none,"            };
+
+            match child_fut.with_timeout(timeout).await {
+                Ok(Ok(status)) if status.success() => {
+                    guard.disarm();
+                    Ok(())
+                }
+                Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                Err(_) => {
+                    child
+                        .kill()
+                        .with_timeout(Duration::from_secs(1))",误报,误报：同 H148。drive 的 child.kill()（src/process.rs:315）作用于子进程句柄；child 被移入 handle 的 async 块（process.rs:299），被 drop 时由 kill_on_drop(true)（191）终止。不是可复用连接。
+H150,147,6809,pict-rs,0.5.24,src/process.rs,410,A,medium,no,fn pipe: call `kill` in error path after await; guard=none,"                };
+
+                match child_fut.with_timeout(timeout).await {
+                    Ok(Ok(status)) if status.success() => {
+                        guard.disarm();
+                        Ok(())
+                    }
+                    Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                    Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                    Err(_) => {
+                        child
+                            .kill()
+                            .await
+                            .map_err(|e| ProcessError::Other(command2.clone(), e))?;",误报,误报：同 H148/H149。pipe 的 child.kill()（src/process.rs:419）在超时分支杀子进程；child 已移入 handle（400），取消时由 kill_on_drop(true)（191）兜底。不是连接/会话标记。
+H151,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,148,A,medium,no,fn alias: call `abort` in error path after await; guard=none,"        let hash = repo.hash(&alias).await.retry()?;
+
+        // already deleted
+        if hash.is_none() {
+            return Ok(());
+        }
+    }
+
+    if !saved_delete_token.is_some_and(|t| t.ct_eq(&token)) {
+        return Err(UploadError::InvalidToken).abort();
+    }
+
+    let hash = repo.hash(&alias).await.retry()?;",误报,误报：Err(UploadError::InvalidToken).abort()（src/queue/cleanup.rs:157）调用 JobContext::abort（queue.rs:281-291），把结果转成 JobError::Abort，只决定 job 不重试（queue.rs:302-307），不写任何连接字段；repo 连接由 bb8 池管理。
+H152,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,164,A,medium,no,fn alias: call `abort` in error path after await; guard=none,"    repo.remove_alias_access(alias.clone()).await.retry()?;
+    repo.cleanup_alias(&alias).await.retry()?;
+
+    let hash = hash.ok_or(UploadError::MissingAlias).abort()?;
+
+    if repo",误报,误报：hash.ok_or(UploadError::MissingAlias).abort()?（src/queue/cleanup.rs:166）同为 JobContext::abort → JobError::Abort（queue.rs:291），是 job 重试策略；hash 是本次调用的 Option 局部值，问题2不成立。
+H153,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,217,A,medium,no,fn outdated_variants: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} variant cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");",误报,误报：repo.queue_length().await.abort()?（src/queue/cleanup.rs:217）的 .abort() 只是 job 错误分类（queue.rs:291），不标连接。附注：queue_length 内 with_timeout(5s)（postgres.rs:1628）丢弃在途查询后连接回 bb8 池，属另一条线索，与本命中的 abort 语义无关。
+H154,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,249,A,medium,no,fn outdated_proxies: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} alias cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");",误报,误报：同 H153。repo.queue_length().await.abort()?（src/queue/cleanup.rs:249）是 JobContext::abort → JobError::Abort（queue.rs:291），只影响 job 是否重试，不触连接状态；没有对象被标坏，问题2不成立。
+H155,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,213,B,medium,no,fn outdated_variants: `count +=` after await at line 211,"        super::cleanup_variants(repo, hash, Some(variant))
+            .await
+            .retry()?;
+        count += 1;",误报,误报：count 是 let mut count = 0（src/queue/cleanup.rs:204）的局部计数器，cleanup_variants(...).await.retry()? 之后 count += 1（213）只用于日志 Queued {count}；不写连接/会话（问题2不成立）。
+H156,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,240,B,medium,no,fn outdated_proxies: `count +=` after await at line 239,"            super::cleanup_alias(repo, alias, token).await.retry()?;
+            count += 1;",误报,误报：同 H155。count 是 let mut count = 0（src/queue/cleanup.rs:232）的局部计数，cleanup_alias(...).await.retry()? 之后 count += 1（240）只用于日志；取消只会少记一次进度。
+H157,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,321,B,medium,no,fn prune: `count +=` after await at line 319,"                            super::cleanup_hash(&repo, hash).await?;
+
+                            count += 1;",误报,"误报：count 是 prune 的局部进度（src/queue/cleanup.rs:299、314），cleanup_hash(&repo, hash).await? 后 count += 1（321）再写进度键 prune-missing-queued（323-326）；缺失只影响进度记录，不是事务深度/会话标志。"
+H158,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,349,B,medium,no,fn prune: `count +=` after await at line 337,"            .instrument(span),
+        ))
+        .await;
+
+        match res {
+            Ok(Ok(updated)) => count = updated,
+            Ok(Err(e)) => {
+                tracing::warn!(""Prune missing identifier failed - {e:?}"");
+            }
+            Err(_) => {
+                tracing::warn!(""Prune missing identifier panicked."");
+            }
+        }
+
+        count += 1;",误报,误报：外层 count += 1（src/queue/cleanup.rs:349）是循环进度，match res（339-347）只决定是否采纳子任务返回的 count = updated（340）；子任务被 abort 也只打 warn。count 是局部变量，无连接/会话状态。
+H159,147,6809,pict-rs,0.5.24,src/queue/process.rs,161,A,medium,no,fn process_ingest: call `abort` in error path after await; guard=none,"        .repo
+        .complete_upload(upload_id, result)
+        .await
+        .retry()?;
+
+    if let Some(e) = err {
+        return Err(e).abort();
+    }
+
+    guard.disarm();",误报,"误报：err 来自本函数的 let (result, err)，return Err(e).abort()（src/queue/process.rs:165）是 JobContext::abort → JobError::Abort（queue.rs:291），只表示这次上传失败不重试；guard 是 UploadGuard（process.rs:69-101），Drop 只记指标。"
+H160,147,6809,pict-rs,0.5.24,src/queue/process.rs,184,A,medium,no,fn generate: call `abort` in error path after await; guard=none,"    let hash = state
+        .repo
+        .hash(&source)
+        .await
+        .retry()?
+        .ok_or(UploadError::MissingAlias)
+        .abort()?;
+
+    let identifier_opt = state",误报,误报：.ok_or(UploadError::MissingAlias).abort()?（src/queue/process.rs:187）是 JobContext::abort → JobError::Abort（queue.rs:291），标的是 job 重试策略；state.repo.hash() 用的连接由 bb8 池自管，本处未写连接字段。
+H161,147,6809,pict-rs,0.5.24,src/queue/process.rs,210,A,medium,no,fn generate: call `abort` in error path after await; guard=none,"        variant,
+        process_args,
+        &original_details,
+        hash,
+    )
+    .await
+    .abort()?;
+
+    Ok(())",误报,误报：crate::generate::generate(...).await.abort()?（src/queue/process.rs:211）同样只是把错误归为 JobError::Abort（queue.rs:291），让 job 不重试；本函数没有连接/会话对象被标坏。
+H162,147,6809,pict-rs,0.5.24,src/repo/migrate.rs,264,B,medium,no,fn do_migrate_hash: `aliases_count +=` after await at line 261,"            new_repo.set_accessed_alias(alias, timestamp).await?;
+        }
+
+        aliases_count += 1;",误报,误报：aliases_count 是 let mut aliases_count = 0（src/repo/migrate.rs:247）的局部计数，aliases_count += 1（264）只用于后面 if aliases_count == 0 { warn }；不写回连接或会话状态（问题2不成立）。
+H163,147,6809,pict-rs,0.5.24,src/repo/postgres.rs,342,A,medium,no,fn connect: call `abort` in error path after await; guard=none,"        embedded::migrations::runner()
+            .run_async(&mut client)
+            .await
+            .map_err(Box::new)
+            .map_err(ConnectPostgresError::Migration)?;
+
+        handle.abort();
+        let _ = handle.await;",误报,"误报：handle 是 connect_for_migrations 中 abort_on_drop(spawn(postgres-connection, conn)) 的 DropHandle（src/repo/postgres.rs:259），handle.abort()（346）在迁移后关掉这条一次性连接；错误路径 ? 丢弃时 Drop 也 abort（sync.rs:24-28）。不进池。"
+H164,147,6809,pict-rs,0.5.24,src/store/file_store.rs,197,A,medium,no,fn safe_save_stream: call `close` in error path after await; guard=none,"        file.write_from_stream(input)
+            .with_poll_timer(""write-from-stream"")
+            .await?;
+
+        file.close().await?;",误报,误报：与 H146 同模式。File::create(to)（src/store/file_store.rs:192）写流后 file.close().await?（199）是本地文件 I/O，非网络往返；file 局部，取消时 Drop 关句柄。残留只是半截文件，不是连接污染。
+H165,147,6809,pict-rs,0.5.24,src/store/object_store.rs,222,A,medium,no,fn save_stream: call `abort` in error path after await; guard=none,"                .map_err(ObjectError::from)?;
+
+            Ok(())
+        }
+        .await;
+
+        match res {
+            Ok(()) => Ok(object_id),
+            Err(e) => {
+                multipart
+                    .abort()
+                    .with_metrics(crate::init_metrics::OBJECT_STORAGE_ABORT_MULTIPART_REQUEST)",误报,误报：multipart.abort()（src/store/object_store.rs:227-231）是 S3 AbortMultipartUpload，只在 Err 分支清理本次 put_multipart_opts（171-182）拿到的 upload_id；取消后残留一个孤立未完成 upload（part 泄漏），但该 upload_id 只属本次调用、无复用路径（问题2不成立）。
+H166,147,6809,pict-rs,0.5.24,src/store/object_store.rs,105,C,high,no,fn health_check does I/O then accepts any positive/Ok reply,"        let mut tags = TagSet::default();
+        if self.tag_healthz {",误报,误报：put_opts(...)（src/store/object_store.rs:113-123）确是 S3 往返，但结果只 match res（125-127）返回 Ok/Err，没有任何连接/会话字段被置坏；它是 Store trait 的存活探测（store.rs:83，lib.rs:1841 调用），不是池 manager 的 is_valid/recycle。
+H167,147,6809,pict-rs,0.5.24,src/stream.rs,147,B,medium,no,fn take: `count +=` after await at line 145,"            tracing::trace!(""take: looping"");
+
+            yielder.yield_(item).await;
+
+            count += 1;",误报,误报：yielder.yield_(item).await（src/stream.rs:145）是 streem 的让出挂起，不是网络往返（问题1不成立）；count（stream.rs:136）是 take 的局部限流计数，被 drop 只少 yield 一项，无连接/会话状态。
+H168,60,1237278,pingora-core,0.9.0,src/protocols/http/v1/server.rs,1247,A,high,no,fn read_body_or_idle: assign `half_closed` in error path after await; guard=none,"            let (probe, read) = self
+                .read_idle_probe(""during HTTP body-or-idle state"")
+                .await?;
+            if read == 0 {
+                self.half_closed = true;
+                self.set_keepalive(None);",误报,server.rs:1245-1249：`read_idle_probe(...).await?` 返回后紧接 `if read == 0 { self.half_closed = true; ... }`，中间无 await；future 只能在读等待点被 drop，那时 FIN 尚未被观察到，不会出现“已置位但被取消”。`half_closed` 是本条 downstream 会话的本地标志，不是池化连接状态。
+H169,123,22818,rbdc,4.9.10,src/pool/manager.rs,65,C,high,no,fn check does I/O then accepts any positive/Ok reply,"        match conn.ping().await {
+            Ok(_) => Ok(()),",不确定,check 只做 conn.ping().await 并返回 Ok（manager.rs:64-70）。ping 在 rbdc-mysql 是 send_packet(Ping)+recv_ok()（rbdc-mysql src/connection/mod.rs:73-79），单流往返，取消会留未读 OK；但 rbdc 本体里 check 无调用点，connect 每次新建、ConnectionGuard::drop 直接 conn.close()（guard.rs:72-80）；真正的池在 rbdc-pool（未在扫描源码）。复用关系看不到，不猜。
+H170,139,9756,rbdc-mysql,4.9.6,src/connection/mod.rs,68,A,medium,no,fn do_close: call `shutdown` in error path after await; guard=none,"        self.stream.send_packet(Quit).await?;
+        self.stream.shutdown().await?;",误报,do_close 的两次 await 都不是往返：send_packet(Quit) 是单向写（不期望回复），shutdown() 是 AsyncWriteExt 的 TCP shutdown（stream.rs:228-233 Deref 到 BufStream）。且是销毁路径：ConnectionGuard::drop 把 conn 移进任务 close() 后即 drop（guard.rs:72-80），socket 随之关闭，没有下一个使用者。
+H171,17,30378035,redis,1.7.1,src/bb8.rs,28,C,high,no,fn has_broken returns false / never marks breakage,                false,误报,has_broken 恒 false（bb8.rs:28-30），但 Connection 是 `MultiplexedConnection`（bb8.rs:35-39），redis 驱动按请求 id 多路复用，取消 PING 不会在共享流上留下错位回复；is_valid（20-26）严格比对 `PONG`。坏连接由下次 is_valid 的 PING 失败淘汰。
+H172,17,30378035,redis,1.7.1,src/r2d2.rs,23,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,                !conn.is_open(),误报,r2d2 是同步池：has_broken（r2d2.rs:23-25）既无 await 也无 future 可被 drop，不存在取消路径；`!conn.is_open()` 读的是驱动在 IO 错误后维护的状态，is_valid（15-21）另用 PING 严格校验。与异步取消不一致缺陷无关。
+H173,126,21972,rsmq_async,18.0.0,src/pooled_facade.rs,37,C,high,no,fn has_broken returns false / never marks breakage,        false,误报,pooled_facade.rs:23 `type Connection = redis::aio::MultiplexedConnection`：多路复用连接按请求 id 匹配回复，被取消的请求由驱动丢弃自己的回复，`has_broken` 返回 false 不会让别人读到残留回复；每次取用仍走 :30-35 的 PING `is_valid`。
+H174,48,2207165,rumqttc,0.25.1,src/framed.rs,52,B,medium,no,fn readb: `count =` after await at line 51,"        let mut res = self.framed.next().await;
+        let mut count = 1;",误报,framed.rs:52 `let mut count = 1` 是 readb 的局部循环计数（:60-62 与 `max_readb_count` 比较），与连接状态无关，属指南列出的局部变量；count 丢失不影响 socket、MqttState 或复用。
+H175,48,2207165,rumqttc,0.25.1,src/v5/framed.rs,53,B,medium,no,fn readb: `count =` after await at line 52,"        let mut res = self.framed.next().await;
+        let mut count = 1;",误报,v5/framed.rs:53 `let mut count = 1`，与 H174 同：readb 的局部迭代计数（:61-63 上限判断），不是连接/会话状态，无复用影响。
+H176,121,27095,rustis,0.27.1,src/client/monitor_stream.rs,36,A,high,no,fn close: assign `closed` in error path after await; guard=none,"        self.client.reset().await?;
+        self.closed = true;
+        Ok(())",误报,已防护：monitor_stream.rs:35-38 `reset().await?` 之后才 `closed = true`，但 Err 分支同样不置位（`?` 直接返回），两路一致；且 `impl Drop for MonitorStream`（:99-107）在未 closed 时 `self.client.reset().forget()`，是取消与失败共用的兜底。RESET 在多路复用 client 上按 id 派发，不会错位。
+H177,121,27095,rustis,0.27.1,src/client/pooled_client_manager.rs,86,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        client.inner().is_terminated(),误报,pooled_client_manager.rs:86-88 `client.inner().is_terminated()` = client.rs:227 `network_task_join_handle.is_finished()`：后台 network 任务按请求 id 分派，被取消的请求不会把连接留在错位状态；每次取用 :63-79 还发 PING 做 is_valid。该标志只表示任务已结束，不是在途请求标记。
+H178,121,27095,rustis,0.27.1,src/client/pub_sub_stream.rs,300,A,high,no,fn close: assign `closed` in error path after await; guard=none,"            }
+            self.client.sunsubscribe(args).await?;
+            self.shardchannels.clear();
+        }
+
+        self.closed = true;
+
+        Ok(())",误报,已防护：pub_sub_stream.rs:300 `sunsubscribe(...).await?` 后 `shardchannels.clear()`，`closed = true` 在 :304；`close(self)` 消耗对象，future 被 drop 时 `PubSubSplitSink` 随之 drop，`impl Drop`（:310-357）对未清空的 channels/patterns/shardchannels 发 unsubscribe（`.forget()`）。取消与错误路径共用同一兜底。
+H179,121,27095,rustis,0.27.1,src/network/cluster_topology.rs,76,A,high,no,fn feed: assign `is_dirty` in error path after await; guard=none,"        self.connection.feed(command, &[]).await?;
+        self.is_dirty = true;
+        Ok(())",误报,cluster_topology.rs:76-77：feed 只把命令编码进写缓冲（standalone_connection.rs:391-393 `framed_write.feed`），`is_dirty = true` 与它之间无 await，future 只能在 feed 内部挂起（此时命令尚未编码）。该链只在 network 任务里跑（network_handler.rs:666），用户取消命令 future 不会 drop 它。
+H180,135,11798,rusty-sidekiq,0.15.2,src/redis.rs,83,C,high,no,fn has_broken returns false / never marks breakage,        false,误报,"redis.rs:83-85 `has_broken` 返回 false，但连接是 `redis::aio::MultiplexedConnection`（:6）；被取消的请求由驱动按 id 丢弃回复。且 :70-81 `is_valid` 每次取用发 PING 并严格比对 ""PONG""，脏连接会在取用时被丢弃。"
+H181,52,1845292,scylla,1.9.0,src/cluster/metadata/update.rs,871,C,medium,no,fn is_broken reads a flag that is not pessimistically set before an await,"        matches!(metadata.keyspaces.get(name), Some(Err(_)))",误报,该行在 #[cfg(test)] mod tests 内（update.rs:415 起），is_broken 是测试辅助函数（875-877），断言 merge 后 metadata.keyspaces 的条目是否为 Err；keyspaces 是 schema 缓存，不是连接/会话，Err 只表示该 keyspace 读取失败。测试代码。
+H182,36,4923381,sea-orm,2.0.4,src/driver/sqlx_mysql.rs,270,C,high,no,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,误报,ping 只从池取连接后调用 sqlx 的 Connection::ping()（match conn.ping().await { Ok(_) => Ok(()) }），没有自定义“接受任意正回复”的解析；结果原样上抛。acquire 到的 PoolConnection 由 Drop 归还，return_to_pool 自己会先 ping。
+H183,36,4923381,sea-orm,2.0.4,src/driver/sqlx_postgres.rs,309,C,high,no,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,误报,同 H182：sqlx_postgres.rs:309 的 ping 直接返回 conn.ping().await 的结果，没有宽松校验，也没有 Err 分支坏标记；池化连接 Drop 时 sqlx 的 PoolConnection::return_to_pool 会先 ping 再归还。
+H184,36,4923381,sea-orm,2.0.4,src/driver/sqlx_sqlite.rs,292,C,high,no,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,误报,同 H182：sqlx_sqlite.rs:292 的 ping 取池连接后直接调 Connection::ping()，Ok(_) => Ok(()) 只是丢弃返回内容，不是“接受任意正回复”的协议解析；失败原样上抛，不影响连接复用判定。
+H185,9,48053448,sqlx-core,0.9.0,src/net/socket/buffered.rs,138,A,medium,no,fn shutdown: call `shutdown` in error path after await; guard=none,"        self.flush().await?;
+        self.socket.shutdown().await",误报,BufferedSocket::shutdown（src/net/socket/buffered.rs:137-140）是套接字级清理：flush 后 socket.shutdown，由消费型 Connection::close/close_hard 调用；future 被 drop 时只是 socket 随连接对象关闭，没有连接回池，也不是 Err 分支的坏标记。
+H186,9,48053448,sqlx-core,0.9.0,src/pool/inner.rs,487,A,medium,no,fn check_idle_conn: call `close` in error path after await; guard=none,"        match test(&mut conn.live.raw, meta).await {
+            Ok(false) => {
+                // connection was rejected by user-defined hook, close nicely
+                return Err(conn.close().await);",误报,"已防护：check_idle_conn 按值接收 Floating<DB, Idle<DB>>（src/pool/inner.rs:469-470），没有把它放回 idle 的 Drop 实现；在 test(...).await（487）被取消时 raw 连接被 drop、DecrementSizeGuard 递减池大小（614-619），下一位拿不到它；只有 Ok(true) 才 into_live()。"
+H187,9,48053448,sqlx-core,0.9.0,src/testing/mod.rs,201,A,medium,no,fn run_test_with_pool: call `close` in error path after await; guard=none,"        let res = test_fn(pool.clone()).await;
+
+        let close_timed_out = crate::rt::timeout(Duration::from_secs(10), pool.close())
+            .await",误报,"src/testing/mod.rs 是 sqlx 自带测试框架；201 行 await 的是测试闭包，203-205 的 timeout(10s, pool.close()) 只是收尾告警。测试代码，不是可复用连接的错误/取消路径。"
+H188,9,48053448,sqlx-core,0.9.0,src/testing/mod.rs,268,A,medium,no,fn setup_test_db: call `close` in error path after await; guard=none,"        (&mut conn)
+            .execute(fixture.contents)
+            .await
+            .unwrap_or_else(|e| panic!(""failed to apply test fixture {:?}: {:?}"", fixture.path, e));
+    }
+
+    conn.close()
+        .await
+        .expect(""failed to close setup connection"");",误报,src/testing/mod.rs:268 在测试 setup 里 await fixture SQL，随后 conn.close().await.expect(...)（src/testing/mod.rs:272-274）；测试代码且是局部 setup 连接。
+H189,13,42568773,sqlx-mysql,0.9.0,src/connection/mod.rs,74,A,medium,no,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send_packet(Quit).await?;
+        self.inner.stream.shutdown().await?;",误报,Connection::close(mut self) 消费连接：74 行 send_packet(Quit).await 后 shutdown；future 被 drop 时 self 也被丢弃、socket 关闭，不会归还池；没有 Err 分支标记。
+H190,13,42568773,sqlx-mysql,0.9.0,src/testing/mod.rs,86,A,medium,no,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"        query.push("")"").build().execute(&mut conn).await?;
+
+        let _ = conn.close().await;",误报,src/testing/mod.rs 的 cleanup_test_dbs：86 行在测试库上执行 delete，随后 let _ = conn.close().await；测试库清理代码。
+H191,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,31,B,high,no,fn begin: `transaction_depth +=` after await at line 27,"        };
+        conn.execute(statement).await?;
+        if !conn.in_transaction() {
+            return Err(Error::BeginFailed);
+        }
+        conn.inner.transaction_depth += 1;",可疑,begin：conn.execute(statement).await?（src/transaction.rs:27）后才 transaction_depth += 1（31 行），无 Rollback guard；取消落在 BEGIN 往返时 depth 仍为 0，start_rollback 因 if depth > 0（src/transaction.rs:61）不动作。PoolConnection drop 后 ping 的 wait_until_ready 排掉 BEGIN 的 OK，连接以 depth=0 回池，下一位自动提交写入落进未提交事务。
+H192,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,41,B,high,no,fn commit: `transaction_depth =` after await at line 40,"            conn.execute(commit_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;",误报,已防护：commit：40 行 execute(COMMIT).await?，41 行才 transaction_depth = depth-1。但 commit(mut self) 的 future 被 drop 时，core Transaction::drop（sqlx-core src/transaction.rs:265-278）会调 start_rollback；depth>0 时 MySQL 排队 ROLLBACK 并递减（src/transaction.rs:58-71），池 ping 的 wait_until_ready 再排空 COMMIT/ROLLBACK 回复。
+H193,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,52,B,high,no,fn rollback: `transaction_depth =` after await at line 51,"            conn.execute(rollback_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;",误报,已防护：同 H192：rollback 的 transaction_depth = depth-1（52）在取消时由 core Transaction::drop→start_rollback 补偿（sqlx-core src/transaction.rs:265-278）；depth>0 时 MySQL 排队 ROLLBACK 并递减（src/transaction.rs:58-71），残留回复由池 ping 的 wait_until_ready 排空。
+H194,11,45986479,sqlx-postgres,0.9.0,src/connection/executor.rs,134,B,medium,no,fn wait_for_close_complete: `count -=` after await at line 126,"            match self.inner.stream.recv().await? {
+                message if message.format == BackendMessageFormat::PortalSuspended => {
+                    // there was an open portal
+                    // this can happen if the last time a statement was used it was not fully executed
+                }
+
+                message if message.format == BackendMessageFormat::CloseComplete => {
+                    // successfully closed the statement (and freed up the server resources)
+                    count -= 1;",误报,count 是 wait_for_close_complete 的局部参数（src/connection/executor.rs:123），不是连接坏标记；连接侧 write_sync() 在 await 前已把 pending_ready_for_query_count +1（src/connection/executor.rs:150-158），取消后残留的 CloseComplete/RFQ 由下一次 run 的 wait_until_ready()（src/connection/executor.rs:210）或池 ping 按计数排空。
+H195,11,45986479,sqlx-postgres,0.9.0,src/connection/mod.rs,168,A,medium,no,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send(Terminate).await?;
+        self.inner.stream.shutdown().await?;",误报,Connection::close(mut self) 消费连接：168 行 send(Terminate).await 后 shutdown；future 被 drop 时 self 一并丢弃、socket 关闭，不会回池，也不是 Err 分支。
+H196,11,45986479,sqlx-postgres,0.9.0,src/connection/mod.rs,113,B,medium,no,fn recv_ready_for_query: `pending_ready_for_query_count -=` after await at line 111,"        let r: ReadyForQuery = self.inner.stream.recv_expect().await?;
+
+        self.inner.pending_ready_for_query_count -= 1;",误报,已防护：pending_ready_for_query_count 是连接内部“待排空 RFQ”计数，不是坏标记；recv_unchecked 的 try_read 只在整帧到齐时 split_to（src/connection/stream.rs:80-117），取消时消息仍留在 read buffer，且 recv_expect().await 返回后的 -=1（src/connection/mod.rs:111-113）与消费同在一个 poll；随后 run 的 wait_until_ready()（src/connection/mod.rs:94-107）会排空。
+H197,11,45986479,sqlx-postgres,0.9.0,src/listener.rs,324,B,medium,no,fn try_recv: `pending_ready_for_query_count -=` after await at line 324,"                BackendMessageFormat::ReadyForQuery => {
+                    self.connection().await?.inner.pending_ready_for_query_count -= 1;",误报,PgListener 持有自己的池连接；324 行 self.connection().await? 在已连接时是 connect_if_needed 的立即返回（src/listener.rs:177-198），不是网络往返；RFQ 已由上面的 recv_unchecked 读出，递减与消费之间无挂起点。该计数只是排空账本。
+H198,11,45986479,sqlx-postgres,0.9.0,src/testing/mod.rs,79,A,medium,no,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"            .bind(&deleted_db_names)
+            .execute(&mut conn)
+            .await?;
+
+        let _ = conn.close().await;",误报,src/testing/mod.rs 的 cleanup_test_dbs：79 行执行测试库 delete，随后 let _ = conn.close().await；测试库清理代码。
+H199,11,45986479,sqlx-postgres,0.9.0,src/transaction.rs,45,B,high,no,fn commit: `transaction_depth -=` after await at line 43,"            conn.execute(commit_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;",误报,已防护：commit：42-43 行 execute(COMMIT).await?，45 行 transaction_depth -= 1。取消时 core Transaction::drop（sqlx-core src/transaction.rs:265-278）调 start_rollback；depth>0 时 pg 排队 ROLLBACK 并递减（src/transaction.rs:62-71），残留 COMMIT/ROLLBACK 回复由池 ping 的 wait_until_ready 按 pending 计数排空。
+H200,11,45986479,sqlx-postgres,0.9.0,src/transaction.rs,56,B,high,no,fn rollback: `transaction_depth -=` after await at line 54,"            conn.execute(rollback_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;",误报,已防护：同 H199：56 行 transaction_depth -= 1 被取消时由 core Transaction::drop→start_rollback 补偿（sqlx-core src/transaction.rs:265-278）；depth>0 时 pg 排队 ROLLBACK 并递减（src/transaction.rs:62-71），未读回复由 pending_ready_for_query_count 与池 ping 排空。
+H201,12,43640804,sqlx-sqlite,0.9.0,src/connection/mod.rs,227,A,medium,no,fn close: call `shutdown` in error path after await; guard=none,"            self.execute(AssertSqlSafe(pragma_string)).await?;
+        }
+        let shutdown = self.worker.shutdown();
+        // Drop the statement worker, which should
+        // cover all references to the connection handle outside of the worker thread
+        drop(self);",误报,Connection::close(mut self) 消费连接：227 行 PRAGMA optimize 之后 worker.shutdown()+drop(self)（231-235）；future 在 227 被 drop 时 self 也被丢弃、worker 句柄随之关闭，连接不会复用。关闭/清理路径，不是错误分支。
+H202,12,43640804,sqlx-sqlite,0.9.0,src/migrate.rs,33,A,medium,no,fn create_database: call `close` in error path after await; guard=none,"            opts = opts.journal_mode(SqliteJournalMode::Wal);
+        }
+
+        // Opening a connection to sqlite creates the database
+        opts.connect()
+            .await?
+            // Ensure WAL mode tempfiles are cleaned up
+            .close()
+            .await?;",误报,create_database 里 opts.connect().await?（32-33）得到临时连接，再 .close().await?；连接是局部变量、用完即关，不进任何池；close 被取消时临时连接随作用域丢弃。
+H203,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1039,A,medium,no,fn session_task: call `detach` in error path after await; guard=none,"				engine.publish(new, engine.establish_clone(log).await);
+			}
+			SessionId::Drop(id) => {
+				// Only a session that was established has anything to release.
+				// Ending it also fails anything still waiting on it, which is
+				// what keeps a request that outlived its handle from waiting on
+				// a session that has just gone away.
+				match engine.sessions.end(id) {
+					Some(Ok(session)) => {
+						if let Err(error) = engine.detach(session.server).await {",误报,session_task 是启动时 spawn 的单一任务（grpc.rs:203），不会被某个请求 future 取消；命中处的 await 是 engine.detach（1051-1053），tonic 客户端多路复用（模块头 10-12：每调用 clone client），取消只 reset 该 h2 stream；且 detach 前已 sessions.end(id)（1049）摘除本地会话。残留仅为服务端会话延迟释放，无后继者复用。
+H204,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1325,A,medium,no,fn kill: call `kill` in error path after await; guard=none,"			let context = self.ready(ctx).await?;
+			self.client()
+				.kill(self.checked(rpc::KillRequest {",误报,kill 的 await 是 tonic RPC（grpc.rs:1326-1336 的 self.client().kill(...)），客户端 h2 多路复用，取消只取消该请求，不标记连接/会话；live query 可能继续存在是服务端资源延迟释放，不会让下一个使用者读到别人的回复。
+H205,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1799,A,medium,no,fn pump_export_to_channel: call `close` in error path after await; guard=none,"		if bytes.send(Ok(chunk.to_vec())).await.is_err() {
+			// The reader is gone; stop pulling the export.
+			return;
+		}
+	}
+	bytes.close();",误报,命中行是 bytes.send(Ok(chunk.to_vec())).await（grpc.rs:1802），bytes 是 async_channel::Sender（1788）；future 被 drop 时 sender 随任务丢弃，通道等价关闭。bytes.close()（1807）是通道关闭，不是连接/会话操作。
+H206,75,561660,surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1035,A,medium,no,fn clear_pending_requests: call `close` in error path after await; guard=none,"			request.response_channel.send(Err(err)).await.ok();
+			request.response_channel.close();
+		}
+		state.pending_requests.clear();",误报,命中行 request.response_channel.send(Err(err)).await 是 async_channel 发送（ws/mod.rs:1035），下一行 close()（1036）关闭该通道；这本是连接重置时失败挂起请求的清理函数（1028-1046），pending_requests 是每会话本地表。通道不是连接。
+H207,75,561660,surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1056,A,medium,no,fn clear_live_queries: call `close` in error path after await; guard=none,"			sender.send(Err(err)).await.ok();
+			sender.close();
+		}
+		state.live_queries.clear();",误报,同 H206：sender.send(Err(err)).await / sender.close()（ws/mod.rs:1056-1057）是 async_channel 的 live query 通知通道，在 reset_sessions（1064-1066）里随连接重置清理。取消只会漏关通道，sender drop 后同效；不涉及复用的连接。
+H208,75,561660,surrealdb,3.3.4,src/method/query.rs,202,A,medium,no,fn stream_items: call `close` in error path after await; guard=none,"						if out_tx.send(Ok(item)).await.is_err() {
+							// The caller stopped reading. Closing the execution's
+							// channel is what unparks it: it is bounded, and this
+							// loop was the only thing draining it.
+							raw_rx.close();
+							return;",误报,命中行 out_tx.send(Ok(item)).await（query.rs:202）是 channel 发送；调用方停止读取时失败，于是 raw_rx.close()（206）解阻塞执行任务，这是注释说明的本地通道协作。执行整个在 spawn 的任务里（196-221），连接状态在引擎侧完成。
+H209,149,6388,taos-query,0.12.4,src/lib.rs,184,C,medium,no,fn has_broken reads a flag that is not pessimistically set before an await,        !self.deref().ready(),误报,has_broken 忽略连接参数 `_`，读的是 builder 的 ready()（lib.rs:184-186）；trait 注释明确它表示是否可以建立连接（lib.rs:126-130）。r2d2 是同步池：is_valid/has_broken 都是同步调用（180-186），没有可被 drop 的 await，不存在取消路径不一致。
+H210,107,56892,toasty,0.11.0,src/engine/exec/delete_by_key.rs,37,B,medium,no,fn exec_delete_by_key: `total_count +=` after await at line 34,"                let res = self.connection.exec(&self.engine.schema, op.into()).await?;
+
+                match res.values {
+                    Rows::Count(n) => total_count += n,",误报,total_count 是循环内的局部聚合变量（delete_by_key.rs:24/37），取消只丢弃本次返回值，连接没有任何状态写入；且 exec_delete_by_key 在 ConnectionTask 上执行（connection_task.rs:227-230），调用方 drop 的是 oneshot（connection.rs:44-65），不会中断该任务。
+H211,107,56892,toasty,0.11.0,src/engine/exec.rs,104,B,high,no,fn exec_plan: `in_transaction =` after await at line 103,"            exec.connection.exec(&self.schema, begin.into()).await?;
+            exec.in_transaction = true;",误报,in_transaction 是 Exec 的局部 bool（exec.rs:57）；exec_plan 在独占连接的 ConnectionTask 里执行（connection_task.rs:143-164/227-230），调用方 Db::exec_stmt 只 await oneshot（connection.rs:44-65），drop 调用方不取消 BEGIN/COMMIT；回收时 recycle 的 pre-ping 也走同一 mpsc（pool.rs:259-285），下一位排在其后。
+H212,21,21187038,tokio-postgres,0.7.18,src/cancel_query_raw.rs,27,A,medium,no,fn cancel_query_raw: call `shutdown` in error path after await; guard=none,"    stream.write_all(&buf).await.map_err(Error::io)?;
+    stream.flush().await.map_err(Error::io)?;
+    stream.shutdown().await.map_err(Error::io)?;",误报,cancel_query_raw 使用的是调用方传入的一次性连接（只为发 CancelRequest），write_all/flush/shutdown 都不等回复；future 被 drop 时 stream 随局部变量关闭，没有池化复用，也没有下一个使用者。
+H213,74,669529,turso,0.8.3,src/transaction.rs,171,A,high,no,fn _commit: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""COMMIT"", ()).await?;
+        self.in_progress = false;
+        Ok(())",误报,"已防护：取消保护在 Drop：Transaction::drop 在 in_progress 时把 dangling_tx 设为 drop_behavior（transaction.rs:228-241），下一次 query/execute 先执行 maybe_handle_dangling_tx 的 ROLLBACK（connection.rs:101-121,125/132）再跑用户语句。_commit 在 COMMIT 往返中被 drop 后，事务不会被留给下一位使用者。"
+H214,74,669529,turso,0.8.3,src/transaction.rs,184,A,high,no,fn _rollback: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""ROLLBACK"", ()).await?;
+        self.in_progress = false;
+        Ok(())",误报,已防护：同 H213：_rollback 的 in_progress=false 若因取消未执行，Drop 仍把 dangling_tx 置为 Rollback（transaction.rs:228-241），下次使用前先 ROLLBACK（connection.rs:101-121）。Guard 在 Drop 里回滚，而不是把连接直接放回复用。
+H215,103,82980,zookeeper-client,0.11.2,src/session/connection.rs,147,A,medium,no,fn command: call `close` in error path after await; guard=none,"        let mut reader = BufReader::new(self);
+        reader.read_line(&mut line).await?;
+        reader.close().await.ignore();",误报,connection.rs:141-149 `command(mut self)` 消耗连接：write_all/flush/read_line 后 `reader.close().await.ignore()`。调用点 :222 `conn.command_isro()` 是 isro 探测用的新建 TCP 连接，用完即弃、从不入池；取消时 TcpStream 随 self 一起 drop。
+H216,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,271,C,high,no,fn test_connected does I/O then accepts any positive/Ok reply,        self.command(Noop).await.is_ok(),可疑,已知模式 C：test_connected 只做 `self.command(Noop).await.is_ok()`（async_connection.rs:271-273），而 read_response 接受 PositiveIntermediate（3xx，response.rs:126-131）；残留的 354 会被 NOOP 当健康回复。PR #1171 未改这一点，补丁版仍命中。

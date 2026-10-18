@@ -1,0 +1,2 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H216,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,271,C,high,fn test_connected does I/O then accepts any positive/Ok reply,        self.command(Noop).await.is_ok(),可疑,已知模式 C：test_connected 只做 `self.command(Noop).await.is_ok()`（async_connection.rs:271-273），而 read_response 接受 PositiveIntermediate（3xx，response.rs:126-131）；残留的 354 会被 NOOP 当健康回复。PR #1171 未改这一点，补丁版仍命中。

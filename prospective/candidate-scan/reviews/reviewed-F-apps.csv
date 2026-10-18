@@ -1,0 +1,164 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H146,147,6809,pict-rs,0.5.24,src/file.rs,21,A,medium,fn write_from_stream: call `close` in error path after await; guard=none,"    file.write_from_stream(stream)
+        .with_poll_timer(""write-from-stream"")
+        .await?;
+    file.close().await?;",误报,误报：File::create(path)（src/file.rs:19）后 file.close().await?（file.rs:22）是本地文件 I/O，不是网络/会话往返（问题1不成立）；File 是栈上局部值，Drop 即关闭，也没有会被复用的连接（问题2不成立）。取消后磁盘上只留半截临时文件。
+H147,147,6809,pict-rs,0.5.24,src/lib.rs,2106,A,medium,fn launch: call `abort` in error path after await; guard=none,"        server.bind_rustls_0_23(address, config)?.run().await?;
+
+        handle.abort();
+        let _ = handle.await;",误报,误报：handle 是 watch_keys 返回的 JoinHandle（src/lib.rs:2098），handle.abort()（2108）只结束证书监听任务；它由 abort_on_drop 包装（2050），错误路径丢弃时 Drop 里同样 abort（sync.rs:24-28）。任务句柄不是连接/会话，无池复用。
+H148,147,6809,pict-rs,0.5.24,src/process.rs,228,A,medium,fn wait: call `kill` in error path after await; guard=none,"        let res = child.wait().with_timeout(timeout).await;
+
+        extras
+            .consume()
+            .await
+            .map_err(|e| ProcessError::Cleanup(command.clone(), e))?;
+
+        match res {
+            Ok(Ok(status)) if status.success() => {
+                guard.disarm();
+
+                Ok(())
+            }
+            Ok(Ok(status)) => Err(ProcessError::Status(command, status)),
+            Ok(Err(e)) => Err(ProcessError::Other(command, e)),",误报,误报：child 是 tokio Child 进程句柄，child.kill()（src/process.rs:240）只在 with_timeout 超时分支杀子进程，与连接/会话无关；spawn 时已 kill_on_drop(true)（process.rs:191），future 被 drop 时子进程同样终止。
+H149,147,6809,pict-rs,0.5.24,src/process.rs,306,A,medium,fn drive: call `kill` in error path after await; guard=none,"            };
+
+            match child_fut.with_timeout(timeout).await {
+                Ok(Ok(status)) if status.success() => {
+                    guard.disarm();
+                    Ok(())
+                }
+                Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                Err(_) => {
+                    child
+                        .kill()
+                        .with_timeout(Duration::from_secs(1))",误报,误报：同 H148。drive 的 child.kill()（src/process.rs:315）作用于子进程句柄；child 被移入 handle 的 async 块（process.rs:299），被 drop 时由 kill_on_drop(true)（191）终止。不是可复用连接。
+H150,147,6809,pict-rs,0.5.24,src/process.rs,410,A,medium,fn pipe: call `kill` in error path after await; guard=none,"                };
+
+                match child_fut.with_timeout(timeout).await {
+                    Ok(Ok(status)) if status.success() => {
+                        guard.disarm();
+                        Ok(())
+                    }
+                    Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                    Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                    Err(_) => {
+                        child
+                            .kill()
+                            .await
+                            .map_err(|e| ProcessError::Other(command2.clone(), e))?;",误报,误报：同 H148/H149。pipe 的 child.kill()（src/process.rs:419）在超时分支杀子进程；child 已移入 handle（400），取消时由 kill_on_drop(true)（191）兜底。不是连接/会话标记。
+H151,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,148,A,medium,fn alias: call `abort` in error path after await; guard=none,"        let hash = repo.hash(&alias).await.retry()?;
+
+        // already deleted
+        if hash.is_none() {
+            return Ok(());
+        }
+    }
+
+    if !saved_delete_token.is_some_and(|t| t.ct_eq(&token)) {
+        return Err(UploadError::InvalidToken).abort();
+    }
+
+    let hash = repo.hash(&alias).await.retry()?;",误报,误报：Err(UploadError::InvalidToken).abort()（src/queue/cleanup.rs:157）调用 JobContext::abort（queue.rs:281-291），把结果转成 JobError::Abort，只决定 job 不重试（queue.rs:302-307），不写任何连接字段；repo 连接由 bb8 池管理。
+H152,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,164,A,medium,fn alias: call `abort` in error path after await; guard=none,"    repo.remove_alias_access(alias.clone()).await.retry()?;
+    repo.cleanup_alias(&alias).await.retry()?;
+
+    let hash = hash.ok_or(UploadError::MissingAlias).abort()?;
+
+    if repo",误报,误报：hash.ok_or(UploadError::MissingAlias).abort()?（src/queue/cleanup.rs:166）同为 JobContext::abort → JobError::Abort（queue.rs:291），是 job 重试策略；hash 是本次调用的 Option 局部值，问题2不成立。
+H153,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,217,A,medium,fn outdated_variants: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} variant cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");",误报,误报：repo.queue_length().await.abort()?（src/queue/cleanup.rs:217）的 .abort() 只是 job 错误分类（queue.rs:291），不标连接。附注：queue_length 内 with_timeout(5s)（postgres.rs:1628）丢弃在途查询后连接回 bb8 池，属另一条线索，与本命中的 abort 语义无关。
+H154,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,249,A,medium,fn outdated_proxies: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} alias cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");",误报,误报：同 H153。repo.queue_length().await.abort()?（src/queue/cleanup.rs:249）是 JobContext::abort → JobError::Abort（queue.rs:291），只影响 job 是否重试，不触连接状态；没有对象被标坏，问题2不成立。
+H155,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,213,B,medium,fn outdated_variants: `count +=` after await at line 211,"        super::cleanup_variants(repo, hash, Some(variant))
+            .await
+            .retry()?;
+        count += 1;",误报,误报：count 是 let mut count = 0（src/queue/cleanup.rs:204）的局部计数器，cleanup_variants(...).await.retry()? 之后 count += 1（213）只用于日志 Queued {count}；不写连接/会话（问题2不成立）。
+H156,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,240,B,medium,fn outdated_proxies: `count +=` after await at line 239,"            super::cleanup_alias(repo, alias, token).await.retry()?;
+            count += 1;",误报,误报：同 H155。count 是 let mut count = 0（src/queue/cleanup.rs:232）的局部计数，cleanup_alias(...).await.retry()? 之后 count += 1（240）只用于日志；取消只会少记一次进度。
+H157,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,321,B,medium,fn prune: `count +=` after await at line 319,"                            super::cleanup_hash(&repo, hash).await?;
+
+                            count += 1;",误报,"误报：count 是 prune 的局部进度（src/queue/cleanup.rs:299、314），cleanup_hash(&repo, hash).await? 后 count += 1（321）再写进度键 prune-missing-queued（323-326）；缺失只影响进度记录，不是事务深度/会话标志。"
+H158,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,349,B,medium,fn prune: `count +=` after await at line 337,"            .instrument(span),
+        ))
+        .await;
+
+        match res {
+            Ok(Ok(updated)) => count = updated,
+            Ok(Err(e)) => {
+                tracing::warn!(""Prune missing identifier failed - {e:?}"");
+            }
+            Err(_) => {
+                tracing::warn!(""Prune missing identifier panicked."");
+            }
+        }
+
+        count += 1;",误报,误报：外层 count += 1（src/queue/cleanup.rs:349）是循环进度，match res（339-347）只决定是否采纳子任务返回的 count = updated（340）；子任务被 abort 也只打 warn。count 是局部变量，无连接/会话状态。
+H159,147,6809,pict-rs,0.5.24,src/queue/process.rs,161,A,medium,fn process_ingest: call `abort` in error path after await; guard=none,"        .repo
+        .complete_upload(upload_id, result)
+        .await
+        .retry()?;
+
+    if let Some(e) = err {
+        return Err(e).abort();
+    }
+
+    guard.disarm();",误报,"误报：err 来自本函数的 let (result, err)，return Err(e).abort()（src/queue/process.rs:165）是 JobContext::abort → JobError::Abort（queue.rs:291），只表示这次上传失败不重试；guard 是 UploadGuard（process.rs:69-101），Drop 只记指标。"
+H160,147,6809,pict-rs,0.5.24,src/queue/process.rs,184,A,medium,fn generate: call `abort` in error path after await; guard=none,"    let hash = state
+        .repo
+        .hash(&source)
+        .await
+        .retry()?
+        .ok_or(UploadError::MissingAlias)
+        .abort()?;
+
+    let identifier_opt = state",误报,误报：.ok_or(UploadError::MissingAlias).abort()?（src/queue/process.rs:187）是 JobContext::abort → JobError::Abort（queue.rs:291），标的是 job 重试策略；state.repo.hash() 用的连接由 bb8 池自管，本处未写连接字段。
+H161,147,6809,pict-rs,0.5.24,src/queue/process.rs,210,A,medium,fn generate: call `abort` in error path after await; guard=none,"        variant,
+        process_args,
+        &original_details,
+        hash,
+    )
+    .await
+    .abort()?;
+
+    Ok(())",误报,误报：crate::generate::generate(...).await.abort()?（src/queue/process.rs:211）同样只是把错误归为 JobError::Abort（queue.rs:291），让 job 不重试；本函数没有连接/会话对象被标坏。
+H162,147,6809,pict-rs,0.5.24,src/repo/migrate.rs,264,B,medium,fn do_migrate_hash: `aliases_count +=` after await at line 261,"            new_repo.set_accessed_alias(alias, timestamp).await?;
+        }
+
+        aliases_count += 1;",误报,误报：aliases_count 是 let mut aliases_count = 0（src/repo/migrate.rs:247）的局部计数，aliases_count += 1（264）只用于后面 if aliases_count == 0 { warn }；不写回连接或会话状态（问题2不成立）。
+H163,147,6809,pict-rs,0.5.24,src/repo/postgres.rs,342,A,medium,fn connect: call `abort` in error path after await; guard=none,"        embedded::migrations::runner()
+            .run_async(&mut client)
+            .await
+            .map_err(Box::new)
+            .map_err(ConnectPostgresError::Migration)?;
+
+        handle.abort();
+        let _ = handle.await;",误报,"误报：handle 是 connect_for_migrations 中 abort_on_drop(spawn(postgres-connection, conn)) 的 DropHandle（src/repo/postgres.rs:259），handle.abort()（346）在迁移后关掉这条一次性连接；错误路径 ? 丢弃时 Drop 也 abort（sync.rs:24-28）。不进池。"
+H164,147,6809,pict-rs,0.5.24,src/store/file_store.rs,197,A,medium,fn safe_save_stream: call `close` in error path after await; guard=none,"        file.write_from_stream(input)
+            .with_poll_timer(""write-from-stream"")
+            .await?;
+
+        file.close().await?;",误报,误报：与 H146 同模式。File::create(to)（src/store/file_store.rs:192）写流后 file.close().await?（199）是本地文件 I/O，非网络往返；file 局部，取消时 Drop 关句柄。残留只是半截文件，不是连接污染。
+H165,147,6809,pict-rs,0.5.24,src/store/object_store.rs,222,A,medium,fn save_stream: call `abort` in error path after await; guard=none,"                .map_err(ObjectError::from)?;
+
+            Ok(())
+        }
+        .await;
+
+        match res {
+            Ok(()) => Ok(object_id),
+            Err(e) => {
+                multipart
+                    .abort()
+                    .with_metrics(crate::init_metrics::OBJECT_STORAGE_ABORT_MULTIPART_REQUEST)",误报,误报：multipart.abort()（src/store/object_store.rs:227-231）是 S3 AbortMultipartUpload，只在 Err 分支清理本次 put_multipart_opts（171-182）拿到的 upload_id；取消后残留一个孤立未完成 upload（part 泄漏），但该 upload_id 只属本次调用、无复用路径（问题2不成立）。
+H166,147,6809,pict-rs,0.5.24,src/store/object_store.rs,105,C,high,fn health_check does I/O then accepts any positive/Ok reply,"        let mut tags = TagSet::default();
+        if self.tag_healthz {",误报,误报：put_opts(...)（src/store/object_store.rs:113-123）确是 S3 往返，但结果只 match res（125-127）返回 Ok/Err，没有任何连接/会话字段被置坏；它是 Store trait 的存活探测（store.rs:83，lib.rs:1841 调用），不是池 manager 的 is_valid/recycle。
+H167,147,6809,pict-rs,0.5.24,src/stream.rs,147,B,medium,fn take: `count +=` after await at line 145,"            tracing::trace!(""take: looping"");
+
+            yielder.yield_(item).await;
+
+            count += 1;",误报,误报：yielder.yield_(item).await（src/stream.rs:145）是 streem 的让出挂起，不是网络往返（问题1不成立）；count（stream.rs:136）是 take 的局部限流计数，被 drop 只少 yield 一项，无连接/会话状态。

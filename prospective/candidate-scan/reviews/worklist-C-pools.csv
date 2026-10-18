@@ -1,0 +1,117 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H004,31,5832912,async-nats,0.50.0,src/lib.rs,1328,A,medium,fn unsubscribe: call `close` in error path after await; guard=none,"                sid: self.sid,
+                max: None,
+            })
+            .await?;
+        self.receiver.close();
+        Ok(())",,
+H061,24,9267014,bb8,0.9.1,src/inner.rs,110,A,high,fn get: assign `state` in error path after await; guard=none,"                match self.inner.manager.is_valid(&mut conn).await {
+                    Ok(()) => return Ok(conn),
+                    Err(e) => {
+                        self.inner.statistics.record(StatsKind::ClosedInvalid);
+                        self.inner.forward_error(e);
+                        conn.state = ConnectionState::Invalid;",,
+H062,117,34107,bb8-diesel,0.2.1,src/lib.rs,114,C,high,fn has_broken returns false / never marks breakage,        false,,
+H063,120,29957,bb8-lapin,0.8.1,src/lib.rs,87,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        let conn_status = conn.status();
+        conn_status.closed() || conn_status.errored()",,
+H064,141,8691,bb8-ldap,0.4.1,src/lib.rs,237,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),,
+H065,381,132,bb8-memcached,0.7.0,src/client.rs,143,A,medium,fn get: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.get(key)).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",,
+H066,381,132,bb8-memcached,0.7.0,src/client.rs,161,A,medium,fn get_multi: call `taint` in error path after await; guard=none,"                match timeout(read_timeout, self.connection.get_multi(keys)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",,
+H067,381,132,bb8-memcached,0.7.0,src/client.rs,177,A,medium,fn delete: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.delete(key)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",,
+H068,381,132,bb8-memcached,0.7.0,src/client.rs,198,A,medium,fn add: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.add(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",,
+H069,381,132,bb8-memcached,0.7.0,src/client.rs,219,A,medium,fn set: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.set(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",,
+H070,381,132,bb8-memcached,0.7.0,src/client.rs,239,A,medium,fn increment: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.increment(key, amount)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",,
+H071,381,132,bb8-memcached,0.7.0,src/client.rs,253,A,medium,fn version: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.version()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",,
+H072,381,132,bb8-memcached,0.7.0,src/client.rs,266,A,medium,fn flush: call `taint` in error path after await; guard=none,"            Some(write_timeout) => match timeout(write_timeout, self.connection.flush()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",,
+H073,381,132,bb8-memcached,0.7.0,src/lib.rs,91,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_tainted(),,
+H074,129,16389,bb8-oracle,0.3.0,src/lib.rs,133,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        !matches!(conn.status(), Ok(oracle::ConnStatus::Normal))",,
+H075,61,1204081,bb8-postgres,0.9.0,src/lib.rs,69,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),,
+H076,59,1343906,bb8-redis,0.26.0,src/lib.rs,76,C,high,fn has_broken returns false / never marks breakage,        false,,
+H077,90,163534,bb8-tiberius,0.16.0,src/lib.rs,208,C,high,fn has_broken returns false / never marks breakage,        false,,
+H085,15,41463820,deadpool,0.13.1,src/managed/pool.rs,196,B,medium,fn try_recycle: `recycle_count +=` after await at line 191,"        if let Err(_e) = self.inner.hooks.post_recycle.apply(inner).await {
+            // TODO log post_recycle error
+            return Ok(None);
+        }
+
+        inner.metrics.recycle_count += 1;",,
+H086,214,840,deadpool-memcached,0.5.0,src/lib.rs,46,C,high,fn recycle does I/O then accepts any positive/Ok reply,"        match conn.version().await {
+            Ok(_) => Ok(()),",,
+H087,28,6822955,deadpool-postgres,0.14.2,src/lib.rs,155,C,high,fn recycle does I/O then accepts any positive/Ok reply,"        if client.is_closed() {
+            tracing::warn!(target: ""deadpool.postgres"", ""Connection could not be recycled: Connection closed"");",,
+H088,138,10179,deadpool-tiberius,0.1.9,src/lib.rs,122,C,high,fn recycle does I/O then accepts any positive/Ok reply,"        match obj.simple_query("""").await {
+            Ok(_) => Ok(()),",,
+H101,47,2488397,fred,10.1.0,src/runtime/glommio/mod.rs,66,A,medium,fn spawn_into: call `detach` in error path after await; guard=none,"    let inner = glommio::spawn_local_into(
+      async move {
+        let result = ft.await;
+        _finished.replace(true);
+        result
+      },
+      tq,
+    )
+    .unwrap_or_else(|e| panic!(""Failed to spawn task into task queue {tq:?}: {e:?}""))
+    .detach();
+
+    JoinHandle { inner, finished }",,
+H124,27,7672068,lettre,0.11.23,src/transport/smtp/async_transport.rs,75,A,medium,fn send_raw: call `abort` in error path after await; guard=none,"        let result = conn.send(envelope, email).await?;
+
+        #[cfg(not(feature = ""pool""))]
+        conn.abort().await;",,
+H125,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,184,A,high,macro try_smtp! Err arm marks bad; call's await at line 186; guard=none,"            self.command(Mail::new(envelope.from().cloned(), mail_options))
+                .await,
+            self
+        );
+
+        // Recipient
+        for to_address in envelope.to() {",,
+H126,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,192,A,high,macro try_smtp! Err arm marks bad; call's await at line 193; guard=none,"                self.command(Rcpt::new(to_address.clone(), vec![])).await,
+                self
+            );
+        }",,
+H127,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,199,A,high,macro try_smtp! Err arm marks bad; call's await at line 199; guard=none,"        try_smtp!(self.command(Data).await, self);
+
+        // Message content
+        let result = try_smtp!(self.message(email).await, self);",,
+H128,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,202,A,high,macro try_smtp! Err arm marks bad; call's await at line 202; guard=none,"        let result = try_smtp!(self.message(email).await, self);
+        Ok(result)",,
+H129,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,227,A,high,macro try_smtp! Err arm marks bad; call's await at line 227; guard=none,"            try_smtp!(self.command(Starttls).await, self);
+            self.stream.get_mut().upgrade_tls(tls_parameters).await?;",,
+H130,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,232,A,high,macro try_smtp! Err arm marks bad; call's await at line 232; guard=none,"            try_smtp!(self.ehlo(hello_name).await, self);
+            Ok(())",,
+H131,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,241,A,high,macro try_smtp! Err arm marks bad; call's await at line 241; guard=none,"        let ehlo_response = try_smtp!(self.command(Ehlo::new(hello_name.clone())).await, self);
+        self.server_info = try_smtp!(ServerInfo::from_response(&ehlo_response), self);",,
+H132,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,247,A,high,macro try_smtp! Err arm marks bad; call's await at line 247; guard=none,"        Ok(try_smtp!(self.command(Quit).await, self))",,
+H133,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,294,A,high,macro try_smtp! Err arm marks bad; call's await at line 300; guard=none,"                    credentials.clone(),
+                    &response,
+                )?)
+                .await,
+                self
+            );
+        }",,
+H134,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,206,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic,,
+H135,27,7672068,lettre,0.11.23,src/transport/smtp/client/connection.rs,133,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic,,
+H171,17,30378035,redis,1.7.1,src/bb8.rs,28,C,high,fn has_broken returns false / never marks breakage,                false,,
+H172,17,30378035,redis,1.7.1,src/r2d2.rs,23,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,                !conn.is_open(),,

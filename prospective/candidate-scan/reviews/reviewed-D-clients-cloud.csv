@@ -1,0 +1,202 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H001,99,106592,amqprs,2.1.5,src/net/reader_handler.rs,128,A,medium,fn handle_frame: call `close` in error path after await; guard=none,"                info!(""close connection {} OK"", self.amqp_connection);
+
+                // Try to yield for last sent message to be scheduled.
+                yield_now().await;
+                Ok(())
+            }
+
+            // Method frames of asynchronous request
+            // Server request to close connection
+            Frame::Close(_, close) => {
+                if let Some(ref mut callback) = self.callback {
+                    if let Err(err) = callback.close(&self.amqp_connection, close).await {",误报,"reader_handler.rs:128 是 `yield_now().await`（让出调度），不是网络往返。附近 `callback.close(&self.amqp_connection, close).await`（:136）是用户回调，失败即 `return Err(Error::Callback)`，run_until_shutdown 随即 break 并在 :325-326 无条件 `set_is_open(false)` + 通知 shutdown；连接由 reader/writer 任务独占，无池复用。"
+H002,99,106592,amqprs,2.1.5,src/net/writer_handler.rs,83,A,medium,fn run_until_shutdown: call `close` in error path after await; guard=none,"                    info!(""received shutdown notification for connection {}"", self.amqp_connection);
+                    // try to give last chance for last message.
+                    yield_now().await;
+                    break;
+                }
+                else => {
+                    break;
+                }
+            }
+        }
+        self.amqp_connection.set_is_open(false);
+
+        if let Err(err) = self.stream.close().await {",误报,writer_handler.rs:83 是 `yield_now().await`；`self.stream.close().await`（:93）作用在 writer 任务独占的本地 BufIoWriter（自身 Drop 也关 socket），且循环退出后 :91 无条件 `set_is_open(false)`，正常关闭/读写出错/任务取消三条路径一致；该连接不入池。
+H003,89,197590,async-bb8-diesel,0.3.0,src/connection_manager.rs,84,C,high,fn has_broken returns false / never marks breakage,        false,误报,connection_manager.rs:84-89 `has_broken` 恒 false（注释：无法非阻塞调用）。bb8 默认 test_on_check_out=true（bb8-0.9.1/src/api.rs:240），每次取用走 :75-82 `is_valid`→`spawn_blocking`（:48-58）发 diesel `SELECT 1`（diesel-2.3.14/src/r2d2.rs:291）；drop 不中断阻塞查询，回复总被读完，错误与取消两路都不置位。另：panic 后 Mutex 中毒连接仍回池，下次 `lock().unwrap()` panic。
+H102,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,288,A,medium,fn next: call `close` in error path after await; guard=none,"            if let Err(e) = self.populate_pool().await? {
+                // Handle errors opening or reading from the stream.
+                match StreamRetryPolicy::on_midstream_error(e) {
+                    RetryResult::Continue(_) => {
+                        // The stream failed with a transient error. Reset the stream.
+                        self.stream = None;
+                        continue;
+                    }
+                    RetryResult::Permanent(e) | RetryResult::Exhausted(e) => {
+                        // The stream failed with a permanent error. Return the error.
+                        self.close();
+                        return Some(Err(e));",误报,message_stream.rs:288 的 `populate_pool().await` 是 gRPC 流读取；:298 `self.close()` 是同步本地状态迁移（:406-410 `stream=Closed; pool.clear(); shutdown.cancel()`），只在永久错误时结束流，不是把连接标坏。MessageStream 由调用方独占、不入池；取消 next() 后流仍 Active 可继续用，没有第二个使用者。
+H103,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,664,A,medium,fn basic_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,message_stream.rs:664 所在函数位于 `#[cfg(test)] mod tests`（:460-461）；:668 `shutdown_token().shutdown()` 等的是 lease 任务 join 与 ack 刷新，不是网络往返。测试代码，无复用对象。
+H104,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,774,A,medium,fn basic_success_exactly_once: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,同 H103：:774 在 `#[cfg(test)] mod tests`（:461）内；`shutdown_token().shutdown()` 对后台任务 join，不是连接会话交换，无池化复用。
+H105,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1343,A,medium,fn resume_midstream_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,同 H103：:1343 在 `#[cfg(test)] mod tests`（:461）内；shutdown 等待 lease 任务结束，属任务 join 而非网络往返，测试代码。
+H106,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1409,A,medium,fn resume_midstream_hits_permanent_error: call `shutdown` in error path after await; guard=none,"        }
+        let err = stream
+            .next()
+            .await
+            .transpose()
+            .expect_err(""expected an error from stream"");
+        assert!(err.status().is_some(), ""{err:?}"");
+        let status = err.status().unwrap();
+        assert_eq!(
+            status.code,
+            google_cloud_gax::error::rpc::Code::FailedPrecondition
+        );
+        assert_eq!(status.message, ""fail"");
+
+        // Wait for the stream to join its background tasks.",误报,同 H103：:1409 在 `#[cfg(test)] mod tests`（:461）内；`next()` 拿到永久错误后的 shutdown 只是任务 join，测试代码，无连接复用。
+H107,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1659,A,medium,fn at_least_once_and_exactly_once: call `shutdown` in error path after await; guard=none,"        assert!(matches!(h, Handler::ExactlyOnce(_)), ""{h:?}"");
+
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",误报,同 H103：:1659 在 `#[cfg(test)] mod tests`（:461）内；`shutdown_token().shutdown()` 是后台任务 join，测试代码。
+H108,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1720,A,medium,fn cancel_midstream: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        let shutdown = tokio::spawn(async move {
+            shutdown_token.shutdown().await;",误报,同 H103：:1720（cancel_midstream）在 `#[cfg(test)] mod tests`（:461）内；`shutdown_token.shutdown().await` 从一个 spawn 的闭包里等任务结束，不是连接往返。
+H109,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1784,A,medium,fn shutdown_without_next: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        // Note that the application does not have to call `stream.next()`, or
+        // `drop(stream)` to begin the shutdown procedure after a cancel.
+        shutdown_token.shutdown().await;",误报,同 H103：:1784（shutdown_without_next）在 `#[cfg(test)] mod tests`（:461）内；测试断言不调 next() 也能 shutdown，`shutdown().await` 等后台任务，非网络往返。
+H110,137,10364,gremlin-client,0.8.10,src/connection.rs,307,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.broken,误报,connection.rs:307 `is_broken` 读 `self.broken`，但这里是同步 tungstenite 连接：`send`/`recv` 都是普通 fn（:289-305），没有 .await，也就没有 future 被 drop 的取消路径；`broken` 在 send 和 recv 的 Err 分支都置位（:292、:301），两条路径一致。
+H111,137,10364,gremlin-client,0.8.10,src/pool.rs,124,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_broken(),误报,pool.rs:124-126 `has_broken` → `conn.is_broken()`，与 H110 同：r2d2 同步池 + 同步 websocket（connection.rs:289-305 无 await），没有可取消的挂起点；send/recv 出错都置 broken，不存在标记不一致。
+H112,55,1651322,h3,0.0.8,src/server/connection.rs,125,A,medium,fn accept: call `shutdown` in error path after await; guard=none,"        let stream = match poll_fn(|cx| self.poll_accept_request_stream_internal(cx)).await? {
+            Some(s) => FrameStream::new(BufRecvStream::new(s)),
+            None => {
+                // We always send a last GoAway frame to the client, so it knows which was the last
+                // non-rejected request.
+                self.shutdown(0).await?;",误报,server/connection.rs:125 的 await 是 `poll_fn(poll_accept_request_stream_internal)`；:130 `shutdown(0)` 只在无新流时调用。真正的标记在 connection.rs:343 `*sent_closing = Some(max_id)`，位于 :352 写 GOAWAY 之前（悲观标记）；该 Connection 由服务端 accept 循环独占、不入池，future 丢掉后整条连接被丢弃。
+H120,39,3929474,jsonrpsee-core,0.26.1,src/client/async_client/mod.rs,938,A,medium,fn send_task: call `close` in error path after await; guard=none,"				if let Err(err) = sender.send_ping().await {
+					tracing::debug!(target: LOG_TARGET, ""Send ws ping failed: {err}"");
+					break Err(Error::Transport(err.into()));
+				}
+			}
+		}
+	};
+
+	from_frontend.close();
+	let _ = sender.close().await;",误报,async_client/mod.rs:938 是 `sender.send_ping().await`；:946-947 `from_frontend.close()` 是 mpsc，`let _ = sender.close().await` 在循环后无条件执行，作用于 send_task 独占的传输 sink。send_task 由 :342 `tokio::spawn` 启动，取消只发生在整个 client 关闭时，sink 随任务 drop，无第二使用者。
+H122,49,2110042,lapin,4.12.2,src/internal_rpc.rs,439,A,medium,fn run: call `close` in error path after await; guard=none,"                                .basic_cancel(consumer_tag, BasicCancelOptions::default())
+                                .await
+                        } else {
+                            Ok(())
+                        }
+                    })
+                }
+                CloseChannel(channel_id, reply_code, reply_text) => {
+                    if !self.channel_ok(channel_id) {
+                        continue;
+                    }
+                    let channel = get_channel(channel_id);
+                    self.register_internal_future(async move {
+                        channel?.close(reply_code, reply_text).await",误报,internal_rpc.rs:439 是 `channel.basic_cancel(...).await`，非 close；CloseChannel 的 `channel?.close(...)`（:451）同样在 `register_internal_future` 里，该函数用 `self.runtime.spawn`（:343-352）把 future 交给独立任务，用户 future 的 drop 取消不到它；出错走 `handle.set_connection_error(err)`。AMQP 通道多路复用，连接状态由 io 任务维护。
+H123,58,1344308,ldap3,0.12.1,src/conn.rs,791,A,medium,fn turn: call `close` in error path after await; guard=none,"                                    if let Err(e) = self.stream.get_mut().shutdown().await {
+                                        warn!(""socket shutdown error: {}"", e);
+                                    }
+                                    if let Err(e) = self.stream.close().await {",误报,conn.rs:791 `self.stream.get_mut().shutdown().await` / :794 `close()` 位于 `LdapOp::Unbind` 分支，不是错误分支；`turn(mut self)` 由驱动任务独占，`self.stream` 就是该任务自己的 TLS/TCP 流。unbind 后不再使用，drop 时流一并关闭，无池化复用。
+H136,95,123756,loco-rs,1.2.0,src/scheduler.rs,363,A,medium,fn run: call `shutdown` in error path after await; guard=none,"        sched.start().await?;
+
+        tokio::signal::ctrl_c().await?;
+        sched.shutdown().await?;",误报,scheduler.rs:363 是 `tokio::signal::ctrl_c().await`（信号，不是网络往返）；:364 `sched.shutdown().await` 是 tokio-cron-scheduler 的任务关闭。sched 是本地任务句柄集合，不是连接/会话，drop 不留被复用状态。
+H137,95,123756,loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,123,A,medium,fn copy: call `close` in error path after await; guard=none,"            let mut writer = self.opendal_impl.writer(&to).await?.into_bytes_sink();
+            writer
+                .send_all(&mut reader)
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;
+            writer
+                .close()
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;",误报,opendal_adapter.rs:120-128：`writer` 是本次 copy 新建的局部对象（`self.opendal_impl.writer(&to)`），`close()` 只完成这次 multipart；取消时 writer 被 drop，由 opendal 的 Writer Drop 收尾（在 opendal crate，本仓未 vendored），loco-rs 内没有复用路径。
+H138,95,123756,loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,279,A,medium,fn upload_stream: call `close` in error path after await; guard=none,"            let chunk = chunk.map_err(|e| StorageError::Any(Box::new(e)))?;
+            // Use the native write method which handles the data more efficiently
+            writer.write(chunk).await?;
+        }
+
+        let meta = writer.close().await?;",误报,opendal_adapter.rs:272-282：`writer` 是 upload_stream 的局部对象，`writer.write(chunk).await`（:279）与 `close()`（:282）只作用于本次上传；无池化会话，取消时 writer 被 drop，不会把半截状态留给下一个使用者。
+H141,97,109621,ntex,4.3.0,src/web/ws.rs,234,A,medium,fn call: call `close` in error path after await; guard=none,"                let result = ctx.call(&self.svc, item).await.map_err(WsError::Service);
+                if let Some(s) = s {
+                    rt::spawn(async move { s.io().close() });",误报,"ws.rs:234 `ctx.call(&self.svc, item).await` 调用户服务；:236 `rt::spawn(async move { s.io().close() })` 只关闭本连接的 Io（ntex 本地句柄），且无论 result 成败都执行。future 被 drop 时 Dispatcher 连带丢弃 IO，没有第二使用者。"
+H142,97,109621,ntex,4.3.0,src/ws/client.rs,462,A,medium,fn receiver: call `close` in error path after await; guard=none,"                        let _ = sink2.send(ws::Message::Close(Some(reply))).await;
+                    }
+                }
+                match tx.send(Ok(item)) {
+                    Ok(()) => (),
+                    Err(_) => io.close(),
+                }
+                Ok::<Option<ws::Message>, ()>(None)",误报,ws/client.rs:462 是 peer 发 Close 时的重试发送；`sink2.send(...).await` 与 :465-468 `tx.send(Err(_)) => io.close()` 都作用于本连接的普通 sink/IO。整段在 :448 `rt::spawn` 的 dispatcher 任务内，取消即任务结束、连接一起丢弃，无池化复用。
+H143,20,23865413,object_store,0.14.2,src/upload.rs,232,A,medium,fn finish: call `abort` in error path after await; guard=none,"        if let Err(e) = self.wait_for_capacity(0).await {
+            self.abort().await?;",误报,upload.rs:232 `wait_for_capacity(0).await` 是 JoinSet 任务 join（非网络往返）；:233 `self.abort().await` 是错误路径清理。`finish(mut self)` 消耗对象，drop 会连带 drop upload；:79-84 文档明确 S3/GCS 无法在 drop 时清理、建议 lifecycle 规则——不是可复用连接的状态。
+H144,20,23865413,object_store,0.14.2,src/upload.rs,237,A,medium,fn finish: call `shutdown` in error path after await; guard=none,"        }
+
+        match self.upload.complete().await {
+            Err(e) => {
+                self.tasks.shutdown().await;",误报,upload.rs:239 `self.tasks.shutdown().await` 是 `JoinSet::shutdown`（:130 `tasks: JoinSet<Result<()>>`），中止并 join 子任务，按指南属任务句柄、非网络往返；没有连接或会话被标记或复用。
+H145,20,23865413,object_store,0.14.2,src/upload.rs,239,A,medium,fn finish: call `abort` in error path after await; guard=none,"            Err(e) => {
+                self.tasks.shutdown().await;
+                self.upload.abort().await?;",误报,upload.rs:240 `self.upload.abort().await?` 是错误路径对本次 multipart 的清理（abort 自身 :220-223 也是 tasks.shutdown + upload.abort）；取消路径靠 drop 与文档化的 lifecycle 兜底（:79-90），不涉及被复用的连接。
+H168,60,1237278,pingora-core,0.9.0,src/protocols/http/v1/server.rs,1247,A,high,fn read_body_or_idle: assign `half_closed` in error path after await; guard=none,"            let (probe, read) = self
+                .read_idle_probe(""during HTTP body-or-idle state"")
+                .await?;
+            if read == 0 {
+                self.half_closed = true;
+                self.set_keepalive(None);",误报,server.rs:1245-1249：`read_idle_probe(...).await?` 返回后紧接 `if read == 0 { self.half_closed = true; ... }`，中间无 await；future 只能在读等待点被 drop，那时 FIN 尚未被观察到，不会出现“已置位但被取消”。`half_closed` 是本条 downstream 会话的本地标志，不是池化连接状态。
+H173,126,21972,rsmq_async,18.0.0,src/pooled_facade.rs,37,C,high,fn has_broken returns false / never marks breakage,        false,误报,pooled_facade.rs:23 `type Connection = redis::aio::MultiplexedConnection`：多路复用连接按请求 id 匹配回复，被取消的请求由驱动丢弃自己的回复，`has_broken` 返回 false 不会让别人读到残留回复；每次取用仍走 :30-35 的 PING `is_valid`。
+H174,48,2207165,rumqttc,0.25.1,src/framed.rs,52,B,medium,fn readb: `count =` after await at line 51,"        let mut res = self.framed.next().await;
+        let mut count = 1;",误报,framed.rs:52 `let mut count = 1` 是 readb 的局部循环计数（:60-62 与 `max_readb_count` 比较），与连接状态无关，属指南列出的局部变量；count 丢失不影响 socket、MqttState 或复用。
+H175,48,2207165,rumqttc,0.25.1,src/v5/framed.rs,53,B,medium,fn readb: `count =` after await at line 52,"        let mut res = self.framed.next().await;
+        let mut count = 1;",误报,v5/framed.rs:53 `let mut count = 1`，与 H174 同：readb 的局部迭代计数（:61-63 上限判断），不是连接/会话状态，无复用影响。
+H176,121,27095,rustis,0.27.1,src/client/monitor_stream.rs,36,A,high,fn close: assign `closed` in error path after await; guard=none,"        self.client.reset().await?;
+        self.closed = true;
+        Ok(())",已防护,monitor_stream.rs:35-38 `reset().await?` 之后才 `closed = true`，但 Err 分支同样不置位（`?` 直接返回），两路一致；且 `impl Drop for MonitorStream`（:99-107）在未 closed 时 `self.client.reset().forget()`，是取消与失败共用的兜底。RESET 在多路复用 client 上按 id 派发，不会错位。
+H177,121,27095,rustis,0.27.1,src/client/pooled_client_manager.rs,86,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        client.inner().is_terminated(),误报,pooled_client_manager.rs:86-88 `client.inner().is_terminated()` = client.rs:227 `network_task_join_handle.is_finished()`：后台 network 任务按请求 id 分派，被取消的请求不会把连接留在错位状态；每次取用 :63-79 还发 PING 做 is_valid。该标志只表示任务已结束，不是在途请求标记。
+H178,121,27095,rustis,0.27.1,src/client/pub_sub_stream.rs,300,A,high,fn close: assign `closed` in error path after await; guard=none,"            }
+            self.client.sunsubscribe(args).await?;
+            self.shardchannels.clear();
+        }
+
+        self.closed = true;
+
+        Ok(())",已防护,pub_sub_stream.rs:300 `sunsubscribe(...).await?` 后 `shardchannels.clear()`，`closed = true` 在 :304；`close(self)` 消耗对象，future 被 drop 时 `PubSubSplitSink` 随之 drop，`impl Drop`（:310-357）对未清空的 channels/patterns/shardchannels 发 unsubscribe（`.forget()`）。取消与错误路径共用同一兜底。
+H179,121,27095,rustis,0.27.1,src/network/cluster_topology.rs,76,A,high,fn feed: assign `is_dirty` in error path after await; guard=none,"        self.connection.feed(command, &[]).await?;
+        self.is_dirty = true;
+        Ok(())",误报,cluster_topology.rs:76-77：feed 只把命令编码进写缓冲（standalone_connection.rs:391-393 `framed_write.feed`），`is_dirty = true` 与它之间无 await，future 只能在 feed 内部挂起（此时命令尚未编码）。该链只在 network 任务里跑（network_handler.rs:666），用户取消命令 future 不会 drop 它。
+H215,103,82980,zookeeper-client,0.11.2,src/session/connection.rs,147,A,medium,fn command: call `close` in error path after await; guard=none,"        let mut reader = BufReader::new(self);
+        reader.read_line(&mut line).await?;
+        reader.close().await.ignore();",误报,connection.rs:141-149 `command(mut self)` 消耗连接：write_all/flush/read_line 后 `reader.close().await.ignore()`。调用点 :222 `conn.command_isro()` 是 isro 探测用的新建 TCP 连接，用完即弃、从不入池；取消时 TcpStream 随 self 一起 drop。
+H180,135,11798,rusty-sidekiq,0.15.2,src/redis.rs,83,C,high,fn has_broken returns false / never marks breakage,        false,误报,"redis.rs:83-85 `has_broken` 返回 false，但连接是 `redis::aio::MultiplexedConnection`（:6）；被取消的请求由驱动按 id 丢弃回复。且 :70-81 `is_valid` 每次取用发 PING 并严格比对 ""PONG""，脏连接会在取用时被丢弃。"

@@ -1,0 +1,126 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H078,112,38036,cdrs-tokio,9.0.2,src/transport.rs,164,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken(),误报,is_broken 只是转发 AsyncTransport 的标志（transport.rs:164-165→330），该标志只在后台 writer/reader 的 try_join 出错时才置位（transport.rs:393-397）。取消点是 write_envelope 的 oneshot（366）；请求已按 stream id 登记 handler（518-522），回复由 reader 按 id 取走并丢弃（692-700），socket 上不会留下未读回复。多路复用驱动，取消不污染连接。
+H079,112,38036,cdrs-tokio,9.0.2,src/transport.rs,263,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken(),误报,同 H078：TransportRustls::is_broken（transport.rs:263-264）同样转发 330 行的标志，只在读写任务出错时置 true（393-397）。write_envelope 的取消只丢 oneshot（366），回复仍由 reader 按 stream id 消费丢弃（692-700），连接池（connection_pool.rs:543-559）拿到的仍是干净连接。
+H080,112,38036,cdrs-tokio,9.0.2,src/transport.rs,329,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.is_broken.load(Ordering::Relaxed),误报,AsyncTransport::is_broken 读 AtomicBool（transport.rs:329-330），只在后台 try_join 出错时置位（393-397），确实没有“在途请求”标记。但 cdrs 按 stream id 多路复用：handler 先入表（518-522），回复由 reader 按 id 取走（425/492/692-700），取消不改连接状态、不留半截帧，后继者读不到别人的回复。
+H081,33,5471627,clickhouse,0.15.3,src/inserter.rs,314,B,high,fn write: `in_transaction =` after await at line 304,"        if self.insert.is_none() {
+            self.init_insert().await?;
+        }
+
+        match self.insert.as_mut().unwrap().do_write(row) {
+            Ok(bytes) => {
+                self.pending.bytes += bytes as u64;
+                self.pending.rows += 1;
+
+                if !self.in_transaction {
+                    self.pending.transactions += 1;
+                    self.in_transaction = true;",误报,取消点是 init_insert 的 client.insert().await（inserter.rs:303-304/375-386），默认校验开启时它只是元数据查询（lib.rs:778-812），返回尚未发起的 Insert；in_transaction 是 Inserter 本地批次计数（inserter.rs:34/312-314，仅用于 commit 的 transactions 计数），不是服务端事务/会话。取消后 self.insert 仍 None、in_transaction 仍 false，重试会重跑 init_insert；Inserter 不被池化。
+H082,67,932234,clickhouse-arrow,0.2.1,src/client.rs,377,A,medium,fn shutdown: call `shutdown` in error path after await; guard=none,"        trace!(""shutting down client"");
+        self.conn().await?.shutdown().await",误报,两处 await 都不是会话往返：conn() 直接返回 &self.connection（client.rs:1002-1005）；Connection::shutdown 只是 state.channel.send(Message::Shutdown) 的 mpsc 发送（connection.rs:342-361），随后 abort_all。取消最多少发一条 Shutdown，对象仍由 Drop（connection.rs:491-495）abort io_task 并关 socket；无池复用。
+H083,67,932234,clickhouse-arrow,0.2.1,src/pool.rs,238,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        matches!(conn.status(), ConnectionStatus::Error | ConnectionStatus::Closed)",误报,has_broken 只看 status（pool.rs:238-240）；is_valid 默认不 ping（check_health=false，pool.rs:40/47），只剩同步的 check_channel，没有挂起点。即使 with_check 开启 ping，后台 IO 任务在 run 里发完 ping 立即 receive_ping 消费 Pong（internal.rs:156-163/400+），调用方取消只丢 oneshot，Pong 不会留给下一位。
+H084,143,8640,datafusion-table-providers-postgres,0.14.0,src/pool.rs,222,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,"has_broken 只查 conn.is_closed()（pool.rs:223-224），is_valid 是 conn.simple_query("""")（pool.rs:215-220）。tokio-postgres 由后台 connection task 多路复用、按请求分发回复，请求 future 被 drop 后回复由连接任务丢弃，协议不会错位。RESCAN.md §4.2 对同款 manager（bb8-postgres 0.9.0，代码相同）做过动态验证：外部取消与 bb8 自身超时都干净。"
+H099,140,8782,esrs,0.18.0,src/bus/rabbit/mod.rs,43,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected(),误报,is_valid 是纯同步判断（mod.rs:36-41：if self.has_broken(conn) { Err } else { Ok }），整个函数没有 await，bb8 的 is_valid().await 首次 poll 即 Ready，取消落不进这个窗口。has_broken 读 lapin 的 conn.status().connected()（mod.rs:43-45），是驱动状态位。
+H100,140,8782,esrs,0.18.0,src/bus/rabbit/mod.rs,88,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected(),误报,同 H099：RabbitChannelManager::is_valid（mod.rs:81-86）同样只是同步的 has_broken 判断，没有 await/挂起点；has_broken 读 Channel::status().connected()（mod.rs:88-90）。bb8 的取消窗口在 is_valid 内部，这里不存在。
+H113,122,23217,hdbconnect_async,0.33.0,src/bb8.rs,99,C,high,fn has_broken returns false / never marks breakage,        false,不确定,has_broken 恒为 false（bb8.rs:99），复用的唯一关口是 is_valid 里的 ValidityChecker(conn.clone()) 轮询 conn.is_broken()（bb8.rs:88-116）；而 Connection 来自 hdbconnect_impl（lib.rs:100），本仓看不到 is_broken 是否只读状态位、单流协议在被取消的请求后是否留下未读回复；且 ValidityChecker::poll 每次 poll 重建 future（108）。证据不足，不猜后继者状态。
+H114,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,556,A,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_cache.raft.shutdown().await?;
+            if let Some(handle) = &state.raft_cache.shutdown_handle {
+                handle.shutdown().await?;",误报,shutdown_execute 是整节点一次性 teardown：此处 await 是 openraft 的 raft.shutdown()（本地核心任务 join），随后 hiqlite_wal::ShutdownHandle::shutdown()（app_state.rs:92），都不是网络往返；且 is_raft_stopped 在 await 前就置 true（mgmt.rs:552-555），management 入口据此拒绝新请求（network/management.rs:43）。不是会被复用的连接/会话。
+H115,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,579,A,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"                time::sleep(Duration::from_secs(1)).await;
+            }
+
+            // TODO as soon openraft-0.10 is out, we will be able to trigger a pre-emptive
+            //  leader switch if this node is the leader. This will smooth out things even more.
+
+            state.raft_db.is_raft_stopped.store(true, Ordering::Relaxed);
+
+            state.raft_db.raft.shutdown().await?;",误报,命中行是 time::sleep(Duration::from_secs(1)).await（mgmt.rs:579），只是等 leader 的本地定时器，不是网络往返；后面 raft_db.raft.shutdown() 也是本地核心任务 join。节点 teardown 路径，没有池化连接或会话被下一个使用者接管。
+H116,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,587,A,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_db.raft.shutdown().await?;
+            info!(""Shutting down sqlite logs writer"");
+            state.raft_db.shutdown_handle.shutdown().await?;",误报,同 H114：raft_db.raft.shutdown() 是 openraft 本地 join，shutdown_handle.shutdown() 是 WAL 任务 join（app_state.rs:112），且 is_raft_stopped 已在 585 行先置 true。错误或取消只会让节点半关，不存在复用者。
+H117,142,8673,hiqlite,0.15.3,src/network/api.rs,434,A,medium,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;",误报,每连接一个 server 侧 WebSocket 任务：命中行 write.write_frame(...).await（api.rs:434）写的是本连接 socket；循环结束才 handle_read.abort() 并发 Close（444-445）。future 被 drop 时 socket 与两个 half 一起丢弃，没有池化复用；abort 是 JoinHandle 操作，不在本缺陷类。
+H118,142,8673,hiqlite,0.15.3,src/network/raft_client.rs,404,A,high,fn ws_handler: assign `in_flight` in error path after await; guard=none,"            let _ = tx_write.send_async(WritePayload::Close).await;
+
+            for (_, ack) in in_flight.drain() {
+                let _ = ack.send(Err(Error::Connect(""Raft WebSocket stream ended"".into())));
+            }
+            // reset to a reasonable size for the next start to keep memory usage under control
+            in_flight = HashMap::with_capacity(4);",误报,"命中行 tx_write.send_async(WritePayload::Close).await（raft_client.rs:404）是 flume 通道发送，不是网络往返；in_flight 是 ws_handler 的局部 HashMap（216-219），取消时随任务 drop，ack sender 掉线使调用方得 RecvError，与 406-408 的显式 Err 同类；reader/writer 另有 AbortOnDrop（181-196,303-310）。无复用连接状态。"
+H119,142,8673,hiqlite,0.15.3,src/server/proxy/handlers.rs,129,A,medium,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;",误报,与 H117 同模式：proxy 的 /listen 处理循环里 write.write_frame(frame).await（handlers.rs:129-132）写本连接 socket，结束后才 handle_read.abort() 并发 Close（139-140）。future 被丢弃即丢 socket，无池化连接；abort 是 JoinHandle 操作。
+H121,93,127448,klickhouse,0.16.0,src/manager.rs,48,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,has_broken 只看 sender.is_closed()（client.rs:604-605），socket 由后台任务独占。is_valid 的 select '' 被取消时，查询已在后台登记：后台继续读包，current.send(Ok(block)).await.ok() 丢弃，EndOfStream 后再取 pending（client.rs:160-190），帧不会错位；bb8 放回池的连接对下一位仍是干净的。
+H169,123,22818,rbdc,4.9.10,src/pool/manager.rs,65,C,high,fn check does I/O then accepts any positive/Ok reply,"        match conn.ping().await {
+            Ok(_) => Ok(()),",不确定,check 只做 conn.ping().await 并返回 Ok（manager.rs:64-70）。ping 在 rbdc-mysql 是 send_packet(Ping)+recv_ok()（rbdc-mysql src/connection/mod.rs:73-79），单流往返，取消会留未读 OK；但 rbdc 本体里 check 无调用点，connect 每次新建、ConnectionGuard::drop 直接 conn.close()（guard.rs:72-80）；真正的池在 rbdc-pool（未在扫描源码）。复用关系看不到，不猜。
+H170,139,9756,rbdc-mysql,4.9.6,src/connection/mod.rs,68,A,medium,fn do_close: call `shutdown` in error path after await; guard=none,"        self.stream.send_packet(Quit).await?;
+        self.stream.shutdown().await?;",误报,do_close 的两次 await 都不是往返：send_packet(Quit) 是单向写（不期望回复），shutdown() 是 AsyncWriteExt 的 TCP shutdown（stream.rs:228-233 Deref 到 BufStream）。且是销毁路径：ConnectionGuard::drop 把 conn 移进任务 close() 后即 drop（guard.rs:72-80），socket 随之关闭，没有下一个使用者。
+H181,52,1845292,scylla,1.9.0,src/cluster/metadata/update.rs,871,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,"        matches!(metadata.keyspaces.get(name), Some(Err(_)))",误报,该行在 #[cfg(test)] mod tests 内（update.rs:415 起），is_broken 是测试辅助函数（875-877），断言 merge 后 metadata.keyspaces 的条目是否为 Err；keyspaces 是 schema 缓存，不是连接/会话，Err 只表示该 keyspace 读取失败。测试代码。
+H203,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1039,A,medium,fn session_task: call `detach` in error path after await; guard=none,"				engine.publish(new, engine.establish_clone(log).await);
+			}
+			SessionId::Drop(id) => {
+				// Only a session that was established has anything to release.
+				// Ending it also fails anything still waiting on it, which is
+				// what keeps a request that outlived its handle from waiting on
+				// a session that has just gone away.
+				match engine.sessions.end(id) {
+					Some(Ok(session)) => {
+						if let Err(error) = engine.detach(session.server).await {",误报,session_task 是启动时 spawn 的单一任务（grpc.rs:203），不会被某个请求 future 取消；命中处的 await 是 engine.detach（1051-1053），tonic 客户端多路复用（模块头 10-12：每调用 clone client），取消只 reset 该 h2 stream；且 detach 前已 sessions.end(id)（1049）摘除本地会话。残留仅为服务端会话延迟释放，无后继者复用。
+H204,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1325,A,medium,fn kill: call `kill` in error path after await; guard=none,"			let context = self.ready(ctx).await?;
+			self.client()
+				.kill(self.checked(rpc::KillRequest {",误报,kill 的 await 是 tonic RPC（grpc.rs:1326-1336 的 self.client().kill(...)），客户端 h2 多路复用，取消只取消该请求，不标记连接/会话；live query 可能继续存在是服务端资源延迟释放，不会让下一个使用者读到别人的回复。
+H205,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1799,A,medium,fn pump_export_to_channel: call `close` in error path after await; guard=none,"		if bytes.send(Ok(chunk.to_vec())).await.is_err() {
+			// The reader is gone; stop pulling the export.
+			return;
+		}
+	}
+	bytes.close();",误报,命中行是 bytes.send(Ok(chunk.to_vec())).await（grpc.rs:1802），bytes 是 async_channel::Sender（1788）；future 被 drop 时 sender 随任务丢弃，通道等价关闭。bytes.close()（1807）是通道关闭，不是连接/会话操作。
+H206,75,561660,surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1035,A,medium,fn clear_pending_requests: call `close` in error path after await; guard=none,"			request.response_channel.send(Err(err)).await.ok();
+			request.response_channel.close();
+		}
+		state.pending_requests.clear();",误报,命中行 request.response_channel.send(Err(err)).await 是 async_channel 发送（ws/mod.rs:1035），下一行 close()（1036）关闭该通道；这本是连接重置时失败挂起请求的清理函数（1028-1046），pending_requests 是每会话本地表。通道不是连接。
+H207,75,561660,surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1056,A,medium,fn clear_live_queries: call `close` in error path after await; guard=none,"			sender.send(Err(err)).await.ok();
+			sender.close();
+		}
+		state.live_queries.clear();",误报,同 H206：sender.send(Err(err)).await / sender.close()（ws/mod.rs:1056-1057）是 async_channel 的 live query 通知通道，在 reset_sessions（1064-1066）里随连接重置清理。取消只会漏关通道，sender drop 后同效；不涉及复用的连接。
+H208,75,561660,surrealdb,3.3.4,src/method/query.rs,202,A,medium,fn stream_items: call `close` in error path after await; guard=none,"						if out_tx.send(Ok(item)).await.is_err() {
+							// The caller stopped reading. Closing the execution's
+							// channel is what unparks it: it is bounded, and this
+							// loop was the only thing draining it.
+							raw_rx.close();
+							return;",误报,命中行 out_tx.send(Ok(item)).await（query.rs:202）是 channel 发送；调用方停止读取时失败，于是 raw_rx.close()（206）解阻塞执行任务，这是注释说明的本地通道协作。执行整个在 spawn 的任务里（196-221），连接状态在引擎侧完成。
+H209,149,6388,taos-query,0.12.4,src/lib.rs,184,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !self.deref().ready(),误报,has_broken 忽略连接参数 `_`，读的是 builder 的 ready()（lib.rs:184-186）；trait 注释明确它表示是否可以建立连接（lib.rs:126-130）。r2d2 是同步池：is_valid/has_broken 都是同步调用（180-186），没有可被 drop 的 await，不存在取消路径不一致。
+H210,107,56892,toasty,0.11.0,src/engine/exec/delete_by_key.rs,37,B,medium,fn exec_delete_by_key: `total_count +=` after await at line 34,"                let res = self.connection.exec(&self.engine.schema, op.into()).await?;
+
+                match res.values {
+                    Rows::Count(n) => total_count += n,",误报,total_count 是循环内的局部聚合变量（delete_by_key.rs:24/37），取消只丢弃本次返回值，连接没有任何状态写入；且 exec_delete_by_key 在 ConnectionTask 上执行（connection_task.rs:227-230），调用方 drop 的是 oneshot（connection.rs:44-65），不会中断该任务。
+H211,107,56892,toasty,0.11.0,src/engine/exec.rs,104,B,high,fn exec_plan: `in_transaction =` after await at line 103,"            exec.connection.exec(&self.schema, begin.into()).await?;
+            exec.in_transaction = true;",误报,in_transaction 是 Exec 的局部 bool（exec.rs:57）；exec_plan 在独占连接的 ConnectionTask 里执行（connection_task.rs:143-164/227-230），调用方 Db::exec_stmt 只 await oneshot（connection.rs:44-65），drop 调用方不取消 BEGIN/COMMIT；回收时 recycle 的 pre-ping 也走同一 mpsc（pool.rs:259-285），下一位排在其后。
+H213,74,669529,turso,0.8.3,src/transaction.rs,171,A,high,fn _commit: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""COMMIT"", ()).await?;
+        self.in_progress = false;
+        Ok(())",已防护,"取消保护在 Drop：Transaction::drop 在 in_progress 时把 dangling_tx 设为 drop_behavior（transaction.rs:228-241），下一次 query/execute 先执行 maybe_handle_dangling_tx 的 ROLLBACK（connection.rs:101-121,125/132）再跑用户语句。_commit 在 COMMIT 往返中被 drop 后，事务不会被留给下一位使用者。"
+H214,74,669529,turso,0.8.3,src/transaction.rs,184,A,high,fn _rollback: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""ROLLBACK"", ()).await?;
+        self.in_progress = false;
+        Ok(())",已防护,同 H213：_rollback 的 in_progress=false 若因取消未执行，Drop 仍把 dangling_tx 置为 Rollback（transaction.rs:228-241），下次使用前先 ROLLBACK（connection.rs:101-121）。Guard 在 Drop 里回滚，而不是把连接直接放回复用。
+H212,21,21187038,tokio-postgres,0.7.18,src/cancel_query_raw.rs,27,A,medium,fn cancel_query_raw: call `shutdown` in error path after await; guard=none,"    stream.write_all(&buf).await.map_err(Error::io)?;
+    stream.flush().await.map_err(Error::io)?;
+    stream.shutdown().await.map_err(Error::io)?;",误报,cancel_query_raw 使用的是调用方传入的一次性连接（只为发 CancelRequest），write_all/flush/shutdown 都不等回复；future 被 drop 时 stream 随局部变量关闭，没有池化复用，也没有下一个使用者。

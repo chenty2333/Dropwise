@@ -1,0 +1,107 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H089,23,9548247,diesel,2.3.14,src/mysql/connection/mod.rs,286,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),,
+H090,23,9548247,diesel,2.3.14,src/pg/connection/mod.rs,394,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),,
+H091,23,9548247,diesel,2.3.14,src/r2d2.rs,275,C,high,fn is_broken returns false / never marks breakage,        false,,
+H092,23,9548247,diesel,2.3.14,src/r2d2.rs,295,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken(),,
+H093,23,9548247,diesel,2.3.14,src/sqlite/connection/mod.rs,319,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),,
+H094,34,5304616,diesel-async,0.9.2,src/async_connection_wrapper.rs,330,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,            crate::pooled_connection::PoolableConnection::is_broken(&mut self.inner),,
+H095,34,5304616,diesel-async,0.9.2,src/pg/mod.rs,1059,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,"        use crate::TransactionManager;
+
+        Self::TransactionManager::is_broken_transaction_manager(self) || self.conn.is_closed()",,
+H096,34,5304616,diesel-async,0.9.2,src/pooled_connection/bb8.rs,90,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken(),,
+H097,34,5304616,diesel-async,0.9.2,src/pooled_connection/mod.rs,209,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        Self::TransactionManager::is_broken_transaction_manager(self),,
+H098,34,5304616,diesel-async,0.9.2,src/sync_connection_wrapper/mod.rs,477,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,            Self::TransactionManager::is_broken_transaction_manager(self),,
+H139,56,1641643,mysql_async,0.37.1,src/conn/mod.rs,406,A,medium,fn routine: call `close` in error path after await; guard=none,"        let result = f.call(&mut *self).await;
+        match result {
+            result @ Ok(_) | result @ Err(crate::Error::Server(_)) => {
+                // either OK or non-fatal error
+                self.inner.disconnected = false;
+                result
+            }
+            Err(err) => {
+                if self.inner.stream.is_some() {
+                    self.take_stream().close().await?;",,
+H140,56,1641643,mysql_async,0.37.1,src/conn/mod.rs,454,A,medium,fn disconnect: call `close` in error path after await; guard=none,"            self.write_command_data(Command::COM_QUIT, &[]).await?;
+            let stream = self.take_stream();
+            stream.close().await?;",,
+H182,36,4923381,sea-orm,2.0.4,src/driver/sqlx_mysql.rs,270,C,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,,
+H183,36,4923381,sea-orm,2.0.4,src/driver/sqlx_postgres.rs,309,C,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,,
+H184,36,4923381,sea-orm,2.0.4,src/driver/sqlx_sqlite.rs,292,C,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,,
+H185,9,48053448,sqlx-core,0.9.0,src/net/socket/buffered.rs,138,A,medium,fn shutdown: call `shutdown` in error path after await; guard=none,"        self.flush().await?;
+        self.socket.shutdown().await",,
+H186,9,48053448,sqlx-core,0.9.0,src/pool/inner.rs,487,A,medium,fn check_idle_conn: call `close` in error path after await; guard=none,"        match test(&mut conn.live.raw, meta).await {
+            Ok(false) => {
+                // connection was rejected by user-defined hook, close nicely
+                return Err(conn.close().await);",,
+H187,9,48053448,sqlx-core,0.9.0,src/testing/mod.rs,201,A,medium,fn run_test_with_pool: call `close` in error path after await; guard=none,"        let res = test_fn(pool.clone()).await;
+
+        let close_timed_out = crate::rt::timeout(Duration::from_secs(10), pool.close())
+            .await",,
+H188,9,48053448,sqlx-core,0.9.0,src/testing/mod.rs,268,A,medium,fn setup_test_db: call `close` in error path after await; guard=none,"        (&mut conn)
+            .execute(fixture.contents)
+            .await
+            .unwrap_or_else(|e| panic!(""failed to apply test fixture {:?}: {:?}"", fixture.path, e));
+    }
+
+    conn.close()
+        .await
+        .expect(""failed to close setup connection"");",,
+H189,13,42568773,sqlx-mysql,0.9.0,src/connection/mod.rs,74,A,medium,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send_packet(Quit).await?;
+        self.inner.stream.shutdown().await?;",,
+H190,13,42568773,sqlx-mysql,0.9.0,src/testing/mod.rs,86,A,medium,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"        query.push("")"").build().execute(&mut conn).await?;
+
+        let _ = conn.close().await;",,
+H191,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,31,B,high,fn begin: `transaction_depth +=` after await at line 27,"        };
+        conn.execute(statement).await?;
+        if !conn.in_transaction() {
+            return Err(Error::BeginFailed);
+        }
+        conn.inner.transaction_depth += 1;",,
+H192,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,41,B,high,fn commit: `transaction_depth =` after await at line 40,"            conn.execute(commit_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;",,
+H193,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,52,B,high,fn rollback: `transaction_depth =` after await at line 51,"            conn.execute(rollback_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;",,
+H194,11,45986479,sqlx-postgres,0.9.0,src/connection/executor.rs,134,B,medium,fn wait_for_close_complete: `count -=` after await at line 126,"            match self.inner.stream.recv().await? {
+                message if message.format == BackendMessageFormat::PortalSuspended => {
+                    // there was an open portal
+                    // this can happen if the last time a statement was used it was not fully executed
+                }
+
+                message if message.format == BackendMessageFormat::CloseComplete => {
+                    // successfully closed the statement (and freed up the server resources)
+                    count -= 1;",,
+H195,11,45986479,sqlx-postgres,0.9.0,src/connection/mod.rs,168,A,medium,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send(Terminate).await?;
+        self.inner.stream.shutdown().await?;",,
+H196,11,45986479,sqlx-postgres,0.9.0,src/connection/mod.rs,113,B,medium,fn recv_ready_for_query: `pending_ready_for_query_count -=` after await at line 111,"        let r: ReadyForQuery = self.inner.stream.recv_expect().await?;
+
+        self.inner.pending_ready_for_query_count -= 1;",,
+H197,11,45986479,sqlx-postgres,0.9.0,src/listener.rs,324,B,medium,fn try_recv: `pending_ready_for_query_count -=` after await at line 324,"                BackendMessageFormat::ReadyForQuery => {
+                    self.connection().await?.inner.pending_ready_for_query_count -= 1;",,
+H198,11,45986479,sqlx-postgres,0.9.0,src/testing/mod.rs,79,A,medium,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"            .bind(&deleted_db_names)
+            .execute(&mut conn)
+            .await?;
+
+        let _ = conn.close().await;",,
+H199,11,45986479,sqlx-postgres,0.9.0,src/transaction.rs,45,B,high,fn commit: `transaction_depth -=` after await at line 43,"            conn.execute(commit_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;",,
+H200,11,45986479,sqlx-postgres,0.9.0,src/transaction.rs,56,B,high,fn rollback: `transaction_depth -=` after await at line 54,"            conn.execute(rollback_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;",,
+H201,12,43640804,sqlx-sqlite,0.9.0,src/connection/mod.rs,227,A,medium,fn close: call `shutdown` in error path after await; guard=none,"            self.execute(AssertSqlSafe(pragma_string)).await?;
+        }
+        let shutdown = self.worker.shutdown();
+        // Drop the statement worker, which should
+        // cover all references to the connection handle outside of the worker thread
+        drop(self);",,
+H202,12,43640804,sqlx-sqlite,0.9.0,src/migrate.rs,33,A,medium,fn create_database: call `close` in error path after await; guard=none,"            opts = opts.journal_mode(SqliteJournalMode::Wal);
+        }
+
+        // Opening a connection to sqlite creates the database
+        opts.connect()
+            .await?
+            // Ensure WAL mode tempfiles are cleaned up
+            .close()
+            .await?;",,

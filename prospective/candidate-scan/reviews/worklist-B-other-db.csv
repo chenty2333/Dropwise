@@ -1,0 +1,126 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H078,112,38036,cdrs-tokio,9.0.2,src/transport.rs,164,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken(),,
+H079,112,38036,cdrs-tokio,9.0.2,src/transport.rs,263,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.inner.is_broken(),,
+H080,112,38036,cdrs-tokio,9.0.2,src/transport.rs,329,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.is_broken.load(Ordering::Relaxed),,
+H081,33,5471627,clickhouse,0.15.3,src/inserter.rs,314,B,high,fn write: `in_transaction =` after await at line 304,"        if self.insert.is_none() {
+            self.init_insert().await?;
+        }
+
+        match self.insert.as_mut().unwrap().do_write(row) {
+            Ok(bytes) => {
+                self.pending.bytes += bytes as u64;
+                self.pending.rows += 1;
+
+                if !self.in_transaction {
+                    self.pending.transactions += 1;
+                    self.in_transaction = true;",,
+H082,67,932234,clickhouse-arrow,0.2.1,src/client.rs,377,A,medium,fn shutdown: call `shutdown` in error path after await; guard=none,"        trace!(""shutting down client"");
+        self.conn().await?.shutdown().await",,
+H083,67,932234,clickhouse-arrow,0.2.1,src/pool.rs,238,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        matches!(conn.status(), ConnectionStatus::Error | ConnectionStatus::Closed)",,
+H084,143,8640,datafusion-table-providers-postgres,0.14.0,src/pool.rs,222,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),,
+H099,140,8782,esrs,0.18.0,src/bus/rabbit/mod.rs,43,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected(),,
+H100,140,8782,esrs,0.18.0,src/bus/rabbit/mod.rs,88,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !conn.status().connected(),,
+H113,122,23217,hdbconnect_async,0.33.0,src/bb8.rs,99,C,high,fn has_broken returns false / never marks breakage,        false,,
+H114,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,556,A,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_cache.raft.shutdown().await?;
+            if let Some(handle) = &state.raft_cache.shutdown_handle {
+                handle.shutdown().await?;",,
+H115,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,579,A,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"                time::sleep(Duration::from_secs(1)).await;
+            }
+
+            // TODO as soon openraft-0.10 is out, we will be able to trigger a pre-emptive
+            //  leader switch if this node is the leader. This will smooth out things even more.
+
+            state.raft_db.is_raft_stopped.store(true, Ordering::Relaxed);
+
+            state.raft_db.raft.shutdown().await?;",,
+H116,142,8673,hiqlite,0.15.3,src/client/mgmt.rs,587,A,medium,fn shutdown_execute: call `shutdown` in error path after await; guard=none,"            state.raft_db.raft.shutdown().await?;
+            info!(""Shutting down sqlite logs writer"");
+            state.raft_db.shutdown_handle.shutdown().await?;",,
+H117,142,8673,hiqlite,0.15.3,src/network/api.rs,434,A,medium,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;",,
+H118,142,8673,hiqlite,0.15.3,src/network/raft_client.rs,404,A,high,fn ws_handler: assign `in_flight` in error path after await; guard=none,"            let _ = tx_write.send_async(WritePayload::Close).await;
+
+            for (_, ack) in in_flight.drain() {
+                let _ = ack.send(Err(Error::Connect(""Raft WebSocket stream ended"".into())));
+            }
+            // reset to a reasonable size for the next start to keep memory usage under control
+            in_flight = HashMap::with_capacity(4);",,
+H119,142,8673,hiqlite,0.15.3,src/server/proxy/handlers.rs,129,A,medium,fn handle_listen_socket: call `abort` in error path after await; guard=none,"                    };
+                    if write.write_frame(frame).await.is_err() {
+                        debug!(""/listen: obligated frame write failed - closing"");
+                        break;
+                    }
+                }
+                Err(_) => break,
+            },
+        }
+    }
+
+    handle_read.abort();
+    let _ = write.write_frame(Frame::close(1000, b""Done"")).await;",,
+H121,93,127448,klickhouse,0.16.0,src/manager.rs,48,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),,
+H169,123,22818,rbdc,4.9.10,src/pool/manager.rs,65,C,high,fn check does I/O then accepts any positive/Ok reply,"        match conn.ping().await {
+            Ok(_) => Ok(()),",,
+H170,139,9756,rbdc-mysql,4.9.6,src/connection/mod.rs,68,A,medium,fn do_close: call `shutdown` in error path after await; guard=none,"        self.stream.send_packet(Quit).await?;
+        self.stream.shutdown().await?;",,
+H181,52,1845292,scylla,1.9.0,src/cluster/metadata/update.rs,871,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,"        matches!(metadata.keyspaces.get(name), Some(Err(_)))",,
+H203,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1039,A,medium,fn session_task: call `detach` in error path after await; guard=none,"				engine.publish(new, engine.establish_clone(log).await);
+			}
+			SessionId::Drop(id) => {
+				// Only a session that was established has anything to release.
+				// Ending it also fails anything still waiting on it, which is
+				// what keeps a request that outlived its handle from waiting on
+				// a session that has just gone away.
+				match engine.sessions.end(id) {
+					Some(Ok(session)) => {
+						if let Err(error) = engine.detach(session.server).await {",,
+H204,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1325,A,medium,fn kill: call `kill` in error path after await; guard=none,"			let context = self.ready(ctx).await?;
+			self.client()
+				.kill(self.checked(rpc::KillRequest {",,
+H205,75,561660,surrealdb,3.3.4,src/engine/remote/grpc.rs,1799,A,medium,fn pump_export_to_channel: call `close` in error path after await; guard=none,"		if bytes.send(Ok(chunk.to_vec())).await.is_err() {
+			// The reader is gone; stop pulling the export.
+			return;
+		}
+	}
+	bytes.close();",,
+H206,75,561660,surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1035,A,medium,fn clear_pending_requests: call `close` in error path after await; guard=none,"			request.response_channel.send(Err(err)).await.ok();
+			request.response_channel.close();
+		}
+		state.pending_requests.clear();",,
+H207,75,561660,surrealdb,3.3.4,src/engine/remote/ws/mod.rs,1056,A,medium,fn clear_live_queries: call `close` in error path after await; guard=none,"			sender.send(Err(err)).await.ok();
+			sender.close();
+		}
+		state.live_queries.clear();",,
+H208,75,561660,surrealdb,3.3.4,src/method/query.rs,202,A,medium,fn stream_items: call `close` in error path after await; guard=none,"						if out_tx.send(Ok(item)).await.is_err() {
+							// The caller stopped reading. Closing the execution's
+							// channel is what unparks it: it is bounded, and this
+							// loop was the only thing draining it.
+							raw_rx.close();
+							return;",,
+H209,149,6388,taos-query,0.12.4,src/lib.rs,184,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        !self.deref().ready(),,
+H210,107,56892,toasty,0.11.0,src/engine/exec/delete_by_key.rs,37,B,medium,fn exec_delete_by_key: `total_count +=` after await at line 34,"                let res = self.connection.exec(&self.engine.schema, op.into()).await?;
+
+                match res.values {
+                    Rows::Count(n) => total_count += n,",,
+H211,107,56892,toasty,0.11.0,src/engine/exec.rs,104,B,high,fn exec_plan: `in_transaction =` after await at line 103,"            exec.connection.exec(&self.schema, begin.into()).await?;
+            exec.in_transaction = true;",,
+H213,74,669529,turso,0.8.3,src/transaction.rs,171,A,high,fn _commit: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""COMMIT"", ()).await?;
+        self.in_progress = false;
+        Ok(())",,
+H214,74,669529,turso,0.8.3,src/transaction.rs,184,A,high,fn _rollback: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""ROLLBACK"", ()).await?;
+        self.in_progress = false;
+        Ok(())",,
+H212,21,21187038,tokio-postgres,0.7.18,src/cancel_query_raw.rs,27,A,medium,fn cancel_query_raw: call `shutdown` in error path after await; guard=none,"    stream.write_all(&buf).await.map_err(Error::io)?;
+    stream.flush().await.map_err(Error::io)?;
+    stream.shutdown().await.map_err(Error::io)?;",,

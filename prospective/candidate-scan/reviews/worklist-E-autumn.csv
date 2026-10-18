@@ -1,0 +1,416 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H005,144,7843,autumn-harvest,0.7.0,src/completion_trigger.rs,2606,B,medium,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2604,"            Some(metrics),
+            codecs,
+        )
+        .await
+        {
+            Ok(()) => processed_count += 1,",,
+H006,144,7843,autumn-harvest,0.7.0,src/completion_trigger.rs,2747,B,medium,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2743,"                        stamp_outbox_relay_backoff(conn, task.id).await;
+                    }
+                    Ok(true) => {}
+                }
+                processed_count += 1;",,
+H007,144,7843,autumn-harvest,0.7.0,src/dag.rs,1496,A,high,fn run_unified_dag: assign `status` in error path after await; guard=none,"                        while let Some((i, res)) = stream.next().await {
+                            match res {
+                                Ok(v) => results[i] = v,
+                                Err(err) => match &err {
+                                    HarvestError::ActivityFailed { .. }
+                                    | HarvestError::Timeout { .. } => {
+                                        status = TaskStatus::Failed;",,
+H008,144,7843,autumn-harvest,0.7.0,src/debounce.rs,801,B,medium,fn fire_due_debounced_starts_on_conn_shard: `fired_count +=` after await at line 800,"                let fired = fire_due_on_conn(&mut shard_conn, Some(metrics), codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;",,
+H009,144,7843,autumn-harvest,0.7.0,src/event_batch.rs,881,B,medium,fn fire_due_event_batches_on_conn_shard: `fired_count +=` after await at line 880,"                Some(metrics),
+                codecs,
+            )
+            .await?;
+            fired_count += fired.len();",,
+H010,144,7843,autumn-harvest,0.7.0,src/mutex.rs,705,B,medium,fn reclaim_expired_leases_and_wake: `count +=` after await at line 703,"                    crate::queue::wake_workflow_task(conn, ExecutionId::from_uuid(head)).await?;
+                }
+                count += 1;",,
+H011,144,7843,autumn-harvest,0.7.0,src/retention.rs,2851,A,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(_) => {}
+                Err(err) => {
+                    // Fail safe toward RETAINING on uncertainty (the retention
+                    // janitor's correct failure mode): do not archive/delete.
+                    has_failed = true;
+                    batch_failed = true;",,
+H012,144,7843,autumn-harvest,0.7.0,src/retention.rs,3014,A,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                match crate::store::load_payload_refs(&mut conn, candidate_exec_id).await {
+                    Ok(refs) => refs,
+                    Err(err) => {
+                        has_failed = true;
+                        batch_failed = true;",,
+H013,144,7843,autumn-harvest,0.7.0,src/retention.rs,3034,A,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                config.summary.as_ref(),
+                fence_key,
+            )
+            .await
+            {
+                Err(err) => {
+                    has_failed = true;
+                    batch_failed = true;",,
+H014,144,7843,autumn-harvest,0.7.0,src/retention.rs,2602,B,medium,fn run_shard_tick: `deleted_count +=` after await at line 2601,"            .map_err(database_error)
+        }))
+        .await?;
+        outcome.deleted_count += reclaimed;",,
+H015,144,7843,autumn-harvest,0.7.0,src/retention.rs,3084,B,medium,fn run_shard_tick: `summarized_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;",,
+H016,144,7843,autumn-harvest,0.7.0,src/retention.rs,3088,B,medium,fn run_shard_tick: `deleted_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;
+                    }
+                }
+            }
+            outcome.deleted_count += 1;",,
+H017,144,7843,autumn-harvest,0.7.0,src/scheduler.rs,3604,B,medium,fn cancel_in_flight_runs: `count +=` after await at line 3603,"        match cancel_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,",,
+H018,144,7843,autumn-harvest,0.7.0,src/scheduler.rs,3635,B,medium,fn terminate_in_flight_runs: `count +=` after await at line 3634,"        match terminate_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,",,
+H019,144,7843,autumn-harvest,0.7.0,src/throttle.rs,1729,B,medium,fn fire_due_throttled_starts_on_conn_shard: `fired_count +=` after await at line 1728,"                let fired = fire_due_on_conn(&mut shard_conn, metrics, codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;",,
+H020,144,7843,autumn-harvest,0.7.0,src/timeout.rs,3159,B,medium,fn enforce_external_task_timeouts: `count +=` after await at line 3156,"                Ok(true)
+            }),
+        ))
+        .await;
+
+        match result {
+            Ok(true) => count += 1,",,
+H021,144,7843,autumn-harvest,0.7.0,src/timeout.rs,4439,B,medium,fn enforce_external_signals_outbox: `count +=` after await at line 4434,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;",,
+H022,144,7843,autumn-harvest,0.7.0,src/timeout.rs,5610,B,medium,fn enforce_external_awaits_outbox: `count +=` after await at line 5605,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;",,
+H023,144,7843,autumn-harvest,0.7.0,src/timeout.rs,5800,B,medium,fn enforce_timeouts_pass: `count +=` after await at line 5796,"            find_timed_out_tasks_batch(conn, cursor, limit).await?,
+            Some(cursor),
+        ),
+    };
+    count += timed_out.len();",,
+H024,144,7843,autumn-harvest,0.7.0,src/timeout.rs,6026,B,medium,fn enforce_timeouts_pass: `count +=` after await at line 5998,"        payload_codecs,
+        codec_rotation_batch_size,
+        metrics,
+    )
+    .await
+    {
+        // Deliberately NOT folded into `count`. That value is the
+        // timeout-enforcement total: the caller logs `warn!(""enforced timed-out
+        // tasks"")` whenever it is non-zero, and embedders read it as ""this many
+        // tasks timed out"". Adding rotation rewrites to it makes every
+        // productive sweep tick claim a timeout that never happened. Rotation
+        // reports itself through `harvest.codec.reencrypted` instead.
+        Ok(_swept) => {}
+        Err(e) => tracing::warn!(
+            error = %e,",,
+H025,144,7843,autumn-harvest,0.7.0,src/worker.rs,29015,A,high,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::queue_depths(&mut conn, &queues).await {
+                    Ok(depths) => {
+                        for (queue_name, depth) in depths {
+                            *depth_by_queue.entry(queue_name).or_insert(0) += depth;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""queue depth sample failed"");
+                        read_failed = true;
+                    }
+                }",,
+H026,144,7843,autumn-harvest,0.7.0,src/worker.rs,29027,A,high,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::oldest_pending_ages(&mut conn, &queues, &circuit_breaker_activities)
+                    .await
+                {
+                    Ok(ages) => {
+                        for (queue_name, age_secs) in ages {
+                            let slot = age_by_queue.entry(queue_name).or_insert(0.0);
+                            *slot = slot.max(age_secs);
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""oldest pending age sample failed"");
+                        read_failed = true;
+                    }
+                }",,
+H027,144,7843,autumn-harvest,0.7.0,src/worker.rs,29432,A,high,fn spawn_queue_pause_sampler: assign `read_failed` in error path after await; guard=none,"                match crate::queue_pause::paused_queue_names(&mut conn).await {
+                    Ok(names) => currently_paused.extend(names),
+                    Err(error) => {
+                        read_failed = true;
+                        tracing::debug!(error = %error, ""queue pause sample failed"");",,
+H028,144,7843,autumn-harvest,0.7.0,src/worker.rs,31052,A,high,fn spawn_history_oversized_sampler: assign `read_failed` in error path after await; guard=none,"                match sample_history_oversized_counts(&mut conn, soft_threshold).await {
+                    Ok(counts) => {
+                        for (workflow_name, count) in counts {
+                            *count_by_workflow.entry(workflow_name).or_insert(0) += count;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""history oversized sample failed"");
+                        read_failed = true;
+                    }
+                }",,
+H029,144,7843,autumn-harvest,0.7.0,src/worker.rs,31338,A,high,fn spawn_workflow_active_sampler: assign `read_failed` in error path after await; guard=none,"                };
+
+                match sample_active_workflow_counts(&mut conn).await {
+                    Ok(rows) => per_shard.push(rows),
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""active workflow sample failed"");
+                        read_failed = true;
+                    }
+                }",,
+H030,144,7843,autumn-harvest,0.7.0,src/worker.rs,42612,A,medium,fn run_with_listener_accepts_colocated_logical_shards: call `shutdown` in error path after await; guard=none,"            worker.run_with_listener(&pool, None),
+        )
+        .await;
+        assert!(
+            entered.is_err(),
+            ""a worker whose logical shards share one database must enter its poll loop, not \
+             refuse to start: one pool covers every assignment"",
+        );
+        worker.shutdown();",,
+H031,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,13572,A,high,fn build_awaitables_report: assign `decode_failed` in error path after await; guard=none,"                        match offloader.inflate_event_value(&mut value).await {
+                            Ok(()) => {}
+                            Err(err) => {
+                                tracing::warn!(
+                                    execution_id = %exec_id,
+                                    error = %err,
+                                    ""awaitables: payload inflate failed; degrading to history-only""
+                                );
+                                decode_failed = true;
+                                break;",,
+H032,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,40658,A,high,fn get_aggregated_scaling_signals: assign `in_flight` in error path after await; guard=none,"        let shard_counts = ::autumn_harvest::queue::queue_task_counts(&mut conn)
+            .await
+            .map_err(map_error)?;
+        for stat in shard_counts {
+            let entry = task_stats.entry(stat.queue.clone()).or_insert_with(|| {
+                ::autumn_harvest::queue::QueueTaskCounts {
+                    queue: stat.queue.clone(),
+                    backlog: 0,
+                    in_flight: 0,
+                    scheduled: 0,
+                }
+            });
+            entry.backlog += stat.backlog;
+            entry.in_flight += stat.in_flight;",,
+H033,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20366,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20359,"        let conn_result = db_conn_for_shard(&api_state, *shard).await;
+        let mut conn = match conn_result {
+            Ok(c) => c,
+            Err(e) => {
+                // All items on this shard are rejected due to connection failure.
+                let err_str = e.to_string();
+                for (idx, workflow_id) in shard_items {
+                    rejected_count += 1;",,
+H034,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20568,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20564,"                    &item.workflow_name,
+                    workflow_id,
+                    None,
+                )
+                .await
+                {
+                    Ok(skip) => skip,
+                    Err(e) => {
+                        rejected_count += 1;",,
+H035,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20840,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20838,"                                autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket)
+                                    .await;
+                        }
+                        rejected_count += 1;",,
+H036,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20880,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20878,"                            autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket).await;
+                    }
+                    rejected_count += 1;",,
+H037,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,21317,B,medium,fn batch_reset_workflows: `reset_count +=` after await at line 21305,"                        Some(&runtime.registry),
+                    )
+                    .await
+                    {
+                        Ok(result) => {
+                            items.push(BatchResetItem {
+                                exec_id: exec_id_str,
+                                outcome: BatchResetOutcome::Reset,
+                                // Use the engine's authoritatively-resolved event id (under lock),
+                                // not the speculative value from resolve_batch_reset_one.
+                                resolved_event_id: Some(result.reset_to_event_id),
+                                new_exec_id: Some(result.new_exec_id.to_string()),
+                                skip_reason: None,
+                            });
+                            reset_count += 1;",,
+H038,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,29118,B,medium,fn set_schedule_paused: `found_count +=` after await at line 29109,"                .get_result(&mut conn)
+                .await
+                .map_err(database_error)
+                .map_err(map_error)?;
+
+            if !exists {
+                continue; // not on this shard — try the next one
+            }
+            // Already in the requested state: idempotent no-op.
+        }
+        found_count += 1;",,
+H039,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,29331,B,medium,fn delete_schedule: `deleted_count +=` after await at line 29328,"            .execute(&mut conn)
+            .await
+            .map_err(database_error)
+            .map_err(map_error)?;
+        deleted_count += n;",,
+H040,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,37191,B,medium,fn apply_pause_across_shards: `held_task_count +=` after await at line 37187,"            reason,
+            actor,
+            scope_shard_id,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;",,
+H041,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,37315,B,medium,fn apply_resume_across_shards: `released_task_count +=` after await at line 37311,"        match ::autumn_harvest::queue_pause::resume_queue(&mut conn, canonical_queue, actor).await {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;",,
+H042,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,39481,B,medium,fn apply_activity_pause_across_shards: `held_task_count +=` after await at line 39477,"            reason,
+            paused_by,
+            // Always fleet-wide — see `activity_pause_target_pools`.
+            None,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;",,
+H043,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,39601,B,medium,fn apply_activity_resume_across_shards: `released_task_count +=` after await at line 39596,"        match ::autumn_harvest::activity_pause::resume_activity(&mut conn, canonical_activity).await
+        {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;",,
+H044,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,49959,B,medium,fn get_queue_eligibility: `global_pending_count +=` after await at line 49957,"        match evaluate_eligibility_for_shard(&api_state, shard_id, &queue_name, None).await {
+            Ok(res) => {
+                global_pending_count += res.pending_count;",,
+H045,146,6905,autumn-harvest-plugin,0.7.0,src/bin/harvest_dev.rs,51,A,medium,fn main: call `shutdown` in error path after await; guard=none,"    print!(""{}"", runtime.banner());
+
+    DevRuntime::wait_for_shutdown_signal().await;
+    eprintln!(""\nharvest-dev: stopping and reclaiming ephemeral storage…"");
+    if let Err(error) = runtime.shutdown().await {",,
+H046,146,6905,autumn-harvest-plugin,0.7.0,src/connector/runtime.rs,606,A,high,fn drain_in_flight: assign `in_flight` in error path after await; guard=none,"            self.permits.acquire_many(permits),
+        )
+        .await
+        .is_err()
+        {
+            // `available_permits` is a snapshot, but every holder is an
+            // in-flight dispatch, so it names the work being abandoned.
+            let in_flight = self
+                .binding
+                .max_in_flight",,
+H047,146,6905,autumn-harvest-plugin,0.7.0,src/connector/sqs.rs,470,A,high,fn lag: assign `in_flight` in error path after await; guard=none,"            .attribute_names(QueueAttributeName::ApproximateNumberOfMessagesNotVisible)
+            .send()
+            .await
+            .ok()?;
+        let attributes = response.attributes?;
+        let read = |name: &QueueAttributeName| -> Option<i64> {
+            attributes.get(name).and_then(|v| v.parse::<i64>().ok())
+        };
+        let visible = read(&QueueAttributeName::ApproximateNumberOfMessages);
+        let in_flight = read(&QueueAttributeName::ApproximateNumberOfMessagesNotVisible);",,
+H048,146,6905,autumn-harvest-plugin,0.7.0,src/dev/mod.rs,466,A,medium,fn start: call `shutdown` in error path after await; guard=none,"        if let Err(error) = runtime.wait_until_ready().await {
+            // Same rule: a runtime that never became usable must still take its
+            // cluster with it — and if it could not, say so rather than
+            // reporting only the readiness failure.
+            if let Err(teardown) = runtime.shutdown().await {",,
+H049,146,6905,autumn-harvest-plugin,0.7.0,src/dev/mod.rs,759,A,medium,fn abandon_cluster: call `shutdown` in error path after await; guard=none,"    let taken = postgres.lock().await.take();
+    if let Some(postgres) = taken
+        && let Err(teardown) = postgres.shutdown().await
+    {",,
+H050,146,6905,autumn-harvest-plugin,0.7.0,src/dev/postgres.rs,301,A,medium,fn provision: call `shutdown` in error path after await; guard=none,"        match started.finish_provisioning(&admin_url, session_dir).await {
+            Ok(version) => {
+                started.version = version;
+                Ok(started)
+            }
+            Err(error) => {
+                started.shutdown().await.ok();",,
+H051,146,6905,autumn-harvest-plugin,0.7.0,src/runner.rs,1510,A,medium,fn stop: call `shutdown` in error path after await; guard=none,"            cancel.cancel();
+            if let Err(error) = handle.await {
+                tracing::warn!(
+                    error = %error,
+                    ""dispatch metrics sampler task failed during shutdown""
+                );
+            }
+        }
+
+        if let Some(worker) = worker {
+            worker.shutdown();
+        }
+        if let Some(scheduler) = scheduler {",,
+H052,146,6905,autumn-harvest-plugin,0.7.0,src/runner.rs,1523,A,medium,fn stop: call `shutdown` in error path after await; guard=none,"            if let Err(error) = scheduler.join().await {
+                tracing::warn!(error = %error, ""harvest scheduler task failed during shutdown"");
+            }
+        }
+        if let Some(retention) = retention {
+            retention.shutdown();
+            if let Err(error) = retention.join().await {",,
+H053,146,6905,autumn-harvest-plugin,0.7.0,src/ui.rs,1965,A,high,fn render_workflow_detail_page: assign `log_read_failed` in error path after await; guard=none,"                ..Default::default()
+            },
+        )
+        .await
+        {
+            Ok(rows) => log_truncated = !rows.is_empty(),
+            Err(err) => {
+                tracing::warn!(
+                    execution_id = %exec_id,
+                    error = ?err,
+                    ""workflow detail: durable log truncation probe failed""
+                );
+                log_read_failed = true;
+            }
+        }",,
+H054,100,95874,autumn-web,0.8.0,src/app.rs,5849,A,medium,fn run: call `abort` in error path after await; guard=none,"        drain_phase_notify.notify_one();
+
+        // Wait for the server to drain all in-flight requests.  The drain
+        // watchdog in shutdown_task will force-exit if drain takes too long.
+        let server_result = server_task.await.unwrap_or_else(|e| {
+            tracing::error!(""Server task join error: {e}"");
+            // `process::exit` skips the `on_shutdown` hooks, so stop a managed
+            // Postgres child here to avoid orphaning it on an accept-loop/join
+            // failure (direct/foreground runs have no CLI reaper).
+            exit_stop_managed_pg();
+            std::process::exit(1);
+        });
+        // Drain completed within the deadline; abort the watchdog.
+        shutdown_task.abort();
+        server_result.unwrap_or_else(|e| {",,
+H055,100,95874,autumn-web,0.8.0,src/session.rs,206,B,medium,fn touch: `dirty =` after await at line 206,        self.inner.write().await.dirty = true;,,
+H056,100,95874,autumn-web,0.8.0,src/session.rs,223,B,medium,fn insert: `dirty =` after await at line 221,"        let mut inner = self.inner.write().await;
+        inner.data.insert(key.into(), value.into());
+        inner.dirty = true;",,
+H057,100,95874,autumn-web,0.8.0,src/session.rs,231,B,medium,fn remove: `dirty =` after await at line 228,"        let mut inner = self.inner.write().await;
+        let val = inner.data.remove(key);
+        if val.is_some() {
+            inner.dirty = true;",,
+H058,100,95874,autumn-web,0.8.0,src/session.rs,240,B,medium,fn clear: `dirty =` after await at line 238,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.dirty = true;",,
+H059,100,95874,autumn-web,0.8.0,src/session.rs,254,B,medium,fn rotate_id: `dirty =` after await at line 249,"        let mut inner = self.inner.write().await;
+        if inner.old_id.is_none() {
+            inner.old_id = Some(inner.id.clone());
+        }
+        inner.id = new_id;
+        inner.dirty = true;",,
+H060,100,95874,autumn-web,0.8.0,src/session.rs,263,B,medium,fn destroy: `dirty =` after await at line 260,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.destroyed = true;
+        inner.dirty = true;",,

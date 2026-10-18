@@ -1,0 +1,202 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H001,99,106592,amqprs,2.1.5,src/net/reader_handler.rs,128,A,medium,fn handle_frame: call `close` in error path after await; guard=none,"                info!(""close connection {} OK"", self.amqp_connection);
+
+                // Try to yield for last sent message to be scheduled.
+                yield_now().await;
+                Ok(())
+            }
+
+            // Method frames of asynchronous request
+            // Server request to close connection
+            Frame::Close(_, close) => {
+                if let Some(ref mut callback) = self.callback {
+                    if let Err(err) = callback.close(&self.amqp_connection, close).await {",,
+H002,99,106592,amqprs,2.1.5,src/net/writer_handler.rs,83,A,medium,fn run_until_shutdown: call `close` in error path after await; guard=none,"                    info!(""received shutdown notification for connection {}"", self.amqp_connection);
+                    // try to give last chance for last message.
+                    yield_now().await;
+                    break;
+                }
+                else => {
+                    break;
+                }
+            }
+        }
+        self.amqp_connection.set_is_open(false);
+
+        if let Err(err) = self.stream.close().await {",,
+H003,89,197590,async-bb8-diesel,0.3.0,src/connection_manager.rs,84,C,high,fn has_broken returns false / never marks breakage,        false,,
+H102,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,288,A,medium,fn next: call `close` in error path after await; guard=none,"            if let Err(e) = self.populate_pool().await? {
+                // Handle errors opening or reading from the stream.
+                match StreamRetryPolicy::on_midstream_error(e) {
+                    RetryResult::Continue(_) => {
+                        // The stream failed with a transient error. Reset the stream.
+                        self.stream = None;
+                        continue;
+                    }
+                    RetryResult::Permanent(e) | RetryResult::Exhausted(e) => {
+                        // The stream failed with a permanent error. Return the error.
+                        self.close();
+                        return Some(Err(e));",,
+H103,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,664,A,medium,fn basic_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",,
+H104,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,774,A,medium,fn basic_success_exactly_once: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",,
+H105,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1343,A,medium,fn resume_midstream_success: call `shutdown` in error path after await; guard=none,"        }
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",,
+H106,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1409,A,medium,fn resume_midstream_hits_permanent_error: call `shutdown` in error path after await; guard=none,"        }
+        let err = stream
+            .next()
+            .await
+            .transpose()
+            .expect_err(""expected an error from stream"");
+        assert!(err.status().is_some(), ""{err:?}"");
+        let status = err.status().unwrap();
+        assert_eq!(
+            status.code,
+            google_cloud_gax::error::rpc::Code::FailedPrecondition
+        );
+        assert_eq!(status.message, ""fail"");
+
+        // Wait for the stream to join its background tasks.",,
+H107,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1659,A,medium,fn at_least_once_and_exactly_once: call `shutdown` in error path after await; guard=none,"        assert!(matches!(h, Handler::ExactlyOnce(_)), ""{h:?}"");
+
+        let end = stream.next().await.transpose()?;
+        assert!(end.is_none(), ""Received extra message: {end:?}"");
+
+        // Wait for the stream to join its background tasks.
+        stream.shutdown_token().shutdown().await;",,
+H108,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1720,A,medium,fn cancel_midstream: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        let shutdown = tokio::spawn(async move {
+            shutdown_token.shutdown().await;",,
+H109,50,2102965,google-cloud-pubsub,1.6.0,src/subscriber/message_stream.rs,1784,A,medium,fn shutdown_without_next: call `shutdown` in error path after await; guard=none,"            let Some((m, h)) = stream.next().await.transpose()? else {
+                anyhow::bail!(""expected message {i}/5"")
+            };
+            assert_eq!(m.data, test_data(i));
+            h.ack();
+        }
+        // Note that the application does not have to call `stream.next()`, or
+        // `drop(stream)` to begin the shutdown procedure after a cancel.
+        shutdown_token.shutdown().await;",,
+H110,137,10364,gremlin-client,0.8.10,src/connection.rs,307,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        self.broken,,
+H111,137,10364,gremlin-client,0.8.10,src/pool.rs,124,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_broken(),,
+H112,55,1651322,h3,0.0.8,src/server/connection.rs,125,A,medium,fn accept: call `shutdown` in error path after await; guard=none,"        let stream = match poll_fn(|cx| self.poll_accept_request_stream_internal(cx)).await? {
+            Some(s) => FrameStream::new(BufRecvStream::new(s)),
+            None => {
+                // We always send a last GoAway frame to the client, so it knows which was the last
+                // non-rejected request.
+                self.shutdown(0).await?;",,
+H120,39,3929474,jsonrpsee-core,0.26.1,src/client/async_client/mod.rs,938,A,medium,fn send_task: call `close` in error path after await; guard=none,"				if let Err(err) = sender.send_ping().await {
+					tracing::debug!(target: LOG_TARGET, ""Send ws ping failed: {err}"");
+					break Err(Error::Transport(err.into()));
+				}
+			}
+		}
+	};
+
+	from_frontend.close();
+	let _ = sender.close().await;",,
+H122,49,2110042,lapin,4.12.2,src/internal_rpc.rs,439,A,medium,fn run: call `close` in error path after await; guard=none,"                                .basic_cancel(consumer_tag, BasicCancelOptions::default())
+                                .await
+                        } else {
+                            Ok(())
+                        }
+                    })
+                }
+                CloseChannel(channel_id, reply_code, reply_text) => {
+                    if !self.channel_ok(channel_id) {
+                        continue;
+                    }
+                    let channel = get_channel(channel_id);
+                    self.register_internal_future(async move {
+                        channel?.close(reply_code, reply_text).await",,
+H123,58,1344308,ldap3,0.12.1,src/conn.rs,791,A,medium,fn turn: call `close` in error path after await; guard=none,"                                    if let Err(e) = self.stream.get_mut().shutdown().await {
+                                        warn!(""socket shutdown error: {}"", e);
+                                    }
+                                    if let Err(e) = self.stream.close().await {",,
+H136,95,123756,loco-rs,1.2.0,src/scheduler.rs,363,A,medium,fn run: call `shutdown` in error path after await; guard=none,"        sched.start().await?;
+
+        tokio::signal::ctrl_c().await?;
+        sched.shutdown().await?;",,
+H137,95,123756,loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,123,A,medium,fn copy: call `close` in error path after await; guard=none,"            let mut writer = self.opendal_impl.writer(&to).await?.into_bytes_sink();
+            writer
+                .send_all(&mut reader)
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;
+            writer
+                .close()
+                .await
+                .map_err(|err| StorageError::Any(Box::new(err)))?;",,
+H138,95,123756,loco-rs,1.2.0,src/storage/drivers/opendal_adapter.rs,279,A,medium,fn upload_stream: call `close` in error path after await; guard=none,"            let chunk = chunk.map_err(|e| StorageError::Any(Box::new(e)))?;
+            // Use the native write method which handles the data more efficiently
+            writer.write(chunk).await?;
+        }
+
+        let meta = writer.close().await?;",,
+H141,97,109621,ntex,4.3.0,src/web/ws.rs,234,A,medium,fn call: call `close` in error path after await; guard=none,"                let result = ctx.call(&self.svc, item).await.map_err(WsError::Service);
+                if let Some(s) = s {
+                    rt::spawn(async move { s.io().close() });",,
+H142,97,109621,ntex,4.3.0,src/ws/client.rs,462,A,medium,fn receiver: call `close` in error path after await; guard=none,"                        let _ = sink2.send(ws::Message::Close(Some(reply))).await;
+                    }
+                }
+                match tx.send(Ok(item)) {
+                    Ok(()) => (),
+                    Err(_) => io.close(),
+                }
+                Ok::<Option<ws::Message>, ()>(None)",,
+H143,20,23865413,object_store,0.14.2,src/upload.rs,232,A,medium,fn finish: call `abort` in error path after await; guard=none,"        if let Err(e) = self.wait_for_capacity(0).await {
+            self.abort().await?;",,
+H144,20,23865413,object_store,0.14.2,src/upload.rs,237,A,medium,fn finish: call `shutdown` in error path after await; guard=none,"        }
+
+        match self.upload.complete().await {
+            Err(e) => {
+                self.tasks.shutdown().await;",,
+H145,20,23865413,object_store,0.14.2,src/upload.rs,239,A,medium,fn finish: call `abort` in error path after await; guard=none,"            Err(e) => {
+                self.tasks.shutdown().await;
+                self.upload.abort().await?;",,
+H168,60,1237278,pingora-core,0.9.0,src/protocols/http/v1/server.rs,1247,A,high,fn read_body_or_idle: assign `half_closed` in error path after await; guard=none,"            let (probe, read) = self
+                .read_idle_probe(""during HTTP body-or-idle state"")
+                .await?;
+            if read == 0 {
+                self.half_closed = true;
+                self.set_keepalive(None);",,
+H173,126,21972,rsmq_async,18.0.0,src/pooled_facade.rs,37,C,high,fn has_broken returns false / never marks breakage,        false,,
+H174,48,2207165,rumqttc,0.25.1,src/framed.rs,52,B,medium,fn readb: `count =` after await at line 51,"        let mut res = self.framed.next().await;
+        let mut count = 1;",,
+H175,48,2207165,rumqttc,0.25.1,src/v5/framed.rs,53,B,medium,fn readb: `count =` after await at line 52,"        let mut res = self.framed.next().await;
+        let mut count = 1;",,
+H176,121,27095,rustis,0.27.1,src/client/monitor_stream.rs,36,A,high,fn close: assign `closed` in error path after await; guard=none,"        self.client.reset().await?;
+        self.closed = true;
+        Ok(())",,
+H177,121,27095,rustis,0.27.1,src/client/pooled_client_manager.rs,86,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        client.inner().is_terminated(),,
+H178,121,27095,rustis,0.27.1,src/client/pub_sub_stream.rs,300,A,high,fn close: assign `closed` in error path after await; guard=none,"            }
+            self.client.sunsubscribe(args).await?;
+            self.shardchannels.clear();
+        }
+
+        self.closed = true;
+
+        Ok(())",,
+H179,121,27095,rustis,0.27.1,src/network/cluster_topology.rs,76,A,high,fn feed: assign `is_dirty` in error path after await; guard=none,"        self.connection.feed(command, &[]).await?;
+        self.is_dirty = true;
+        Ok(())",,
+H215,103,82980,zookeeper-client,0.11.2,src/session/connection.rs,147,A,medium,fn command: call `close` in error path after await; guard=none,"        let mut reader = BufReader::new(self);
+        reader.read_line(&mut line).await?;
+        reader.close().await.ignore();",,
+H180,135,11798,rusty-sidekiq,0.15.2,src/redis.rs,83,C,high,fn has_broken returns false / never marks breakage,        false,,

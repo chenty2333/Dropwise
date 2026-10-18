@@ -1,0 +1,107 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H089,23,9548247,diesel,2.3.14,src/mysql/connection/mod.rs,286,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),误报,diesel 2.3.14 是同步 crate，is_broken 无 await、无 future 可 drop。AnsiTransactionManager::is_broken_transaction_manager（src/connection/transaction_manager.rs:83-100）只在 InError 或有未关闭事务时为真，由查询结束时的同步更新置位；同步取消=panic，已被 src/r2d2.rs:295 的 std::thread::panicking() 覆盖。
+H090,23,9548247,diesel,2.3.14,src/pg/connection/mod.rs,394,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),误报,同 H089：diesel 2.3.14 同步，src/pg/connection/mod.rs:394 的 is_broken 无 await；标志由 update_transaction_manager_status 在同步查询结束时置位（src/connection/transaction_manager.rs:83-100），panic 路径由 src/r2d2.rs:295 的 std::thread::panicking() 覆盖。
+H091,23,9548247,diesel,2.3.14,src/r2d2.rs,275,C,high,fn is_broken returns false / never marks breakage,        false,误报,src/r2d2.rs:275 是 R2D2Connection::is_broken 的 trait 默认实现，注释（src/r2d2.rs:269-274）明说默认不认为连接坏；mysql/pg/sqlite 均覆写（如 src/mysql/connection/mod.rs:286）。它是给第三方 backend 的可选钩子，不是错误/取消分支，也不绑定具体连接。
+H092,23,9548247,diesel,2.3.14,src/r2d2.rs,295,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken(),误报,src/r2d2.rs:295 的 has_broken 是 r2d2 的同步 ManageConnection 钩子，取用/归还时同步调用，没有 await 或可 drop 的 future；同步代码的取消等价物是 panic，这里正好前置 std::thread::panicking()。误报。
+H093,23,9548247,diesel,2.3.14,src/sqlite/connection/mod.rs,319,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        AnsiTransactionManager::is_broken_transaction_manager(self),误报,同 H089：diesel 2.3.14 同步，src/sqlite/connection/mod.rs:319 的 is_broken 无 await；状态由 is_broken_transaction_manager（src/connection/transaction_manager.rs:83-100）在查询结束时同步更新，panic 由 src/r2d2.rs:295 的 std::thread::panicking() 覆盖。
+H094,34,5304616,diesel-async,0.9.2,src/async_connection_wrapper.rs,330,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,            crate::pooled_connection::PoolableConnection::is_broken(&mut self.inner),误报,AsyncConnectionWrapper 是 r2d2 的同步适配层：操作经 self.runtime.block_on(f) 跑完（src/async_connection_wrapper.rs:285），没有在挂起点被 drop 的 future；330 行只是同步委托 PoolableConnection::is_broken 读事务状态。r2d2 的 has_broken 也是同步调用。
+H095,34,5304616,diesel-async,0.9.2,src/pg/mod.rs,1059,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,"        use crate::TransactionManager;
+
+        Self::TransactionManager::is_broken_transaction_manager(self) || self.conn.is_closed()",误报,AsyncPgConnection 包装 tokio_postgres::Client（src/pg/mod.rs:168），establish 里 drive_connection(connection) 起后台驱动（src/pg/mod.rs:282-286），回复由驱动按请求分发；drop 查询 future 不会把未读回复留给下一位。is_broken 里的 is_closed() 负责死连接（src/pg/mod.rs:1064-1068）。
+H096,34,5304616,diesel-async,0.9.2,src/pooled_connection/bb8.rs,90,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        std::thread::panicking() || conn.is_broken(),可疑,bb8 归还时调 has_broken（bb8 src/inner.rs:149），其转调的 is_broken 对 mysql 走默认实现，只看 TransactionManagerStatus（src/pooled_connection/mod.rs:209-211），不查 disconnected。routine 在 await 前置 disconnected=true（mysql_async src/conn/mod.rs:405），取消后不复位；若取消在等首包（set_pending_result 之前），clean_dirty 排不掉，旧回复被下一位读到。
+H097,34,5304616,diesel-async,0.9.2,src/pooled_connection/mod.rs,209,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,        Self::TransactionManager::is_broken_transaction_manager(self),可疑,默认 is_broken 只看 TransactionManagerStatus（src/pooled_connection/mod.rs:209-211），AsyncMysqlConnection 未覆写（src/mysql/mod.rs:366），不查 disconnected。routine 在 await 前置 disconnected=true（mysql_async src/conn/mod.rs:405），取消后保持；若取消在等首包（set_pending_result 之前），clean_dirty 排不掉，read_packet 读到旧回复。
+H098,34,5304616,diesel-async,0.9.2,src/sync_connection_wrapper/mod.rs,477,C,medium,fn is_broken reads a flag that is not pessimistically set before an await,            Self::TransactionManager::is_broken_transaction_manager(self),已防护,SyncConnectionWrapper 的查询在 spawn_blocking 中执行，CancelWrapper::drop 在未完成时 block_in_place(|| handle.block_on(future)) 等它结束（src/sync_connection_wrapper/mod.rs:548-557），future 被 drop 不会打断 diesel 的同步调用，TransactionManagerStatus 必在阻塞任务内更新；477 行读到的状态完整。
+H139,56,1641643,mysql_async,0.37.1,src/conn/mod.rs,406,A,medium,fn routine: call `close` in error path after await; guard=none,"        let result = f.call(&mut *self).await;
+        match result {
+            result @ Ok(_) | result @ Err(crate::Error::Server(_)) => {
+                // either OK or non-fatal error
+                self.inner.disconnected = false;
+                result
+            }
+            Err(err) => {
+                if self.inner.stream.is_some() {
+                    self.take_stream().close().await?;",已防护,routine 在 await 前就置 self.inner.disconnected = true（src/conn/mod.rs:405），仅 Ok/非致命 Server 错误恢复 false（408-411）；future 在 f.call(...).await（406）被 drop 时该标志保持 true，mysql_async 自身 Pool 的 recycler 对 disconnected 连接直接丢弃（src/conn/pool/recycler.rs:88-95），不会回到可用队列。
+H140,56,1641643,mysql_async,0.37.1,src/conn/mod.rs,454,A,medium,fn disconnect: call `close` in error path after await; guard=none,"            self.write_command_data(Command::COM_QUIT, &[]).await?;
+            let stream = self.take_stream();
+            stream.close().await?;",误报,disconnect(mut self) 是消费型关闭路径：453 行先置 self.inner.disconnected = true，454 行写 COM_QUIT 后取流关闭，连接不会回池；即使 drop 在 454，self 被丢弃、socket 由 Drop 关闭。这里也没有 Err 分支。
+H182,36,4923381,sea-orm,2.0.4,src/driver/sqlx_mysql.rs,270,C,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,误报,ping 只从池取连接后调用 sqlx 的 Connection::ping()（match conn.ping().await { Ok(_) => Ok(()) }），没有自定义“接受任意正回复”的解析；结果原样上抛。acquire 到的 PoolConnection 由 Drop 归还，return_to_pool 自己会先 ping。
+H183,36,4923381,sea-orm,2.0.4,src/driver/sqlx_postgres.rs,309,C,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,误报,同 H182：sqlx_postgres.rs:309 的 ping 直接返回 conn.ping().await 的结果，没有宽松校验，也没有 Err 分支坏标记；池化连接 Drop 时 sqlx 的 PoolConnection::return_to_pool 会先 ping 再归还。
+H184,36,4923381,sea-orm,2.0.4,src/driver/sqlx_sqlite.rs,292,C,high,fn ping does I/O then accepts any positive/Ok reply,        let conn = &mut self.pool.acquire().await.map_err(sqlx_conn_acquire_err)?;,误报,同 H182：sqlx_sqlite.rs:292 的 ping 取池连接后直接调 Connection::ping()，Ok(_) => Ok(()) 只是丢弃返回内容，不是“接受任意正回复”的协议解析；失败原样上抛，不影响连接复用判定。
+H185,9,48053448,sqlx-core,0.9.0,src/net/socket/buffered.rs,138,A,medium,fn shutdown: call `shutdown` in error path after await; guard=none,"        self.flush().await?;
+        self.socket.shutdown().await",误报,BufferedSocket::shutdown（src/net/socket/buffered.rs:137-140）是套接字级清理：flush 后 socket.shutdown，由消费型 Connection::close/close_hard 调用；future 被 drop 时只是 socket 随连接对象关闭，没有连接回池，也不是 Err 分支的坏标记。
+H186,9,48053448,sqlx-core,0.9.0,src/pool/inner.rs,487,A,medium,fn check_idle_conn: call `close` in error path after await; guard=none,"        match test(&mut conn.live.raw, meta).await {
+            Ok(false) => {
+                // connection was rejected by user-defined hook, close nicely
+                return Err(conn.close().await);",已防护,"check_idle_conn 按值接收 Floating<DB, Idle<DB>>（src/pool/inner.rs:469-470），没有把它放回 idle 的 Drop 实现；在 test(...).await（487）被取消时 raw 连接被 drop、DecrementSizeGuard 递减池大小（614-619），下一位拿不到它；只有 Ok(true) 才 into_live()。"
+H187,9,48053448,sqlx-core,0.9.0,src/testing/mod.rs,201,A,medium,fn run_test_with_pool: call `close` in error path after await; guard=none,"        let res = test_fn(pool.clone()).await;
+
+        let close_timed_out = crate::rt::timeout(Duration::from_secs(10), pool.close())
+            .await",误报,"src/testing/mod.rs 是 sqlx 自带测试框架；201 行 await 的是测试闭包，203-205 的 timeout(10s, pool.close()) 只是收尾告警。测试代码，不是可复用连接的错误/取消路径。"
+H188,9,48053448,sqlx-core,0.9.0,src/testing/mod.rs,268,A,medium,fn setup_test_db: call `close` in error path after await; guard=none,"        (&mut conn)
+            .execute(fixture.contents)
+            .await
+            .unwrap_or_else(|e| panic!(""failed to apply test fixture {:?}: {:?}"", fixture.path, e));
+    }
+
+    conn.close()
+        .await
+        .expect(""failed to close setup connection"");",误报,src/testing/mod.rs:268 在测试 setup 里 await fixture SQL，随后 conn.close().await.expect(...)（src/testing/mod.rs:272-274）；测试代码且是局部 setup 连接。
+H189,13,42568773,sqlx-mysql,0.9.0,src/connection/mod.rs,74,A,medium,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send_packet(Quit).await?;
+        self.inner.stream.shutdown().await?;",误报,Connection::close(mut self) 消费连接：74 行 send_packet(Quit).await 后 shutdown；future 被 drop 时 self 也被丢弃、socket 关闭，不会归还池；没有 Err 分支标记。
+H190,13,42568773,sqlx-mysql,0.9.0,src/testing/mod.rs,86,A,medium,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"        query.push("")"").build().execute(&mut conn).await?;
+
+        let _ = conn.close().await;",误报,src/testing/mod.rs 的 cleanup_test_dbs：86 行在测试库上执行 delete，随后 let _ = conn.close().await；测试库清理代码。
+H191,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,31,B,high,fn begin: `transaction_depth +=` after await at line 27,"        };
+        conn.execute(statement).await?;
+        if !conn.in_transaction() {
+            return Err(Error::BeginFailed);
+        }
+        conn.inner.transaction_depth += 1;",可疑,begin：conn.execute(statement).await?（src/transaction.rs:27）后才 transaction_depth += 1（31 行），无 Rollback guard；取消落在 BEGIN 往返时 depth 仍为 0，start_rollback 因 if depth > 0（src/transaction.rs:61）不动作。PoolConnection drop 后 ping 的 wait_until_ready 排掉 BEGIN 的 OK，连接以 depth=0 回池，下一位自动提交写入落进未提交事务。
+H192,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,41,B,high,fn commit: `transaction_depth =` after await at line 40,"            conn.execute(commit_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;",已防护,commit：40 行 execute(COMMIT).await?，41 行才 transaction_depth = depth-1。但 commit(mut self) 的 future 被 drop 时，core Transaction::drop（sqlx-core src/transaction.rs:265-278）会调 start_rollback；depth>0 时 MySQL 排队 ROLLBACK 并递减（src/transaction.rs:58-71），池 ping 的 wait_until_ready 再排空 COMMIT/ROLLBACK 回复。
+H193,13,42568773,sqlx-mysql,0.9.0,src/transaction.rs,52,B,high,fn rollback: `transaction_depth =` after await at line 51,"            conn.execute(rollback_ansi_transaction_sql(depth)).await?;
+            conn.inner.transaction_depth = depth - 1;",已防护,同 H192：rollback 的 transaction_depth = depth-1（52）在取消时由 core Transaction::drop→start_rollback 补偿（sqlx-core src/transaction.rs:265-278）；depth>0 时 MySQL 排队 ROLLBACK 并递减（src/transaction.rs:58-71），残留回复由池 ping 的 wait_until_ready 排空。
+H194,11,45986479,sqlx-postgres,0.9.0,src/connection/executor.rs,134,B,medium,fn wait_for_close_complete: `count -=` after await at line 126,"            match self.inner.stream.recv().await? {
+                message if message.format == BackendMessageFormat::PortalSuspended => {
+                    // there was an open portal
+                    // this can happen if the last time a statement was used it was not fully executed
+                }
+
+                message if message.format == BackendMessageFormat::CloseComplete => {
+                    // successfully closed the statement (and freed up the server resources)
+                    count -= 1;",误报,count 是 wait_for_close_complete 的局部参数（src/connection/executor.rs:123），不是连接坏标记；连接侧 write_sync() 在 await 前已把 pending_ready_for_query_count +1（src/connection/executor.rs:150-158），取消后残留的 CloseComplete/RFQ 由下一次 run 的 wait_until_ready()（src/connection/executor.rs:210）或池 ping 按计数排空。
+H195,11,45986479,sqlx-postgres,0.9.0,src/connection/mod.rs,168,A,medium,fn close: call `shutdown` in error path after await; guard=none,"        self.inner.stream.send(Terminate).await?;
+        self.inner.stream.shutdown().await?;",误报,Connection::close(mut self) 消费连接：168 行 send(Terminate).await 后 shutdown；future 被 drop 时 self 一并丢弃、socket 关闭，不会回池，也不是 Err 分支。
+H196,11,45986479,sqlx-postgres,0.9.0,src/connection/mod.rs,113,B,medium,fn recv_ready_for_query: `pending_ready_for_query_count -=` after await at line 111,"        let r: ReadyForQuery = self.inner.stream.recv_expect().await?;
+
+        self.inner.pending_ready_for_query_count -= 1;",已防护,pending_ready_for_query_count 是连接内部“待排空 RFQ”计数，不是坏标记；recv_unchecked 的 try_read 只在整帧到齐时 split_to（src/connection/stream.rs:80-117），取消时消息仍留在 read buffer，且 recv_expect().await 返回后的 -=1（src/connection/mod.rs:111-113）与消费同在一个 poll；随后 run 的 wait_until_ready()（src/connection/mod.rs:94-107）会排空。
+H197,11,45986479,sqlx-postgres,0.9.0,src/listener.rs,324,B,medium,fn try_recv: `pending_ready_for_query_count -=` after await at line 324,"                BackendMessageFormat::ReadyForQuery => {
+                    self.connection().await?.inner.pending_ready_for_query_count -= 1;",误报,PgListener 持有自己的池连接；324 行 self.connection().await? 在已连接时是 connect_if_needed 的立即返回（src/listener.rs:177-198），不是网络往返；RFQ 已由上面的 recv_unchecked 读出，递减与消费之间无挂起点。该计数只是排空账本。
+H198,11,45986479,sqlx-postgres,0.9.0,src/testing/mod.rs,79,A,medium,fn cleanup_test_dbs: call `close` in error path after await; guard=none,"            .bind(&deleted_db_names)
+            .execute(&mut conn)
+            .await?;
+
+        let _ = conn.close().await;",误报,src/testing/mod.rs 的 cleanup_test_dbs：79 行执行测试库 delete，随后 let _ = conn.close().await；测试库清理代码。
+H199,11,45986479,sqlx-postgres,0.9.0,src/transaction.rs,45,B,high,fn commit: `transaction_depth -=` after await at line 43,"            conn.execute(commit_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;",已防护,commit：42-43 行 execute(COMMIT).await?，45 行 transaction_depth -= 1。取消时 core Transaction::drop（sqlx-core src/transaction.rs:265-278）调 start_rollback；depth>0 时 pg 排队 ROLLBACK 并递减（src/transaction.rs:62-71），残留 COMMIT/ROLLBACK 回复由池 ping 的 wait_until_ready 按 pending 计数排空。
+H200,11,45986479,sqlx-postgres,0.9.0,src/transaction.rs,56,B,high,fn rollback: `transaction_depth -=` after await at line 54,"            conn.execute(rollback_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;",已防护,同 H199：56 行 transaction_depth -= 1 被取消时由 core Transaction::drop→start_rollback 补偿（sqlx-core src/transaction.rs:265-278）；depth>0 时 pg 排队 ROLLBACK 并递减（src/transaction.rs:62-71），未读回复由 pending_ready_for_query_count 与池 ping 排空。
+H201,12,43640804,sqlx-sqlite,0.9.0,src/connection/mod.rs,227,A,medium,fn close: call `shutdown` in error path after await; guard=none,"            self.execute(AssertSqlSafe(pragma_string)).await?;
+        }
+        let shutdown = self.worker.shutdown();
+        // Drop the statement worker, which should
+        // cover all references to the connection handle outside of the worker thread
+        drop(self);",误报,Connection::close(mut self) 消费连接：227 行 PRAGMA optimize 之后 worker.shutdown()+drop(self)（231-235）；future 在 227 被 drop 时 self 也被丢弃、worker 句柄随之关闭，连接不会复用。关闭/清理路径，不是错误分支。
+H202,12,43640804,sqlx-sqlite,0.9.0,src/migrate.rs,33,A,medium,fn create_database: call `close` in error path after await; guard=none,"            opts = opts.journal_mode(SqliteJournalMode::Wal);
+        }
+
+        // Opening a connection to sqlite creates the database
+        opts.connect()
+            .await?
+            // Ensure WAL mode tempfiles are cleaned up
+            .close()
+            .await?;",误报,create_database 里 opts.connect().await?（32-33）得到临时连接，再 .close().await?；连接是局部变量、用完即关，不进任何池；close 被取消时临时连接随作用域丢弃。

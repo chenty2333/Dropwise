@@ -1,0 +1,117 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H004,31,5832912,async-nats,0.50.0,src/lib.rs,1328,A,medium,fn unsubscribe: call `close` in error path after await; guard=none,"                sid: self.sid,
+                max: None,
+            })
+            .await?;
+        self.receiver.close();
+        Ok(())",误报,lib.rs:1323-1329 的 `self.sender.send(Command::Unsubscribe{..}).await` 是发往连接任务的 tokio mpsc 命令队列，不是 broker 往返（真正 UNSUB 由后台任务写 wire）；`self.receiver.close()`（1330）只关本地消息通道。问题 1 不成立，future 被丢弃不影响共享 client，也不涉及池化连接复用。
+H061,24,9267014,bb8,0.9.1,src/inner.rs,110,A,high,fn get: assign `state` in error path after await; guard=none,"                match self.inner.manager.is_valid(&mut conn).await {
+                    Ok(()) => return Ok(conn),
+                    Err(e) => {
+                        self.inner.statistics.record(StatsKind::ClosedInvalid);
+                        self.inner.forward_error(e);
+                        conn.state = ConnectionState::Invalid;",可疑,"inner.rs:110 `is_valid(&mut conn).await` 前 conn 是 state=Present 的 PooledConnection（api.rs:497）；Err 分支才在 115 行置 Invalid，取消（含 124 行 connection_timeout）走 api.rs:531-541 的 Drop → `put_back(conn, self.state)`（inner.rs:143-157）→ 以 Present 入池。put_back 只问 manager.has_broken，看不到在途验证，残留验证回复被下一位继承。即 bb8 #324。"
+H062,117,34107,bb8-diesel,0.2.1,src/lib.rs,114,C,high,fn has_broken returns false / never marks breakage,        false,误报,has_broken 恒 false（lib.rs:114-119），但 is_valid（103-112）经 `run_blocking_in_place`（81-86 的 `task::block_in_place`）在阻塞段内一次 poll 跑完，future 无法在往返中途被 drop；坏连接由下一次取用的 is_valid 判 Err、inner.rs:115 标 Invalid 丢弃。不存在异步取消窗口。
+H063,120,29957,bb8-lapin,0.8.1,src/lib.rs,87,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        let conn_status = conn.status();
+        conn_status.closed() || conn_status.errored()",误报,is_valid（lib.rs:75-85）只读 `conn.status()`，没有任何 await，不存在“await 前未置坏”的窗口；has_broken（87-90）读 closed/errored。lapin::Connection 是后台 IO 任务的多路复用句柄，单条流不会因取消而错位。
+H064,141,8691,bb8-ldap,0.4.1,src/lib.rs,237,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,is_valid（lib.rs:223-235）的 search 由 ldap3 多路复用驱动处理（connect 里 215 行 `ldap3::drive!(conn)`，回复按 msgid 路由，conn.rs:784-786），丢弃 search future 不会让后续命令读错回复；has_broken（237-241）的 `conn.is_closed()` 只查发送通道，会话状态在驱动里，无可污染的池化字节流。
+H065,381,132,bb8-memcached,0.7.0,src/client.rs,143,A,medium,fn get: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.get(key)).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(read_timeout, self.connection.get(key)).await`（client.rs:143）；`taint()` 只在内部超时的 `Err(_elapsed_err)` 分支（144-146）调用，外部取消不走该分支，`is_tainted()`（281-283）仍 false。单条 memcache 流上残留的 VALUE/END 被下一位读到，memcache-async 解析 get 不核对 key（RESCAN 4.2），可静默返回别的 key 的值。"
+H066,381,132,bb8-memcached,0.7.0,src/client.rs,161,A,medium,fn get_multi: call `taint` in error path after await; guard=none,"                match timeout(read_timeout, self.connection.get_multi(keys)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(read_timeout, self.connection.get_multi(keys)).await`（client.rs:161）；taint 只在 162-165 的内部超时分支。取消后 tainted 仍 false，多 key 的 VALUE..END 块残留在流上，下一位的 get 把前一条回复当自己的，memcache-async 不核对 key（RESCAN 4.2）。"
+H067,381,132,bb8-memcached,0.7.0,src/client.rs,177,A,medium,fn delete: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.delete(key)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.delete(key)).await`（client.rs:177）；taint 只在 178-181。取消时可能只写出半条 delete 命令或留下未读回复，tainted 仍 false，连接被 put_back 放行（bb8 inner.rs:149），下一条命令的字节被服务端接在半条命令后面。"
+H068,381,132,bb8-memcached,0.7.0,src/client.rs,198,A,medium,fn add: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.add(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.add(key,val,expiration)).await`（client.rs:198）；taint 只在 199-202 的内部超时分支。取消后 tainted 仍 false，`STORED/NOT_STORED` 残留回复留在流上，下一位请求读到前一条回复，错位会一直延续。"
+H069,381,132,bb8-memcached,0.7.0,src/client.rs,219,A,medium,fn set: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.set(key, val, expiration)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.set(key,val,expiration)).await`（client.rs:219）；taint 只在 220-223。set 走 noreply，取消可能把 header/值写到一半，tainted 仍 false → 连接回池；下一条命令的字节被当作上一条 set 的剩余值，后续回复整体错位。"
+H070,381,132,bb8-memcached,0.7.0,src/client.rs,239,A,medium,fn increment: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.increment(key, amount)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.increment(key,amount)).await`（client.rs:239）；taint 只在 240-243 的内部超时分支。取消后 tainted 仍 false，数字回复残留在流上，下一位把旧值当自己的结果（increment 这类有副作用命令尤其危险）。"
+H071,381,132,bb8-memcached,0.7.0,src/client.rs,253,A,medium,fn version: call `taint` in error path after await; guard=none,"            Some(read_timeout) => match timeout(read_timeout, self.connection.version()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(read_timeout, self.connection.version()).await`（client.rs:253）；taint 只在 254-257。取消后 tainted 仍 false，`VERSION ...` 回复残留在流上；下一次 is_valid 的 version()（lib.rs:88）正好读到这条残留并判为验证通过，连接继续留在池里。"
+H072,381,132,bb8-memcached,0.7.0,src/client.rs,266,A,medium,fn flush: call `taint` in error path after await; guard=none,"            Some(write_timeout) => match timeout(write_timeout, self.connection.flush()).await {
+                Err(_elapsed_err) => {
+                    self.taint();
+                    Err(io::ErrorKind::TimedOut.into())",可疑,"`timeout(write_timeout, self.connection.flush()).await`（client.rs:266）；taint 只在 267-270。取消后 tainted 仍 false，`OK` 回复残留在流上，下一位请求读到它；flush_all 已在服务端生效但客户端状态不明，连接被回收复用。"
+H073,381,132,bb8-memcached,0.7.0,src/lib.rs,91,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_tainted(),可疑,lib.rs:91-93 的 `has_broken` 只看 `conn.is_tainted()`，而 tainted 只在 client.rs 各方法内部超时的 `Err(_elapsed_err)` 分支置位（如 143-146）；外部取消（调用方 drop 或 bb8 的 connection_timeout）不置位，put_back（inner.rs:149）因此放行。is_valid 的 version() 还会把残留的 VERSION 回复当验证通过。
+H074,129,16389,bb8-oracle,0.3.0,src/lib.rs,133,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,"        !matches!(conn.status(), Ok(oracle::ConnStatus::Normal))",不确定,is_valid（lib.rs:121-131）用 `spawn_blocking(move || conn_clone.ping())` 把 Arc<Connection> 克隆进阻塞线程：取消只丢弃 JoinHandle，ping 继续跑，而 bb8 的 PooledConnection::drop 已把同一连接放回池，下一位可能与 ping 并发使用。是否损坏取决于 oracle crate 的 ODPI-C 线程模型，其源码未下载，RESCAN 4.2 记为未检查。
+H075,61,1204081,bb8-postgres,0.9.0,src/lib.rs,69,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        conn.is_closed(),误报,Connection 是 tokio_postgres::Client，connect 时把连接任务 spawn 出去（lib.rs:57-62），请求按 id 多路复用；取消 simple_query（65-67）不会让流错位，残留回复由后台任务消费。has_broken 的 `is_closed()`（69-71）只做快速判断，坏连接下次 is_valid 报 Err。RESCAN 4.2 动态干净。
+H076,59,1343906,bb8-redis,0.26.0,src/lib.rs,76,C,high,fn has_broken returns false / never marks breakage,        false,误报,Connection 是 `MultiplexedConnection`（lib.rs:61），redis 内部按请求 id 多路复用，取消 PING 不会在共享流上留下错位回复；is_valid（68-74）严格比对 `PONG`。has_broken 恒 false（76-78）只是不提前淘汰坏连接，下次 is_valid 的 PING 会失败。RESCAN 4.2 动态干净。
+H077,90,163534,bb8-tiberius,0.16.0,src/lib.rs,208,C,high,fn has_broken returns false / never marks breakage,        false,不确定,has_broken 恒 false（208-210），风险取决于 tiberius：bb8-tiberius 0.16.0 的 Cargo.lock 锁 tiberius 0.12.3，但扫到的源码只有 0.13.0。0.13.0 在 send 写包前置 `poisoned`（connection.rs:287）、flush_stream 先 `ensure_not_poisoned`（474），取消写会让下一次请求失败；0.12.3 是否同样无法核对。RESCAN 4.2 仅静态看过。
+H085,15,41463820,deadpool,0.13.1,src/managed/pool.rs,196,B,medium,fn try_recycle: `recycle_count +=` after await at line 191,"        if let Err(_e) = self.inner.hooks.post_recycle.apply(inner).await {
+            // TODO log post_recycle error
+            return Ok(None);
+        }
+
+        inner.metrics.recycle_count += 1;",误报,`inner.metrics.recycle_count += 1`（pool.rs:196）是对象指标，不是连接状态；且 try_recycle 全程由 `UnreadyObject`（166）持有，future 在 post_recycle await 处被丢弃时其 Drop（495-502）会 `slots.size -= 1` 并 `manager.detach`，对象被丢弃而不是放回池。少记一次指标不产生污染。
+H086,214,840,deadpool-memcached,0.5.0,src/lib.rs,46,C,high,fn recycle does I/O then accepts any positive/Ok reply,"        match conn.version().await {
+            Ok(_) => Ok(()),",可疑,recycle 只做 `conn.version().await` 且 `Ok(_) => Ok(())`（lib.rs:46-51）。async-memcached 的 version() 只要求响应行 ≥8 字节并截掉前 8 字符、不校验 `VERSION ` 前缀（0.8.1 lib.rs:172-173 仍是此写法），`STORED` 之类的 8 字节残留也能通过。用户中途取消后 Object::drop 无条件放回（object.rs:85-92），下一位持续报错且写入已生效（RESCAN 5.2 D4）。
+H087,28,6822955,deadpool-postgres,0.14.2,src/lib.rs,155,C,high,fn recycle does I/O then accepts any positive/Ok reply,"        if client.is_closed() {
+            tracing::warn!(target: ""deadpool.postgres"", ""Connection could not be recycled: Connection closed"");",误报,Connection 是 tokio_postgres::Client（连接任务在 create 里 spawn），多路复用；默认 Fast 模式 recycle 只查 `client.is_closed()` 后直接 Ok（lib.rs:156-168，config.rs:314-315 为默认值），自定义 Verified 模式的 simple_query 也按 id 路由。取消不会让流错位。RESCAN 5.2 记录该 manager 安全。
+H088,138,10179,deadpool-tiberius,0.1.9,src/lib.rs,122,C,high,fn recycle does I/O then accepts any positive/Ok reply,"        match obj.simple_query("""").await {
+            Ok(_) => Ok(()),",不确定,"recycle 用 `obj.simple_query("""")` 且 `Ok(_)` 即通过（lib.rs:127-129）。是否会被取消残留欺骗取决于 tiberius：Cargo.lock 锁 0.12.3，而源码只扫到 0.13.0（0.13.0 在 send 前置 poisoned、flush_stream 先 ensure_not_poisoned，会让 recycle 返回 Err 从而丢弃对象）。0.12.3 无源码，不下结论。"
+H101,47,2488397,fred,10.1.0,src/runtime/glommio/mod.rs,66,A,medium,fn spawn_into: call `detach` in error path after await; guard=none,"    let inner = glommio::spawn_local_into(
+      async move {
+        let result = ft.await;
+        _finished.replace(true);
+        result
+      },
+      tq,
+    )
+    .unwrap_or_else(|e| panic!(""Failed to spawn task into task queue {tq:?}: {e:?}""))
+    .detach();
+
+    JoinHandle { inner, finished }",误报,这里是 `spawn_into`：`ft.await`（glommio/mod.rs:66）在 spawn 出去的任务内部，调用方不会在这个挂起点被 drop；`.detach()`（73）是任务句柄操作，`_finished.replace(true)`（67）只是本地 `Rc<Cell<bool>>` 完成标志，供 JoinHandle 轮询，不是连接/会话状态，也无池复用。
+H124,27,7672068,lettre,0.11.23,src/transport/smtp/async_transport.rs,75,A,medium,fn send_raw: call `abort` in error path after await; guard=none,"        let result = conn.send(envelope, email).await?;
+
+        #[cfg(not(feature = ""pool""))]
+        conn.abort().await;",可疑,"`conn.send(envelope, email).await?`（async_transport.rs:75）后，默认 feature `pool` 下 78 行 `conn.abort()` 被 `#[cfg(not(feature = ""pool""))]` 编译掉；取消时又走不到 try_smtp! 的 Err 分支，`panic` 仍 false，PooledConnection::drop 会 spawn recycle（async_impl.rs:319-329）→ has_broken 假 → 入池。残留 354/正文使下一位 NOOP 读错或挂起（RESCAN 6.2）。"
+H125,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,184,A,high,macro try_smtp! Err arm marks bad; call's await at line 186; guard=none,"            self.command(Mail::new(envelope.from().cloned(), mail_options))
+                .await,
+            self
+        );
+
+        // Recipient
+        for to_address in envelope.to() {",可疑,try_smtp! 只有 Err 分支才 `self.abort().await` 置 panic（26-36、250-257）；取消在 `self.command(Mail::new(..)).await`（184-188）时 panic 仍 false，has_broken（206-208）报健康，PooledConnection::drop 把连接回收进池。服务端已进入邮件事务，下一位的 NOOP 读到残留 250 判健康，随后的 MAIL 得到 503。
+H126,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,192,A,high,macro try_smtp! Err arm marks bad; call's await at line 193; guard=none,"                self.command(Rcpt::new(to_address.clone(), vec![])).await,
+                self
+            );
+        }",可疑,同样在 try_smtp! 的 `command(Rcpt::new(..)).await`（192-196）被取消：panic 未置位（仅 Err 分支 26-36 的 abort 会置），连接被 recycle 回池。服务端已收下该收件人，残留的 RCPT 250 被下一位 test_connected 的 NOOP 当成本次回复，事务状态与客户端视图不一致。
+H127,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,199,A,high,macro try_smtp! Err arm marks bad; call's await at line 199; guard=none,"        try_smtp!(self.command(Data).await, self);
+
+        // Message content
+        let result = try_smtp!(self.message(email).await, self);",可疑,"`try_smtp!(self.command(Data).await, self)`（199）：取消落在等 354 时服务端已进入 DATA 状态，而 panic 未置位（只有 Err 分支 26-36 会 abort），连接被回收。下一位的 NOOP 被服务端当作正文，永远等不到回复（RESCAN 6.2 Pending #4），调用方无超时则池位挂死。"
+H128,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,202,A,high,macro try_smtp! Err arm marks bad; call's await at line 202; guard=none,"        let result = try_smtp!(self.message(email).await, self);
+        Ok(result)",可疑,"`let result = try_smtp!(self.message(email).await, self)`（202）：取消在写正文/等最终 250 时 panic 未置位，连接被回收。服务端仍在读 DATA，下一位 NOOP 得不到回复而挂起（RESCAN 6.2「写正文中途取消」）；连接直到因别的原因关闭前一直占着池位。"
+H129,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,227,A,high,macro try_smtp! Err arm marks bad; call's await at line 227; guard=none,"            try_smtp!(self.command(Starttls).await, self);
+            self.stream.get_mut().upgrade_tls(tls_parameters).await?;",可疑,"`try_smtp!(self.command(Starttls).await, self)`（227）：取消在等 220 时 panic 未置位，连接被回收。服务端随后期待 TLS ClientHello，下一位的 NOOP/MAIL 被当作握手字节；残留 220 还可能被 NOOP 当成健康回复，连接因此继续留在池里。"
+H130,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,232,A,high,macro try_smtp! Err arm marks bad; call's await at line 232; guard=none,"            try_smtp!(self.ehlo(hello_name).await, self);
+            Ok(())",可疑,"`try_smtp!(self.ehlo(hello_name).await, self)`（232）内部就是 `command(Ehlo).await`（240-244）；取消时 panic 未置位，连接被回收，server_info 仍是升级前的旧值。残留的多行 EHLO 回复留在 socket 上，下一位 NOOP 只读首行 250 判健康，后续命令与剩余行错位。"
+H131,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,241,A,high,macro try_smtp! Err arm marks bad; call's await at line 241; guard=none,"        let ehlo_response = try_smtp!(self.command(Ehlo::new(hello_name.clone())).await, self);
+        self.server_info = try_smtp!(ServerInfo::from_response(&ehlo_response), self);",可疑,"`let ehlo_response = try_smtp!(self.command(Ehlo::new(..)).await, self)`（241）：取消时 panic 未置位，连接被回收；多行 EHLO 回复整段残留在流上，下一位 test_connected 的 NOOP 读到首行 250 即判健康，真正的 NOOP 回复与后续 MAIL 回复整体错位。"
+H132,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,247,A,high,macro try_smtp! Err arm marks bad; call's await at line 247; guard=none,"        Ok(try_smtp!(self.command(Quit).await, self))",可疑,"`Ok(try_smtp!(self.command(Quit).await, self))`（246-248）：取消在等 221 时 panic 未置位，连接被回收。async-std1+pool 的 send_raw（async_transport.rs:101）在 quit 后仍会回收该连接，下一位 NOOP 把 221 当健康回复，随后服务端关闭连接；即便不取消，quit 后入池本身也让该池位空转。"
+H133,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,294,A,high,macro try_smtp! Err arm marks bad; call's await at line 300; guard=none,"                    credentials.clone(),
+                    &response,
+                )?)
+                .await,
+                self
+            );
+        }",可疑,"`try_smtp!(self.command(Auth::new_from_response(..)).await, self)`（294-302）：取消在 AUTH 挑战往返时 panic 未置位，连接被回收；服务端停在等待认证响应的状态，残留的 334/235 被下一位读走，客户端与服务器的认证状态不一致，后续 MAIL 被拒或回复错位。"
+H134,27,7672068,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,206,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic,可疑,`has_broken` 只读 `self.panic`（206-208）；panic 仅在 `abort()` 的 252-253 置位，而 abort 只在 try_smtp! 的 Err 分支（31）或池 recycle 时调用。任何 await 被取消都不会置位，has_broken 因此报健康，连接被池回收复用（RESCAN 6.2 的根因）。
+H135,27,7672068,lettre,0.11.23,src/transport/smtp/client/connection.rs,133,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,        self.panic,误报,这是同步 `Connection` 的 has_broken（connection.rs:133-135），整条路径没有 await、没有可被 drop 的 future；命令失败时 try_smtp! 的 Err 分支会调 abort（connection.rs:25-35），abort 里 `self.panic = true`（178-185）。异步取消路径不存在，不属于本类缺陷。
+H171,17,30378035,redis,1.7.1,src/bb8.rs,28,C,high,fn has_broken returns false / never marks breakage,                false,误报,has_broken 恒 false（bb8.rs:28-30），但 Connection 是 `MultiplexedConnection`（bb8.rs:35-39），redis 驱动按请求 id 多路复用，取消 PING 不会在共享流上留下错位回复；is_valid（20-26）严格比对 `PONG`。坏连接由下次 is_valid 的 PING 失败淘汰。
+H172,17,30378035,redis,1.7.1,src/r2d2.rs,23,C,medium,fn has_broken reads a flag that is not pessimistically set before an await,                !conn.is_open(),误报,r2d2 是同步池：has_broken（r2d2.rs:23-25）既无 await 也无 future 可被 drop，不存在取消路径；`!conn.is_open()` 读的是驱动在 IO 错误后维护的状态，is_valid（15-21）另用 PING 严格校验。与异步取消不一致缺陷无关。

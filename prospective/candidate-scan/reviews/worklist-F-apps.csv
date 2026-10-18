@@ -1,0 +1,164 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H146,147,6809,pict-rs,0.5.24,src/file.rs,21,A,medium,fn write_from_stream: call `close` in error path after await; guard=none,"    file.write_from_stream(stream)
+        .with_poll_timer(""write-from-stream"")
+        .await?;
+    file.close().await?;",,
+H147,147,6809,pict-rs,0.5.24,src/lib.rs,2106,A,medium,fn launch: call `abort` in error path after await; guard=none,"        server.bind_rustls_0_23(address, config)?.run().await?;
+
+        handle.abort();
+        let _ = handle.await;",,
+H148,147,6809,pict-rs,0.5.24,src/process.rs,228,A,medium,fn wait: call `kill` in error path after await; guard=none,"        let res = child.wait().with_timeout(timeout).await;
+
+        extras
+            .consume()
+            .await
+            .map_err(|e| ProcessError::Cleanup(command.clone(), e))?;
+
+        match res {
+            Ok(Ok(status)) if status.success() => {
+                guard.disarm();
+
+                Ok(())
+            }
+            Ok(Ok(status)) => Err(ProcessError::Status(command, status)),
+            Ok(Err(e)) => Err(ProcessError::Other(command, e)),",,
+H149,147,6809,pict-rs,0.5.24,src/process.rs,306,A,medium,fn drive: call `kill` in error path after await; guard=none,"            };
+
+            match child_fut.with_timeout(timeout).await {
+                Ok(Ok(status)) if status.success() => {
+                    guard.disarm();
+                    Ok(())
+                }
+                Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                Err(_) => {
+                    child
+                        .kill()
+                        .with_timeout(Duration::from_secs(1))",,
+H150,147,6809,pict-rs,0.5.24,src/process.rs,410,A,medium,fn pipe: call `kill` in error path after await; guard=none,"                };
+
+                match child_fut.with_timeout(timeout).await {
+                    Ok(Ok(status)) if status.success() => {
+                        guard.disarm();
+                        Ok(())
+                    }
+                    Ok(Ok(status)) => Err(ProcessError::Status(command2, status)),
+                    Ok(Err(e)) => Err(ProcessError::Other(command2, e)),
+                    Err(_) => {
+                        child
+                            .kill()
+                            .await
+                            .map_err(|e| ProcessError::Other(command2.clone(), e))?;",,
+H151,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,148,A,medium,fn alias: call `abort` in error path after await; guard=none,"        let hash = repo.hash(&alias).await.retry()?;
+
+        // already deleted
+        if hash.is_none() {
+            return Ok(());
+        }
+    }
+
+    if !saved_delete_token.is_some_and(|t| t.ct_eq(&token)) {
+        return Err(UploadError::InvalidToken).abort();
+    }
+
+    let hash = repo.hash(&alias).await.retry()?;",,
+H152,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,164,A,medium,fn alias: call `abort` in error path after await; guard=none,"    repo.remove_alias_access(alias.clone()).await.retry()?;
+    repo.cleanup_alias(&alias).await.retry()?;
+
+    let hash = hash.ok_or(UploadError::MissingAlias).abort()?;
+
+    if repo",,
+H153,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,217,A,medium,fn outdated_variants: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} variant cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");",,
+H154,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,249,A,medium,fn outdated_proxies: call `abort` in error path after await; guard=none,"    tracing::debug!(""Queued {count} alias cleanup jobs"");
+    let queue_length = repo.queue_length().await.abort()?;
+    tracing::debug!(""Total queue length: {queue_length}"");",,
+H155,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,213,B,medium,fn outdated_variants: `count +=` after await at line 211,"        super::cleanup_variants(repo, hash, Some(variant))
+            .await
+            .retry()?;
+        count += 1;",,
+H156,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,240,B,medium,fn outdated_proxies: `count +=` after await at line 239,"            super::cleanup_alias(repo, alias, token).await.retry()?;
+            count += 1;",,
+H157,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,321,B,medium,fn prune: `count +=` after await at line 319,"                            super::cleanup_hash(&repo, hash).await?;
+
+                            count += 1;",,
+H158,147,6809,pict-rs,0.5.24,src/queue/cleanup.rs,349,B,medium,fn prune: `count +=` after await at line 337,"            .instrument(span),
+        ))
+        .await;
+
+        match res {
+            Ok(Ok(updated)) => count = updated,
+            Ok(Err(e)) => {
+                tracing::warn!(""Prune missing identifier failed - {e:?}"");
+            }
+            Err(_) => {
+                tracing::warn!(""Prune missing identifier panicked."");
+            }
+        }
+
+        count += 1;",,
+H159,147,6809,pict-rs,0.5.24,src/queue/process.rs,161,A,medium,fn process_ingest: call `abort` in error path after await; guard=none,"        .repo
+        .complete_upload(upload_id, result)
+        .await
+        .retry()?;
+
+    if let Some(e) = err {
+        return Err(e).abort();
+    }
+
+    guard.disarm();",,
+H160,147,6809,pict-rs,0.5.24,src/queue/process.rs,184,A,medium,fn generate: call `abort` in error path after await; guard=none,"    let hash = state
+        .repo
+        .hash(&source)
+        .await
+        .retry()?
+        .ok_or(UploadError::MissingAlias)
+        .abort()?;
+
+    let identifier_opt = state",,
+H161,147,6809,pict-rs,0.5.24,src/queue/process.rs,210,A,medium,fn generate: call `abort` in error path after await; guard=none,"        variant,
+        process_args,
+        &original_details,
+        hash,
+    )
+    .await
+    .abort()?;
+
+    Ok(())",,
+H162,147,6809,pict-rs,0.5.24,src/repo/migrate.rs,264,B,medium,fn do_migrate_hash: `aliases_count +=` after await at line 261,"            new_repo.set_accessed_alias(alias, timestamp).await?;
+        }
+
+        aliases_count += 1;",,
+H163,147,6809,pict-rs,0.5.24,src/repo/postgres.rs,342,A,medium,fn connect: call `abort` in error path after await; guard=none,"        embedded::migrations::runner()
+            .run_async(&mut client)
+            .await
+            .map_err(Box::new)
+            .map_err(ConnectPostgresError::Migration)?;
+
+        handle.abort();
+        let _ = handle.await;",,
+H164,147,6809,pict-rs,0.5.24,src/store/file_store.rs,197,A,medium,fn safe_save_stream: call `close` in error path after await; guard=none,"        file.write_from_stream(input)
+            .with_poll_timer(""write-from-stream"")
+            .await?;
+
+        file.close().await?;",,
+H165,147,6809,pict-rs,0.5.24,src/store/object_store.rs,222,A,medium,fn save_stream: call `abort` in error path after await; guard=none,"                .map_err(ObjectError::from)?;
+
+            Ok(())
+        }
+        .await;
+
+        match res {
+            Ok(()) => Ok(object_id),
+            Err(e) => {
+                multipart
+                    .abort()
+                    .with_metrics(crate::init_metrics::OBJECT_STORAGE_ABORT_MULTIPART_REQUEST)",,
+H166,147,6809,pict-rs,0.5.24,src/store/object_store.rs,105,C,high,fn health_check does I/O then accepts any positive/Ok reply,"        let mut tags = TagSet::default();
+        if self.tag_healthz {",,
+H167,147,6809,pict-rs,0.5.24,src/stream.rs,147,B,medium,fn take: `count +=` after await at line 145,"            tracing::trace!(""take: looping"");
+
+            yielder.yield_(item).await;
+
+            count += 1;",,

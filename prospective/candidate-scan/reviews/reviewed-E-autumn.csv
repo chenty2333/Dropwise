@@ -1,0 +1,416 @@
+id,rank,downloads_90d,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+H005,144,7843,autumn-harvest,0.7.0,src/completion_trigger.rs,2606,B,medium,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2604,"            Some(metrics),
+            codecs,
+        )
+        .await
+        {
+            Ok(()) => processed_count += 1,",误报,Q2 不成立：processed_count 是 completion_trigger.rs:2493 的局部 usize，2621 行 `Ok(()) => processed_count += 1`，2784 行返回给调用方统计本批中继数；不在任何连接或事务上置坏，取消后没有可复用的坏对象。
+H006,144,7843,autumn-harvest,0.7.0,src/completion_trigger.rs,2747,B,medium,fn enforce_completion_triggers_outbox_with_codecs: `processed_count +=` after await at line 2743,"                        stamp_outbox_relay_backoff(conn, task.id).await;
+                    }
+                    Ok(true) => {}
+                }
+                processed_count += 1;",误报,Q2 不成立：2766 行 `processed_count += 1` 位于 PayloadTooLarge 永久失败分支；前置 2738 行 transaction 的 Err 已回滚（源码注释 2757），计数仍是 2493 的局部变量，不是连接状态。
+H007,144,7843,autumn-harvest,0.7.0,src/dag.rs,1496,A,high,fn run_unified_dag: assign `status` in error path after await; guard=none,"                        while let Some((i, res)) = stream.next().await {
+                            match res {
+                                Ok(v) => results[i] = v,
+                                Err(err) => match &err {
+                                    HarvestError::ActivityFailed { .. }
+                                    | HarvestError::Timeout { .. } => {
+                                        status = TaskStatus::Failed;",误报,Q2 不成立：status 是 dag.rs:1456 的局部 TaskStatus，1502/1512 行在 Err 分支置 `TaskStatus::Failed`，随返回元组交给上层；DAG 节点状态不是池化连接/事务状态，取消后无可复用坏对象。
+H008,144,7843,autumn-harvest,0.7.0,src/debounce.rs,801,B,medium,fn fire_due_debounced_starts_on_conn_shard: `fired_count +=` after await at line 800,"                let fired = fire_due_on_conn(&mut shard_conn, Some(metrics), codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;",误报,Q2 不成立：fired_count 是 debounce.rs:780 的局部 usize，802 行 `fired_count += spawn_fired(...).await`，812 行 `Ok(fired_count)` 返回；shard_conn 由 connect_or_reuse 借出，本行不置坏。
+H009,144,7843,autumn-harvest,0.7.0,src/event_batch.rs,881,B,medium,fn fire_due_event_batches_on_conn_shard: `fired_count +=` after await at line 880,"                Some(metrics),
+                codecs,
+            )
+            .await?;
+            fired_count += fired.len();",误报,Q2 不成立：event_batch.rs:854 `let mut fired_count = 0usize;`，882 行 `fired_count += fired.len()` 只是本 tick 已触发批次数，895 行返回；Err 只经 `?` 传播，不改连接标志。
+H010,144,7843,autumn-harvest,0.7.0,src/mutex.rs,705,B,medium,fn reclaim_expired_leases_and_wake: `count +=` after await at line 703,"                    crate::queue::wake_workflow_task(conn, ExecutionId::from_uuid(head)).await?;
+                }
+                count += 1;",误报,Q2 不成立：mutex.rs:755 `let mut count = 0usize;`，776 行 `count += 1` 统计回收的过期租约，780 行 `Ok(count)`；conn 是调用方传入的 &mut 引用，本函数不缓存也不标记它。
+H011,144,7843,autumn-harvest,0.7.0,src/retention.rs,2851,A,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(_) => {}
+                Err(err) => {
+                    // Fail safe toward RETAINING on uncertainty (the retention
+                    // janitor's correct failure mode): do not archive/delete.
+                    has_failed = true;
+                    batch_failed = true;",误报,Q2 不成立：has_failed 是 retention.rs:2523 的局部 bool（另有 2700 行 batch_failed），2862 行在 read_candidate_hold 的 Err 分支置位，只影响 outcome.next_cursor 与本批是否中止，不触碰连接。
+H012,144,7843,autumn-harvest,0.7.0,src/retention.rs,3014,A,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                match crate::store::load_payload_refs(&mut conn, candidate_exec_id).await {
+                    Ok(refs) => refs,
+                    Err(err) => {
+                        has_failed = true;
+                        batch_failed = true;",误报,Q2 不成立：3021 行 `has_failed = true` 在 load_payload_refs 的 Err 分支，仍是 2523 的局部失败标志，决定是否 break/回退游标；3012 行 fenced_checkout 取得的 conn 未被标记。
+H013,144,7843,autumn-harvest,0.7.0,src/retention.rs,3034,A,high,fn run_shard_tick: assign `has_failed` in error path after await; guard=none,"                config.summary.as_ref(),
+                fence_key,
+            )
+            .await
+            {
+                Err(err) => {
+                    has_failed = true;
+                    batch_failed = true;",误报,Q2 不成立：3041 行 `has_failed = true` 在 delete_candidate_execution 的 Err 分支后 break，局部 bool（2523）只回报失败；outcome 是统计结构，取消后不存在被污染的连接。
+H014,144,7843,autumn-harvest,0.7.0,src/retention.rs,2602,B,medium,fn run_shard_tick: `deleted_count +=` after await at line 2601,"            .map_err(database_error)
+        }))
+        .await?;
+        outcome.deleted_count += reclaimed;",误报,Q2 不成立：2606 行 `outcome.deleted_count += reclaimed`，outcome 是 2257-2268 的 ShardTickOutcome（tick 统计，返回调用方），reclaimed 来自 2605 行事务结果；计数器不是连接状态。
+H015,144,7843,autumn-harvest,0.7.0,src/retention.rs,3084,B,medium,fn run_shard_tick: `summarized_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;",误报,Q2 不成立：3088 行 `outcome.summarized_count += 1` 仅在 `CandidateDeleteOutcome::Deleted { summarized }` 时累加摘要数；该字段（2267）是 tick 回报统计。
+H016,144,7843,autumn-harvest,0.7.0,src/retention.rs,3088,B,medium,fn run_shard_tick: `deleted_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;
+                    }
+                }
+            }
+            outcome.deleted_count += 1;",误报,Q2 不成立：3092 行 `outcome.deleted_count += 1` 在删除成功分支自增；ShardTickOutcome.deleted_count（2259）是 tick 统计，本命中没有任何连接/事务状态被置坏。
+H017,144,7843,autumn-harvest,0.7.0,src/scheduler.rs,3604,B,medium,fn cancel_in_flight_runs: `count +=` after await at line 3603,"        match cancel_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,",误报,Q2 不成立：scheduler.rs:3627 `let mut count: u32 = 0;`，3631 行 `Ok(_) => count += 1` 统计成功取消数，3641 行返回；conn 由调用方持有，本函数不标记。
+H018,144,7843,autumn-harvest,0.7.0,src/scheduler.rs,3635,B,medium,fn terminate_in_flight_runs: `count +=` after await at line 3634,"        match terminate_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,",误报,Q2 不成立：3658 行同样是局部 count，3662 行 `Ok(_) => count += 1`，3672 行返回；与 cancel_in_flight_runs 同构的纯计数，无连接状态。
+H019,144,7843,autumn-harvest,0.7.0,src/throttle.rs,1729,B,medium,fn fire_due_throttled_starts_on_conn_shard: `fired_count +=` after await at line 1728,"                let fired = fire_due_on_conn(&mut shard_conn, metrics, codecs).await?;
+                fired_count += spawn_fired(fired, metrics, &mut shard_conn).await;",误报,Q2 不成立：throttle.rs:1727 `let mut fired_count = 0usize;`，1744 行 `fired_count += spawn_fired(...).await`，末尾返回本 tick 计数；与 debounce/event_batch 同构。
+H020,144,7843,autumn-harvest,0.7.0,src/timeout.rs,3159,B,medium,fn enforce_external_task_timeouts: `count +=` after await at line 3156,"                Ok(true)
+            }),
+        ))
+        .await;
+
+        match result {
+            Ok(true) => count += 1,",误报,Q2 不成立：timeout.rs:3112 `let mut count = 0usize;`，3246 行 `Ok(true) => count += 1` 仅在事务返回 true 时计数，3260 行返回；Err 分支 3248-3256 只记日志后 return Err，不标连接。
+H021,144,7843,autumn-harvest,0.7.0,src/timeout.rs,4439,B,medium,fn enforce_external_signals_outbox: `count +=` after await at line 4434,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;",误报,Q2 不成立：4248 行 `let mut count = 0`，4528 行 `if processed { count += 1; }`，4547 行返回；skipped_id 也只进本地 excluded_event_ids，均是扫描器局部量。
+H022,144,7843,autumn-harvest,0.7.0,src/timeout.rs,5610,B,medium,fn enforce_external_awaits_outbox: `count +=` after await at line 5605,"                    Ok(Some((false, Some(row.id))))
+                }
+            })))
+            .await;
+
+        match step_res {
+            Ok(Some((processed, skipped_id))) => {
+                if processed {
+                    count += 1;",误报,Q2 不成立：5440 行局部 count，5703 行 `if processed { count += 1; }`，5717 行返回；与 signals outbox 扫描同构，纯局部计数。
+H023,144,7843,autumn-harvest,0.7.0,src/timeout.rs,5800,B,medium,fn enforce_timeouts_pass: `count +=` after await at line 5796,"            find_timed_out_tasks_batch(conn, cursor, limit).await?,
+            Some(cursor),
+        ),
+    };
+    count += timed_out.len();",误报,Q2 不成立：enforce_timeouts_pass 5863 行 `let mut count = 0usize;`，5894 行 `count += timed_out.len()`；count 汇总各 resident 产出供调用方记录，不是连接状态。
+H024,144,7843,autumn-harvest,0.7.0,src/timeout.rs,6026,B,medium,fn enforce_timeouts_pass: `count +=` after await at line 5998,"        payload_codecs,
+        codec_rotation_batch_size,
+        metrics,
+    )
+    .await
+    {
+        // Deliberately NOT folded into `count`. That value is the
+        // timeout-enforcement total: the caller logs `warn!(""enforced timed-out
+        // tasks"")` whenever it is non-zero, and embedders read it as ""this many
+        // tasks timed out"". Adding rotation rewrites to it makes every
+        // productive sweep tick claim a timeout that never happened. Rotation
+        // reports itself through `harvest.codec.reencrypted` instead.
+        Ok(_swept) => {}
+        Err(e) => tracing::warn!(
+            error = %e,",误报,Q2 不成立：同 enforce_timeouts_pass，5946-6032 行一串 `count += ...await?` 只是把各 pass 计数相加供调用方使用；它只表示本轮超时执行总数，并非连接/事务状态。
+H025,144,7843,autumn-harvest,0.7.0,src/worker.rs,29015,A,high,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::queue_depths(&mut conn, &queues).await {
+                    Ok(depths) => {
+                        for (queue_name, depth) in depths {
+                            *depth_by_queue.entry(queue_name).or_insert(0) += depth;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""queue depth sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：29158 行 `let mut read_failed = false;`，29170/29192 置位，29211 行 `if read_failed` 跳过本次 gauge 发射；取消分支 29166-29171 也置 read_failed，无 Err/取消不对称。
+H026,144,7843,autumn-harvest,0.7.0,src/worker.rs,29027,A,high,fn spawn_queue_depth_sampler: assign `read_failed` in error path after await; guard=none,"                match queue::oldest_pending_ages(&mut conn, &queues, &circuit_breaker_activities)
+                    .await
+                {
+                    Ok(ages) => {
+                        for (queue_name, age_secs) in ages {
+                            let slot = age_by_queue.entry(queue_name).or_insert(0.0);
+                            *slot = slot.max(age_secs);
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""oldest pending age sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：29206 行 `read_failed = true`（oldest_pending_ages 的 Err 分支），read_failed 是 29158 的局部 bool，只决定是否发布聚合 gauge；不是连接状态。
+H027,144,7843,autumn-harvest,0.7.0,src/worker.rs,29432,A,high,fn spawn_queue_pause_sampler: assign `read_failed` in error path after await; guard=none,"                match crate::queue_pause::paused_queue_names(&mut conn).await {
+                    Ok(names) => currently_paused.extend(names),
+                    Err(error) => {
+                        read_failed = true;
+                        tracing::debug!(error = %error, ""queue pause sample failed"");",误报,Q2 不成立：29581 行 `let mut read_failed = false;`，29594/29598/29604 置位，29616 行传给 compute_queue_pause_emissions 仅用于抑制零填充；采样器局部标志。
+H028,144,7843,autumn-harvest,0.7.0,src/worker.rs,31052,A,high,fn spawn_history_oversized_sampler: assign `read_failed` in error path after await; guard=none,"                match sample_history_oversized_counts(&mut conn, soft_threshold).await {
+                    Ok(counts) => {
+                        for (workflow_name, count) in counts {
+                            *count_by_workflow.entry(workflow_name).or_insert(0) += count;
+                        }
+                    }
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""history oversized sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：31199 行局部 read_failed，31211/31221/31234 置位，31239 行 `if read_failed { ... continue; }` 跳过整 tick；历史超限 gauge 采样器局部状态。
+H029,144,7843,autumn-harvest,0.7.0,src/worker.rs,31338,A,high,fn spawn_workflow_active_sampler: assign `read_failed` in error path after await; guard=none,"                };
+
+                match sample_active_workflow_counts(&mut conn).await {
+                    Ok(rows) => per_shard.push(rows),
+                    Err(error) => {
+                        tracing::debug!(error = %error, ""active workflow sample failed"");
+                        read_failed = true;
+                    }
+                }",误报,Q2 不成立：31489 行局部 read_failed，31501/31511/31520 置位，31528 行据此不合并分片计数、31534 行不发射 gauge；同系列采样器局部标志。
+H030,144,7843,autumn-harvest,0.7.0,src/worker.rs,42612,A,medium,fn run_with_listener_accepts_colocated_logical_shards: call `shutdown` in error path after await; guard=none,"            worker.run_with_listener(&pool, None),
+        )
+        .await;
+        assert!(
+            entered.is_err(),
+            ""a worker whose logical shards share one database must enter its poll loop, not \
+             refuse to start: one pool covers every assignment"",
+        );
+        worker.shutdown();",误报,Q2 不成立：42869 行 worker.shutdown() 在 `#[cfg(test)] mod tests`（39043 起）的测试 run_with_listener_accepts_colocated_logical_shards 内，位于 `tokio::time::timeout(...).await` 之后；测试代码 + CancellationToken。
+H031,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,13572,A,high,fn build_awaitables_report: assign `decode_failed` in error path after await; guard=none,"                        match offloader.inflate_event_value(&mut value).await {
+                            Ok(()) => {}
+                            Err(err) => {
+                                tracing::warn!(
+                                    execution_id = %exec_id,
+                                    error = %err,
+                                    ""awaitables: payload inflate failed; degrading to history-only""
+                                );
+                                decode_failed = true;
+                                break;",误报,Q2 不成立：13590 行 `let mut decode_failed = false;`，13603/13620 在 payload inflate/decode 失败时置位，13626 行降级为 history_only 报告；conn 已在 13571 行 drop(conn)，无坏连接复用。
+H032,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,40658,A,high,fn get_aggregated_scaling_signals: assign `in_flight` in error path after await; guard=none,"        let shard_counts = ::autumn_harvest::queue::queue_task_counts(&mut conn)
+            .await
+            .map_err(map_error)?;
+        for stat in shard_counts {
+            let entry = task_stats.entry(stat.queue.clone()).or_insert_with(|| {
+                ::autumn_harvest::queue::QueueTaskCounts {
+                    queue: stat.queue.clone(),
+                    backlog: 0,
+                    in_flight: 0,
+                    scheduled: 0,
+                }
+            });
+            entry.backlog += stat.backlog;
+            entry.in_flight += stat.in_flight;",误报,Q2 不成立：40812 行 `entry.in_flight += stat.in_flight` 累加的是 40804-40809 初始化的本地 QueueTaskCounts（来自 queue_task_counts 查询），最终序列化为 scaling signal。
+H033,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20366,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20359,"        let conn_result = db_conn_for_shard(&api_state, *shard).await;
+        let mut conn = match conn_result {
+            Ok(c) => c,
+            Err(e) => {
+                // All items on this shard are rejected due to connection failure.
+                let err_str = e.to_string();
+                for (idx, workflow_id) in shard_items {
+                    rejected_count += 1;",误报,Q2 不成立：20076 行 `let mut rejected_count = pre_rejected_idxs.len();`，20338 行 gate 拒绝后自增，20989 行写入 batch_span；请求级计数，用于响应/审计/span。
+H034,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20568,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20564,"                    &item.workflow_name,
+                    workflow_id,
+                    None,
+                )
+                .await
+                {
+                    Ok(skip) => skip,
+                    Err(e) => {
+                        rejected_count += 1;",误报,Q2 不成立：20410（分片连接失败整批拒绝）与 20451（schema 校验失败）两处 `rejected_count += 1`，仍是 20076 的局部计数；conn 由 db_conn_for_shard 取得且本函数不标记。
+H035,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20840,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20838,"                                autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket)
+                                    .await;
+                        }
+                        rejected_count += 1;",误报,Q2 不成立：20638（load-shed 拒绝）与 20658（输入超 cap）两处 `rejected_count += 1`，都是 20076 的请求级计数器，只影响 BatchStartItemStatus::Rejected 与审计。
+H036,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,20880,B,medium,fn batch_start_workflows: `rejected_count +=` after await at line 20878,"                            autumn_harvest::queue::refund_rate_limit_token(&mut conn, bucket).await;
+                    }
+                    rejected_count += 1;",误报,Q2 不成立：20884 行 attach 已存在执行时 `rejected_count += 1`（前一行退回限流 token），同 20076 局部计数，不涉及连接或事务状态。
+H037,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,21317,B,medium,fn batch_reset_workflows: `reset_count +=` after await at line 21305,"                        Some(&runtime.registry),
+                    )
+                    .await
+                    {
+                        Ok(result) => {
+                            items.push(BatchResetItem {
+                                exec_id: exec_id_str,
+                                outcome: BatchResetOutcome::Reset,
+                                // Use the engine's authoritatively-resolved event id (under lock),
+                                // not the speculative value from resolve_batch_reset_one.
+                                resolved_event_id: Some(result.reset_to_event_id),
+                                new_exec_id: Some(result.new_exec_id.to_string()),
+                                skip_reason: None,
+                            });
+                            reset_count += 1;",误报,Q2 不成立：21217 行 `let mut reset_count = 0usize;`，21363 行 reset_workflow_execution 成功后 `reset_count += 1`，21425 行写入响应；纯响应统计。
+H038,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,29118,B,medium,fn set_schedule_paused: `found_count +=` after await at line 29109,"                .get_result(&mut conn)
+                .await
+                .map_err(database_error)
+                .map_err(map_error)?;
+
+            if !exists {
+                continue; // not on this shard — try the next one
+            }
+            // Already in the requested state: idempotent no-op.
+        }
+        found_count += 1;",误报,Q2 不成立：29121 行 `let mut found_count = 0usize;`，29191 行找到 schedule 后自增，29212 行 `if found_count == 0` 决定 404；路由级计数，非连接状态。
+H039,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,29331,B,medium,fn delete_schedule: `deleted_count +=` after await at line 29328,"            .execute(&mut conn)
+            .await
+            .map_err(database_error)
+            .map_err(map_error)?;
+        deleted_count += n;",误报,Q2 不成立：29350 行 `let mut deleted_count = 0usize;`，29407 行 `deleted_count += n` 累加 delete 影响行数，29429 行据此决定 404；响应统计。
+H040,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,37191,B,medium,fn apply_pause_across_shards: `held_task_count +=` after await at line 37187,"            reason,
+            actor,
+            scope_shard_id,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;",误报,Q2 不成立：PauseApplication（37262-37276）是跨分片汇总结构，37313 行 `applied.held_task_count += outcome.held_task_count` 累加各分片挂起数用于响应；conn 由 acquire_conn 取得后不缓存。
+H041,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,37315,B,medium,fn apply_resume_across_shards: `released_task_count +=` after await at line 37311,"        match ::autumn_harvest::queue_pause::resume_queue(&mut conn, canonical_queue, actor).await {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;",误报,Q2 不成立：ResumeApplication（37420 初始化）局部汇总，37437 行 `applied.released_task_count += outcome.released_task_count`；与 pause 同构的响应统计。
+H042,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,39481,B,medium,fn apply_activity_pause_across_shards: `held_task_count +=` after await at line 39477,"            reason,
+            paused_by,
+            // Always fleet-wide — see `activity_pause_target_pools`.
+            None,
+        )
+        .await
+        {
+            Ok(outcome) => {
+                applied.newly_paused |= outcome.newly_paused;
+                applied.held_task_count += outcome.held_task_count;",误报,Q2 不成立：ActivityPauseApplication（39591-39594）局部汇总，39616 行 `applied.held_task_count += outcome.held_task_count`；活动暂停的响应统计。
+H043,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,39601,B,medium,fn apply_activity_resume_across_shards: `released_task_count +=` after await at line 39596,"        match ::autumn_harvest::activity_pause::resume_activity(&mut conn, canonical_activity).await
+        {
+            Ok(outcome) => {
+                applied.any_ok = true;
+                applied.newly_resumed |= outcome.newly_resumed;
+                applied.released_task_count += outcome.released_task_count;",误报,Q2 不成立：ActivityResumeApplication（39716-39722）局部汇总，39736 行 `applied.released_task_count += outcome.released_task_count`；响应统计，非连接/事务状态。
+H044,146,6905,autumn-harvest-plugin,0.7.0,src/api.rs,49959,B,medium,fn get_queue_eligibility: `global_pending_count +=` after await at line 49957,"        match evaluate_eligibility_for_shard(&api_state, shard_id, &queue_name, None).await {
+            Ok(res) => {
+                global_pending_count += res.pending_count;",误报,Q2 不成立：50138 行 `let mut global_pending_count = 0;`，50149 行跨分片求和 `global_pending_count += res.pending_count`，最终放入 QueueEligibilityResponse；只读聚合。
+H045,146,6905,autumn-harvest-plugin,0.7.0,src/bin/harvest_dev.rs,51,A,medium,fn main: call `shutdown` in error path after await; guard=none,"    print!(""{}"", runtime.banner());
+
+    DevRuntime::wait_for_shutdown_signal().await;
+    eprintln!(""\nharvest-dev: stopping and reclaiming ephemeral storage…"");
+    if let Err(error) = runtime.shutdown().await {",误报,Q1/Q2 不成立：53 行 `runtime.shutdown().await` 回收 ephemeral Postgres 与 dev server（DevRuntime::shutdown 550-557），前面 51 行只是等退出信号；进程级清理，非池化连接。
+H046,146,6905,autumn-harvest-plugin,0.7.0,src/connector/runtime.rs,606,A,high,fn drain_in_flight: assign `in_flight` in error path after await; guard=none,"            self.permits.acquire_many(permits),
+        )
+        .await
+        .is_err()
+        {
+            // `available_permits` is a snapshot, but every holder is an
+            // in-flight dispatch, so it names the work being abandoned.
+            let in_flight = self
+                .binding
+                .max_in_flight",误报,"Q1/Q2 不成立：616 行 drain_in_flight 的 await 是 618-623 行 `timeout(..., self.permits.acquire_many(permits)).await`（Semaphore，非网络往返）；627 行 `let in_flight = ...available_permits()` 只是日志用局部 u32。"
+H047,146,6905,autumn-harvest-plugin,0.7.0,src/connector/sqs.rs,470,A,high,fn lag: assign `in_flight` in error path after await; guard=none,"            .attribute_names(QueueAttributeName::ApproximateNumberOfMessagesNotVisible)
+            .send()
+            .await
+            .ok()?;
+        let attributes = response.attributes?;
+        let read = |name: &QueueAttributeName| -> Option<i64> {
+            attributes.get(name).and_then(|v| v.parse::<i64>().ok())
+        };
+        let visible = read(&QueueAttributeName::ApproximateNumberOfMessages);
+        let in_flight = read(&QueueAttributeName::ApproximateNumberOfMessagesNotVisible);",误报,Q2 不成立：471-473 行 `get_queue_attributes().send().await.ok()?` 是 SQS 往返，但 479 行 `let in_flight = read(...)` 只把响应解析成本地 Option<i64>；Err 被 .ok()? 丢弃，不标记任何客户端状态。
+H048,146,6905,autumn-harvest-plugin,0.7.0,src/dev/mod.rs,466,A,medium,fn start: call `shutdown` in error path after await; guard=none,"        if let Err(error) = runtime.wait_until_ready().await {
+            // Same rule: a runtime that never became usable must still take its
+            // cluster with it — and if it could not, say so rather than
+            // reporting only the readiness failure.
+            if let Err(teardown) = runtime.shutdown().await {",误报,"Q2 不成立：419 行 DevRuntime::start 的 449/461/470 行失败路径调用 `abandon_cluster(&postgres, error).await`，回收的是 437 行 provision_storage 得到的临时 Postgres 句柄，不是池化连接。"
+H049,146,6905,autumn-harvest-plugin,0.7.0,src/dev/mod.rs,759,A,medium,fn abandon_cluster: call `shutdown` in error path after await; guard=none,"    let taken = postgres.lock().await.take();
+    if let Some(postgres) = taken
+        && let Err(teardown) = postgres.shutdown().await
+    {",误报,Q1/Q2 不成立：781 行先 `postgres.lock().await.take()` 把集群句柄移出，783 行再 `postgres.shutdown().await`；对象是本地 Postgres 集群（pg_ctl stop），不是连接。
+H050,146,6905,autumn-harvest-plugin,0.7.0,src/dev/postgres.rs,301,A,medium,fn provision: call `shutdown` in error path after await; guard=none,"        match started.finish_provisioning(&admin_url, session_dir).await {
+            Ok(version) => {
+                started.version = version;
+                Ok(started)
+            }
+            Err(error) => {
+                started.shutdown().await.ok();",误报,Q2 不成立：302 行 `started.finish_provisioning(...).await` 失败后 308 行 `started.shutdown().await.ok()`，对象是构造中的 EphemeralPostgres（pg_ctl stop），非池化连接。
+H051,146,6905,autumn-harvest-plugin,0.7.0,src/runner.rs,1510,A,medium,fn stop: call `shutdown` in error path after await; guard=none,"            cancel.cancel();
+            if let Err(error) = handle.await {
+                tracing::warn!(
+                    error = %error,
+                    ""dispatch metrics sampler task failed during shutdown""
+                );
+            }
+        }
+
+        if let Some(worker) = worker {
+            worker.shutdown();
+        }
+        if let Some(scheduler) = scheduler {",误报,Q1/Q2 不成立：1508 行 stop(self) 中 1534-1541 的 `cancel.cancel()` + `handle.await` 是 JoinHandle join，随后是 worker/scheduler 的 shutdown()；任务是句柄，不是网络往返或连接。
+H052,146,6905,autumn-harvest-plugin,0.7.0,src/runner.rs,1523,A,medium,fn stop: call `shutdown` in error path after await; guard=none,"            if let Err(error) = scheduler.join().await {
+                tracing::warn!(error = %error, ""harvest scheduler task failed during shutdown"");
+            }
+        }
+        if let Some(retention) = retention {
+            retention.shutdown();
+            if let Err(error) = retention.join().await {",误报,Q1/Q2 不成立：同 stop：1549/1555 行 `join().await`、1560 行 `batch.shutdown().await` 都是任务/子系统收尾；storage_pool 只被 drop，不标记连接坏。
+H053,146,6905,autumn-harvest-plugin,0.7.0,src/ui.rs,1965,A,high,fn render_workflow_detail_page: assign `log_read_failed` in error path after await; guard=none,"                ..Default::default()
+            },
+        )
+        .await
+        {
+            Ok(rows) => log_truncated = !rows.is_empty(),
+            Err(err) => {
+                tracing::warn!(
+                    execution_id = %exec_id,
+                    error = ?err,
+                    ""workflow detail: durable log truncation probe failed""
+                );
+                log_read_failed = true;
+            }
+        }",误报,Q2 不成立：1945 行 `let mut log_read_failed = false;`，1976/2001 在日志读取失败时置位，仅控制面板空态；2009 行 drop(conn) 释放池槽，无连接被标记。
+H054,100,95874,autumn-web,0.8.0,src/app.rs,5849,A,medium,fn run: call `abort` in error path after await; guard=none,"        drain_phase_notify.notify_one();
+
+        // Wait for the server to drain all in-flight requests.  The drain
+        // watchdog in shutdown_task will force-exit if drain takes too long.
+        let server_result = server_task.await.unwrap_or_else(|e| {
+            tracing::error!(""Server task join error: {e}"");
+            // `process::exit` skips the `on_shutdown` hooks, so stop a managed
+            // Postgres child here to avoid orphaning it on an accept-loop/join
+            // failure (direct/foreground runs have no CLI reaper).
+            exit_stop_managed_pg();
+            std::process::exit(1);
+        });
+        // Drain completed within the deadline; abort the watchdog.
+        shutdown_task.abort();
+        server_result.unwrap_or_else(|e| {",误报,Q1/Q2 不成立：5897 行 `server_task.await.unwrap_or_else(...)` 是 JoinHandle join，错误分支 5902-5903 调 exit_stop_managed_pg() 后 process::exit(1)；5906 行 shutdown_task.abort() 是任务句柄。
+H055,100,95874,autumn-web,0.8.0,src/session.rs,206,B,medium,fn touch: `dirty =` after await at line 206,        self.inner.write().await.dirty = true;,误报,Q1 不成立：206 行 `self.inner.write().await.dirty = true` 的 await 是 tokio RwLock::write()，不是网络往返；dirty 是内存 SessionInner 字段，取消只丢本次置位。
+H056,100,95874,autumn-web,0.8.0,src/session.rs,223,B,medium,fn insert: `dirty =` after await at line 221,"        let mut inner = self.inner.write().await;
+        inner.data.insert(key.into(), value.into());
+        inner.dirty = true;",误报,Q1 不成立：221 行 `self.inner.write().await` 取写锁，222-223 行改 data/dirty；锁保护的内存 session，无连接或远端会话被污染。
+H057,100,95874,autumn-web,0.8.0,src/session.rs,231,B,medium,fn remove: `dirty =` after await at line 228,"        let mut inner = self.inner.write().await;
+        let val = inner.data.remove(key);
+        if val.is_some() {
+            inner.dirty = true;",误报,Q1 不成立：228 行取写锁，230-231 行 `inner.dirty = true`；同 session.rs 的内存锁语义，不是池化会话/连接。
+H058,100,95874,autumn-web,0.8.0,src/session.rs,240,B,medium,fn clear: `dirty =` after await at line 238,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.dirty = true;",误报,Q1 不成立：238 行 `self.inner.write().await`，239-240 行 `data.clear(); dirty = true`；内存 session 状态，await 不是往返。
+H059,100,95874,autumn-web,0.8.0,src/session.rs,254,B,medium,fn rotate_id: `dirty =` after await at line 249,"        let mut inner = self.inner.write().await;
+        if inner.old_id.is_none() {
+            inner.old_id = Some(inner.id.clone());
+        }
+        inner.id = new_id;
+        inner.dirty = true;",误报,Q1 不成立：249 行 `self.inner.write().await` 后 250-254 行改 old_id/id/dirty；uuid 生成在取锁前完成，锁内无网络 await。
+H060,100,95874,autumn-web,0.8.0,src/session.rs,263,B,medium,fn destroy: `dirty =` after await at line 260,"        let mut inner = self.inner.write().await;
+        inner.data.clear();
+        inner.destroyed = true;
+        inner.dirty = true;",误报,Q1 不成立：260 行取写锁，261-263 行 `destroyed = true; dirty = true`；内存 session 标志，无连接状态。

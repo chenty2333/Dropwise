@@ -1,0 +1,131 @@
+id,rank,crate,version,file,line,pattern,confidence,detail,snippet,review,note
+S01,12,sqlx-sqlite,0.9.0,src/connection/mod.rs,227,A,medium,fn close: call `shutdown` in error path after await; guard=none,"            self.execute(AssertSqlSafe(pragma_string)).await?;
+        }
+        let shutdown = self.worker.shutdown();
+        // Drop the statement worker, which should
+        // cover all references to the connection handle outside of the worker thread
+        drop(self);",误报,close() 自身是连接关闭流程：先执行 PRAGMA optimize 再 shutdown worker；这里的 await 不是“出错分支置坏而取消不置坏”，close 由调用方显式调用，不涉及池复用。
+S02,146,autumn-harvest-plugin,0.7.0,src/runner.rs,1523,A,medium,fn stop: call `shutdown` in error path after await; guard=none,"            if let Err(error) = scheduler.join().await {
+                tracing::warn!(error = %error, ""harvest scheduler task failed during shutdown"");
+            }
+        }
+        if let Some(retention) = retention {
+            retention.shutdown();
+            if let Err(error) = retention.join().await {",误报,runner::stop 是关闭流程，await 的是 scheduler/后台任务 join，不是连接往返；shutdown 调用是清理动作，不是坏标记。
+S03,15,deadpool,0.13.1,src/managed/pool.rs,196,B,medium,fn try_recycle: `recycle_count +=` after await at line 191,"        if let Err(_e) = self.inner.hooks.post_recycle.apply(inner).await {
+            // TODO log post_recycle error
+            return Ok(None);
+        }
+
+        inner.metrics.recycle_count += 1;",误报,`recycle_count += 1` 是 deadpool 的统计计数器；前面 await 的是 post_recycle hook，计数器与连接/会话状态无关。
+S04,11,sqlx-postgres,0.9.0,src/transaction.rs,56,B,high,fn rollback: `transaction_depth -=` after await at line 54,"            conn.execute(rollback_ansi_transaction_sql(conn.inner.transaction_depth))
+                .await?;
+
+            conn.inner.transaction_depth -= 1;",误报,sqlx Transaction::rollback 取消时，`Transaction` 的 Drop 会调用 start_rollback 排队 ROLLBACK；`transaction_depth -= 1` 不是无 guard 的状态提交。已防护。
+S05,144,autumn-harvest,0.7.0,src/scheduler.rs,3604,B,medium,fn cancel_in_flight_runs: `count +=` after await at line 3603,"        match cancel_workflow_execution(conn, exec_id, reason, metrics).await {
+            Ok(_) => count += 1,",误报,`cancel_in_flight_runs` 里的 count 是本地调度统计，await 是数据库查询；被赋值的是统计变量，不是连接或事务状态。
+S06,142,hiqlite,0.15.3,src/network/raft_client.rs,404,A,high,fn ws_handler: assign `in_flight` in error path after await; guard=none,"            let _ = tx_write.send_async(WritePayload::Close).await;
+
+            for (_, ack) in in_flight.drain() {
+                let _ = ack.send(Err(Error::Connect(""Raft WebSocket stream ended"".into())));
+            }
+            // reset to a reasonable size for the next start to keep memory usage under control
+            in_flight = HashMap::with_capacity(4);",误报,`in_flight = HashMap::with_capacity(4)` 重置的是本地请求映射表；相邻 await 是 websocket 写/读，不是连接坏标记。
+S07,27,lettre,0.11.23,src/transport/smtp/client/async_connection.rs,227,A,high,macro try_smtp! Err arm marks bad; call's await at line 227; guard=none,"            try_smtp!(self.command(Starttls).await, self);
+            self.stream.get_mut().upgrade_tls(tls_parameters).await?;",误报,命中在 starttls() 的 STARTTLS/EHLO 阶段，连接还在建立过程中，尚未进入 lettre 的池；真正可复用的 send 路径是 199/202 行。
+S08,56,mysql_async,0.37.1,src/conn/mod.rs,454,A,medium,fn disconnect: call `close` in error path after await; guard=none,"            self.write_command_data(Command::COM_QUIT, &[]).await?;
+            let stream = self.take_stream();
+            stream.close().await?;",误报,disconnect(self) 消费连接并主动发 COM_QUIT；await 是关闭流程本身，不是被取消后复用连接的交换。
+S09,75,surrealdb,3.3.4,src/engine/remote/grpc.rs,1039,A,medium,fn session_task: call `detach` in error path after await; guard=none,"				engine.publish(new, engine.establish_clone(log).await);
+			}
+			SessionId::Drop(id) => {
+				// Only a session that was established has anything to release.
+				// Ending it also fails anything still waiting on it, which is
+				// what keeps a request that outlived its handle from waiting on
+				// a session that has just gone away.
+				match engine.sessions.end(id) {
+					Some(Ok(session)) => {
+						if let Err(error) = engine.detach(session.server).await {",误报,session_task 的 detach 处理的是 SurrealDB 远端 session 的注销；不是池化连接的坏标记，且该任务不把连接放回池。
+S10,144,autumn-harvest,0.7.0,src/worker.rs,42612,A,medium,fn run_with_listener_accepts_colocated_logical_shards: call `shutdown` in error path after await; guard=none,"            worker.run_with_listener(&pool, None),
+        )
+        .await;
+        assert!(
+            entered.is_err(),
+            ""a worker whose logical shards share one database must enter its poll loop, not \
+             refuse to start: one pool covers every assignment"",
+        );
+        worker.shutdown();",误报,这是 `#[tokio::test]` 测试函数（名字含 run_with_listener_accepts_*），不是生产路径。
+S11,74,turso,0.8.3,src/transaction.rs,184,A,high,fn _rollback: assign `in_progress` in error path after await; guard=none,"        self.conn.execute(""ROLLBACK"", ()).await?;
+        self.in_progress = false;
+        Ok(())",误报,turso Transaction 的 in_progress 在取消时仍为 true，Drop 会把 drop_behavior（默认 Rollback）记到连接上；不是无保护的 COMMIT 状态。
+S12,100,autumn-web,0.8.0,src/session.rs,231,B,medium,fn remove: `dirty =` after await at line 228,"        let mut inner = self.inner.write().await;
+        let val = inner.data.remove(key);
+        if val.is_some() {
+            inner.dirty = true;",误报,`dirty = true` 前的 await 是 session 的 RwLock 写锁，不是网络往返；被改的是会话脏标记，且拿锁后同步完成。
+S13,144,autumn-harvest,0.7.0,src/retention.rs,3084,B,medium,fn run_shard_tick: `summarized_count +=` after await at line 3078,"                        &mut outcome,
+                        &guard.active_ids,
+                    )
+                    .await?;
+                    continue;
+                }
+                Ok(CandidateDeleteOutcome::Deleted { summarized }) => {
+                    // A summary row was written in the delete tx (issue #752).
+                    if summarized {
+                        outcome.summarized_count += 1;",误报,`summarized_count += 1` 是本地统计，await 是数据库读取；不是连接/会话状态。
+S14,147,pict-rs,0.5.24,src/queue/process.rs,161,A,medium,fn process_ingest: call `abort` in error path after await; guard=none,"        .repo
+        .complete_upload(upload_id, result)
+        .await
+        .retry()?;
+
+    if let Some(e) = err {
+        return Err(e).abort();
+    }
+
+    guard.disarm();",误报,process_ingest 的 abort 作用在 tokio 任务/子进程句柄上，不是连接；pict-rs 的 SQL 事务由 sqlx Transaction Drop 处理。
+S15,381,bb8-memcached,0.7.0,src/client.rs,239,A,medium,fn increment: call `taint` in error path after await; guard=none,"                match timeout(write_timeout, self.connection.increment(key, amount)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,已知实例：bb8-memcached 的 increment 只在自身 timeout 的 Err 分支调用 taint()；外部 drop future 不会置 tainted，has_broken 仍为 false，错位连接回池。
+S16,381,bb8-memcached,0.7.0,src/client.rs,161,A,medium,fn get_multi: call `taint` in error path after await; guard=none,"                match timeout(read_timeout, self.connection.get_multi(keys)).await {
+                    Err(_elapsed_err) => {
+                        self.taint();
+                        Err(io::ErrorKind::TimedOut.into())",可疑,同上，get_multi 的 taint() 只在 timeout Err 分支；取消路径不置位，bb8 会把带残留回复的连接放回池。
+S17,147,pict-rs,0.5.24,src/process.rs,228,A,medium,fn wait: call `kill` in error path after await; guard=none,"        let res = child.wait().with_timeout(timeout).await;
+
+        extras
+            .consume()
+            .await
+            .map_err(|e| ProcessError::Cleanup(command.clone(), e))?;
+
+        match res {
+            Ok(Ok(status)) if status.success() => {
+                guard.disarm();
+
+                Ok(())
+            }
+            Ok(Ok(status)) => Err(ProcessError::Status(command, status)),
+            Ok(Err(e)) => Err(ProcessError::Other(command, e)),",误报,pict-rs 的 kill 是子进程/任务清理，不是数据库连接坏标记。
+S18,146,autumn-harvest-plugin,0.7.0,src/dev/mod.rs,466,A,medium,fn start: call `shutdown` in error path after await; guard=none,"        if let Err(error) = runtime.wait_until_ready().await {
+            // Same rule: a runtime that never became usable must still take its
+            // cluster with it — and if it could not, say so rather than
+            // reporting only the readiness failure.
+            if let Err(teardown) = runtime.shutdown().await {",误报,dev runtime 的 start/shutdown 是开发服务器生命周期管理；await 的是启动/关闭，不是池化连接交换。
+S19,9,sqlx-core,0.9.0,src/testing/mod.rs,268,A,medium,fn setup_test_db: call `close` in error path after await; guard=none,"        (&mut conn)
+            .execute(fixture.contents)
+            .await
+            .unwrap_or_else(|e| panic!(""failed to apply test fixture {:?}: {:?}"", fixture.path, e));
+    }
+
+    conn.close()
+        .await
+        .expect(""failed to close setup connection"");",误报,sqlx-core testing 的 setup_test_db 是测试辅助函数；close() 是测试清理，不进入生产池复用路径。
+S20,56,mysql_async,0.37.1,src/conn/mod.rs,406,A,medium,fn routine: call `close` in error path after await; guard=none,"        let result = f.call(&mut *self).await;
+        match result {
+            result @ Ok(_) | result @ Err(crate::Error::Server(_)) => {
+                // either OK or non-fatal error
+                self.inner.disconnected = false;
+                result
+            }
+            Err(err) => {
+                if self.inner.stream.is_some() {
+                    self.take_stream().close().await?;",误报,mysql_async routine 在 await 之前就把 `disconnected = true`，成功后清零；这是悲观标记，取消时连接不会以“可复用”状态回池。已防护。
