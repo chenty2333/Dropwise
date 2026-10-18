@@ -1,0 +1,20 @@
+--- a/src/mysql/mod.rs	2006-07-24 10:21:28.000000000 +0900
++++ b/src/mysql/mod.rs	2026-10-18 21:31:18.004832570 +0900
+@@ -363,7 +363,16 @@
+     feature = "mobc",
+     feature = "r2d2"
+ ))]
+-impl crate::pooled_connection::PoolableConnection for AsyncMysqlConnection {}
++impl crate::pooled_connection::PoolableConnection for AsyncMysqlConnection {
++    /// mysql_async keeps `disconnected` set while a command is in flight and
++    /// clears it only when the command finished. A connection whose query was
++    /// dropped midway still has it set, with the reply possibly unread, and
++    /// must not be reused.
++    fn is_broken(&mut self) -> bool {
++        self.conn.is_disconnected()
++            || <AnsiTransactionManager as crate::TransactionManager<Self>>::is_broken_transaction_manager(self)
++    }
++}
+ 
+ #[cfg(test)]
+ mod tests {

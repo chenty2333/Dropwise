@@ -1,0 +1,20 @@
+[package]
+name = "prospective-scan-diesel-async"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# `dropwise::net` backs the proxy tests (tests/mysql_proxy.rs): holding the
+# server's reply is what makes the query return `Pending` without `SLEEP`.
+[features]
+net = ["dropwise/net"]
+
+# diesel-async's MySQL connection behind its bb8 manager, the scanner's only
+# new lead (../candidate-scan/README.md). Survivor observations, judged with
+# dropwise::explore_observed.
+[dependencies]
+dropwise = { path = "../.." }
+diesel = { version = "~2.3.9", default-features = false, features = ["mysql_backend"] }
+diesel-async = { version = "=0.9.2", features = ["mysql", "bb8", "deadpool"] }
+bb8 = "0.9"
+tokio = { version = "1.40", features = ["macros", "rt", "rt-multi-thread", "sync", "time"] }

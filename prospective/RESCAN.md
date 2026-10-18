@@ -430,3 +430,10 @@ M2 的结果说明“错误算到后面的命令上”本身不等于后果：B 
 - 本节和 6.6 都是同类实验，但判定值不同：6.6 把残留放进观察值，用来发现“欠回复”；本节把残留排除在判定值之外，只问用户可见的结果。
 
 **上报：** 2026-10-18 作为补充评论发到 [lettre/lettre#1170](https://github.com/lettre/lettre/issues/1170#issuecomment-6252875230)，并在 #1171 中注明该修复同样覆盖这种情况。
+
+## 7. diesel-async：扫描器线索的动态验证（2026-10-19）
+
+候选扫描（`candidate-scan/README.md`）给出的唯一新线索。mysql_async 在每个命令开始时把连接标记为 `disconnected`，命令完成才清除；diesel-async 的 MySQL 连接没有覆写池的 `is_broken`，所以查询在等待结果时被取消后，连接仍被 bb8 / deadpool 交给下一个借用者，下一个查询读到上一个查询的结果，表现为协议解析错误；关闭借出验证时还会返回错误的空结果。发布版 0.9.2 与上游 main 都能复现，补丁后全部为 0。实验、消融阶梯与扣住回复的对照见 `scan-diesel-async/RESULTS.md`，运行入口 `bash prospective/run-scan-diesel.sh`（`LADDER=1`、`PROXY=1` 选择对应实验）。
+
+已上报：issue [diesel-rs/diesel_async#304](https://github.com/diesel-rs/diesel_async/issues/304)，修复 PR [#305](https://github.com/diesel-rs/diesel_async/pull/305)（附两个回归测试）。
+
