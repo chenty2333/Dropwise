@@ -6,6 +6,8 @@
 # 2. Published managers (bb8-redis, bb8-postgres, bb8-memcached) against real
 #    loopback servers, with crates.io bb8 and with the same patch applied to
 #    bb8 0.9.1 and 0.8.6 (bb8-memcached still uses bb8 0.8).
+# 3. deadpool 0.13.1 for comparison: the same request/response model, and
+#    deadpool-memcached 0.5.0 against memcached (RESCAN.md, section 5).
 #
 # Patched copies live in $DROPWISE_RESCAN_WORK (default ~/dropwise-rescan-work).
 # Requires Docker with local redis:8-alpine, postgres:18-alpine and
@@ -96,3 +98,4 @@ managers=$(copy_crate t2-bb8-managers)
 printf '\n[patch.crates-io]\nbb8 = { path = "%s" }\nbb8_08 = { package = "bb8", path = "%s" }\n' \
     "$bb8_09" "$bb8_08" >> "$managers/Cargo.toml"
 BB8_VARIANT=fixed run "$managers" 'managers, fixed bb8' --test managers
+run "$ROOT/prospective/t2-bb8-managers" 'deadpool' --locked --test deadpool

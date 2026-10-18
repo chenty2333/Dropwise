@@ -156,3 +156,48 @@ bb8-memcached 违反时，幸存者会话为 `set(own)=OK, get(a)=InvalidData, g
 - bb8 issue [djc/bb8#324](https://github.com/djc/bb8/issues/324)；
 - 修复 PR [djc/bb8#325](https://github.com/djc/bb8/pull/325)：即本补丁，另附一个不依赖外部服务的回归测试 `test_drop_during_is_valid`。该测试在 bb8 main 上失败、打上补丁后通过；bb8 原有测试在 stable 和 MSRV 1.75 下均通过；
 - bb8-memcached issue [dqminh/bb8-memcached#16](https://github.com/dqminh/bb8-memcached/issues/16)，与它已有的 #9 相关。
+
+## 5. deadpool 对照（2026-10-18）
+
+deadpool 0.13.1 是下载量最大的 Rust 异步连接池（近 90 天 4100 万次，bb8 为 930 万次）。运行入口同为 `run-bb8-fix.sh` 的第 3 部分，每项重复 3 次，结果完全一致。
+
+### 5.1 核心：验证中途的窗口在设计上已经关闭
+
+`timeout_get` 在 `recycle` 期间把对象放在 `UnreadyObject` 里；这个守卫被丢弃时会丢掉对象（`size -= 1`、`detach`），而不是放回池中（`pool.rs:481-502`）。这正是 bb8 补丁的做法。
+
+使用与 T2 回扫相同的进程内协议模型：
+
+| ID | 取消落点 | 严格 recycle（回复必须是 PONG） | 宽松 recycle（任何回复都通过） |
+|---|---|---|---|
+| D1 | `get()` 内的 `recycle`（Dropwise） | 2 计划，干净 | 2 计划，干净 |
+| D2 | deadpool 自己的 `recycle_timeout` | 干净（Pre） | 干净（Pre） |
+| D3 | 用户在自己的请求中途取消 | 4 计划，干净 | **4 计划中 2 个违反** |
+
+剩下的窗口是 D3：用户丢弃 `Object` 后，对象会被无条件放回池中（`object.rs:85-93`、`pool.rs:455-467`）。deadpool 没有类似 `has_broken` 的同步关口，唯一的关口是下一次 `recycle`。因此是否安全，取决于 `recycle` 能不能识别残留的回复。
+
+### 5.2 已发布的 deadpool manager
+
+静态阅读近 90 天下载量最高的 deadpool manager 的 `recycle`：
+
+- **deadpool-postgres（681 万）：** tokio-postgres 多路复用；`Fast` 模式只检查连接是否已关闭。
+- **deadpool-redis（369 万）：** 多路复用；每次 `PING` 都带递增编号，并核对回复。
+- **deadpool-lapin、deadpool-amqprs：** 只检查连接状态。
+- **deadpool-ldap：** ldap3 多路复用。
+- **deadpool-tiberius：** tiberius 在每次新请求前用 `flush_stream` 清理残留回复。
+
+其中唯一一个“单条字节流 + 宽松校验”的是 **deadpool-memcached 0.5.0**（近 90 天 839 次）。它的 `recycle` 调用 async-memcached 0.7.0 的 `version()`，而 `version()` 只要求响应行不短于 8 字节，然后截掉前 8 个字符，**不检查是否以 `VERSION ` 开头**（`lib.rs:169-183`）。所以 `STORED\r\n` 这样的残留回复也会被当作验证通过。
+
+D4：deadpool-memcached 连接真实的 memcached 1.6，用户在 `get` 或 `set` 请求中途被取消：
+
+| 用户取消的请求 | 计划 | 违反 | 下一位使用者的会话 |
+|---|---:|---:|---|
+| `get` | 4 | **2** | `set`、`get(a)`、`get(b)`、`get(own)` 全部返回协议错误；但 `set` 实际已在服务端生效（独立连接可见） |
+| `set` | 4 | **2** | 同上 |
+
+两次违反都出现在 Pending #2，也就是用户请求本身。本次观察到的是“每个操作都报错、写入却已生效”，**没有观察到 bb8-memcached 那种静默返回其他 key 值的情况**。宽松的 `version()` 会让这个连接一直通过 `recycle`、留在池中。
+
+### 5.3 小结
+
+- deadpool 的核心在 bb8 #324 这个窗口上是安全的。
+- 风险转移到了“用户中途取消 + recycle 校验宽松”这一组合上。主流 manager 校验严格或使用多路复用，不受影响；deadpool-memcached 受影响，后果是持续报错和“报错但已写入”。
+- 一处修复点：async-memcached 的 `version()` 检查 `VERSION ` 前缀。另一处可选的修复点是 deadpool-memcached 在请求中途被丢弃时标记连接。**均未上报。**
