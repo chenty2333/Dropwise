@@ -172,6 +172,9 @@ that command:
   returned to the pool mid-validation (frozen T2 scenarios included) and runs
   bb8-redis, bb8-postgres and bb8-memcached against real loopback servers with
   and without it.
+  `bash prospective/run-scan-clients.sh` applies the same method to sqlx's MySQL
+  driver (MariaDB) and lettre's pooled SMTP transport (Mailpit), with and
+  without proposed fixes.
 
 ## Bug survey
 

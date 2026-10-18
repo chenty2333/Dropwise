@@ -201,3 +201,39 @@ D4：deadpool-memcached 连接真实的 memcached 1.6，用户在 `get` 或 `set
 - deadpool 的核心在 bb8 #324 这个窗口上是安全的。
 - 风险转移到了“用户中途取消 + recycle 校验宽松”这一组合上。主流 manager 校验严格或使用多路复用，不受影响；deadpool-memcached 受影响，后果是持续报错和“报错但已写入”。
 - 一处修复点：async-memcached 的 `version()` 检查 `VERSION ` 前缀。另一处可选的修复点是 deadpool-memcached 在请求中途被丢弃时标记连接。**均未上报。**
+
+## 6. 扫描更多客户端（2026-10-18）
+
+按“下载量大、单条连接上按顺序一问一答或带会话状态、会被池化复用”挑选扫描对象。运行入口为 `bash prospective/run-scan-clients.sh`，实验代码在 `prospective/scan-clients/`。服务端是只监听回环地址的 MariaDB 11.4 和 Mailpit v1.27（真实的 SMTP 服务，用它的 HTTP API 作独立观察者）。每项重复 3 次，结果一致。补丁在 `scan-clients/patches/`，**均未上报**。
+
+### 6.1 sqlx-mysql 0.9.0（近 90 天 4247 万次下载）
+
+`MySqlTransactionManager::begin` 要等 BEGIN 往返完成后才把 `transaction_depth` 加一，这和 #4393 修复前的 Postgres 是同一个模式，而且没有任何 guard。上游 main 至今未改，也没有检索到相关的 issue 或 PR（#4394 和 #4409 都只涉及 Postgres）。
+
+| ID | 目标 | 发布版 | 补丁版 |
+|---|---|---|---|
+| S1 | `Pool::begin()` | 4 个计划中 **2 个违反**（Pending #2，即 BEGIN 往返，两种时机都违反） | 0 |
+| S2 | `begin; insert; commit` 整体 | 8 个计划中 **2 个违反**，另有 4 个 Pre、2 个 Post | 0（6 个 Pre、2 个 Post） |
+
+违反时，后继者通过池做的自动提交写入对独立连接**不可见**（0 行，应为 1 行）：它落进了一个永远不会提交的事务里，连接关闭时被回滚。补丁 `sqlx-mysql-begin.diff` 照搬 #4394 的做法：在往返之前就增加深度，再用 guard 在被取消时排队一条 ROLLBACK。
+
+### 6.2 lettre 0.11.23（近 90 天 765 万次；`pool` 是默认 feature）
+
+被取消的 `send` 会丢弃 `PooledConnection`，连接随后被回收，除非 `has_broken()` 为真；而 `panic` 只在命令失败时才会被置位。复用前，池会发一次 `NOOP`，并接受任何正面回复，包括 3xx 中间态回复。异步传输没有读超时。幸存者通过同一个池再发 B、C 两封邮件，每封设 3 秒超时；独立观察者是 Mailpit 实际存下的邮件（主题按“进程号加运行号”打标签，避免不同运行之间互相串扰）。
+
+| ID | 目标 | 发布版 | 补丁版 |
+|---|---|---|---|
+| L1 | 16 字节正文的 `send` | 10 个计划中 **2 个违反** | 0 |
+| L2 | 8 MiB 正文的 `send`（写正文时也会 Pending） | 16–22 个计划中 **8–10 个违反**（实时时间下 Pending 数会浮动） | 0 |
+
+- **取消落在等待 `354` 时（L1/L2 的 Pending #4）：** 服务端已进入 DATA 状态。下一次取用时，`NOOP` 读到残留的 `354` 并判定连接健康，B 的 `MAIL FROM` 于是被当作正文内容，得不到回复，B 卡住。B 被超时丢弃时，连接**再次被回收**，C 也卡住。这个池位会持续不可用；调用方如果没设超时，发送就会永远挂起。
+- **取消落在写正文的过程中：** 下一次 `NOOP` 得不到回复，B 卡住，但 B 被丢弃时连接是在池外被关闭的，所以 C 正常发出。
+- 本次测试**没有观察到**邮件内容串到别人的邮件里：客户端总是先等回复再写下一条命令，所以 B 的正文从来没有被写出去。
+- 补丁 `lettre-send-in-progress.diff`：从 `send` 开始到完整结束，标记“发送中”，并在 `has_broken()` 中报告。补丁版上 L1、L2 全部干净。
+
+### 6.3 静态排查后未做动态测试的
+
+- **sqlx-sqlite：** `begin` 交给 worker 线程执行，取消异步调用不会中止 worker 里的命令。未验证。
+- **mysql_async、diesel-async、async-imap：** 已下载源码，本轮未分析。
+
+一处测试框架的错误：L2 的第一版各次运行共用 Mailpit 收件箱且主题没有打标签，于是在修复版上把上一次运行晚到的 A 误判为“A 出现两次”。改为按运行打标签后，这个现象消失。上面所有数字都来自修正后的版本。

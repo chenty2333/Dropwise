@@ -1,0 +1,13 @@
+[package]
+name = "prospective-scan-clients"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Clients scanned with the target checklist, survivor observations and
+# allowed-set verdicts (see ../RESCAN.md, section 6).
+[dependencies]
+dropwise = { path = "../.." }
+lettre = { version = "=0.11.23", default-features = false, features = ["builder", "pool", "smtp-transport", "tokio1"] }
+sqlx = { version = "=0.9.0", default-features = false, features = ["runtime-tokio", "mysql"] }
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time"] }
