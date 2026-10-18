@@ -65,8 +65,8 @@ Kill-safe 的“幸存者”视角是本报告五份笔记都没有覆盖的，�
 | bb8 `get()` 在 `is_valid` 中途被丢弃时，连接被放回池中 | 新问题；字节流协议的 manager 会错位，bb8-memcached 会静默返回其他 key 的值 | 已提交 [djc/bb8#324](https://github.com/djc/bb8/issues/324)、修复 PR [#325](https://github.com/djc/bb8/pull/325)（CI 全部通过） |
 | bb8-memcached 只在自身超时触发时标记 tainted | 新问题 | 已提交 [dqminh/bb8-memcached#16](https://github.com/dqminh/bb8-memcached/issues/16) |
 | deadpool-memcached / async-memcached 的 `version()` 不检查前缀 | 新问题；用户中途取消后连接持续报错，且写入照样生效 | 未上报 |
-| sqlx-mysql 0.9.0 `Pool::begin()` 取消后连接停留在事务内，后继者的写入丢失 | 新问题；与 #4393 同一模式，上游的修复只覆盖了 Postgres | 已有补丁并验证；未上报 |
-| lettre 0.11.23 池化 `send` 在 DATA 阶段被取消后，池位持续卡死 | 新问题；连接池是默认 feature | 已有补丁并验证；未上报 |
+| sqlx-mysql 0.9.0 `Pool::begin()` 取消后连接停留在事务内，后继者的写入丢失 | 新问题；与 #4393 同一模式，上游的修复只覆盖了 Postgres | 已提交 [transact-rs/sqlx#4467](https://github.com/transact-rs/sqlx/issues/4467)、修复 PR [#4468](https://github.com/transact-rs/sqlx/pull/4468) |
+| lettre 0.11.23 池化 `send` 在 DATA 阶段被取消后，池位持续卡死 | 新问题；连接池是默认 feature | 已提交 [lettre/lettre#1170](https://github.com/lettre/lettre/issues/1170)、修复 PR [#1171](https://github.com/lettre/lettre/pull/1171) |
 | tungstenite send 被取消后仍会送达 | 契约外行为（Sink 侧没有承诺） | 不需要上报 |
 
 ## 调整后的优先级

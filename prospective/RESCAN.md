@@ -204,7 +204,7 @@ D4：deadpool-memcached 连接真实的 memcached 1.6，用户在 `get` 或 `set
 
 ## 6. 扫描更多客户端（2026-10-18）
 
-按“下载量大、单条连接上按顺序一问一答或带会话状态、会被池化复用”挑选扫描对象。运行入口为 `bash prospective/run-scan-clients.sh`，实验代码在 `prospective/scan-clients/`。服务端是只监听回环地址的 MariaDB 11.4 和 Mailpit v1.27（真实的 SMTP 服务，用它的 HTTP API 作独立观察者）。每项重复 3 次，结果一致。补丁在 `scan-clients/patches/`，**均未上报**。
+按“下载量大、单条连接上按顺序一问一答或带会话状态、会被池化复用”挑选扫描对象。运行入口为 `bash prospective/run-scan-clients.sh`，实验代码在 `prospective/scan-clients/`。服务端是只监听回环地址的 MariaDB 11.4 和 Mailpit v1.27（真实的 SMTP 服务，用它的 HTTP API 作独立观察者）。每项重复 3 次，结果一致。补丁在 `scan-clients/patches/`。
 
 ### 6.1 sqlx-mysql 0.9.0（近 90 天 4247 万次下载）
 
@@ -229,9 +229,14 @@ D4：deadpool-memcached 连接真实的 memcached 1.6，用户在 `get` 或 `set
 - **取消落在等待 `354` 时（L1/L2 的 Pending #4）：** 服务端已进入 DATA 状态。下一次取用时，`NOOP` 读到残留的 `354` 并判定连接健康，B 的 `MAIL FROM` 于是被当作正文内容，得不到回复，B 卡住。B 被超时丢弃时，连接**再次被回收**，C 也卡住。这个池位会持续不可用；调用方如果没设超时，发送就会永远挂起。
 - **取消落在写正文的过程中：** 下一次 `NOOP` 得不到回复，B 卡住，但 B 被丢弃时连接是在池外被关闭的，所以 C 正常发出。
 - 本次测试**没有观察到**邮件内容串到别人的邮件里：客户端总是先等回复再写下一条命令，所以 B 的正文从来没有被写出去。
-- 补丁 `lettre-send-in-progress.diff`：从 `send` 开始到完整结束，标记“发送中”，并在 `has_broken()` 中报告。补丁版上 L1、L2 全部干净。
+- 补丁 `lettre-send-in-progress.diff`：从 `send` 开始到完整结束，标记“发送中”，并在 `has_broken()` 中报告；处于这个状态时，`abort()` 不发送 `QUIT`，直接关闭连接。原因是服务端正在读取正文，不会回复 `QUIT`，等待回复会让回收任务永远挂着、socket 不被关闭。这一处是在写上游回归测试时发现并补上的，补丁版上 L1、L2 全部干净。
 
-### 6.3 静态排查后未做动态测试的
+### 6.3 上报（2026-10-18）
+
+- **sqlx：** issue [transact-rs/sqlx#4467](https://github.com/transact-rs/sqlx/issues/4467)，修复 PR [#4468](https://github.com/transact-rs/sqlx/pull/4468)。PR 附回归测试 `it_rolls_back_a_transaction_cancelled_during_begin`：在 main 上失败，修复后通过；对 MariaDB 11.4 跑完整的 MySQL 测试套件也通过。PR 中说明了它与 #4445（嵌套 `begin` 的回滚问题，属于 sqlx-core）的关系。
+- **lettre：** issue [lettre/lettre#1170](https://github.com/lettre/lettre/issues/1170)，修复 PR [#1171](https://github.com/lettre/lettre/pull/1171)。两个使用进程内假服务器的确定性测试，结果如下：master 上两个都失败；只改 `has_broken()` 时，“写正文中途取消”那个测试仍然失败；完整修复后两个都通过（各跑 3 次）。
+
+### 6.4 静态排查后未做动态测试的
 
 - **sqlx-sqlite：** `begin` 交给 worker 线程执行，取消异步调用不会中止 worker 里的命令。未验证。
 - **mysql_async、diesel-async、async-imap：** 已下载源码，本轮未分析。
