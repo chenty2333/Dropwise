@@ -4,10 +4,14 @@
 # sqlx 0.9.0's MySQL driver against MariaDB and lettre 0.11.23's pooled async
 # SMTP transport against Mailpit, as released and with the fixes in
 # scan-clients/patches/ applied to copies in $DROPWISE_RESCAN_WORK (default
-# ~/dropwise-rescan-work). NEW_DIMENSIONS=1 selects the new-dimension
-# experiments instead (see the end of this file). Requires Docker with local mariadb:11.4 and
-# axllent/mailpit:v1.27 images and cached crates; the servers listen on
-# loopback only and are stopped on exit.
+# ~/dropwise-rescan-work). LADDER=1 selects the cancellation-ablation ladder
+# (B1/B2/B3/M, plus M-residue for lettre); MISALIGN=1 selects the lettre
+# residual-reply consequence experiment; PROXY=1 selects the held-reply proxy
+# variant of sqlx-mysql S1; NEW_DIMENSIONS=1 selects the new-dimension
+# experiments instead (see the end of this file). These modes still need both
+# servers. Requires Docker with local mariadb:11.4 and axllent/mailpit:v1.27
+# images and cached crates; the servers listen on loopback only and are stopped
+# on exit.
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -18,7 +22,7 @@ run() { # manifest dir, label, cargo test args...
     local dir=$1 label=$2
     for repetition in $(seq "$REPS"); do
         printf '\n=== %s, repetition %s/%s ===\n' "$label" "$repetition" "$REPS"
-        timeout 300s cargo test --offline "${@:3}" --manifest-path "$dir/Cargo.toml" -- --nocapture --test-threads=1
+        timeout "${TIMEOUT:-300}s" cargo test --offline "${@:3}" --manifest-path "$dir/Cargo.toml" -- --nocapture --test-threads=1
     done
 }
 
@@ -74,9 +78,24 @@ export DW_SMTP_PORT DW_SMTP_API_PORT
 DW_SMTP_PORT=$(docker port "${containers[1]}" 1025/tcp | awk -F: '/^127\.0\.0\.1:/{print $NF; exit}')
 DW_SMTP_API_PORT=$(docker port "${containers[1]}" 8025/tcp | awk -F: '/^127\.0\.0\.1:/{print $NF; exit}')
 
+# LADDER=1 runs the cancellation-ablation ladder (B1/B2/B3/M, plus M-residue
+# for lettre); MISALIGN=1 runs the residual-reply consequence experiment for
+# lettre; PROXY=1 runs the held-reply proxy variant of sqlx-mysql S1. These
+# modes keep the same scenario skeletons but take longer than the control
+# group, so each test process gets a longer bound. Priority: LADDER, MISALIGN,
+# PROXY.
 # NEW_DIMENSIONS=1 runs the separate new-dimension experiments (schedulable gap,
 # residual bytes through dropwise::net::Proxy) instead of the control group.
-if [[ "${NEW_DIMENSIONS:-0}" == 1 ]]; then
+if [[ "${LADDER:-0}" == 1 ]]; then
+    TIMEOUT=900
+    tests=(--features net --test sqlx_mysql_ladder --test lettre_ladder)
+elif [[ "${MISALIGN:-0}" == 1 ]]; then
+    TIMEOUT=900
+    tests=(--features net --test lettre_misalignment)
+elif [[ "${PROXY:-0}" == 1 ]]; then
+    TIMEOUT=900
+    tests=(--features net --test sqlx_mysql_proxy)
+elif [[ "${NEW_DIMENSIONS:-0}" == 1 ]]; then
     tests=(--features net --test lettre_gap --test lettre_residue)
 else
     tests=(--test sqlx_mysql --test lettre)

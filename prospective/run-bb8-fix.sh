@@ -45,7 +45,7 @@ run() { # manifest dir, label, cargo test args...
     local dir=$1 label=$2
     for repetition in $(seq "$REPS"); do
         printf '\n=== %s, repetition %s/%s ===\n' "$label" "$repetition" "$REPS"
-        timeout 300s cargo test --offline "${@:3}" --manifest-path "$dir/Cargo.toml" -- --nocapture --test-threads=1
+        timeout "${TIMEOUT:-300}s" cargo test --offline "${@:3}" --manifest-path "$dir/Cargo.toml" -- --nocapture --test-threads=1
     done
 }
 
@@ -60,6 +60,15 @@ bb8_08=$(patched_bb8 0.8.6)
 t2=$(copy_crate t2-bb8)
 sed -i '0,/^version = "0.9.1"/s//version = "0.9.2"/' "$t2/vendor/bb8-mutant/Cargo.toml"
 printf '\n[patch.crates-io]\nbb8 = { path = "%s" }\n' "$bb8_09" >> "$t2/Cargo.toml"
+
+# Ablation ladder (RESCAN.md, section 6.7): B1/B2/B3/M for R2.1 and R2.3 only,
+# on crates.io bb8 and on the same patched copy. No Docker containers.
+if [[ "${LADDER:-0}" == 1 ]]; then
+    BB8_VARIANT=release run "$ROOT/prospective/t2-bb8" 'T2 ladder, release bb8' --locked --test rescan_ladder
+    BB8_VARIANT=fixed run "$t2" 'T2 ladder, fixed bb8' --test rescan_ladder
+    exit 0
+fi
+
 BB8_VARIANT=fixed run "$t2" 'T2 frozen + rescan, fixed bb8' --test scenarios --test rescan
 
 # 2. Published managers against real servers.
