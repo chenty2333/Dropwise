@@ -17,10 +17,13 @@ use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use allowed::{Calibration, Expect, Mode, Tally, Verdict, calibrate, op};
+use allowed::{Calibration, Expect};
 use deadpool::managed::{self, Metrics, Pool, RecycleError, RecycleResult};
 use deadpool::Runtime;
-use dropwise::{Config, Ctx, Flavor, Race, Settle, explore};
+use dropwise::{
+    Config, Ctx, Expect as ObservedExpect, Flavor, Race, Report, Settle, Verdict,
+    explore_observed,
+};
 use tokio::sync::mpsc;
 
 // ---- Part A: model ---------------------------------------------------------
@@ -121,11 +124,11 @@ async fn model_survivor(pool: &Pool<Model>, log: &Log) -> Obs {
     Obs { reply, server_answered }
 }
 
-async fn model_scenario(ctx: Ctx, mode: Mode, shape: Shape, strict: bool) -> Result<Obs, String> {
+async fn model_scenario(ctx: Ctx, shape: Shape, strict: bool) -> Result<Obs, String> {
     let (pool, log, _) = model_pool(strict, None).await;
     match shape {
         Shape::Get => {
-            if let Some(r) = op(&ctx, mode, pool.get()).await {
+            if let Some(r) = ctx.target(pool.get()).await {
                 drop(r.map_err(|e| e.to_string())?);
             }
         }
@@ -134,7 +137,7 @@ async fn model_scenario(ctx: Ctx, mode: Mode, shape: Shape, strict: bool) -> Res
                 let mut conn = pool.get().await.map_err(|e| e.to_string())?;
                 conn.call("ECHO borrower").await
             };
-            if let Some(r) = op(&ctx, mode, request).await {
+            if let Some(r) = ctx.target(request).await {
                 r?;
             }
         }
@@ -146,20 +149,29 @@ fn model_config() -> Config {
     Config { races: vec![Race::Immediate, Race::AfterWake], scenario_timeout: Duration::from_secs(10), ..Config::default() }
 }
 
+/// One line per experiment. The field names keep the old `allowed.rs` format;
+/// the counts now come from `Report` (trial verdicts only, baseline excluded).
+fn summary(id: &str, report: &Report) -> String {
+    format!(
+        "RESCAN {id}: plans={} violations={} unrealized={} exhaustive={} baseline_errors={} verdicts(all runs) pre={} post={} neither={} unknown={}",
+        report.trials.len(),
+        report.violations().count(),
+        report.unrealized().count(),
+        report.exhaustive,
+        report.baseline_errors.len(),
+        report.verdict_count(Verdict::Pre),
+        report.verdict_count(Verdict::Post),
+        report.verdict_count(Verdict::Neither),
+        report.verdict_count(Verdict::Unknown),
+    )
+}
+
 fn model_rescan(id: &str, shape: Shape, strict: bool) {
-    let calibration = calibrate(&model_config(), |ctx, mode| model_scenario(ctx, mode, shape, strict));
-    let tally = Tally::default();
-    let report = explore(&model_config(), |ctx| {
-        let (calibration, tally) = (&calibration, tally.clone());
-        async move {
-            let seen = model_scenario(ctx, Mode::Run, shape, strict).await?;
-            let checked = calibration.check(Expect::Atomic, &seen);
-            tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-            checked.map(drop)
-        }
+    let report = explore_observed(&model_config(), ObservedExpect::Atomic, |ctx| {
+        model_scenario(ctx, shape, strict)
     });
     println!("{report}");
-    println!("{}", tally.summary(id, &report));
+    println!("{}", summary(id, &report));
 }
 
 #[test]
@@ -226,7 +238,7 @@ fn text(v: Result<Option<async_memcached::Value>, async_memcached::Error>) -> Re
     }
 }
 
-async fn mc_scenario(ctx: Ctx, mode: Mode, target: &str) -> Result<McObs, String> {
+async fn mc_scenario(ctx: Ctx, target: &str) -> Result<McObs, String> {
     use async_memcached::AsciiProtocol;
     let pool = deadpool_memcached::Pool::builder(deadpool_memcached::Manager::new(addr()))
         .max_size(1)
@@ -248,7 +260,7 @@ async fn mc_scenario(ctx: Ctx, mode: Mode, target: &str) -> Result<McObs, String
             _ => conn.set(&warm, "rewritten", None, None).await.map(|()| "OK".into()).map_err(|e| format!("{e:?}")),
         }
     };
-    if let Some(r) = op(&ctx, mode, request).await {
+    if let Some(r) = ctx.target(request).await {
         r?;
     }
     let session = match pool.get().await {
@@ -279,18 +291,10 @@ fn mc_config() -> Config {
 #[test]
 fn d4_deadpool_memcached_user_cancelled_mid_request() {
     for target in ["get", "set"] {
-        let calibration = calibrate(&mc_config(), |ctx, mode| mc_scenario(ctx, mode, target));
-        let tally = Tally::default();
-        let report = explore(&mc_config(), |ctx| {
-            let (calibration, tally) = (&calibration, tally.clone());
-            async move {
-                let seen = mc_scenario(ctx, Mode::Run, target).await?;
-                let checked = calibration.check(Expect::Atomic, &seen);
-                tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-                checked.map(drop)
-            }
+        let report = explore_observed(&mc_config(), ObservedExpect::Atomic, |ctx| {
+            mc_scenario(ctx, target)
         });
         println!("{report}");
-        println!("{}", tally.summary(&format!("D4 deadpool-memcached 0.5.0, user cancels {target}"), &report));
+        println!("{}", summary(&format!("D4 deadpool-memcached 0.5.0, user cancels {target}"), &report));
     }
 }

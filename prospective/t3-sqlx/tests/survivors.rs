@@ -4,22 +4,20 @@
 
 use std::error::Error;
 use std::time::Duration;
-#[path = "../../support/allowed.rs"]
-mod allowed;
-use allowed::{Expect, Mode, calibrate};
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Observation {
     inherited: i32,
     committed: i32,
 }
 
-use dropwise::{Config, Ctx, CutOutcome, Flavor, Race, Report, Settle, explore};
+use dropwise::{Config, Ctx, CutOutcome, Expect, Flavor, Race, Report, Settle, explore_observed};
 use sqlx::Connection;
 use sqlx::postgres::PgPoolOptions;
 
 type TestError = Box<dyn Error + Send + Sync>;
 
-async fn scenario(ctx: Ctx, guarded: bool, mode: Mode) -> Result<Observation, TestError> {
+async fn scenario(ctx: Ctx, guarded: bool) -> Result<Observation, TestError> {
     let pool = PgPoolOptions::new()
         .max_connections(1)
         .acquire_timeout(Duration::from_secs(3))
@@ -36,29 +34,37 @@ async fn scenario(ctx: Ctx, guarded: bool, mode: Mode) -> Result<Observation, Te
         .execute(&mut *first)
         .await?;
 
-    if mode == Mode::Skip {
-        // `pre` calibration: the borrower never starts its operation.
-    } else if guarded {
-        let mut tx = first.begin().await?;
-        sqlx::query("UPDATE survivor_value SET n = 1")
-            .execute(&mut *tx)
-            .await?;
-        // A single application wait, after an actual uncommitted DB update.
-        // The transaction guard belongs to the cancellable operation, not the
-        // surviving caller. Both normal exit and cancellation drop the guard.
-        ctx.target(async move {
-            let _transaction = tx;
+    // The target covers the whole borrower operation, so `pre` (drop before
+    // the first poll) really means "the borrower never started", as in the old
+    // `Mode::Skip` calibration. The trade-off is that cuts are also enumerated
+    // at the BEGIN/UPDATE round trips, not only at the application wait.
+    if guarded {
+        let operation = async {
+            let mut tx = first.begin().await?;
+            sqlx::query("UPDATE survivor_value SET n = 1")
+                .execute(&mut *tx)
+                .await?;
+            // The transaction guard belongs to the cancellable operation, not
+            // the surviving caller. Both normal exit and cancellation drop it.
             tokio::task::yield_now().await;
-        })
-        .await;
+            Ok::<(), sqlx::Error>(())
+        };
+        if let Some(r) = ctx.target(operation).await {
+            r?;
+        }
     } else {
-        sqlx::query("BEGIN").execute(&mut *first).await?;
-        sqlx::query("UPDATE survivor_value SET n = 1")
-            .execute(&mut *first)
-            .await?;
-        // Common caller mistake: cleanup only runs on the normal return path.
-        if ctx.target(tokio::task::yield_now()).await.is_some() {
+        let operation = async {
+            sqlx::query("BEGIN").execute(&mut *first).await?;
+            sqlx::query("UPDATE survivor_value SET n = 1")
+                .execute(&mut *first)
+                .await?;
+            // Common caller mistake: cleanup only runs on the normal return path.
+            tokio::task::yield_now().await;
             sqlx::query("ROLLBACK").execute(&mut *first).await?;
+            Ok::<(), sqlx::Error>(())
+        };
+        if let Some(r) = ctx.target(operation).await {
+            r?;
         }
     }
     drop(first);
@@ -111,20 +117,8 @@ fn config() -> Config {
 fn run(guarded: bool) -> Report {
     // Allowed set, not equality with the completed run: the abandoned borrower
     // may look as if it never started (pre) or as if it finished (post).
-    let calibration = calibrate(&config(), |ctx, mode| async move {
-        scenario(ctx, guarded, mode).await.map_err(|e| e.to_string())
-    });
-    let report = explore(&config(), |ctx| {
-        let calibration = &calibration;
-        async move {
-            let observed = scenario(ctx, guarded, Mode::Run)
-                .await
-                .map_err(|e| e.to_string())?;
-            calibration
-                .check(Expect::Atomic, &observed)
-                .map(drop)
-                .map_err(|e| format!("successor differs: {e}"))
-        }
+    let report = explore_observed(&config(), Expect::Atomic, |ctx| async move {
+        scenario(ctx, guarded).await.map_err(|e| e.to_string())
     });
     println!("guarded={guarded}\n{report}");
     assert!(
@@ -135,7 +129,11 @@ fn run(guarded: bool) -> Report {
         report.exhaustive && report.unsettled().next().is_none(),
         "{report}"
     );
-    assert_eq!(report.trials.len(), 2, "one wait, two cancellation timings");
+    // With the whole operation as the target, the guarded path has four real
+    // Pending boundaries (BEGIN, UPDATE, the wait, and rollback via drop has
+    // none) and the raw path has seven; the old yield-only target had one.
+    let expected_plans = if guarded { 8 } else { 14 };
+    assert_eq!(report.trials.len(), expected_plans, "{report}");
     assert!(
         report
             .trials
@@ -149,13 +147,13 @@ fn run(guarded: bool) -> Report {
 #[test]
 fn raw_begin_can_contaminate_the_next_borrower() {
     let report = run(false);
-    assert_eq!(report.violations().count(), 2, "{report}");
+    assert_eq!(report.violations().count(), 6, "{report}");
     assert!(
         report.violations().all(|t| t
             .invariant
             .as_ref()
             .unwrap_err()
-            .contains("successor differs")),
+            .contains("Neither under Atomic")),
         "{report}"
     );
 }

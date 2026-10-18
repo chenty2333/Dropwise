@@ -13,6 +13,17 @@
 //!
 //! Choosing *what* to observe, and whether the calling context allows `Pre`,
 //! is still the scenario author's contract; nothing here infers correctness.
+//!
+//! Remaining users after the migration to `explore_observed`:
+//!
+//! * `t2-bb8/tests/rescan.rs` R2.2: bb8's own `connection_timeout`, no cut;
+//! * `t2-bb8-managers/tests/deadpool.rs` D2: deadpool's `recycle_timeout`, no cut;
+//! * `t2-bb8-managers/tests/managers.rs` `internal_timeout`: bb8's
+//!   `connection_timeout`, no cut;
+//! * `t3-sqlx/tests/commit_reply.rs`: a manual `select!` on a reply gate, no cut.
+//!
+//! Every experiment that used `allowed.rs` and has a Dropwise cut now uses
+//! `dropwise::explore_observed`.
 #![allow(dead_code)]
 
 use std::fmt::Debug;

@@ -10,6 +10,9 @@ use std::time::Duration;
 
 use sqlx::postgres::{PgConnectOptions, PgSslMode};
 use sqlx::{AssertSqlSafe, Connection, Executor, PgConnection, SqlSafeStr};
+// No Dropwise cut here: cancellation is a manual `select!` while the reply gate
+// holds the acknowledgement, so `explore_observed` does not apply. `Calibration`
+// only judges that manually driven run against two completed runs.
 #[path = "../../support/allowed.rs"]
 mod allowed;
 #[path = "support/reply_gate.rs"]

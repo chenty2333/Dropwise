@@ -15,8 +15,11 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering::SeqCst};
 use std::time::Duration;
 
-use allowed::{Calibration, Expect, Mode, Tally, Verdict, calibrate, op};
-use dropwise::{Config, Ctx, Flavor, Race, Settle, explore};
+use allowed::{Calibration, Expect, Mode};
+use dropwise::{
+    Config, Ctx, Expect as ObservedExpect, Flavor, Race, Report, Settle, Verdict,
+    explore_observed,
+};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
@@ -265,7 +268,7 @@ async fn scenario<S: Service>(svc: &S, ctx: Option<&Ctx>, mode: Mode) -> Result<
     svc.get(&pool).await?; // warm: one idle, validated connection
     match ctx {
         Some(ctx) => {
-            if let Some(r) = op(ctx, mode, svc.get(&pool)).await {
+            if let Some(r) = ctx.target(svc.get(&pool)).await {
                 r?;
             }
         }
@@ -301,20 +304,29 @@ fn variant() -> String {
     std::env::var("BB8_VARIANT").unwrap_or_else(|_| "release".into())
 }
 
+/// One line per experiment. The field names keep the old `allowed.rs` format;
+/// the counts now come from `Report` (trial verdicts only, baseline excluded).
+fn summary(id: &str, report: &Report) -> String {
+    format!(
+        "RESCAN {id}: plans={} violations={} unrealized={} exhaustive={} baseline_errors={} verdicts(all runs) pre={} post={} neither={} unknown={}",
+        report.trials.len(),
+        report.violations().count(),
+        report.unrealized().count(),
+        report.exhaustive,
+        report.baseline_errors.len(),
+        report.verdict_count(Verdict::Pre),
+        report.verdict_count(Verdict::Post),
+        report.verdict_count(Verdict::Neither),
+        report.verdict_count(Verdict::Unknown),
+    )
+}
+
 fn dropwise_cut<S: Service>(svc: &S) {
-    let calibration = calibrate(&config(), |ctx, mode| async move { scenario(svc, Some(&ctx), mode).await });
-    let tally = Tally::default();
-    let report = explore(&config(), |ctx| {
-        let (calibration, tally) = (&calibration, tally.clone());
-        async move {
-            let seen = scenario(svc, Some(&ctx), Mode::Run).await?;
-            let checked = calibration.check(Expect::Atomic, &seen);
-            tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-            checked.map(drop)
-        }
+    let report = explore_observed(&config(), ObservedExpect::Atomic, |ctx| {
+        async move { scenario(svc, Some(&ctx), Mode::Run).await }
     });
     println!("{report}");
-    println!("{}", tally.summary(&format!("M {} get cut [{}]", svc.name(), variant()), &report));
+    println!("{}", summary(&format!("M {} get cut [{}]", svc.name(), variant()), &report));
 }
 
 fn internal_timeout<S: Service>(svc: &S) {

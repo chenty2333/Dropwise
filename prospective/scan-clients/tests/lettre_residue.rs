@@ -4,9 +4,11 @@
 //! the proxy how many bytes are still unread in the client's receive buffer,
 //! before B and C are attempted.
 //!
-//! This is a separate experiment, not part of the L1/L2 control group. Linux
-//! only, and only with the `net` feature. Environment: DW_SMTP_PORT,
-//! DW_SMTP_API_PORT, SCAN_VARIANT (label only).
+//! This is a separate experiment, not part of the L1/L2 control group. Body
+//! sizes mirror the control group: L1 (16-byte body, cancelling inside the
+//! `354` wait) and L2 (8 MiB body, where writing the body itself also returns
+//! Pending). Linux only, and only with the `net` feature. Environment:
+//! DW_SMTP_PORT, DW_SMTP_API_PORT, SCAN_VARIANT (label only).
 
 #![cfg(all(feature = "net", target_os = "linux"))]
 
@@ -154,6 +156,27 @@ fn l1_residue_before_survivors() {
         "{}",
         summary(
             &format!("L1-residue lettre pooled send [{variant}]"),
+            &report,
+            max_residue.load(SeqCst)
+        )
+    );
+}
+
+#[test]
+fn l2_residue_before_survivors() {
+    let max_residue = Arc::new(AtomicUsize::new(0));
+    let seen = max_residue.clone();
+    let report = explore_observed(&config(), Expect::Atomic, |ctx| {
+        let seen = seen.clone();
+        scenario(ctx, 8 * 1024 * 1024, seen)
+    });
+    println!("new dimension: residue before survivors, via dropwise::net::Proxy");
+    println!("{report}");
+    let variant = std::env::var("SCAN_VARIANT").unwrap_or_else(|_| "release".into());
+    println!(
+        "{}",
+        summary(
+            &format!("L2-residue lettre pooled send [{variant}]"),
             &report,
             max_residue.load(SeqCst)
         )

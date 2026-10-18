@@ -5,17 +5,13 @@
 //! reader itself received. Here the peer is the independent observer, and the
 //! targets include sending (no documented guarantee) and the handshake.
 
-#[path = "../../support/allowed.rs"]
-mod allowed;
-
 use std::pin::Pin;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 use std::task::{Context, Poll};
 use std::time::Duration;
 
-use allowed::{Calibration, Expect, Mode, Tally, Verdict, calibrate, op};
-use dropwise::{Config, Ctx, Race, explore};
+use dropwise::{Config, Ctx, Expect, Race, Report, Verdict, explore_observed};
 use futures_util::{SinkExt, StreamExt};
 use tokio::io::{AsyncRead, AsyncWrite, DuplexStream, ReadBuf};
 use tokio_tungstenite::tungstenite::Message;
@@ -69,54 +65,60 @@ async fn close<S: AsyncRead + AsyncWrite + Unpin>(mut ws: WebSocketStream<S>) {
 /// R1.1 / R1.2: `send` of a 300-byte message over a 32-byte pipe, so the write
 /// returns Pending until the peer reads. After a cancelled send the caller
 /// either retries it (R1.1) or gives up (R1.2), then sends a second message.
-async fn send_scenario(ctx: Ctx, mode: Mode, retry: bool, silent: Arc<AtomicUsize>) -> Result<Peer, String> {
+async fn send_scenario(ctx: Ctx, retry: bool, silent: Arc<AtomicUsize>) -> Result<Peer, String> {
     let (client_io, server_io) = tokio::io::duplex(32);
     let peer = tokio::spawn(async move {
         observe_peer(WebSocketStream::from_raw_socket(server_io, Role::Server, None).await).await
     });
     let mut ws = WebSocketStream::from_raw_socket(client_io, Role::Client, None).await;
     let first = Message::text("a".repeat(300));
-    let sent = op(&ctx, mode, ws.send(first.clone())).await;
+    let sent = ctx.target(ws.send(first.clone())).await;
+    let cancelled = sent.is_none();
     match sent {
         Some(r) => r.map_err(|e| format!("send: {e}"))?,
         None if retry => ws.send(first).await.map_err(|e| format!("retry: {e}"))?,
-        None => {
-            if mode == Mode::Run {
-                // Told "cancelled"; the caller checks whether the peer got it.
-                silent.fetch_add(1, SeqCst);
-            }
-        }
+        None => {}
     }
     ws.send(Message::text("b".repeat(300))).await.map_err(|e| format!("second send: {e}"))?;
     close(ws).await;
     let peer = peer.await.map_err(|e| e.to_string())?;
+    // The caller was told "cancelled" (no retry), yet the peer got the first
+    // message. This is also false in the `pre` calibration, where the target is
+    // skipped before its first poll and nothing was written.
+    if cancelled && !retry && peer.data.iter().any(|m| m == "ax300") {
+        silent.fetch_add(1, SeqCst);
+    }
     Ok(peer)
 }
 
+/// One line per experiment. The field names keep the old `allowed.rs` format;
+/// the counts now come from `Report` (trial verdicts only, baseline excluded).
+fn summary(id: &str, report: &Report) -> String {
+    format!(
+        "RESCAN {id}: plans={} violations={} unrealized={} exhaustive={} baseline_errors={} verdicts(all runs) pre={} post={} neither={} unknown={}",
+        report.trials.len(),
+        report.violations().count(),
+        report.unrealized().count(),
+        report.exhaustive,
+        report.baseline_errors.len(),
+        report.verdict_count(Verdict::Pre),
+        report.verdict_count(Verdict::Post),
+        report.verdict_count(Verdict::Neither),
+        report.verdict_count(Verdict::Unknown),
+    )
+}
+
 fn send_rescan(id: &str, retry: bool) {
-    let silent = Arc::new(AtomicUsize::new(0));
-    let calibration = calibrate(&config(), |ctx, mode| send_scenario(ctx, mode, retry, Arc::default()));
     let expect = if retry { Expect::Completed } else { Expect::Atomic };
-    let (tally, silent_commits) = (Tally::default(), Arc::new(AtomicUsize::new(0)));
-    let report = explore(&config(), |ctx| {
-        let (calibration, tally, silent, silent_commits) = (&calibration, tally.clone(), silent.clone(), silent_commits.clone());
-        async move {
-            silent.store(0, SeqCst);
-            let peer = send_scenario(ctx, Mode::Run, retry, silent.clone()).await?;
-            let checked = calibration.check(expect, &peer);
-            let verdict = *checked.as_ref().unwrap_or(&Verdict::Neither);
-            // The caller was told "cancelled" (no retry), yet the peer got it.
-            if silent.load(SeqCst) == 1 && verdict == Verdict::Post {
-                silent_commits.fetch_add(1, SeqCst);
-            }
-            tally.push(verdict);
-            checked.map(drop)
-        }
+    let silent_commits = Arc::new(AtomicUsize::new(0));
+    let report = explore_observed(&config(), expect, |ctx| {
+        let silent = silent_commits.clone();
+        send_scenario(ctx, retry, silent)
     });
     println!("{report}");
     println!(
         "{} cancelled-but-delivered={}",
-        tally.summary(id, &report),
+        summary(id, &report),
         silent_commits.load(SeqCst)
     );
 }
@@ -170,7 +172,7 @@ struct PingPong {
 }
 
 /// R1.3: the reader keeps reading after every cancelled `next()` (C1's own
-/// usage). The mode is ignored: "never read" is not a state this caller allows.
+/// usage). "Never read" is not a state this caller allows.
 async fn pong_scenario(ctx: Ctx) -> Result<PingPong, String> {
     let (client_io, server_io) = tokio::io::duplex(64 * 1024);
     let peer = tokio::spawn(async move {
@@ -185,7 +187,7 @@ async fn pong_scenario(ctx: Ctx) -> Result<PingPong, String> {
     let mut ws = WebSocketStream::from_raw_socket(Stutter { inner: client_io, ready: false }, Role::Client, None).await;
     let mut client_data = Vec::new();
     while client_data.len() < 2 {
-        match op(&ctx, Mode::Run, ws.next()).await {
+        match ctx.target(ws.next()).await {
             Some(Some(Ok(m))) => client_data.extend(label(&m)),
             Some(Some(Err(e))) => return Err(format!("next: {e}")),
             Some(None) => break,
@@ -199,19 +201,9 @@ async fn pong_scenario(ctx: Ctx) -> Result<PingPong, String> {
 
 #[test]
 fn r1_3_pong_flush_across_cancelled_next() {
-    let calibration = calibrate(&config(), |ctx, _| pong_scenario(ctx));
-    let tally = Tally::default();
-    let report = explore(&config(), |ctx| {
-        let (calibration, tally) = (&calibration, tally.clone());
-        async move {
-            let seen = pong_scenario(ctx).await?;
-            let checked = calibration.check(Expect::Completed, &seen);
-            tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-            checked.map(drop)
-        }
-    });
+    let report = explore_observed(&config(), Expect::Completed, pong_scenario);
     println!("{report}");
-    println!("{}", tally.summary("R1.3 pong", &report));
+    println!("{}", summary("R1.3 pong", &report));
 }
 
 /// What the second client and the server saw in R1.4.
@@ -224,7 +216,7 @@ struct Served {
 /// R1.4: a sequential accept loop (one connection at a time, as simple servers
 /// do). The first client's handshake is the target; the second client must
 /// still be served.
-async fn handshake_scenario(ctx: Ctx, mode: Mode) -> Result<Served, String> {
+async fn handshake_scenario(ctx: Ctx) -> Result<Served, String> {
     let (connections, mut incoming) = tokio::sync::mpsc::unbounded_channel::<DuplexStream>();
     let accepted = Arc::new(AtomicUsize::new(0));
     let server_accepted = accepted.clone();
@@ -241,7 +233,7 @@ async fn handshake_scenario(ctx: Ctx, mode: Mode) -> Result<Served, String> {
     });
     let (first, first_server) = tokio::io::duplex(64 * 1024);
     connections.send(first_server).map_err(|_| "server gone")?;
-    if let Some(r) = op(&ctx, mode, client_async("ws://localhost/", first)).await {
+    if let Some(r) = ctx.target(client_async("ws://localhost/", first)).await {
         let (ws, _) = r.map_err(|e| format!("first handshake: {e}"))?;
         close(ws).await;
     }
@@ -265,17 +257,7 @@ async fn handshake_scenario(ctx: Ctx, mode: Mode) -> Result<Served, String> {
 
 #[test]
 fn r1_4_handshake_cancelled() {
-    let calibration: Calibration<Served> = calibrate(&config(), handshake_scenario);
-    let tally = Tally::default();
-    let report = explore(&config(), |ctx| {
-        let (calibration, tally) = (&calibration, tally.clone());
-        async move {
-            let seen = handshake_scenario(ctx, Mode::Run).await?;
-            let checked = calibration.check(Expect::Atomic, &seen);
-            tally.push(*checked.as_ref().unwrap_or(&Verdict::Neither));
-            checked.map(drop)
-        }
-    });
+    let report = explore_observed(&config(), Expect::Atomic, handshake_scenario);
     println!("{report}");
-    println!("{}", tally.summary("R1.4 handshake", &report));
+    println!("{}", summary("R1.4 handshake", &report));
 }

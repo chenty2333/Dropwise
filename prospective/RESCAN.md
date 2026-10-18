@@ -70,7 +70,7 @@ R3.1、R3.5 在发布版 sqlx 0.9.0 与打上上游修复 PR #4394（只改 `sql
 | R3.5 [PR #4394] | 8 | 0 | 6 个 Pre、2 个 Post | 允许集合正对照 |
 | R3.6 两次自动提交写入 | 10 | **6** | 两版本相同：第一条已提交、第二条没有（可见 2 行，pre=1，post=3） | 负对照：真实的半完成态 |
 
-另外，按允许集合改写的 `survivors.rs` 与 `commit_reply.rs` 结果不变：危险写法仍然报出，安全写法干净（`run-interruption.sh`，3 轮）。
+另外，按允许集合改写的 `survivors.rs` 与 `commit_reply.rs` 结果不变：危险写法仍然报出，安全写法干净（`run-interruption.sh`，3 轮；`survivors.rs` 后来改用 `explore_observed`，计划数变化见 6.5）。
 
 ### 归因：零发现来自哪里
 
@@ -245,7 +245,7 @@ D4：deadpool-memcached 连接真实的 memcached 1.6，用户在 `get` 或 `set
 
 ### 6.5 改用 Dropwise 判定 API（2026-10-18）
 
-S1/S2 与 L1/L2 已从实验内的 `allowed.rs` 判定改为库的 `explore_observed`（`Expect::Atomic`）：场景不再接收 `Mode`，`ctx.target` 直接标记操作；`pre` 由 `after_pending = 0` 的校准计划给出，`post` 是不取消任何东西的基线；两次采样不一致记为 Unknown，校准运行失败记入 `baseline_errors`，不判为违反。R2 的四个 cut 实验同样改用该 API；R2.2 没有 Dropwise 的 cut，继续使用 `allowed.rs` 的 `Calibration`，`allowed.rs` 也仍供 t1/t3 使用。改写前的 commit 为 `c32e302`。
+S1/S2 与 L1/L2 已从实验内的 `allowed.rs` 判定改为库的 `explore_observed`（`Expect::Atomic`）：场景不再接收 `Mode`，`ctx.target` 直接标记操作；`pre` 由 `after_pending = 0` 的校准计划给出，`post` 是不取消任何东西的基线；两次采样不一致记为 Unknown，校准运行失败记入 `baseline_errors`，不判为违反。R2 的四个 cut 实验同样改用该 API；R2.2 没有 Dropwise 的 cut，继续使用 `allowed.rs` 的 `Calibration`。改写前的 commit 为 `c32e302`。
 
 对照结果（`bash prospective/run-scan-clients.sh`，3 轮；之后修正多 cut 校准、合并 `explore` 与 `explore_observed` 的主循环后又跑 1 轮复核，结果相同。S1/S2/L1 每轮完全一致，L2 的计划数与 Pre/Post 分布随实时时间浮动）：
 
@@ -261,12 +261,17 @@ R2.1/R2.1c/R2.3/R2.3c 在发布版上仍为 2/2、2/0、4/2、4/0，fixed 上全
 
 新增维度（可调度 gap、Proxy 残留字节）是单独的新实验，见 6.6，没有改动上面的对照组。
 
-### 6.6 新维度：可调度间隔与残留字节（2026-10-18，单独实验）
+2026-10-19 补记：其余带 Dropwise cut 的事后实验也已迁移到 `explore_observed`：`t1-tungstenite/tests/rescan.rs`（R1.1–R1.4）、`t3-sqlx/tests/rescan.rs`（R3.1–R3.6）、`t3-sqlx/tests/survivors.rs`，以及 `t2-bb8-managers/tests/{deadpool,managers}.rs` 中的 cut 部分（D1/D3/D4、M）。`t2-bb8/tests/rescan.rs` 的 R2.2、`t2-bb8-managers` 的 D2 与 `internal_timeout`、`t3-sqlx/tests/commit_reply.rs`（手工 `select!`，没有 Dropwise cut）继续使用 `allowed.rs`；该文件头已列出这些剩余用途。迁移前的 commit 为 `fe5a4fa`。
 
-运行入口 `NEW_DIMENSIONS=1 bash prospective/run-scan-clients.sh`（需要 `net` feature，仅限 Linux），发布版与补丁版各 2 轮，结果完全一致。两组都在 L1（16 字节正文）上做：
+重跑 `bash prospective/run-rescan.sh` 与 `bash prospective/run-interruption.sh`（各 3 轮）后，T1/T2/T3 的 plans/violations 与迁移前逐项一致：R1.1 18/18、R1.2 18/0、R1.3 2/0、R1.4 2/0；R2.1 2/2、R2.1c 2/0、R2.3 4/2、R2.3c 4/0、R2.2c Pre；R3.1 release 4/2、pr4394 4/0；R3.5 release 8/2、pr4394 8/0；R3.6 10/6（两版本相同）；其余 0。`t2-bb8-managers` 的 cut 部分用 `bash prospective/run-bb8-fix.sh` 复核 1 轮：release 上 bb8-memcached 2/2、bb8-postgres/bb8-redis 0、D3 strict 4/0 / lax 4/2、D4 get/set 各 4/2；fixed 上全部 0，与 4.2、5.1、5.2 一致。汇总行的 Pre/Post/Neither 只统计取消计划，不含基线，因此与上面含基线的旧计数不能直接比较。`echo-observation` 现在是一次独立的 `explore_observed` 运行，它的 violations 只反映 echo 观察本身（R3.1/R3.5/R3.6 release 均为 0），不再复用 visible 观察的违反数；这正是“只用 echo 会漏掉 #4393”的对照。`survivors.rs` 是唯一计划数变化的迁移：为让 `pre` 仍是“借用操作从未开始”，target 从单个 `yield_now` 改为覆盖整个借用操作，raw 从 2 个计划/2 个违反变为 14/6，guarded 从 2/0 变为 8/0；危险写法仍报出、安全写法仍干净，3 轮一致。
+
+### 6.6 新维度：可调度间隔与残留字节（2026-10-18，2026-10-19 补 L2）
+
+运行入口 `NEW_DIMENSIONS=1 bash prospective/run-scan-clients.sh`（需要 `net` feature，仅限 Linux）。2026-10-18 先做 L1（16 字节正文），发布版与补丁版各 2 轮；2026-10-19 补做 L2（8 MiB 正文），发布版与补丁版各 3 轮。下表保留 L1 的 2026-10-18 记录，并加入 L2 的 3 轮结果：
 
 - **L1-gap**：把复用前固定的 `sleep(50ms)` 换成 `ctx.gap(Gap::Sleep(50ms))`，另外探索 `Gap::Now` 和 `Gap::Yield(1)`。
 - **L1-residue**：SMTP 连接经过 `dropwise::net::Proxy`；被取消的 `send` 之后等 50ms，在 B、C 开始之前用 `FIONREAD` 读取客户端 socket 中未读的字节数，并把它加进观察值。
+- **L2-residue**：同一个 `lettre_residue` 场景，只把 `body_len` 从 16 换成 `8 * 1024 * 1024`；观察值、B/C 幸存者和 Mailpit 独立观察者都与 L1-residue 相同。
 
 | ID | 变体 | 计划 | 违反 | Pre / Post / Neither |
 |---|---|---:|---:|---|
@@ -274,6 +279,8 @@ R2.1/R2.1c/R2.3/R2.3c 在发布版上仍为 2/2、2/0、4/2、4/0，fixed 上全
 | L1-gap | 补丁版 | 30 | 0 | 24 / 6 / 0 |
 | L1-residue | 发布版 | 10 | **8** | 2 / 0 / 8 |
 | L1-residue | 补丁版 | 10 | 0 | 8 / 2 / 0（残留始终为 0） |
+| L2-residue | 发布版 | 20–22 | **18–19** | 2 / 0–1 / 18–19（`max_residue` 50） |
+| L2-residue | 补丁版 | 20–22 | 0 | 20 / 0–2 / 0（残留始终为 0；0–2 个未实现） |
 
 - **可调度间隔：** 三种间隔下，违反都落在 Pending #4（等待 `354`），各 2 个。在这个场景里，复用前等多久不改变结果。
 - **残留字节：** 对照组 L1 只有 Pending #4 的 2 个违反；加上残留字节后多出 6 个：
@@ -285,7 +292,11 @@ R2.1/R2.1c/R2.3/R2.3c 在发布版上仍为 2/2、2/0、4/2、4/0，fixed 上全
   | Pending #5 | 48 | 都成功，A 已存储 | Post |
 
   14 字节与 `250 2.1.0 Ok\r\n` 的长度相同（回复原文未逐字核对）。也就是说，连接被放回池时还欠着一条回复，此后每条命令读到的很可能是上一条命令的回复；因为这些回复都是 2xx，lettre 没有察觉。**已验证（2026-10-18，见 6.9）：** 失败发生在哪一步决定后果。RCPT 的 `550` 会被后面的命令读到，但 `send` 仍然返回 `Err`；DATA 之后的 `554` 会被留成下一条未读回复，`send` 返回 `Ok(354)` 而服务器已经拒收——这是用户可见的假成功。补丁版（#1171，`send` 全程标记“发送中”）把这样的连接丢弃，残留为 0。
-- 两组都是新实验，计划数不能和对照组直接相加或比较。
+- **L2 残留（2026-10-19 补做）：** 发布版三轮（计划/违反，Pre/Post/Neither，`max_residue`）：20/18（2/0/18，50）、22/19（2/1/19，50）、20/18（2/0/18，50）。补丁版三轮：20/0（20/0/0，0）、22/0（20/2/0，0；2 个计划未实现）、22/0（20/2/0，0；1 个计划未实现）。未实现的计划都在 Pending #11，不计为违反；六轮的 `exhaustive=true`、`baseline_errors=0`、`unknown=0` 均成立。
+- **L2 的取消落点：** #2/#3 残留 14 字节，B、C 都成功、A 未存储（与 L1-residue 相同）；#4 残留 50 字节，B、C 都卡住（与 L1-residue 相同）；#5 起进入 8 MiB 正文的写入/收尾阶段，残留绝大多数为 0，B 卡住、C 成功、A 未存储。第 2 轮 #10、#11 各有 1 个计划、第 3 轮 #10 有 1 个计划出现 48 字节残留且 A 已存储。发布版三轮 `max_residue` 都是 50，没有比 L1 更大的残留。
+- **与 L1 的新情况：** L2 多出 Pending #5 起的正文写入阶段取消点：B 卡住、C 成功、A 未存储，而这些点的残留字节大多为 0（少数 #10/#11 边界除外）——只看残留维度发现不了，必须看 B/C 的返回值和独立观察者。
+- **复核波动（2026-10-19）：** 这次 3 轮与并发负载重叠。L1-gap 发布版为 30/5、30/6、30/6（第 1 轮缺 default gap 的 Immediate），补丁版三轮 30/0，但未实现计划为 0/1/8；L1-residue 发布版三轮都是 10/8，补丁版计划数为 10/10/14、违反均为 0（第 3 轮 3 个未实现）。与 2026-10-18 的两轮记录相比，L1-gap 发布版少 1 个违反，其余差异都在实时时间下的 Pending 边界和未实现计划上；未进一步隔离。
+- 三组都是新实验，计划数不能和对照组直接相加或比较。
 
 ### 6.7 消融阶梯：简单取消测试能走到哪一级（2026-10-18，单独实验）
 
@@ -299,9 +310,9 @@ R2.1/R2.1c/R2.3/R2.3c 在发布版上仍为 2/2、2/0、4/2、4/0，fixed 上全
 - **B1：** 取消后场景立即结束，用 `dropwise::explore`；只要不 panic、不超时、没有 Obligation 泄漏就算通过。
 - **B2：** 取消后通过同一个池/连接，用**完全相同的参数**重做同一个操作；返回 `Ok` 就算通过（超时算失败）。
 - **B3：** 取消后通过同一个池做一个**不同的**同类操作（换查询、换参数、换收件人）；只看是否返回 `Ok`，不检查值。
-- **M：** 现有的 `explore_observed(Expect::Atomic)` 幸存者 + 独立观察者。lettre 另跑 **M-residue**（现有 `lettre_residue` 的观察值）：把复用前的残留字节加进观察值；和现有实验一样只做 L1。
+- **M：** 现有的 `explore_observed(Expect::Atomic)` 幸存者 + 独立观察者。lettre 另跑 **M-residue**（现有 `lettre_residue` 的观察值）：把复用前的残留字节加进观察值；L1 与 L2 都做。
 
-表中为“计划数/违反数”。除 L2 外，3 次重复完全一致；L2 的计划数随实时时间的 Pending 数浮动，表中给出范围。
+表中为“计划数/违反数”。S1/S2 与 L1/L2 的 M 行来自此前的 LADDER 运行；本次只补跑了 M-residue。L1/L2 的计划数在实时时间下会随 Pending 边界浮动，补丁版还可能出现未实现计划（见 6.6 的复核波动），表中给出范围。
 
 | 场景 | 版本 | B1 | B2 | B3 | M | M-residue |
 |---|---|---|---|---|---|---|
@@ -311,8 +322,8 @@ R2.1/R2.1c/R2.3/R2.3c 在发布版上仍为 2/2、2/0、4/2、4/0，fixed 上全
 | S2 整个事务 | 补丁版 | 8/0 | 8/0 | 8/0 | 8/0 | — |
 | L1 16 字节 `send` | 发布版 | 10/0 | 10/**2** | 10/**2** | 10/**2** | 10/**8** |
 | L1 16 字节 `send` | 补丁版 | 10/0 | 10–14/0 | 10/0 | 10/0 | 10/0 |
-| L2 8 MiB `send` | 发布版 | 16–18/0 | 16–22/**9** | 16–22/**9** | 16–18/**8–9** | 未运行 |
-| L2 8 MiB `send` | 补丁版 | 16–18/0 | 16–18/0 | 16/0 | 16–18/0 | 未运行 |
+| L2 8 MiB `send` | 发布版 | 16–18/0 | 16–22/**9** | 16–22/**9** | 16–18/**8–9** | 20–22/**18–19** |
+| L2 8 MiB `send` | 补丁版 | 16–18/0 | 16–18/0 | 16/0 | 16–18/0 | 20–22/0（0–2 未实现） |
 | R2.1 `get` | 发布版 | 2/0 | 2/0 | 2/0 | 2/**2** | — |
 | R2.1 `get` | 补丁版 | 2/0 | 2/0 | 2/0 | 2/0 | — |
 | R2.3 借用者请求中途 | 发布版 | 4/0 | 4/0 | 4/0 | 4/**2** | — |
@@ -340,7 +351,7 @@ R2.1/R2.1c/R2.3/R2.3c 在发布版上仍为 2/2、2/0、4/2、4/0，fixed 上全
 
 - **L1 的普通 M：** B2/B3 在 Pending #4 的同一批挂起点上也会超时，抓到的计划键集合与 M 相同。L1 的 M-residue 中，`#0@4` 也被 B3 抓到（B 超时），只有残留下的 `#0@2/#0@3/#0@5` 是 M-only。
 - **L2 的计划集在实时时间下不嵌套：** 除上表两个 M-only 键外，B3 还在 `#0@7:AfterWake`、`#0@8:Immediate`（第 1 轮）和 `#0@5:Immediate`（第 2 轮）上报了违反，而 M 没有。两组是独立运行，Pending 边界和残留字节都可能不同；因此 L2 的 M-only 计数不能当作稳定的方法差异，只能当作实时时间下的观测。
-- **L2 的 M-residue 未运行**，原因见上：现有 `lettre_residue` 只做 L1，本次沿用同一实验，没有新造 L2 版本。
+- **L2 的 M-residue（2026-10-19 补做，各 3 轮）：** 发布版 20–22/18–19，补丁版 20–22/0（0–2 个 Pending #11 计划未实现，不计为违反）；`max_residue` 发布版 50、补丁版 0。与普通 M（16–18/8–9）只在机制上对齐：M-residue 同样出现 Pending #4 和正文写入阶段的卡住，但数字不对齐——M-residue 多了 Pending #2/#3 的 14 字节残留违反（4 个计划），且这次运行走到 10–11 个 Pending 边界，正文写入阶段每个边界都有违反。普通 M 的 16–18/8–9 来自此前的 LADDER 运行，本次没有重跑 M，逐计划对照未核实。
 - **R2.3 的 Pending #2 计划**（请求本身被取消）在 M 里判为 Post，不是违反，因此没有可供 B3 漏掉的目标。
 
 补丁版上四个层级全部 0 违反，没有需要分诊的违反。B2/B3 在补丁版上的零来自与 M 相同的修复效果：脏连接被丢弃/重建，下一次操作在干净连接上完成。
