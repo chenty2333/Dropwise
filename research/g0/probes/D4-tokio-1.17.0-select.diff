@@ -1,0 +1,31 @@
+--- a/src/macros/select.rs
++++ b/src/macros/select.rs
+@@ -458,7 +458,7 @@
+         let mut output = {
+             // Safety: Nothing must be moved out of `futures`. This is to
+             // satisfy the requirement of `Pin::new_unchecked` called below.
+-            let mut futures = ( $( $fut , )+ );
++            let mut futures = ( $( $crate::macros::support::Branch::new(file!(), line!(), $fut) , )+ );
+ 
+             $crate::macros::support::poll_fn(|cx| {
+                 // Track if any branch returns pending. If no branch completes
+--- a/src/macros/support.rs
++++ b/src/macros/support.rs
+@@ -7,3 +7,17 @@
+ pub use std::future::Future;
+ pub use std::pin::Pin;
+ pub use std::task::Poll;
++
++/// G0 D4 feasibility demo: counts polls and Pending results per branch site.
++pub struct Branch<F> { pub site: (&'static str, u32), pub pending: u32, fut: F }
++impl<F> Branch<F> { pub fn new(file: &'static str, line: u32, fut: F) -> Self { Branch { site: (file, line), pending: 0, fut } } }
++impl<F: Future> Future for Branch<F> {
++    type Output = F::Output;
++    fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<F::Output> {
++        let this = unsafe { self.get_unchecked_mut() };
++        let r = unsafe { Pin::new_unchecked(&mut this.fut) }.poll(cx);
++        if r.is_pending() { this.pending += 1; eprintln!("pending at {}:{}", this.site.0, this.site.1); }
++        r
++    }
++}
++impl<F> Drop for Branch<F> { fn drop(&mut self) { eprintln!("drop branch {}:{} pending={}", self.site.0, self.site.1, self.pending); } }

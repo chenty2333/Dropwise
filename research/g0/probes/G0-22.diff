@@ -1,0 +1,132 @@
+diff --git a/pageserver/src/g0_probe.rs b/pageserver/src/g0_probe.rs
+new file mode 100644
+index 0000000..306a636
+--- /dev/null
++++ b/pageserver/src/g0_probe.rs
+@@ -0,0 +1,75 @@
++// G0 temporary probe (D4). Not for commit to the target repository.
++#![allow(dead_code)]
++use std::future::Future;
++use std::pin::Pin;
++use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
++use std::task::{Context, Poll};
++
++pub static SITE_HIT: AtomicUsize = AtomicUsize::new(0);
++pub static BRANCH_PENDING: AtomicUsize = AtomicUsize::new(0);
++pub static DEFECT_ACTIVE: AtomicUsize = AtomicUsize::new(0);
++pub static DEFECT_PATH_PENDING: AtomicUsize = AtomicUsize::new(0);
++
++fn report() {
++    if let Ok(dir) = std::env::var("G0_PROBE_OUT").or_else(|_| Ok::<_, ()>("/home/ava/dropwise-g0-work/neon/probe-out".to_string())) {
++        let line = format!(
++            "site_hit={} branch_pending={} defect_path_pending={}\n",
++            SITE_HIT.load(SeqCst),
++            BRANCH_PENDING.load(SeqCst),
++            DEFECT_PATH_PENDING.load(SeqCst)
++        );
++        let _ = std::fs::write(format!("{}/g0.{}", dir, std::process::id()), line);
++    }
++}
++
++/// Call once each time the select/timeout expression is entered.
++pub fn hit() {
++    SITE_HIT.fetch_add(1, SeqCst);
++    report();
++}
++
++/// Wraps the lost branch. Per instance: `branch_pending` counts it once if it
++/// was ever Pending; `defect_path_pending` counts it once if it was ever
++/// Pending while the fixed function's guard was active (D3).
++pub struct Branch<F> {
++    fut: F,
++    seen: bool,
++    seen_active: bool,
++}
++
++pub fn branch<F>(fut: F) -> Branch<F> {
++    Branch { fut, seen: false, seen_active: false }
++}
++
++impl<F: Future> Future for Branch<F> {
++    type Output = F::Output;
++    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<F::Output> {
++        let this = unsafe { self.get_unchecked_mut() };
++        let r = unsafe { Pin::new_unchecked(&mut this.fut) }.poll(cx);
++        if r.is_pending() {
++            if !this.seen {
++                this.seen = true;
++                BRANCH_PENDING.fetch_add(1, SeqCst);
++                report();
++            }
++            if !this.seen_active && DEFECT_ACTIVE.load(SeqCst) > 0 {
++                this.seen_active = true;
++                DEFECT_PATH_PENDING.fetch_add(1, SeqCst);
++                report();
++            }
++        }
++        r
++    }
++}
++
++/// D3: RAII guard marking the fixed function as active.
++pub struct Active;
++pub fn active() -> Active {
++    DEFECT_ACTIVE.fetch_add(1, SeqCst);
++    Active
++}
++impl Drop for Active {
++    fn drop(&mut self) {
++        DEFECT_ACTIVE.fetch_sub(1, SeqCst);
++    }
++}
+diff --git a/pageserver/src/lib.rs b/pageserver/src/lib.rs
+index f947a75..204ed0d 100644
+--- a/pageserver/src/lib.rs
++++ b/pageserver/src/lib.rs
+@@ -3,6 +3,8 @@
+ 
+ mod auth;
+ pub mod basebackup;
++#[doc(hidden)]
++pub mod g0_probe;
+ pub mod config;
+ pub mod consumption_metrics;
+ pub mod context;
+diff --git a/pageserver/src/tenant/timeline/walreceiver.rs b/pageserver/src/tenant/timeline/walreceiver.rs
+index 2fab672..0915de6 100644
+--- a/pageserver/src/tenant/timeline/walreceiver.rs
++++ b/pageserver/src/tenant/timeline/walreceiver.rs
+@@ -96,17 +96,18 @@ impl WalReceiver {
+                     conf,
+                 );
+                 loop {
++                    crate::g0_probe::hit();
+                     select! {
+                         _ = task_mgr::shutdown_watcher() => {
+                             trace!("WAL receiver shutdown requested, shutting down");
+                             break;
+                         },
+-                        loop_step_result = connection_manager_loop_step(
++                        loop_step_result = crate::g0_probe::branch(connection_manager_loop_step(
+                             &mut broker_client,
+                             &mut connection_manager_state,
+                             &walreceiver_ctx,
+                             &loop_status,
+-                        ) => match loop_step_result {
++                        )) => match loop_step_result {
+                             ControlFlow::Continue(()) => continue,
+                             ControlFlow::Break(()) => {
+                                 trace!("Connection manager loop ended, shutting down");
+diff --git a/pageserver/src/tenant/timeline/walreceiver/connection_manager.rs b/pageserver/src/tenant/timeline/walreceiver/connection_manager.rs
+index cf6dee1..24998a8 100644
+--- a/pageserver/src/tenant/timeline/walreceiver/connection_manager.rs
++++ b/pageserver/src/tenant/timeline/walreceiver/connection_manager.rs
+@@ -491,6 +491,8 @@ impl ConnectionManagerState {
+             Some(wal_connection) => wal_connection,
+             None => return,
+         };
++        // G0 D3: the connection handle has been taken; the rest is the cancel-unsafe part.
++        let _g0_active = crate::g0_probe::active();
+ 
+         if needs_shutdown {
+             wal_connection.connection_task.shutdown().await;

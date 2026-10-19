@@ -1,0 +1,108 @@
+diff --git a/iroh-gossip/src/g0_probe.rs b/iroh-gossip/src/g0_probe.rs
+new file mode 100644
+index 0000000..7cdf26d
+--- /dev/null
++++ b/iroh-gossip/src/g0_probe.rs
+@@ -0,0 +1,68 @@
++// G0 temporary probe (D4). Not for commit to the target repository.
++#![allow(dead_code)]
++use std::future::Future;
++use std::pin::Pin;
++use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
++use std::task::{Context, Poll};
++
++pub static SITE_HIT: AtomicUsize = AtomicUsize::new(0);
++pub static BRANCH_PENDING: AtomicUsize = AtomicUsize::new(0);
++pub static DEFECT_ACTIVE: AtomicUsize = AtomicUsize::new(0);
++pub static DEFECT_PATH_PENDING: AtomicUsize = AtomicUsize::new(0);
++
++fn report() {
++    if let Ok(dir) = std::env::var("G0_PROBE_OUT") {
++        let line = format!(
++            "site_hit={} branch_pending={} defect_path_pending={}\n",
++            SITE_HIT.load(SeqCst),
++            BRANCH_PENDING.load(SeqCst),
++            DEFECT_PATH_PENDING.load(SeqCst)
++        );
++        let _ = std::fs::write(format!("{}/g0.{}", dir, std::process::id()), line);
++    }
++}
++
++/// Call once each time the select/timeout expression is entered.
++pub fn hit() {
++    SITE_HIT.fetch_add(1, SeqCst);
++    report();
++}
++
++/// Wraps the lost branch; counts the first Pending of each instance.
++pub struct Branch<F> {
++    fut: F,
++    seen: bool,
++}
++
++pub fn branch<F>(fut: F) -> Branch<F> {
++    Branch { fut, seen: false }
++}
++
++impl<F: Future> Future for Branch<F> {
++    type Output = F::Output;
++    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<F::Output> {
++        let this = unsafe { self.get_unchecked_mut() };
++        let r = unsafe { Pin::new_unchecked(&mut this.fut) }.poll(cx);
++        if r.is_pending() && !this.seen {
++            this.seen = true;
++            BRANCH_PENDING.fetch_add(1, SeqCst);
++            if DEFECT_ACTIVE.load(SeqCst) > 0 {
++                DEFECT_PATH_PENDING.fetch_add(1, SeqCst);
++            }
++            report();
++        }
++        r
++    }
++}
++
++/// D3: RAII guard marking the fixed function as active.
++pub struct Active;
++pub fn active() -> Active {
++    DEFECT_ACTIVE.fetch_add(1, SeqCst);
++    Active
++}
++impl Drop for Active {
++    fn drop(&mut self) {
++        DEFECT_ACTIVE.fetch_sub(1, SeqCst);
++    }
++}
+diff --git a/iroh-gossip/src/lib.rs b/iroh-gossip/src/lib.rs
+index 70a015a..b6ce461 100644
+--- a/iroh-gossip/src/lib.rs
++++ b/iroh-gossip/src/lib.rs
+@@ -3,6 +3,8 @@
+ #![deny(missing_docs, rustdoc::broken_intra_doc_links)]
+ 
+ #[cfg(feature = "dispatcher")]
++#[doc(hidden)]
++pub mod g0_probe;
+ pub mod dispatcher;
+ pub mod metrics;
+ #[cfg(feature = "net")]
+diff --git a/iroh-gossip/src/net.rs b/iroh-gossip/src/net.rs
+index 7844117..ac170b4 100644
+--- a/iroh-gossip/src/net.rs
++++ b/iroh-gossip/src/net.rs
+@@ -653,6 +653,7 @@ async fn connection_loop(
+     let mut send_buf = BytesMut::new();
+     let mut recv_buf = BytesMut::new();
+     loop {
++        crate::g0_probe::hit();
+         tokio::select! {
+             biased;
+             // If `send_rx` is closed,
+@@ -664,7 +665,7 @@ async fn connection_loop(
+                 write_message(&mut send, &mut send_buf, &msg, max_message_size).await?
+             }
+ 
+-            msg = read_message(&mut recv, &mut recv_buf, max_message_size) => {
++            msg = crate::g0_probe::branch(read_message(&mut recv, &mut recv_buf, max_message_size)) => {
+                 let msg = msg?;
+                 match msg {
+                     None => break,

@@ -1,0 +1,116 @@
+diff --git a/cli/file_watcher.rs b/cli/file_watcher.rs
+index fd7d4e1..e7b4a8b 100644
+--- a/cli/file_watcher.rs
++++ b/cli/file_watcher.rs
+@@ -41,6 +41,7 @@ impl DebouncedReceiver {
+       .await?
+       .into_iter()
+       .collect::<HashSet<_>>(); // prevent duplicates
++    let _g0_active = crate::g0_probe::active();
+     loop {
+       tokio::select! {
+         items = self.receiver.recv() => {
+@@ -187,8 +188,9 @@ where
+     match resolution_result {
+       Ok(operation_arg) => {
+         let fut = error_handler(operation(operation_arg));
++        crate::g0_probe::hit();
+         select! {
+-          (paths, result) = next_restart(&mut resolver, &mut receiver) => {
++          (paths, result) = crate::g0_probe::branch(next_restart(&mut resolver, &mut receiver)) => {
+             if result.is_ok() {
+               paths_to_watch = paths;
+             }
+diff --git a/cli/g0_probe.rs b/cli/g0_probe.rs
+new file mode 100644
+index 0000000..8731e0e
+--- /dev/null
++++ b/cli/g0_probe.rs
+@@ -0,0 +1,75 @@
++// G0 temporary probe (D4). Not for commit to the target repository.
++#![allow(dead_code)]
++use std::future::Future;
++use std::pin::Pin;
++use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
++use std::task::{Context, Poll};
++
++pub static SITE_HIT: AtomicUsize = AtomicUsize::new(0);
++pub static BRANCH_PENDING: AtomicUsize = AtomicUsize::new(0);
++pub static DEFECT_ACTIVE: AtomicUsize = AtomicUsize::new(0);
++pub static DEFECT_PATH_PENDING: AtomicUsize = AtomicUsize::new(0);
++
++fn report() {
++    if let Ok(dir) = std::env::var("G0_PROBE_OUT") {
++        let line = format!(
++            "site_hit={} branch_pending={} defect_path_pending={}\n",
++            SITE_HIT.load(SeqCst),
++            BRANCH_PENDING.load(SeqCst),
++            DEFECT_PATH_PENDING.load(SeqCst)
++        );
++        let _ = std::fs::write(format!("{}/g0.{}", dir, std::process::id()), line);
++    }
++}
++
++/// Call once each time the select/timeout expression is entered.
++pub fn hit() {
++    SITE_HIT.fetch_add(1, SeqCst);
++    report();
++}
++
++/// Wraps the lost branch. Per instance: `branch_pending` counts it once if it
++/// was ever Pending; `defect_path_pending` counts it once if it was ever
++/// Pending while the fixed function's guard was active (D3).
++pub struct Branch<F> {
++    fut: F,
++    seen: bool,
++    seen_active: bool,
++}
++
++pub fn branch<F>(fut: F) -> Branch<F> {
++    Branch { fut, seen: false, seen_active: false }
++}
++
++impl<F: Future> Future for Branch<F> {
++    type Output = F::Output;
++    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<F::Output> {
++        let this = unsafe { self.get_unchecked_mut() };
++        let r = unsafe { Pin::new_unchecked(&mut this.fut) }.poll(cx);
++        if r.is_pending() {
++            if !this.seen {
++                this.seen = true;
++                BRANCH_PENDING.fetch_add(1, SeqCst);
++                report();
++            }
++            if !this.seen_active && DEFECT_ACTIVE.load(SeqCst) > 0 {
++                this.seen_active = true;
++                DEFECT_PATH_PENDING.fetch_add(1, SeqCst);
++                report();
++            }
++        }
++        r
++    }
++}
++
++/// D3: RAII guard marking the fixed function as active.
++pub struct Active;
++pub fn active() -> Active {
++    DEFECT_ACTIVE.fetch_add(1, SeqCst);
++    Active
++}
++impl Drop for Active {
++    fn drop(&mut self) {
++        DEFECT_ACTIVE.fetch_sub(1, SeqCst);
++    }
++}
+diff --git a/cli/main.rs b/cli/main.rs
+index 320e4e8..1a4e0ee 100644
+--- a/cli/main.rs
++++ b/cli/main.rs
+@@ -15,6 +15,7 @@ mod emit;
+ mod errors;
+ mod file_fetcher;
+ mod file_watcher;
++mod g0_probe;
+ mod flags;
+ mod flags_allow_net;
+ mod fmt_errors;
