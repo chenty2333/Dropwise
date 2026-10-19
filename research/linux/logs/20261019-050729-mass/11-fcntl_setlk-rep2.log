@@ -1,0 +1,35 @@
+CMDLINE target=fcntl_setlk verbose=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=fcntl_setlk full=0
+PROBE target=fcntl_setlk sample=1 ret=0 errno=0 calls=4 readback=996
+PROBE target=fcntl_setlk sample=2 ret=0 errno=0 calls=4 readback=996
+PROBE target=fcntl_setlk sample=3 ret=0 errno=0 calls=4 readback=996
+BASE target=fcntl_setlk side=pre sample=1 obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+BASE target=fcntl_setlk side=pre sample=2 obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+BASE target=fcntl_setlk side=post sample=1 ret=0 errno=0 obs=lock_rc=-1;lock_errno=11|locks=1;type=W;pidmatch=1
+BASE target=fcntl_setlk side=post sample=2 ret=0 errno=0 obs=lock_rc=-1;lock_errno=11|locks=1;type=W;pidmatch=1
+BASE_STABLE target=fcntl_setlk stable=1 pre=same post=same
+TRIAL target=fcntl_setlk n=1 ret=-1 errno=37 injected=1 readback=0 verdict=OK_PRE obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+TRIAL target=fcntl_setlk n=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+TRIAL target=fcntl_setlk n=3 ret=-1 errno=37 injected=1 readback=0 verdict=OK_PRE obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+TRIAL target=fcntl_setlk n=4 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=lock_rc=-1;lock_errno=11|locks=1;type=W;pidmatch=1
+TRIAL_END target=fcntl_setlk n=5 reason=no_injection readback=1 ret=0 errno=0
+SUMMARY target=fcntl_setlk sites=4 trials=4 ok_pre=3 ok_post=1 ok_partial=0 violations=0 unknown=0 stable=1 elapsed_ms=17
+TARGET_END target=fcntl_setlk
+HARNESS_DONE
+[    0.601504] reboot: Power down

@@ -1,0 +1,39 @@
+CMDLINE target=accept4_unix verbose=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=accept4_unix full=-2
+PROBE target=accept4_unix sample=1 ret=128 errno=0 calls=8 readback=992
+PROBE target=accept4_unix sample=2 ret=128 errno=0 calls=8 readback=992
+PROBE target=accept4_unix sample=3 ret=128 errno=0 calls=8 readback=992
+BASE target=accept4_unix side=pre sample=1 obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+BASE target=accept4_unix side=pre sample=2 obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+BASE target=accept4_unix side=post sample=1 ret=128 errno=0 obs=accept_rc=-1;accept_errno=11;wrote=0|client_read=-1;client_errno=11;client_byte=-1;soerr=0;accepted_open=1
+BASE target=accept4_unix side=post sample=2 ret=128 errno=0 obs=accept_rc=-1;accept_errno=11;wrote=0|client_read=-1;client_errno=11;client_byte=-1;soerr=0;accepted_open=1
+BASE_STABLE target=accept4_unix stable=1 pre=same post=same
+TRIAL target=accept4_unix n=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix n=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix n=3 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix n=4 ret=-1 errno=23 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix n=5 ret=-1 errno=23 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix n=6 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix n=7 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix n=8 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL_END target=accept4_unix n=9 reason=no_injection readback=1 ret=128 errno=0
+SUMMARY target=accept4_unix sites=8 trials=8 ok_pre=8 ok_post=0 ok_partial=0 violations=0 unknown=0 stable=1 elapsed_ms=3
+TARGET_END target=accept4_unix
+HARNESS_DONE
+[    0.601699] reboot: Power down

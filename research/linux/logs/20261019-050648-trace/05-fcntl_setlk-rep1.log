@@ -1,0 +1,937 @@
+[    0.000000] Linux version 6.19.0 (ava@fedora) (gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2), GNU ld version 2.46.1-1.fc44) #1 SMP PREEMPT_DYNAMIC Mon Oct 19 04:57:55 JST 2026
+[    0.000000] Command line: console=ttyS0 panic=-1 oops=panic loglevel=7 dw.target=fcntl_setlk dw.verbose=1
+[    0.000000] x86/CPU: Model not found in latest microcode list
+[    0.000000] x86/split lock detection: #DB: warning on user-space bus_locks
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000003ffdefff] usable
+[    0.000000] BIOS-e820: [mem 0x000000003ffdf000-0x000000003fffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000b0000000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] APIC: Static calls initialized
+[    0.000000] SMBIOS 2.8 present.
+[    0.000000] DMI: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.000000] DMI: Memory slots populated: 1/1
+[    0.000000] Hypervisor detected: KVM
+[    0.000000] last_pfn = 0x3ffdf max_arch_pfn = 0x400000000
+[    0.000000] kvm-clock: Using msrs 4b564d01 and 4b564d00
+[    0.000000] kvm-clock: using sched offset of 241434240 cycles
+[    0.000001] clocksource: kvm-clock: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    0.000003] tsc: Detected 3686.400 MHz processor
+[    0.000244] last_pfn = 0x3ffdf max_arch_pfn = 0x400000000
+[    0.000260] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[    0.000262] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+[    0.002661] found SMP MP-table at [mem 0x000f54e0-0x000f54ef]
+[    0.002666] Using GB pages for direct mapping
+[    0.002727] RAMDISK: [mem 0x3fe0a000-0x3ffcffff]
+[    0.002730] ACPI: Early table checksum verification disabled
+[    0.002732] ACPI: RSDP 0x00000000000F5320 000014 (v00 BOCHS )
+[    0.002734] ACPI: RSDT 0x000000003FFE23AC 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.002737] ACPI: FACP 0x000000003FFE219C 0000F4 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.002740] ACPI: DSDT 0x000000003FFE0040 00215C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.002741] ACPI: FACS 0x000000003FFE0000 000040
+[    0.002742] ACPI: APIC 0x000000003FFE2290 000080 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.002743] ACPI: HPET 0x000000003FFE2310 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.002744] ACPI: MCFG 0x000000003FFE2348 00003C (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.002745] ACPI: WAET 0x000000003FFE2384 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.002746] ACPI: Reserving FACP table memory at [mem 0x3ffe219c-0x3ffe228f]
+[    0.002746] ACPI: Reserving DSDT table memory at [mem 0x3ffe0040-0x3ffe219b]
+[    0.002747] ACPI: Reserving FACS table memory at [mem 0x3ffe0000-0x3ffe003f]
+[    0.002747] ACPI: Reserving APIC table memory at [mem 0x3ffe2290-0x3ffe230f]
+[    0.002747] ACPI: Reserving HPET table memory at [mem 0x3ffe2310-0x3ffe2347]
+[    0.002748] ACPI: Reserving MCFG table memory at [mem 0x3ffe2348-0x3ffe2383]
+[    0.002748] ACPI: Reserving WAET table memory at [mem 0x3ffe2384-0x3ffe23ab]
+[    0.002870] No NUMA configuration found
+[    0.002870] Faking a node at [mem 0x0000000000000000-0x000000003ffdefff]
+[    0.002872] NODE_DATA(0) allocated [mem 0x3ffdb900-0x3ffdefff]
+[    0.002878] Zone ranges:
+[    0.002878]   DMA      [mem 0x0000000000001000-0x0000000000ffffff]
+[    0.002879]   DMA32    [mem 0x0000000001000000-0x000000003ffdefff]
+[    0.002880]   Normal   empty
+[    0.002880] Movable zone start for each node
+[    0.002880] Early memory node ranges
+[    0.002881]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.002881]   node   0: [mem 0x0000000000100000-0x000000003ffdefff]
+[    0.002882] Initmem setup node 0 [mem 0x0000000000001000-0x000000003ffdefff]
+[    0.002884] On node 0, zone DMA: 1 pages in unavailable ranges
+[    0.002899] On node 0, zone DMA: 97 pages in unavailable ranges
+[    0.004142] On node 0, zone DMA32: 33 pages in unavailable ranges
+[    0.004281] ACPI: PM-Timer IO Port: 0x608
+[    0.004286] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.004303] IOAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
+[    0.004305] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.004306] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.004306] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.004307] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.004307] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.004308] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.004309] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.004310] TSC deadline timer available
+[    0.004312] CPU topo: Max. logical packages:   1
+[    0.004313] CPU topo: Max. logical dies:       1
+[    0.004313] CPU topo: Max. dies per package:   1
+[    0.004314] CPU topo: Max. threads per core:   1
+[    0.004314] CPU topo: Num. cores per package:     2
+[    0.004315] CPU topo: Num. threads per package:   2
+[    0.004315] CPU topo: Allowing 2 present CPUs plus 0 hotplug CPUs
+[    0.004323] kvm-guest: APIC: eoi() replaced with kvm_guest_apic_eoi_write()
+[    0.004330] kvm-guest: KVM setup pv remote TLB flush
+[    0.004332] kvm-guest: setup PV sched yield
+[    0.004335] PM: hibernation: Registered nosave memory: [mem 0x00000000-0x00000fff]
+[    0.004336] PM: hibernation: Registered nosave memory: [mem 0x0009f000-0x000fffff]
+[    0.004336] [mem 0x40000000-0xafffffff] available for PCI devices
+[    0.004337] Booting paravirtualized kernel on KVM
+[    0.004337] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1910969940391419 ns
+[    0.008139] setup_percpu: NR_CPUS:64 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+[    0.008291] percpu: Embedded 50 pages/cpu s174040 r0 d30760 u1048576
+[    0.008308] Kernel command line: console=ttyS0 panic=-1 oops=panic loglevel=7 dw.target=fcntl_setlk dw.verbose=1
+[    0.008348] random: crng init done
+[    0.008348] printk: log buffer data + meta data: 262144 + 917504 = 1179648 bytes
+[    0.008468] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+[    0.008485] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.008506] Fallback order for Node 0: 0 
+[    0.008507] Built 1 zonelists, mobility grouping on.  Total pages: 262013
+[    0.008508] Policy zone: DMA32
+[    0.008508] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.009338] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.010153] Dynamic Preempt: voluntary
+[    0.010260] rcu: Preemptible hierarchical RCU implementation.
+[    0.010261] rcu: 	RCU event tracing is enabled.
+[    0.010261] rcu: 	RCU restricting CPUs from NR_CPUS=64 to nr_cpu_ids=2.
+[    0.010262] 	Trampoline variant of Tasks RCU enabled.
+[    0.010262] 	Tracing variant of Tasks RCU enabled.
+[    0.010263] rcu: RCU calculated value of scheduler-enlistment delay is 100 jiffies.
+[    0.010263] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.010267] RCU Tasks: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.010268] RCU Tasks Trace: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.011853] NR_IRQS: 4352, nr_irqs: 440, preallocated irqs: 16
+[    0.012010] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.014486] Console: colour VGA+ 80x25
+[    0.014508] printk: legacy console [ttyS0] enabled
+[    0.057434] ACPI: Core revision 20250807
+[    0.057755] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[    0.058423] APIC: Switch to symmetric I/O mode setup
+[    0.058818] x2apic enabled
+[    0.059137] APIC: Switched APIC routing to: physical x2apic
+[    0.059614] kvm-guest: APIC: send_IPI_mask() replaced with kvm_send_ipi_mask()
+[    0.060058] kvm-guest: APIC: send_IPI_mask_allbutself() replaced with kvm_send_ipi_mask_allbutself()
+[    0.060845] kvm-guest: setup PV IPIs
+[    0.061583] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.061941] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x6a464ae9873, max_idle_ns: 881590529744 ns
+[    0.062770] Calibrating delay loop (skipped) preset value.. 7372.80 BogoMIPS (lpj=3686400)
+[    0.063360] x86/cpu: User Mode Instruction Prevention (UMIP) activated
+[    0.063820] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[    0.064772] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[    0.065197] mitigations: Enabled attack vectors: user_kernel, user_user, SMT mitigations: auto
+[    0.065769] Speculative Store Bypass: Mitigation: Speculative Store Bypass disabled via prctl
+[    0.066269] Spectre V2 : Mitigation: Enhanced / Automatic IBRS
+[    0.066611] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.066770] Spectre V2 : mitigation: Enabling conditional Indirect Branch Prediction Barrier
+[    0.067783] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+[    0.068254] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+[    0.068769] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+[    0.069180] x86/fpu: Supporting XSAVE feature 0x200: 'Protection Keys User registers'
+[    0.069768] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[    0.070146] x86/fpu: xstate_offset[9]:  832, xstate_sizes[9]:    8
+[    0.070768] x86/fpu: Enabled xstate features 0x207, context size is 840 bytes, using 'compacted' format.
+[    0.083530] Freeing SMP alternatives memory: 56K
+[    0.083769] pid_max: default: 32768 minimum: 301
+[    0.084107] SELinux:  Initializing.
+[    0.084768] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.085215] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.085807] smpboot: CPU0: Intel(R) Core(TM) Ultra X7 358H (family: 0x6, model: 0xcc, stepping: 0x2)
+[    0.086515] Performance Events: unsupported CPU family 6 model 204 no PMU driver, software events only.
+[    0.086789] signal: max sigframe size: 3632
+[    0.087072] rcu: Hierarchical SRCU implementation.
+[    0.087553] rcu: 	Max phase no-delay instances is 400.
+[    0.087791] Timer migration: 1 hierarchy levels; 8 children per group; 1 crossnode level
+[    0.088540] smp: Bringing up secondary CPUs ...
+[    0.088805] smpboot: x86: Booting SMP configuration:
+[    0.089099] .... node  #0, CPUs:      #1
+[    0.089319] smp: Brought up 1 node, 2 CPUs
+[    0.090037] smpboot: Total of 2 processors activated (14745.60 BogoMIPS)
+[    0.090584] Memory: 982584K/1048052K available (20071K kernel code, 2901K rwdata, 6900K rodata, 2820K init, 1708K bss, 61768K reserved, 0K cma-reserved)
+[    0.090853] devtmpfs: initialized
+[    0.091111] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1911260446275000 ns
+[    0.091771] posixtimers hash table entries: 1024 (order: 2, 16384 bytes, linear)
+[    0.092226] futex hash table entries: 512 (32768 bytes on 1 NUMA nodes, total 32 KiB, linear).
+[    0.092767] PM: RTC time: 20:06:53, date: 2026-10-18
+[    0.093152] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.093555] audit: initializing netlink subsys (disabled)
+[    0.093782] audit: type=2000 audit(1792354013.391:1): state=initialized audit_enabled=0 res=1
+[    0.093829] thermal_sys: Registered thermal governor 'step_wise'
+[    0.094595] cpuidle: using governor menu
+[    0.094671] PCI: ECAM [mem 0xb0000000-0xbfffffff] (base 0xb0000000) for domain 0000 [bus 00-ff]
+[    0.095774] PCI: Using configuration type 1 for base access
+[    0.096164] kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+[    0.100882] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.101392] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    0.101944] ACPI: Added _OSI(Module Device)
+[    0.102193] ACPI: Added _OSI(Processor Device)
+[    0.102466] ACPI: Added _OSI(Processor Aggregator Device)
+[    0.103181] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    0.104841] ACPI: Interpreter enabled
+[    0.105088] ACPI: PM: (supports S0 S3 S4 S5)
+[    0.105340] ACPI: Using IOAPIC for interrupt routing
+[    0.105776] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    0.106342] PCI: Ignoring E820 reservations for host bridge windows
+[    0.106786] ACPI: Enabled 2 GPEs in block 00 to 3F
+[    0.107913] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    0.108303] acpi PNP0A08:00: _OSC: OS supports [ExtendedConfig ASPM ClockPM Segments MSI HPX-Type3]
+[    0.108785] acpi PNP0A08:00: _OSC: platform does not support [LTR]
+[    0.109196] acpi PNP0A08:00: _OSC: OS now controls [PME PCIeCapability]
+[    0.109608] PCI host bridge to bus 0000:00
+[    0.109768] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    0.110174] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    0.110575] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    0.110767] pci_bus 0000:00: root bus resource [mem 0x40000000-0xafffffff window]
+[    0.111215] pci_bus 0000:00: root bus resource [mem 0xc0000000-0xfebfffff window]
+[    0.111687] pci_bus 0000:00: root bus resource [mem 0x100000000-0x8ffffffff window]
+[    0.111767] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    0.112118] pci 0000:00:00.0: [8086:29c0] type 00 class 0x060000 conventional PCI endpoint
+[    0.112931] pci 0000:00:01.0: [1234:1111] type 00 class 0x030000 conventional PCI endpoint
+[    0.114780] pci 0000:00:01.0: BAR 0 [mem 0xfd000000-0xfdffffff pref]
+[    0.115424] pci 0000:00:01.0: BAR 2 [mem 0xfebd4000-0xfebd4fff]
+[    0.115788] pci 0000:00:01.0: ROM [mem 0xfebc0000-0xfebcffff pref]
+[    0.116250] pci 0000:00:01.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[    0.117090] pci 0000:00:02.0: [8086:10d3] type 00 class 0x020000 PCIe Root Complex Integrated Endpoint
+[    0.118774] pci 0000:00:02.0: BAR 0 [mem 0xfeb80000-0xfeb9ffff]
+[    0.119371] pci 0000:00:02.0: BAR 1 [mem 0xfeba0000-0xfebbffff]
+[    0.119763] pci 0000:00:02.0: BAR 2 [io  0xc040-0xc05f]
+[    0.119771] pci 0000:00:02.0: BAR 3 [mem 0xfebd0000-0xfebd3fff]
+[    0.120323] pci 0000:00:02.0: ROM [mem 0xfeb40000-0xfeb7ffff pref]
+[    0.120746] pci 0000:00:02.0: enabling Extended Tags
+[    0.121174] pci 0000:00:1f.0: [8086:2918] type 00 class 0x060100 conventional PCI endpoint
+[    0.121985] pci 0000:00:1f.0: quirk: [io  0x0600-0x067f] claimed by ICH6 ACPI/GPIO/TCO
+[    0.122697] pci 0000:00:1f.2: [8086:2922] type 00 class 0x010601 conventional PCI endpoint
+[    0.123526] pci 0000:00:1f.2: BAR 4 [io  0xc060-0xc07f]
+[    0.123772] pci 0000:00:1f.2: BAR 5 [mem 0xfebd5000-0xfebd5fff]
+[    0.124516] pci 0000:00:1f.3: [8086:2930] type 00 class 0x0c0500 conventional PCI endpoint
+[    0.125120] pci 0000:00:1f.3: BAR 4 [io  0x0700-0x073f]
+[    0.126378] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    0.126828] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    0.127220] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    0.127821] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    0.128223] ACPI: PCI: Interrupt link LNKE configured for IRQ 10
+[    0.128740] ACPI: PCI: Interrupt link LNKF configured for IRQ 10
+[    0.128795] ACPI: PCI: Interrupt link LNKG configured for IRQ 11
+[    0.129268] ACPI: PCI: Interrupt link LNKH configured for IRQ 11
+[    0.129632] ACPI: PCI: Interrupt link GSIA configured for IRQ 16
+[    0.129770] ACPI: PCI: Interrupt link GSIB configured for IRQ 17
+[    0.130448] ACPI: PCI: Interrupt link GSIC configured for IRQ 18
+[    0.130770] ACPI: PCI: Interrupt link GSID configured for IRQ 19
+[    0.131404] ACPI: PCI: Interrupt link GSIE configured for IRQ 20
+[    0.131770] ACPI: PCI: Interrupt link GSIF configured for IRQ 21
+[    0.132122] ACPI: PCI: Interrupt link GSIG configured for IRQ 22
+[    0.132482] ACPI: PCI: Interrupt link GSIH configured for IRQ 23
+[    0.132930] iommu: Default domain type: Translated
+[    0.133221] iommu: DMA domain TLB invalidation policy: lazy mode
+[    0.133798] SCSI subsystem initialized
+[    0.134062] ACPI: bus type USB registered
+[    0.134783] usbcore: registered new interface driver usbfs
+[    0.135149] usbcore: registered new interface driver hub
+[    0.135477] usbcore: registered new device driver usb
+[    0.135790] pps_core: LinuxPPS API ver. 1 registered
+[    0.136093] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.136625] PTP clock support registered
+[    0.136809] Advanced Linux Sound Architecture Driver Initialized.
+[    0.137594] NetLabel: Initializing
+[    0.137768] NetLabel:  domain hash size = 128
+[    0.138151] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[    0.138677] NetLabel:  unlabeled traffic allowed by default
+[    0.138804] PCI: Using ACPI for IRQ routing
+[    0.170895] pci 0000:00:01.0: vgaarb: setting as boot VGA device
+[    0.171216] pci 0000:00:01.0: vgaarb: bridge control possible
+[    0.171707] pci 0000:00:01.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    0.171771] vgaarb: loaded
+[    0.172219] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+[    0.172514] hpet0: 3 comparators, 64-bit 100.000000 MHz counter
+[    0.174818] clocksource: Switched to clocksource kvm-clock
+[    0.175240] VFS: Disk quotas dquot_6.6.0
+[    0.175479] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    0.176320] pnp: PnP ACPI init
+[    0.176677] system 00:05: [mem 0xb0000000-0xbfffffff window] has been reserved
+[    0.177218] pnp: PnP ACPI: found 6 devices
+[    0.183131] clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[    0.183857] NET: Registered PF_INET protocol family
+[    0.184181] IP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[    0.184938] tcp_listen_portaddr_hash hash table entries: 512 (order: 1, 8192 bytes, linear)
+[    0.185449] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.186124] TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.186618] TCP bind hash table entries: 8192 (order: 6, 262144 bytes, linear)
+[    0.187060] TCP: Hash tables configured (established 8192 bind 8192)
+[    0.187457] UDP hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.187866] UDP-Lite hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.188314] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.189072] RPC: Registered named UNIX socket transport module.
+[    0.189435] RPC: Registered udp transport module.
+[    0.189734] RPC: Registered tcp transport module.
+[    0.190019] RPC: Registered tcp-with-tls transport module.
+[    0.190353] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.191052] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    0.191516] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    0.192120] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    0.192534] pci_bus 0000:00: resource 7 [mem 0x40000000-0xafffffff window]
+[    0.192937] pci_bus 0000:00: resource 8 [mem 0xc0000000-0xfebfffff window]
+[    0.193352] pci_bus 0000:00: resource 9 [mem 0x100000000-0x8ffffffff window]
+[    0.193873] PCI: CLS 0 bytes, default 64
+[    0.194159] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x6a464ae9873, max_idle_ns: 881590529744 ns
+[    0.194176] Unpacking initramfs...
+[    0.196593] Initialise system trusted keyrings
+[    0.196932] workingset: timestamp_bits=56 max_order=18 bucket_order=0
+[    0.197943] NFS: Registering the id_resolver key type
+[    0.198322] Key type id_resolver registered
+[    0.198775] Key type id_legacy registered
+[    0.199064] 9p: Installing v9fs 9p2000 file system support
+[    0.203264] Key type asymmetric registered
+[    0.203527] Asymmetric key parser 'x509' registered
+[    0.203834] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 251)
+[    0.204288] io scheduler mq-deadline registered
+[    0.204570] io scheduler kyber registered
+[    0.204921] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    0.205395] ACPI: button: Power Button [PWRF]
+[    0.205790] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[    0.206233] 00:03: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    0.206828] Non-volatile memory driver v1.3
+[    0.207078] Linux agpgart interface v0.103
+[    0.207341] ACPI: bus type drm_connector registered
+[    0.208132] loop: module loaded
+[    0.208443] ACPI: \_SB_.GSIA: Enabled at IRQ 16
+[    0.209031] ahci 0000:00:1f.2: AHCI vers 0001.0000, 32 command slots, 1.5 Gbps, SATA mode
+[    0.209512] ahci 0000:00:1f.2: 6/6 ports implemented (port mask 0x3f)
+[    0.209893] ahci 0000:00:1f.2: flags: 64bit ncq only 
+[    0.210605] scsi host0: ahci
+[    0.210777] Freeing initrd memory: 1816K
+[    0.211081] scsi host1: ahci
+[    0.211396] scsi host2: ahci
+[    0.211630] scsi host3: ahci
+[    0.211856] scsi host4: ahci
+[    0.212176] scsi host5: ahci
+[    0.212499] ata1: SATA max UDMA/133 abar m4096@0xfebd5000 port 0xfebd5100 irq 24 lpm-pol 1
+[    0.213000] ata2: SATA max UDMA/133 abar m4096@0xfebd5000 port 0xfebd5180 irq 24 lpm-pol 1
+[    0.213496] ata3: SATA max UDMA/133 abar m4096@0xfebd5000 port 0xfebd5200 irq 24 lpm-pol 1
+[    0.213983] ata4: SATA max UDMA/133 abar m4096@0xfebd5000 port 0xfebd5280 irq 24 lpm-pol 1
+[    0.214522] ata5: SATA max UDMA/133 abar m4096@0xfebd5000 port 0xfebd5300 irq 24 lpm-pol 1
+[    0.215041] ata6: SATA max UDMA/133 abar m4096@0xfebd5000 port 0xfebd5380 irq 24 lpm-pol 1
+[    0.215773] e100: Intel(R) PRO/100 Network Driver
+[    0.216077] e100: Copyright(c) 1999-2006 Intel Corporation
+[    0.216424] e1000: Intel(R) PRO/1000 Network Driver
+[    0.216853] e1000: Copyright (c) 1999-2006 Intel Corporation.
+[    0.217260] e1000e: Intel(R) PRO/1000 Network Driver
+[    0.217564] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    0.218072] ACPI: \_SB_.GSIG: Enabled at IRQ 22
+[    0.218833] e1000e 0000:00:02.0: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+[    0.257305] e1000e 0000:00:02.0 0000:00:02.0 (uninitialized): registered PHC clock
+[    0.302047] e1000e 0000:00:02.0 eth0: (PCI Express:2.5GT/s:Width x1) 52:54:00:12:34:56
+[    0.302557] e1000e 0000:00:02.0 eth0: Intel(R) PRO/1000 Network Connection
+[    0.302965] e1000e 0000:00:02.0 eth0: MAC: 3, PHY: 8, PBA No: 000000-000
+[    0.303365] sky2: driver version 1.30
+[    0.303951] usbcore: registered new interface driver usblp
+[    0.304287] usbcore: registered new interface driver usb-storage
+[    0.304922] i8042: PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12
+[    0.306074] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    0.306407] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    0.307287] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input1
+[    0.307852] rtc_cmos 00:04: RTC can wake from S4
+[    0.308417] rtc_cmos 00:04: registered as rtc0
+[    0.308811] rtc_cmos 00:04: alarms up to one day, y3k, 242 bytes nvram
+[    0.309315] device-mapper: ioctl: 4.50.0-ioctl (2025-04-28) initialised: dm-devel@lists.linux.dev
+[    0.309614] i801_smbus 0000:00:1f.3: SMBus using PCI interrupt
+[    0.310224] intel_pstate: CPU model not supported
+[    0.310853] i2c i2c-0: Memory type 0x07 not supported yet, not instantiating SPD
+[    0.311268] hid: raw HID events driver (C) Jiri Kosina
+[    0.312195] usbcore: registered new interface driver usbhid
+[    0.312646] usbhid: USB HID core driver
+[    0.313207] Initializing XFRM netlink socket
+[    0.313591] NET: Registered PF_INET6 protocol family
+[    0.314186] Segment Routing with IPv6
+[    0.314409] In-situ OAM (IOAM) with IPv6
+[    0.314891] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.315329] NET: Registered PF_PACKET protocol family
+[    0.315845] 9pnet: Installing 9P2000 support
+[    0.316191] Key type dns_resolver registered
+[    0.316861] IPI shorthand broadcast: enabled
+[    0.318724] sched_clock: Marking stable (271009433, 46752514)->(331707214, -13945267)
+[    0.319546] registered taskstats version 1
+[    0.319839] Loading compiled-in X.509 certificates
+[    0.321070] Demotion targets for Node 0: null
+[    0.321931] PM:   Magic number: 14:564:144
+[    0.322391] ata_port ata1: hash matches
+[    0.322667]  ata1: hash matches
+[    0.322898] netconsole: network logging started
+[    0.323188] cfg80211: Loading compiled-in X.509 certificates for regulatory database
+[    0.324163] cryptomgr_probe (70) used greatest stack depth: 15008 bytes left
+[    0.324239] Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+[    0.325134] Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+[    0.325694] faux_driver regulatory: Direct firmware load for regulatory.db failed with error -2
+[    0.326256] cfg80211: failed to load regulatory.db
+[    0.326325] ALSA device list:
+[    0.327042]   No soundcards found.
+[    0.521472] ata1: SATA link down (SStatus 0 SControl 300)
+[    0.522073] ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[    0.522650] ata3.00: ATAPI: QEMU DVD-ROM, 2.5+, max UDMA/100
+[    0.523066] ata3.00: applying bridge limits
+[    0.523440] ata2: SATA link down (SStatus 0 SControl 300)
+[    0.523938] ata3.00: configured for UDMA/100
+[    0.524787] scsi 2:0:0:0: CD-ROM            QEMU     QEMU DVD-ROM     2.5+ PQ: 0 ANSI: 5
+[    0.529568] ata4: SATA link down (SStatus 0 SControl 300)
+[    0.530043] ata5: SATA link down (SStatus 0 SControl 300)
+[    0.530545] ata6: SATA link down (SStatus 0 SControl 300)
+[    0.541962] sr 2:0:0:0: [sr0] scsi3-mmc drive: 4x/4x cd/rw xa/form2 tray
+[    0.542425] cdrom: Uniform CD-ROM driver Revision: 3.20
+[    0.553517] sr 2:0:0:0: Attached scsi generic sg0 type 5
+[    0.554457] Freeing unused kernel image (initmem) memory: 2820K
+[    0.554952] Write protecting the kernel read-only data: 28672k
+[    0.555474] Freeing unused kernel image (text/rodata gap) memory: 408K
+[    0.556175] Freeing unused kernel image (rodata/data gap) memory: 1292K
+[    0.561781] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[    0.562217] Run /init as init process
+CMDLINE target=fcntl_setlk verbo[    0.562989] FAULT_INJECTION: forcing a failure.
+[    0.562989] name failslab, interval 1, probability 0, space 0, times 0
+se=1
+SELFTEST_S[    0.563897] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+OCKETPAIR n=1 in[    0.563899] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+jected=1 ret=0 e[    0.563901] Call Trace:
+rrno=0 readback=[    0.563910]  <TASK>
+0
+[    0.563912]  dump_stack_lvl+0x4d/0x70
+[    0.563922]  should_fail_ex.cold+0x37/0x40
+[    0.563927]  should_failslab+0x44/0x60
+[    0.563932]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.563936]  ? should_failslab+0x44/0x60
+[    0.563937]  security_inode_alloc+0x23/0x90
+[    0.563941]  inode_init_always_gfp+0x1dc/0x210
+[    0.563945]  alloc_inode+0x35/0xc0
+[    0.563948]  sock_alloc+0x1d/0xa0
+[    0.563953]  __sock_create+0x9f/0x170
+[    0.563955]  __sys_socketpair+0xe8/0x2c0
+[    0.563957]  __x64_sys_socketpair+0x16/0x20
+[    0.563959]  do_syscall_64+0xa4/0x310
+[    0.563969]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.563972] RIP: 0033:0x43a0fe
+[    0.563973] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.563974] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.563977] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.563978] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.563979] RBP: 0000000000000002 R08: 0000000000000000 R09: 0000000000000000
+[    0.563979] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.563980] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.563981]  </TASK>
+[    0.563983] socket: no more sockets
+[    0.575047] FAULT_INJECTION: forcing a failure.
+[    0.575047] name failslab, interval 1, probability 0, space 0, times 0
+SELFTEST_SOCKETP[    0.575814] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+AIR n=2 injected[    0.575816] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+=1 ret=-1 errno=[    0.575817] Call Trace:
+23 readback=0
+S[    0.575818]  <TASK>
+ELFTEST_SOCKETPA[    0.575818]  dump_stack_lvl+0x4d/0x70
+IR n=3 injected=[    0.575822]  should_fail_ex.cold+0x37/0x40
+1 ret=-1 errno=1[    0.575825]  should_failslab+0x44/0x60
+2 readback=0
+[    0.575828]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.575830]  ? should_failslab+0x44/0x60
+[    0.575831]  sk_prot_alloc+0x2d/0x110
+[    0.575835]  sk_alloc+0x2b/0x220
+[    0.575838]  unix_create1+0x5b/0x250
+[    0.575842]  unix_create+0x3d/0xa0
+[    0.575843]  __sock_create+0xe7/0x170
+[    0.575846]  __sys_socketpair+0xe8/0x2c0
+[    0.575847]  __x64_sys_socketpair+0x16/0x20
+[    0.575849]  do_syscall_64+0xa4/0x310
+[    0.575852]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.575853] RIP: 0033:0x43a0fe
+[    0.575854] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.575855] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.575856] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.575857] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.575857] RBP: 0000000000000003 R08: 0000000000000000 R09: 0000000000000000
+[    0.575858] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.575858] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.575859]  </TASK>
+[    0.575923] FAULT_INJECTION: forcing a failure.
+[    0.575923] name failslab, interval 1, probability 0, space 0, times 0
+[    0.587608] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+SELFTEST_SOCKETP[    0.587609] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+AIR n=4 injected[    0.587609] Call Trace:
+=1 ret=-1 errno=[    0.587610]  <TASK>
+12 readback=0
+[    0.587610]  dump_stack_lvl+0x4d/0x70
+[    0.587612]  should_fail_ex.cold+0x37/0x40
+[    0.587614]  ? __pm_runtime_suspend+0x50/0x100
+[    0.587617]  should_failslab+0x44/0x60
+[    0.587618]  __kmalloc_noprof+0xb2/0x5c0
+[    0.587620]  ? remove_wait_queue+0x15/0x50
+[    0.587622]  ? security_sk_alloc+0x96/0xb0
+[    0.587624]  ? security_sk_alloc+0x96/0xb0
+[    0.587624]  security_sk_alloc+0x96/0xb0
+[    0.587626]  sk_prot_alloc+0x51/0x110
+[    0.587627]  sk_alloc+0x2b/0x220
+[    0.587629]  unix_create1+0x5b/0x250
+[    0.587631]  unix_create+0x3d/0xa0
+[    0.587631]  __sock_create+0xe7/0x170
+[    0.587633]  __sys_socketpair+0xe8/0x2c0
+[    0.587634]  __x64_sys_socketpair+0x16/0x20
+[    0.587635]  do_syscall_64+0xa4/0x310
+[    0.587637]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.587638] RIP: 0033:0x43a0fe
+[    0.587638] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.587639] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.587640] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.587640] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.587640] RBP: 0000000000000004 R08: 0000000000000000 R09: 0000000000000000
+[    0.587641] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.587641] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.587642]  </TASK>
+[    0.587652] FAULT_INJECTION: forcing a failure.
+[    0.587652] name failslab, interval 1, probability 0, space 0, times 0
+[    0.600241] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.600242] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.600242] Call Trace:
+[    0.600242]  <TASK>
+[    0.600242]  dump_stack_lvl+0x4d/0x70
+[    0.600244]  should_fail_ex.cold+0x37/0x40
+[    0.600245]  should_failslab+0x44/0x60
+[    0.600247]  kmem_cache_alloc_lru_noprof+0x51/0x4c0
+[    0.600248]  ? avc_has_perm+0xa5/0x1f0
+[    0.600250]  sock_alloc_inode+0x1d/0x80
+[    0.600252]  alloc_inode+0x1d/0xc0
+[    0.600255]  sock_alloc+0x1d/0xa0
+[    0.600256]  __sock_create+0x9f/0x170
+[    0.600257]  __sys_socketpair+0x11a/0x2c0
+[    0.600258]  __x64_sys_socketpair+0x16/0x20
+[    0.600260]  do_syscall_64+0xa4/0x310
+[    0.600261]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.600262] RIP: 0033:0x43a0fe
+[    0.600262] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.600263] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.600263] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.600264] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.600264] RBP: 0000000000000005 R08: 0000000000000000 R09: 0000000000000000
+[    0.600264] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.600265] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.600265]  </TASK>
+[    0.600266] socket: no more sockets
+[    0.610592] FAULT_INJECTION: forcing a failure.
+[    0.610592] name failslab, interval 1, probability 0, space 0, times 0
+SELFTEST_SOCKETP[    0.611347] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+AIR n=5 injected[    0.611347] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+=1 ret=-1 errno=[    0.611348] Call Trace:
+23 readback=0
+[    0.611348]  <TASK>
+[    0.611348]  dump_stack_lvl+0x4d/0x70
+[    0.611350]  should_fail_ex.cold+0x37/0x40
+[    0.611351]  should_failslab+0x44/0x60
+[    0.611352]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.611353]  ? should_failslab+0x44/0x60
+[    0.611354]  security_inode_alloc+0x23/0x90
+[    0.611356]  inode_init_always_gfp+0x1dc/0x210
+[    0.611358]  alloc_inode+0x35/0xc0
+[    0.611359]  sock_alloc+0x1d/0xa0
+[    0.611360]  __sock_create+0x9f/0x170
+[    0.611361]  __sys_socketpair+0x11a/0x2c0
+[    0.611362]  __x64_sys_socketpair+0x16/0x20
+[    0.611364]  do_syscall_64+0xa4/0x310
+[    0.611365]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.611365] RIP: 0033:0x43a0fe
+[    0.611366] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.611366] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.611367] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.611367] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.611368] RBP: 0000000000000006 R08: 0000000000000000 R09: 0000000000000000
+[    0.611368] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.611368] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.611369]  </TASK>
+[    0.611369] socket: no more sockets
+[    0.622366] FAULT_INJECTION: forcing a failure.
+[    0.622366] name failslab, interval 1, probability 0, space 0, times 0
+SELFTEST_SOCKETP[    0.623160] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+AIR n=6 injected[    0.623161] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+=1 ret=-1 errno=[    0.623161] Call Trace:
+23 readback=0
+S[    0.623162]  <TASK>
+ELFTEST_SOCKETPA[    0.623162]  dump_stack_lvl+0x4d/0x70
+IR n=7 injected=[    0.623163]  should_fail_ex.cold+0x37/0x40
+1 ret=-1 errno=1[    0.623165]  ? security_sk_alloc+0x96/0xb0
+2 readback=0
+[    0.623166]  should_failslab+0x44/0x60
+[    0.623167]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.623168]  ? should_failslab+0x44/0x60
+[    0.623169]  sk_prot_alloc+0x2d/0x110
+[    0.623171]  sk_alloc+0x2b/0x220
+[    0.623173]  unix_create1+0x5b/0x250
+[    0.623174]  unix_create+0x3d/0xa0
+[    0.623175]  __sock_create+0xe7/0x170
+[    0.623176]  __sys_socketpair+0x11a/0x2c0
+[    0.623177]  __x64_sys_socketpair+0x16/0x20
+[    0.623178]  do_syscall_64+0xa4/0x310
+[    0.623180]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.623181] RIP: 0033:0x43a0fe
+[    0.623181] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.623182] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.623182] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.623183] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.623183] RBP: 0000000000000007 R08: 0000000000000000 R09: 0000000000000000
+[    0.623183] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.623183] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.623184]  </TASK>
+[    0.623287] FAULT_INJECTION: forcing a failure.
+[    0.623287] name failslab, interval 1, probability 0, space 0, times 0
+[    0.635409] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.635410] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.635410] Call Trace:
+[    0.635411]  <TASK>
+SELFTEST_SOCKETP[    0.635412]  dump_stack_lvl+0x4d/0x70
+AIR n=8 injected[    0.635415]  should_fail_ex.cold+0x37/0x40
+=1 ret=-1 errno=[    0.635418]  should_failslab+0x44/0x60
+12 readback=0
+[    0.635420]  __kmalloc_noprof+0xb2/0x5c0
+[    0.635422]  ? remove_wait_queue+0x15/0x50
+[    0.635424]  ? security_sk_alloc+0x96/0xb0
+[    0.635425]  ? security_sk_alloc+0x96/0xb0
+[    0.635426]  security_sk_alloc+0x96/0xb0
+[    0.635427]  sk_prot_alloc+0x51/0x110
+[    0.635430]  sk_alloc+0x2b/0x220
+[    0.635431]  unix_create1+0x5b/0x250
+[    0.635433]  unix_create+0x3d/0xa0
+[    0.635434]  __sock_create+0xe7/0x170
+[    0.635435]  __sys_socketpair+0x11a/0x2c0
+[    0.635437]  __x64_sys_socketpair+0x16/0x20
+[    0.635438]  do_syscall_64+0xa4/0x310
+[    0.635441]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.635442] RIP: 0033:0x43a0fe
+[    0.635443] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.635443] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.635444] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.635445] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.635445] RBP: 0000000000000008 R08: 0000000000000000 R09: 0000000000000000
+[    0.635445] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.635446] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.635446]  </TASK>
+[    0.635465] FAULT_INJECTION: forcing a failure.
+[    0.635465] name failslab, interval 1, probability 0, space 0, times 0
+[    0.647595] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.647597] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.647598] Call Trace:
+[    0.647598]  <TASK>
+SELFTEST_SOCKETP[    0.647599]  dump_stack_lvl+0x4d/0x70
+AIR n=9 injected[    0.647602]  should_fail_ex.cold+0x37/0x40
+=1 ret=-1 errno=[    0.647605]  should_failslab+0x44/0x60
+12 readback=0
+[    0.647607]  kmem_cache_alloc_lru_noprof+0x51/0x4c0
+[    0.647609]  __d_alloc+0x3b/0x210
+[    0.647611]  ? selinux_socket_post_create+0xf6/0x280
+[    0.647613]  d_alloc_pseudo+0x9/0x30
+[    0.647615]  alloc_file_pseudo+0x65/0x110
+[    0.647618]  sock_alloc_file+0x3e/0xc0
+[    0.647620]  __sys_socketpair+0x16c/0x2c0
+[    0.647622]  __x64_sys_socketpair+0x16/0x20
+[    0.647623]  do_syscall_64+0xa4/0x310
+[    0.647625]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.647627] RIP: 0033:0x43a0fe
+[    0.647627] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.647627] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.647628] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000043a0fe
+[    0.647629] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.647629] RBP: 0000000000000009 R08: 0000000000000000 R09: 0000000000000000
+[    0.647629] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000001
+[    0.647630] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.647630]  </TASK>
+[    0.647652] FAULT_INJECTION: forcing a failure.
+[    0.647652] name failslab, interval 1, probability 0, space 0, times 0
+[    0.657998] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.657999] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.657999] Call Trace:
+[    0.658000]  <TASK>
+[    0.658000]  dump_stack_lvl+0x4d/0x70
+[    0.658002]  should_fail_ex.cold+0x37/0x40
+[    0.658004]  should_failslab+0x44/0x60
+[    0.658005]  kmem_cache_alloc_lru_noprof+0x51/0x4c0
+[    0.658006]  __d_alloc+0x3b/0x210
+[    0.658008]  ? selinux_socket_post_create+0xf6/0x280
+SELFTEST_SOCKETP[    0.658009]  d_alloc_pseudo+0x9/0x30
+AIR n=10 injecte[    0.658011]  alloc_file_pseudo+0x65/0x110
+d=1 ret=-1 errno[    0.658013]  sock_alloc_file+0x3e/0xc0
+=12 readback=0
+[    0.658015]  __sys_socketpair+0x16c/0x2c0
+[    0.658016]  __x64_sys_socketpair+0x16/0x20
+[    0.658017]  do_syscall_64+0xa4/0x310
+[    0.658019]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.658020] RIP: 0033:0x43a0fe
+[    0.658020] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.658021] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.658022] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 000000000043a0fe
+[    0.658022] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.658022] RBP: 000000000000000a R08: 0000000000000000 R09: 0000000000000000
+[    0.658023] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000002
+[    0.658023] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.658023]  </TASK>
+[    0.658039] FAULT_INJECTION: forcing a failure.
+[    0.658039] name failslab, interval 1, probability 0, space 0, times 0
+[    0.667441] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+SELFTEST_SOCKETP[    0.667442] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+AIR n=11 injecte[    0.667442] Call Trace:
+d=1 ret=-1 errno[    0.667443]  <TASK>
+=12 readback=0
+[    0.667443]  dump_stack_lvl+0x4d/0x70
+[    0.667444]  should_fail_ex.cold+0x37/0x40
+[    0.667445]  should_failslab+0x44/0x60
+[    0.667446]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.667447]  ? should_failslab+0x44/0x60
+[    0.667448]  security_file_alloc+0x22/0x90
+[    0.667453]  init_file+0x2b/0x120
+[    0.667455]  alloc_empty_file+0x54/0x110
+[    0.667457]  alloc_file_pseudo+0xa3/0x110
+[    0.667458]  sock_alloc_file+0x3e/0xc0
+[    0.667459]  __sys_socketpair+0x16c/0x2c0
+[    0.667460]  __x64_sys_socketpair+0x16/0x20
+[    0.667462]  do_syscall_64+0xa4/0x310
+[    0.667463]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.667463] RIP: 0033:0x43a0fe
+[    0.667464] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.667464] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.667465] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 000000000043a0fe
+[    0.667465] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.667465] RBP: 000000000000000b R08: 0000000000000000 R09: 0000000000000000
+[    0.667466] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000002
+[    0.667466] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.667466]  </TASK>
+[    0.667483] FAULT_INJECTION: forcing a failure.
+[    0.667483] name failslab, interval 1, probability 0, space 0, times 0
+[    0.674960] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.674962] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.674963] Call Trace:
+[    0.674965]  <TASK>
+[    0.674966]  dump_stack_lvl+0x4d/0x70
+[    0.674968]  should_fail_ex.cold+0x37/0x40
+[    0.674970]  should_failslab+0x44/0x60
+[    0.674971]  kmem_cache_alloc_lru_noprof+0x51/0x4c0
+[    0.674972]  __d_alloc+0x3b/0x210
+[    0.674973]  d_alloc_pseudo+0x9/0x30
+[    0.674975]  alloc_file_pseudo+0x65/0x110
+SELFTEST_SOCKETP[    0.674976]  sock_alloc_file+0x3e/0xc0
+AIR n=12 injecte[    0.674977]  __sys_socketpair+0x188/0x2c0
+d=1 ret=-1 errno[    0.674978]  __x64_sys_socketpair+0x16/0x20
+=12 readback=0
+[    0.674979]  do_syscall_64+0xa4/0x310
+[    0.674980]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.674981] RIP: 0033:0x43a0fe
+[    0.674982] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.674983] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.674984] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 000000000043a0fe
+[    0.674985] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.674985] RBP: 000000000000000c R08: 0000000000000000 R09: 0000000000000000
+[    0.674986] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000002
+[    0.674986] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.674987]  </TASK>
+[    0.675009] FAULT_INJECTION: forcing a failure.
+[    0.675009] name failslab, interval 1, probability 0, space 0, times 0
+[    0.681761] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+SELFTEST_SOCKETP[    0.681762] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+AIR n=13 injecte[    0.681762] Call Trace:
+d=1 ret=-1 errno[    0.681763]  <TASK>
+=12 readback=0
+[    0.681763]  dump_stack_lvl+0x4d/0x70
+[    0.681764]  should_fail_ex.cold+0x37/0x40
+[    0.681765]  ? should_failslab+0x44/0x60
+[    0.681766]  ? kmem_cache_alloc_lru_noprof+0x51/0x4c0
+[    0.681766]  should_failslab+0x44/0x60
+[    0.681767]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.681768]  alloc_empty_file+0x3b/0x110
+[    0.681769]  alloc_file_pseudo+0xa3/0x110
+[    0.681770]  sock_alloc_file+0x3e/0xc0
+[    0.681770]  __sys_socketpair+0x188/0x2c0
+[    0.681771]  __x64_sys_socketpair+0x16/0x20
+[    0.681772]  do_syscall_64+0xa4/0x310
+[    0.681773]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.681774] RIP: 0033:0x43a0fe
+[    0.681774] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.681775] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.681775] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 000000000043a0fe
+[    0.681776] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.681776] RBP: 000000000000000d R08: 0000000000000000 R09: 0000000000000000
+[    0.681776] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000002
+[    0.681776] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.681777]  </TASK>
+[    0.681785] FAULT_INJECTION: forcing a failure.
+[    0.681785] name failslab, interval 1, probability 0, space 0, times 0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno[    0.689394] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+=12 readback=0
+[    0.689396] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+SELFTEST_SOCKETP[    0.689397] Call Trace:
+AIR n=15 injecte[    0.689397]  <TASK>
+d=0 ret=0 errno=[    0.689398]  dump_stack_lvl+0x4d/0x70
+0 readback=1
+SE[    0.689400]  should_fail_ex.cold+0x37/0x40
+LFTEST_OK socket[    0.689402]  should_failslab+0x44/0x60
+pair_sites=14
+[    0.689403]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.689404]  ? should_failslab+0x44/0x60
+[    0.689405]  security_file_alloc+0x22/0x90
+[    0.689408]  init_file+0x2b/0x120
+TARGET_BEGIN tar[    0.689410]  alloc_empty_file+0x54/0x110
+get=fcntl_setlk [    0.689411]  alloc_file_pseudo+0xa3/0x110
+full=0[    0.689412]  sock_alloc_file+0x3e/0xc0
+[    0.689413]  __sys_socketpair+0x188/0x2c0
+[    0.689414]  __x64_sys_socketpair+0x16/0x20
+
+[    0.689415]  do_syscall_64+0xa4/0x310
+[    0.689417]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.689418] RIP: 0033:0x43a0fe
+[    0.689419] Code: 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48 83 c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 49 89 ca b8 35 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 f0 ff ff ff f7 d8 64 89 01 48
+[    0.689419] RSP: 002b:00007fff4c1d2778 EFLAGS: 00000246 ORIG_RAX: 0000000000000035
+[    0.689420] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 000000000043a0fe
+[    0.689421] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000001
+[    0.689421] RBP: 000000000000000e R08: 0000000000000000 R09: 0000000000000000
+[    0.689421] R10: 00007fff4c1d2780 R11: 0000000000000246 R12: 0000000000000002
+[    0.689422] R13: 00000000115fe3b0 R14: 0000000000000002 R15: 00000000004cd0e0
+[    0.689422]  </TASK>
+[    0.694122] DWTRACE target=fcntl_setlk n=1000
+[    0.699664] init (73) used greatest stack depth: 14216 bytes left
+PROBE target=fcntl_setlk sample=1 ret=0 errno=0 calls=4 readback=996
+[    0.700661] DWTRACE target=fcntl_setlk n=1000
+PROBE target=fcntl_setlk sample=2 ret=0 errno=0 calls=4 readback=996
+[    0.701557] DWTRACE target=fcntl_setlk n=1000
+[    0.701892] init (75) used greatest stack depth: 14024 bytes left
+PROBE target=fcntl_setlk sample=3 ret=0 errno=0 calls=4 readback=996
+BASE target=fcntl_setlk side=pre sample=1 obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+BASE target=fcntl_setlk side=pre sample=2 obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+BASE target=fcntl_setlk side=post sample=1 ret=0 errno=0 obs=lock_rc=-1;lock_errno=11|locks=1;type=W;pidmatch=1
+BASE target=fcntl_setlk side=post sample=2 ret=0 errno=0 obs=lock_rc=-1;lock_errno=11|locks=1;type=W;pidmatch=1
+BASE_STABLE target=fcntl_setlk stable=1 pre=same post=same
+[    0.719258] DWTRACE target=fcntl_setlk n=1
+[    0.719593] FAULT_INJECTION: forcing a failure.
+[    0.719593] name failslab, interval 1, probability 0, space 0, times 0
+[    0.720371] CPU: 1 UID: 0 PID: 84 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.720373] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+TRIAL target=fcntl_setlk n=1 ret=-1 errno=37 injected=1 readback=0 verdict=OK_PRE obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+[    0.720375] Call Trace:
+[    0.720377]  <TASK>
+[    0.720379]  dump_stack_lvl+0x4d/0x70
+[    0.720385]  should_fail_ex.cold+0x37/0x40
+[    0.720389]  should_failslab+0x44/0x60
+[    0.720393]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.720395]  fcntl_setlk+0x42/0x3c0
+[    0.720399]  ? avc_has_perm+0xa5/0x1f0
+[    0.720403]  do_fcntl+0x5f2/0x920
+[    0.720407]  __x64_sys_fcntl+0xab/0x110
+[    0.720409]  ? __x64_sys_pwrite64+0xa5/0x100
+[    0.720411]  do_syscall_64+0xa4/0x310
+[    0.720416]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.720418] RIP: 0033:0x438c57
+[    0.720420] Code: 00 00 00 f3 0f 1e fa 55 48 89 e5 48 83 ec 10 64 48 8b 04 25 28 00 00 00 48 89 45 f8 31 c0 83 fe 09 74 20 b8 48 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 41 48 8b 55 f8 64 48 2b 14 25 28 00 00 00 75
+[    0.720420] RSP: 002b:00007fff4c1d0bd0 EFLAGS: 00000293 ORIG_RAX: 0000000000000048
+[    0.720423] RAX: ffffffffffffffda RBX: 00000000115fe3b0 RCX: 0000000000438c57
+[    0.720424] RDX: 00007fff4c1d0c50 RSI: 0000000000000006 RDI: 0000000000000008
+[    0.720425] RBP: 00007fff4c1d0be0 R08: 0000000000000000 R09: 0000000000000000
+[    0.720425] R10: 0000000000000000 R11: 0000000000000293 R12: 00000000004d6b40
+[    0.720426] R13: 0000000000000046 R14: 0000000000000001 R15: 0000000000000001
+[    0.720426]  </TASK>
+[    0.720648] init (84) used greatest stack depth: 13648 bytes left
+[    0.721884] DWTRACE target=fcntl_setlk n=2
+[    0.721886] FAULT_INJECTION: forcing a failure.
+[    0.721886] name failslab, interval 1, probability 0, space 0, times 0
+[    0.721888] CPU: 0 UID: 0 PID: 86 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.721889] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.721890] Call Trace:
+[    0.721891]  <TASK>
+[    0.721891]  dump_stack_lvl+0x4d/0x70
+[    0.721893]  should_fail_ex.cold+0x37/0x40
+[    0.721895]  should_failslab+0x44/0x60
+[    0.721896]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.721898]  locks_get_lock_context+0x89/0x110
+[    0.721900]  posix_lock_inode+0x44/0xbe0
+[    0.721902]  ? selinux_file_lock+0x8e/0xe0
+[    0.721904]  fcntl_setlk+0x165/0x3c0
+[    0.721905]  do_fcntl+0x5f2/0x920
+[    0.721906]  __x64_sys_fcntl+0xab/0x110
+[    0.721907]  ? __x64_sys_pwrite64+0xa5/0x100
+[    0.721909]  do_syscall_64+0xa4/0x310
+[    0.721910]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.721911] RIP: 0033:0x438c57
+[    0.721912] Code: 00 00 00 f3 0f 1e fa 55 48 89 e5 48 83 ec 10 64 48 8b 04 25 28 00 00 00 48 89 45 f8 31 c0 83 fe 09 74 20 b8 48 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 41 48 8b 55 f8 64 48 2b 14 25 28 00 00 00 75
+[    0.721913] RSP: 002b:00007fff4c1d0bd0 EFLAGS: 00000293 ORIG_RAX: 0000000000000048
+[    0.721914] RAX: ffffffffffffffda RBX: 00000000115fe3b0 RCX: 0000000000438c57
+[    0.721915] RDX: 00007fff4c1d0c50 RSI: 0000000000000006 RDI: 0000000000000008
+[    0.721915] RBP: 00007fff4c1d0be0 R08: 0000000000000000 R09: 0000000000000000
+[    0.721916] R10: 0000000000000000 R11: 0000000000000293 R12: 00000000004d6b40
+[    0.721916] R13: 0000000000000046 R14: 0000000000000001 R15: 0000000000000002
+[    0.721917]  </TASK>
+[    0.742336] init (86) used greatest stack depth: 13504 bytes left
+TRIAL target=fcntl_setlk n=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+[    0.743856] DWTRACE target=fcntl_setlk n=3
+[    0.744079] FAULT_INJECTION: forcing a failure.
+[    0.744079] name failslab, interval 1, probability 0, space 0, times 0
+[    0.744574] CPU: 0 UID: 0 PID: 88 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.744575] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.744575] Call Trace:
+[    0.744576]  <TASK>
+[    0.744577]  dump_stack_lvl+0x4d/0x70
+[    0.744579]  should_fail_ex.cold+0x37/0x40
+[    0.744580]  ? should_failslab+0x44/0x60
+[    0.744581]  ? kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.744582]  should_failslab+0x44/0x60
+[    0.744582]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.744583]  posix_lock_inode+0x342/0xbe0
+[    0.744585]  ? selinux_file_lock+0x8e/0xe0
+[    0.744586]  fcntl_setlk+0x165/0x3c0
+[    0.744587]  do_fcntl+0x5f2/0x920
+[    0.744588]  __x64_sys_fcntl+0xab/0x110
+[    0.744589]  ? __x64_sys_pwrite64+0xa5/0x100
+[    0.744590]  do_syscall_64+0xa4/0x310
+[    0.744592]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.744592] RIP: 0033:0x438c57
+[    0.744593] Code: 00 00 00 f3 0f 1e fa 55 48 89 e5 48 83 ec 10 64 48 8b 04 25 28 00 00 00 48 89 45 f8 31 c0 83 fe 09 74 20 b8 48 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 41 48 8b 55 f8 64 48 2b 14 25 28 00 00 00 75
+[    0.744594] RSP: 002b:00007fff4c1d0bd0 EFLAGS: 00000293 ORIG_RAX: 0000000000000048
+[    0.744594] RAX: ffffffffffffffda RBX: 00000000115fe3b0 RCX: 0000000000438c57
+[    0.744595] RDX: 00007fff4c1d0c50 RSI: 0000000000000006 RDI: 0000000000000008
+[    0.744595] RBP: 00007fff4c1d0be0 R08: 0000000000000000 R09: 0000000000000000
+[    0.744595] R10: 0000000000000000 R11: 0000000000000293 R12: 00000000004d6b40
+[    0.744596] R13: 0000000000000046 R14: 0000000000000001 R15: 0000000000000003
+[    0.744596]  </TASK>
+TRIAL target=fcntl_setlk n=3 ret=-1 errno=37 injected=1 readback=0 verdict=OK_PRE obs=lock_rc=0;lock_errno=0|locks=0;type=?;pidmatch=0
+[    0.752414] DWTRACE target=fcntl_setlk n=4
+[    0.752742] FAULT_INJECTION: forcing a failure.
+[    0.752742] name failslab, interval 1, probability 0, space 0, times 0
+[    0.753565] CPU: 1 UID: 0 PID: 90 Comm: init Not tainted 6.19.0 #1 PREEMPT(voluntary) 
+[    0.753567] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[    0.753568] Call Trace:
+[    0.753570]  <TASK>
+[    0.753571]  dump_stack_lvl+0x4d/0x70
+[    0.753574]  should_fail_ex.cold+0x37/0x40
+[    0.753576]  ? should_failslab+0x44/0x60
+[    0.753578]  ? kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.753579]  should_failslab+0x44/0x60
+[    0.753581]  kmem_cache_alloc_noprof+0x4f/0x4c0
+[    0.753582]  posix_lock_inode+0x3a6/0xbe0
+[    0.753584]  ? selinux_file_lock+0x8e/0xe0
+[    0.753587]  fcntl_setlk+0x165/0x3c0
+[    0.753588]  do_fcntl+0x5f2/0x920
+[    0.753590]  __x64_sys_fcntl+0xab/0x110
+[    0.753592]  ? __x64_sys_pwrite64+0xa5/0x100
+[    0.753593]  do_syscall_64+0xa4/0x310
+[    0.753596]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[    0.753597] RIP: 0033:0x438c57
+[    0.753598] Code: 00 00 00 f3 0f 1e fa 55 48 89 e5 48 83 ec 10 64 48 8b 04 25 28 00 00 00 48 89 45 f8 31 c0 83 fe 09 74 20 b8 48 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 41 48 8b 55 f8 64 48 2b 14 25 28 00 00 00 75
+[    0.753599] RSP: 002b:00007fff4c1d0bd0 EFLAGS: 00000293 ORIG_RAX: 0000000000000048
+[    0.753601] RAX: ffffffffffffffda RBX: 00000000115fe3b0 RCX: 0000000000438c57
+[    0.753602] RDX: 00007fff4c1d0c50 RSI: 0000000000000006 RDI: 0000000000000008
+[    0.753602] RBP: 00007fff4c1d0be0 R08: 0000000000000000 R09: 0000000000000000
+[    0.753603] R10: 0000000000000000 R11: 0000000000000293 R12: 00000000004d6b40
+[    0.753604] R13: 0000000000000046 R14: 0000000000000001 R15: 0000000000000004
+[    0.753604]  </TASK>
+TRIAL target=fcntl_setlk n=4 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=lock_rc=-1;lock_errno=11|locks=1;type=W;pidmatch=1[    0.765089] input: ImExPS/2 Generic Explorer Mouse as /devices/platform/i8042/serio1/input/input3
+
+[    0.765698] DWTRACE target=fcntl_setlk n=5
+TRIAL_END target=fcntl_setlk n=5 reason=no_injection readback=1 ret=0 errno=0
+SUMMARY target=fcntl_setlk sites=4 trials=4 ok_pre=3 ok_post=1 ok_partial=0 violations=0 unknown=0 stable=1 elapsed_ms=74
+TARGET_END target=fcntl_setlk
+HARNESS_DONE
+[    0.768176] e1000e: EEE TX LPI TIMER: 00000000
+[    0.770124] ACPI: PM: Preparing to enter system sleep state S5
+[    0.770505] reboot: Power down

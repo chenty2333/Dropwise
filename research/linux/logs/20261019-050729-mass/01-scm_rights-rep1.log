@@ -1,0 +1,34 @@
+CMDLINE target=scm_rights verbose=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=scm_rights full=1
+PROBE target=scm_rights sample=1 ret=1 errno=0 calls=3 readback=997
+PROBE target=scm_rights sample=2 ret=1 errno=0 calls=3 readback=997
+PROBE target=scm_rights sample=3 ret=1 errno=0 calls=3 readback=997
+BASE target=scm_rights side=pre sample=1 obs=recv_rc=-1;recv_errno=11;byte=-1;nfds=0;ino_match=0;ctrunc=0;fion=0|fion_after=0
+BASE target=scm_rights side=pre sample=2 obs=recv_rc=-1;recv_errno=11;byte=-1;nfds=0;ino_match=0;ctrunc=0;fion=0|fion_after=0
+BASE target=scm_rights side=post sample=1 ret=1 errno=0 obs=recv_rc=1;recv_errno=0;byte=88;nfds=1;ino_match=1;ctrunc=0;fion=0|fion_after=0
+BASE target=scm_rights side=post sample=2 ret=1 errno=0 obs=recv_rc=1;recv_errno=0;byte=88;nfds=1;ino_match=1;ctrunc=0;fion=0|fion_after=0
+BASE_STABLE target=scm_rights stable=1 pre=same post=same
+TRIAL target=scm_rights n=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=recv_rc=-1;recv_errno=11;byte=-1;nfds=0;ino_match=0;ctrunc=0;fion=0|fion_after=0
+TRIAL target=scm_rights n=2 ret=-1 errno=105 injected=1 readback=0 verdict=OK_PRE obs=recv_rc=-1;recv_errno=11;byte=-1;nfds=0;ino_match=0;ctrunc=0;fion=0|fion_after=0
+TRIAL target=scm_rights n=3 ret=-1 errno=105 injected=1 readback=0 verdict=OK_PRE obs=recv_rc=-1;recv_errno=11;byte=-1;nfds=0;ino_match=0;ctrunc=0;fion=0|fion_after=0
+TRIAL_END target=scm_rights n=4 reason=no_injection readback=1 ret=1 errno=0
+SUMMARY target=scm_rights sites=3 trials=3 ok_pre=3 ok_post=0 ok_partial=0 violations=0 unknown=0 stable=1 elapsed_ms=2
+TARGET_END target=scm_rights
+HARNESS_DONE
+[    0.618666] reboot: Power down

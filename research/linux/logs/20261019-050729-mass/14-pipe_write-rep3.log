@@ -1,0 +1,33 @@
+CMDLINE target=pipe_write verbose=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=pipe_write full=8192
+PROBE target=pipe_write sample=1 ret=8192 errno=0 calls=2 readback=998
+PROBE target=pipe_write sample=2 ret=8192 errno=0 calls=2 readback=998
+PROBE target=pipe_write sample=3 ret=8192 errno=0 calls=2 readback=998
+BASE target=pipe_write side=pre sample=1 obs=read_rc=-1;read_errno=11;np=0;first=-1;last=-1;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_write side=pre sample=2 obs=read_rc=-1;read_errno=11;np=0;first=-1;last=-1;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_write side=post sample=1 ret=8192 errno=0 obs=read_rc=8192;read_errno=0;np=8192;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_write side=post sample=2 ret=8192 errno=0 obs=read_rc=8192;read_errno=0;np=8192;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE_STABLE target=pipe_write stable=1 pre=same post=same
+TRIAL target=pipe_write n=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=read_rc=-1;read_errno=11;np=0;first=-1;last=-1;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_write n=2 ret=4096 errno=0 injected=1 readback=0 verdict=OK_PARTIAL obs=read_rc=4096;read_errno=0;np=4096;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL_END target=pipe_write n=3 reason=no_injection readback=1 ret=8192 errno=0
+SUMMARY target=pipe_write sites=2 trials=2 ok_pre=1 ok_post=0 ok_partial=1 violations=0 unknown=0 stable=1 elapsed_ms=1
+TARGET_END target=pipe_write
+HARNESS_DONE
+[    0.609606] reboot: Power down

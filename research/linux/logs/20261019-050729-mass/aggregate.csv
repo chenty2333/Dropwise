@@ -1,0 +1,7 @@
+target,reps,done,stable,sites,ok_pre,ok_post,ok_partial,violations,unknown,wall_s
+scm_rights,5,5,5,15,15,0,0,0,0,5.01
+pipe_write,5,5,5,10,5,0,5,0,0,5.01
+tmpfs_pwrite,5,5,5,5,5,0,0,0,0,5.01
+epoll_ctl_add,5,5,5,15,15,0,0,0,0,5.01
+fcntl_setlk,5,5,5,20,15,5,0,0,0,5.01
+accept4_unix,5,5,5,40,40,0,0,0,0,5.01
