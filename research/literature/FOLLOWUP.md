@@ -288,3 +288,63 @@ Gemini 说简单取消测试有三种常见写法，各有盲点。RESCAN 的回
   - 静默检查**抓不到服务端还在计算的回复**：被取消的是一个慢查询时（diesel-async 回归测试里的 `SLEEP(0.5)`），借出时缓冲区仍是空的，下一个查询照样读到旧结果。所以它只能作为“进行中”标志之外的补充，不能替代。
   - 示例代码不能直接用（tokio 的 `try_io` 里调用 `peek` 的写法不对）；通用池也拿不到底层 socket 和编解码缓冲区，这个检查只能放在 manager 或客户端里。
   - “Kotlin、Trio、Go 很少出现这类问题”说过头了：redis-py 的 CVE 正是在 Python asyncio 的异常式取消下发生的，Go 的 `database/sql` 也有 `ErrBadConn` 的历史。异常式取消只是让清理代码有机会运行，库仍然必须记得作废连接。
+
+## Gemini 第八至十轮：可检测性、跨语言案例与内核线索（2026-10-19）
+
+第八、九轮接在同一个长对话后面，第十轮新开对话、重新写了完整背景。**第九轮的具体线索几乎全是编的，第十轮基本可信**，差别主要来自对话长度，以及第十轮明确要求"不确定编号就给关键词，不要猜"。
+
+### 第八轮：缺陷形状的理论名字、新颖性、Linux 的坑、AI 写场景
+
+- **可以引用的相关工作**（凭记忆核对，未逐篇读原文）：EIO（Gunawi 等，FAST 2008）和 Rubio-González 等（PLDI 2009）讲的是文件系统里错误码在跨层接口处丢失，和我们的"信号—决策缺口"同构；Garlan、Allen 和 Ockerbloom 的"架构失配"（1995）对应"独立驱动配通用池出问题、整合在一起的库干净"；Clark 的 fate-sharing（SIGCOMM 1988）、Candea 和 Fox 的 crash-only software（HotOS 2003）与 microreboot（OSDI 2004）对应"销毁重建"这条路。
+- **新颖性的比较对象：** strict linearizability（Aguilera 和 Frølund，2003）和 durable linearizability（Izraelevitz 等，DISC 2016）是理论上最近的邻居，论文必须正面区分；Flatt 和 Findler 的 kill-safe 抽象（PLDI 2004）给的是构造原语，不是测试判定。
+- **Linux 判定要补的一条：** 返回错误码后，如果后继者立刻收到明确的致命错误（内核主动把对象标坏），也算合法，相当于池丢弃坏连接（第二轮原型记为 `OK_POISONED`）。它说的其余几个坑（短写、预先触碰用户缓冲区、只比较功能语义状态）第一轮原型大多已经处理了。
+- **"两条基线必须可区分"：** Dropwise 已经有了（`src/explore.rs` 的 `degeneracy_note`，pre 与 post 相等时给出提示）。它只提示、不拒绝是有意的：幂等操作两条基线本来就相等，这时测的是有没有污染共享状态。用于 AI 写场景时，可以在工作流层面升级成准入检查。
+- **会议名有误：** LFI 是 DSN 2009（不是 ICSE），APEx 是 USENIX Security 2016（不是 OOPSLA），CRIX 是 USENIX Security 2019（不是 S&P）；"Java Interrupt Testing（Gligoric）"未能确认存在。
+
+### 第九轮：大面积编造（不要使用）
+
+给出的 22 个 GitHub issue / PR 编号里，只有 redis/redis-py#2624 和 #2641 是真的（`gh api` 逐个查过）；两个 kTLS 提交号在本地查不到（本地仓库是浅克隆，只能算未核实）。它对 epoll 的描述是错的：`ep_modify` 不会"出错后留下半截状态"，而是忽略了一个错误、返回成功，见下面的内核线索。理论部分和第十轮一致，见下文。
+
+### 第十轮：跨语言案例（已核实存在）
+
+16 个 issue 和 4 个 commit 全部存在，标题和年份都对得上（`gh api` 逐个查过）。下表“内容”一栏是 Gemini 的描述，我们只核对了它与标题一致，引用前要读原 issue：
+
+| 生态 | 编号 | 内容 |
+|---|---|---|
+| Python | aio-libs/aiohttp#12795（2026-06），修复 commit `4b2e470` | Python 3.8 起 `CancelledError` 继承 `BaseException`，异常处理只捕获 `Exception`，取消时没有关闭连接，半读状态的连接回到 keep-alive 池。与 lettre 同一形状：标记只在出错时设置 |
+| Python | sqlalchemy/sqlalchemy#6592（2021-06），修复 commit `2fa3931` | asyncpg 的连接遇到取消或超时后没有被作废，带着未结束的事务回到池里。与 sqlx#4467 同一形状 |
+| Python | MagicStack/asyncpg#537、#1310（2026-03） | 取消过程中再出错时状态没有复位，下一个借用者报 "another operation is in progress"；`_cancel()` 抛出的异常类型绕过了上层的断连识别 |
+| Python | aio-libs/aiohttp#3281（2018-09） | 后台写 chunk 的任务还没停，连接已被下一个请求复用 |
+| Python | redis/redis-py#2624、#2641（2023） | CVE-2023-28858/28859，ChatGPT 事故 |
+| Go | redis/go-redis#267、#268（2016-03），#2556（2023-04） | 超时后连接带着未读数据回池；维护者解释了为什么阻塞命令被取消时连接必须销毁 |
+| Go | golang/go#22976（2017-12）、#31480（2019-04）、#43507（2021-01），回移植 commit `42e7927` / `399ce80` | `database/sql` 的 BeginTx 与上下文取消的竞态、事务泄漏 |
+| Go | jackc/pgx#494（2018-12） | 把真正的网络超时误当成上下文取消，坏连接没有被丢弃 |
+| Java | brettwooldridge/HikariCP#1388（2019-06）、#2238（2024-09） | 语句超时后连接被直接关闭而不先回滚；据称 Oracle 驱动关闭物理连接时会提交残留事务（未核实） |
+| Java | reactor/reactor-netty#1165（2020-06） | 下游取消订阅后出现 SSLException |
+| Node.js | brianc/node-postgres#2774（2022-07） | 讨论为什么中止查询后不能直接把连接还回池 |
+
+**意义：** 这类问题跨语言存在，不是 Rust 特有的。Python asyncio 的取消发生在 `await` 处，与 Rust 最像，适合做第二领域的回溯检测（修复前报违反、修复后干净）。
+
+### 第十轮：内核线索（一半可信）
+
+| 说法 | 核实结果 |
+|---|---|
+| io_uring/futex 错误路径释放了数据却没有清 `async_data` 和标志位（CVE-2025-39698） | **属实**（NVD）。但半截状态在单个请求对象上，后果是 use-after-free，KASAN 能抓到，不是我们要找的静默问题 |
+| eventpoll 把 `ep_insert()` 拆成分配和注册两个阶段 | **属实，但合入的是 7.2-rc1**（vfs-7.2-rc1.eventpoll），不是它说的 7.1.5 稳定版；"为了避免改了一半再回滚"是它的解读，未核实 |
+| overlayfs 的 double `end_creating()`（CVE-2026-89767） | **搜不到**，按编造处理 |
+| `connect` 被信号打断后返回 EINTR，socket 已处于连接中 | 是 man page 写明的行为，属于**契约外**，可作论文里"契约外"的例子 |
+
+**我们自己发现的线索（读 v6.19 源码）：** `fs/eventpoll.c` 里，`ep_insert`（约 1629–1634 行）处理了 `ep_create_wakeup_source()` 的错误并回滚，`ep_modify`（约 1708–1710 行）却忽略了同一个函数的返回值。所以分配失败时，`epoll_ctl(MOD)` 加 `EPOLLWAKEUP` 仍返回 0，掩码已经改了，唤醒源却没有建出来。这正是"信号存在、一条路径读了、另一条没读"。影响很小（需要 CAP_BLOCK_SUSPEND，后果是系统可能在该保持唤醒时休眠），不涉及安全。**Linux 第二轮已确认：** fail-nth 下 MOD 有 234 次违反，ADD 对照为 0；v6.19 和 v7.3-rc2 都能复现，v7.3-rc6 的源码仍是这样；非穷尽的检索没有找到已有报告（research/linux/RESULTS-round2.md 第 3 节）。
+
+### 第十轮：理论（采纳）
+
+- **两层表述：** 对外的正确性条件是"跨交接边界的取消原子性"（第 2 节的条件不变）；对内的实现契约是"交接边界上的静止态可检测性"：资源是否静止必须能被做复用决定的一方读到，并且以此作为放行前提，否则重置或销毁。
+- **和可检测性（detectable recoverability，Friedman 等，PPoPP 2018；recoverable linearizability，Berryhill 等，2015/2016，会议待核实）的两点区别：** 提问的不是原来的调用者，而是交接边界上的守门人；要区分的不是"生效了还是没生效"，而是"静止（两者皆可）还是半截"。守门人检测到半截状态时可以直接销毁资源，不必像持久内存那样补完或回滚。
+- **为什么判定点在交接边界，而不是丢弃的那一刻：** 网络请求可能已经在服务端执行，客户端在 drop 那一刻无法阻止它生效，所以要求被取消的操作"在 drop 之前生效或永不生效"（strict linearizability 的形式）是做不到的。
+- **协议本身常常提供了静止信号：** PostgreSQL 的 `ReadyForQuery` 消息带一个事务状态字节（`I` 空闲、`T` 事务中、`E` 失败的事务中）。问题出在通用池没有去读这类信号。
+- **其他同构概念：** Rust `std::sync::Mutex` 的中毒机制（持锁时 panic 会让锁中毒，后来者必须显式处理），与"取消时给连接打标记、池回收时检查"完全同构；TxOS（Porter 等，SOSP 2009）讲的是系统调用改了多个内核对象后、出错时回滚不全的问题；分布式 lease 用 epoch / fencing token 隔离迟到的消息，而连接池为了省建连开销，恰恰放弃了这层隔离。
+
+### 不采纳
+
+- "通道状态的判定零误报"：说过头了，phase3 里 mongodb MG1 那个契约外的结果就是反例。
+- 投稿建议和"杰出论文"之类的评价：不作为依据。
