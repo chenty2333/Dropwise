@@ -1,0 +1,44 @@
+CMDLINE target=pipe_sig_partial verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=pipe_sig_partial full=16384 mechs=2
+BASE target=pipe_sig_partial side=pre sample=1 obs=read_rc=57344;read_errno=0;total=57344;pcnt=0;fcnt=57344;first=70;last=70;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_sig_partial side=pre sample=2 obs=read_rc=57344;read_errno=0;total=57344;pcnt=0;fcnt=57344;first=70;last=70;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_sig_partial side=post sample=1 ret=16384 errno=0 obs=read_rc=16384;read_errno=0;total=16384;pcnt=16384;fcnt=0;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_sig_partial side=post sample=2 ret=16384 errno=0 obs=read_rc=16384;read_errno=0;total=16384;pcnt=16384;fcnt=0;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE_STABLE target=pipe_sig_partial stable=1 pre=same post=same
+TRIAL target=pipe_sig_partial mech=signal site=sig+0us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_sig_partial mech=signal site=sig+0us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_sig_partial mech=signal site=sig+200us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_sig_partial mech=signal site=sig+200us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_sig_partial mech=signal site=sig+2000us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_sig_partial mech=signal site=sig+2000us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_sig_partial mech=signal site=sig+20000us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_sig_partial mech=signal site=sig+20000us ret=8192 errno=0 injected=1 waited=0 readback=0 verdict=OK_PARTIAL obs=read_rc=65536;read_errno=0;total=65536;pcnt=8192;fcnt=57344;first=70;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+SUMMARY target=pipe_sig_partial mech=signal sites=8 trials=8 misses=0 ok_pre=0 ok_post=0 ok_partial=8 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=71
+TARGET_END target=pipe_sig_partial
+HARNESS_DONE
+[    0.601816] reboot: Power down

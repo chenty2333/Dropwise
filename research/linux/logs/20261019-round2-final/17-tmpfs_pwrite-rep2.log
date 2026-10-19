@@ -1,0 +1,41 @@
+CMDLINE target=tmpfs_pwrite verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=tmpfs_pwrite full=4096 mechs=1
+PROBE target=tmpfs_pwrite sample=1 ret=4096 errno=0 calls=1 readback=999
+PROBE target=tmpfs_pwrite sample=2 ret=4096 errno=0 calls=1 readback=999
+PROBE target=tmpfs_pwrite sample=3 ret=4096 errno=0 calls=1 readback=999
+BASE target=tmpfs_pwrite side=pre sample=1 obs=surv_rc=1;surv_errno=0|S=1;P=0;Z=4095;first=83;size=8192;blocks=8;read=4096
+BASE target=tmpfs_pwrite side=pre sample=2 obs=surv_rc=1;surv_errno=0|S=1;P=0;Z=4095;first=83;size=8192;blocks=8;read=4096
+BASE target=tmpfs_pwrite side=post sample=1 ret=4096 errno=0 obs=surv_rc=1;surv_errno=0|S=1;P=4095;Z=0;first=83;size=8192;blocks=8;read=4096
+BASE target=tmpfs_pwrite side=post sample=2 ret=4096 errno=0 obs=surv_rc=1;surv_errno=0|S=1;P=4095;Z=0;first=83;size=8192;blocks=8;read=4096
+BASE_STABLE target=tmpfs_pwrite stable=1 pre=same post=same
+TRIAL target=tmpfs_pwrite mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=1;surv_errno=0|S=1;P=0;Z=4095;first=83;size=8192;blocks=8;read=4096
+TRIAL_END target=tmpfs_pwrite mech=failnth site=2 reason=no_injection readback=1 ret=4096 errno=0
+SUMMARY target=tmpfs_pwrite mech=failnth sites=1 trials=1 misses=0 ok_pre=1 ok_post=0 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=2
+TARGET_END target=tmpfs_pwrite
+HARNESS_DONE
+[    0.617682] reboot: Power down

@@ -37,6 +37,14 @@ ALL_TARGETS = [
     "epoll_ctl_add",
     "fcntl_setlk",
     "accept4_unix",
+    "tls_tx",
+    "tls_rx",
+    "overlay_copyup",
+    "mq_send_full",
+    "pipe_sig_block",
+    "pipe_sig_partial",
+    "epoll_mod_wakeup",
+    "epoll_add_wakeup",
 ]
 
 QEMU = shutil.which("qemu-system-x86_64")
@@ -84,7 +92,7 @@ file /init {HARNESS} 0755 0 0
             sys.exit("initramfs build failed")
 
 
-def boot_one(target, mode, logpath, kernel, timeout):
+def boot_one(target, mode, logpath, kernel, timeout, dw_n=0):
     verbose = 1 if mode == "trace" else 0
     if mode == "trace":
         loglevel = "loglevel=7"
@@ -97,6 +105,8 @@ def boot_one(target, mode, logpath, kernel, timeout):
         f"console=ttyS0 panic=-1 oops=panic {quiet}{loglevel} "
         f"dw.target={target} dw.verbose={verbose}"
     )
+    if dw_n:
+        append += f" dw.n={dw_n}"
     cmd = [
         QEMU, "-machine", "q35,accel=kvm", "-cpu", "host",
         "-smp", "2", "-m", "1024",
@@ -164,6 +174,7 @@ def parse_log(path):
     data = {
         "selftest": [], "probes": [], "bases": [], "trials": [],
         "summaries": [], "errors": [], "trace_marks": [], "done": False,
+        "ff_list": [], "ff_reg": [], "sigsites": [],
     }
     pre = post = None
     stable = None
@@ -196,6 +207,10 @@ def parse_log(path):
             data["trials"].append(d)
         elif line.startswith("TRIAL_END"):
             data.setdefault("trial_ends", []).append(line)
+        elif line.startswith("FF_LIST "):
+            data["ff_list"].append(line[8:])
+        elif line.startswith("FF_REGISTER "):
+            data["ff_reg"].append(kv(line))
         elif line.startswith("SUMMARY "):
             data["summaries"].append(kv(line))
         elif line.startswith(("HARNESS_ERROR", "TARGET_TIMEOUT",
@@ -211,8 +226,8 @@ def parse_log(path):
 def write_csvs(outdir, runs):
     trials_path = outdir / "trials.csv"
     fields = [
-        "run", "mode", "target", "n", "ret", "errno", "injected",
-        "readback", "verdict", "stable", "obs", "baseline_pre",
+        "run", "mode", "target", "mech", "site", "n", "ret", "errno",
+        "injected", "readback", "verdict", "stable", "obs", "baseline_pre",
         "baseline_post",
     ]
     with open(trials_path, "w", newline="") as f:
@@ -223,39 +238,46 @@ def write_csvs(outdir, runs):
                 row = dict(t)
                 row["run"] = r["run"]
                 row["mode"] = r["mode"]
+                row["target"] = t.get("target", r["target"])
                 w.writerow(row)
 
     summary_path = outdir / "summary.csv"
     sfields = [
-        "run", "mode", "target", "selftest_sites", "sites", "trials",
-        "ok_pre", "ok_post", "ok_partial", "violations", "unknown",
-        "stable", "elapsed_ms", "wall_s", "done", "errors",
+        "run", "mode", "target", "mech", "selftest_sites", "sites",
+        "trials", "misses", "ok_pre", "ok_post", "ok_partial",
+        "ok_poisoned", "violations", "unknown", "stable", "elapsed_ms",
+        "wall_s", "done", "errors",
     ]
     with open(summary_path, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=sfields, extrasaction="ignore")
         w.writeheader()
         for r in runs:
             p = r["parsed"]
-            s = p["summaries"][0] if p["summaries"] else {}
             sel = ""
             for e in p["selftest"]:
                 if "socketpair_sites" in e:
                     sel = e["socketpair_sites"]
-            w.writerow({
-                "run": r["run"], "mode": r["mode"], "target": r["target"],
-                "selftest_sites": sel,
-                "sites": s.get("sites", ""), "trials": s.get("trials", ""),
-                "ok_pre": s.get("ok_pre", ""),
-                "ok_post": s.get("ok_post", ""),
-                "ok_partial": s.get("ok_partial", ""),
-                "violations": s.get("violations", ""),
-                "unknown": s.get("unknown", ""),
-                "stable": s.get("stable", ""),
-                "elapsed_ms": s.get("elapsed_ms", ""),
-                "wall_s": f"{r['wall_s']:.2f}",
-                "done": int(p["done"]),
-                "errors": " | ".join(p["errors"]),
-            })
+            for s in (p["summaries"] or [{}]):
+                w.writerow({
+                    "run": r["run"], "mode": r["mode"],
+                    "target": s.get("target", r["target"]),
+                    "mech": s.get("mech", ""),
+                    "selftest_sites": sel,
+                    "sites": s.get("sites", ""),
+                    "trials": s.get("trials", ""),
+                    "misses": s.get("misses", ""),
+                    "ok_pre": s.get("ok_pre", ""),
+                    "ok_post": s.get("ok_post", ""),
+                    "ok_partial": s.get("ok_partial", ""),
+                    "ok_poisoned": s.get("ok_poisoned", ""),
+                    "violations": s.get("violations", ""),
+                    "unknown": s.get("unknown", ""),
+                    "stable": s.get("stable", ""),
+                    "elapsed_ms": s.get("elapsed_ms", ""),
+                    "wall_s": f"{r['wall_s']:.2f}",
+                    "done": int(p["done"]),
+                    "errors": " | ".join(p["errors"]),
+                })
     return trials_path, summary_path
 
 
@@ -263,34 +285,38 @@ def aggregate(runs):
     by = {}
     for r in runs:
         p = r["parsed"]
-        s = p["summaries"][0] if p["summaries"] else {}
-        a = by.setdefault(r["target"], {
-            "reps": 0, "done": 0, "stable": 0, "sites": 0, "trials": 0,
-            "ok_pre": 0, "ok_post": 0, "ok_partial": 0, "violations": 0,
-            "unknown": 0, "wall": 0.0, "errors": [],
-        })
-        a["reps"] += 1
-        a["done"] += int(p["done"])
-        a["stable"] += int(s.get("stable", "0") == "1")
-        for k in ("sites", "trials", "ok_pre", "ok_post", "ok_partial",
-                  "violations", "unknown"):
-            a[k] += int(s.get(k, 0) or 0)
-        a["wall"] += r["wall_s"]
-        a["errors"].extend(p["errors"])
+        for s in (p["summaries"] or [{}]):
+            key = (s.get("target", r["target"]), s.get("mech", ""))
+            a = by.setdefault(key, {
+                "target": key[0], "mech": key[1], "reps": 0, "done": 0,
+                "stable": 0, "sites": 0, "trials": 0, "misses": 0,
+                "ok_pre": 0, "ok_post": 0, "ok_partial": 0,
+                "ok_poisoned": 0, "violations": 0, "unknown": 0,
+                "wall": 0.0, "errors": [],
+            })
+            a["reps"] += 1
+            a["done"] += int(p["done"])
+            a["stable"] += int(s.get("stable", "0") == "1")
+            for k in ("sites", "trials", "misses", "ok_pre", "ok_post",
+                      "ok_partial", "ok_poisoned", "violations", "unknown"):
+                a[k] += int(s.get(k, 0) or 0)
+            a["wall"] += r["wall_s"]
+            a["errors"].extend(p["errors"])
     return by
 
 
 def print_aggregate(by, mode):
-    print(f"\n{mode} results (sum over repeated boots)")
-    print(f"{'target':16} {'reps':>4} {'done':>4} {'stable':>6} "
-          f"{'sites':>5} {'ok_pre':>6} {'ok_post':>7} {'ok_part':>7} "
-          f"{'viol':>5} {'unknown':>7} {'wall_s':>7}")
-    for target, a in by.items():
-        print(f"{target:16} {a['reps']:4d} {a['done']:4d} {a['stable']:6d} "
-              f"{a['sites']:5d} {a['ok_pre']:6d} {a['ok_post']:7d} "
-              f"{a['ok_partial']:7d} {a['violations']:5d} "
-              f"{a['unknown']:7d} {a['wall']:7.2f}")
-    errs = [(t, e) for t, a in by.items() for e in a["errors"]]
+    print(f"\n{mode} results (sum over repeated boots, per target x mechanism)")
+    print(f"{'target':18} {'mechanism':9} {'reps':>4} {'done':>4} {'stable':>6} "
+          f"{'sites':>5} {'trials':>6} {'miss':>4} {'ok_pre':>6} {'ok_post':>7} "
+          f"{'ok_part':>7} {'ok_pois':>7} {'viol':>5} {'unknown':>7} {'wall_s':>7}")
+    for (target, mech), a in by.items():
+        print(f"{target:18} {mech:9} {a['reps']:4d} {a['done']:4d} "
+              f"{a['stable']:6d} {a['sites']:5d} {a['trials']:6d} "
+              f"{a['misses']:4d} {a['ok_pre']:6d} {a['ok_post']:7d} "
+              f"{a['ok_partial']:7d} {a['ok_poisoned']:7d} "
+              f"{a['violations']:5d} {a['unknown']:7d} {a['wall']:7.2f}")
+    errs = [(t, e) for (t, m), a in by.items() for e in a["errors"]]
     if errs:
         print("\nerrors/warnings:")
         for t, e in errs:
@@ -306,6 +332,8 @@ def main():
     ap.add_argument("--reps", type=int, default=1)
     ap.add_argument("--timeout", type=int, default=120)
     ap.add_argument("--outdir", default="")
+    ap.add_argument("--dw-n", type=int, default=0,
+                    help="run exactly this fail-nth N (trace one site)")
     args = ap.parse_args()
 
     kernel = Path(args.kernel).expanduser()
@@ -333,20 +361,22 @@ def main():
             rid += 1
             logpath = outdir / f"{rid:02d}-{target}-rep{rep+1}.log"
             done, wall, cmd = boot_one(target, args.mode, logpath, kernel,
-                                       args.timeout)
+                                       args.timeout, args.dw_n)
             parsed = parse_log(logpath)
             runs.append({
                 "run": rid, "rep": rep + 1, "target": target,
                 "mode": args.mode, "log": str(logpath),
                 "wall_s": wall, "done": done, "parsed": parsed,
             })
-            s = parsed["summaries"][0] if parsed["summaries"] else {}
-            print(f"[{rid:02d}] {target:16} rep={rep+1} done={int(done)} "
-                  f"stable={s.get('stable','?')} "
-                  f"sites={s.get('sites','?')} "
-                  f"viol={s.get('violations','?')} "
-                  f"unknown={s.get('unknown','?')} "
-                  f"wall={wall:.1f}s")
+            for s in (parsed["summaries"] or [{}]):
+                print(f"[{rid:02d}] {s.get('target', target):18} "
+                      f"mech={s.get('mech','-'):8} rep={rep+1} "
+                      f"done={int(done)} stable={s.get('stable','?')} "
+                      f"sites={s.get('sites','?')} "
+                      f"trials={s.get('trials','?')} "
+                      f"pois={s.get('ok_poisoned','?')} "
+                      f"viol={s.get('violations','?')} "
+                      f"unknown={s.get('unknown','?')} wall={wall:.1f}s")
             if not done:
                 print(f"      incomplete log: {logpath}", file=sys.stderr)
 
@@ -354,13 +384,15 @@ def main():
     by = aggregate(runs)
     print_aggregate(by, args.mode)
     (outdir / "aggregate.csv").write_text(
-        "target,reps,done,stable,sites,ok_pre,ok_post,ok_partial,"
-        "violations,unknown,wall_s\n" +
+        "target,mech,reps,done,stable,sites,trials,misses,ok_pre,ok_post,"
+        "ok_partial,ok_poisoned,violations,unknown,wall_s\n" +
         "\n".join(
-            f"{t},{a['reps']},{a['done']},{a['stable']},{a['sites']},"
+            f"{a['target']},{a['mech']},{a['reps']},{a['done']},"
+            f"{a['stable']},{a['sites']},{a['trials']},{a['misses']},"
             f"{a['ok_pre']},{a['ok_post']},{a['ok_partial']},"
-            f"{a['violations']},{a['unknown']},{a['wall']:.2f}"
-            for t, a in by.items()
+            f"{a['ok_poisoned']},{a['violations']},{a['unknown']},"
+            f"{a['wall']:.2f}"
+            for _, a in by.items()
         ) + "\n"
     )
     print(f"\nlogs: {outdir}")

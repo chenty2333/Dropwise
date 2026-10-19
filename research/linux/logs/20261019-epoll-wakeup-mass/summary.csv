@@ -1,0 +1,11 @@
+run,mode,target,mech,selftest_sites,sites,trials,misses,ok_pre,ok_post,ok_partial,ok_poisoned,violations,unknown,stable,elapsed_ms,wall_s,done,errors
+1,mass,epoll_mod_wakeup,failnth,15,52,52,0,0,5,0,0,47,0,1,221,1.35,1,
+2,mass,epoll_add_wakeup,failnth,14,55,55,0,49,6,0,0,0,0,1,335,1.45,1,
+3,mass,epoll_mod_wakeup,failnth,14,51,51,0,0,6,0,0,45,0,1,249,1.20,1,
+4,mass,epoll_add_wakeup,failnth,14,55,55,0,49,6,0,0,0,0,1,334,1.45,1,
+5,mass,epoll_mod_wakeup,failnth,14,51,51,0,0,6,0,0,45,0,1,292,1.30,1,
+6,mass,epoll_add_wakeup,failnth,14,54,54,0,48,6,0,0,0,0,1,321,1.35,1,
+7,mass,epoll_mod_wakeup,failnth,14,52,52,0,0,5,0,0,47,0,1,271,1.30,1,
+8,mass,epoll_add_wakeup,failnth,14,55,55,0,49,6,0,0,0,0,1,282,1.30,1,
+9,mass,epoll_mod_wakeup,failnth,14,51,51,0,0,6,0,0,45,0,1,250,1.30,1,
+10,mass,epoll_add_wakeup,failnth,14,55,55,0,49,6,0,0,0,0,1,295,1.30,1,

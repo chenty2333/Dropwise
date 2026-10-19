@@ -1,0 +1,43 @@
+CMDLINE target=epoll_ctl_add verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=epoll_ctl_add full=0 mechs=1
+PROBE target=epoll_ctl_add sample=1 ret=0 errno=0 calls=3 readback=997
+PROBE target=epoll_ctl_add sample=2 ret=0 errno=0 calls=3 readback=997
+PROBE target=epoll_ctl_add sample=3 ret=0 errno=0 calls=3 readback=997
+BASE target=epoll_ctl_add side=pre sample=1 obs=wait_rc=0;wait_errno=0;ev=0;data=0|tfd=0;tfd_ev=0;wait2=0;ev2=0;del=-1;del_errno=2
+BASE target=epoll_ctl_add side=pre sample=2 obs=wait_rc=0;wait_errno=0;ev=0;data=0|tfd=0;tfd_ev=0;wait2=0;ev2=0;del=-1;del_errno=2
+BASE target=epoll_ctl_add side=post sample=1 ret=0 errno=0 obs=wait_rc=1;wait_errno=0;ev=1;data=4660|tfd=1;tfd_ev=19;wait2=1;ev2=1;del=0;del_errno=0
+BASE target=epoll_ctl_add side=post sample=2 ret=0 errno=0 obs=wait_rc=1;wait_errno=0;ev=1;data=4660|tfd=1;tfd_ev=19;wait2=1;ev2=1;del=0;del_errno=0
+BASE_STABLE target=epoll_ctl_add stable=1 pre=same post=same
+TRIAL target=epoll_ctl_add mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;ev=0;data=0|tfd=0;tfd_ev=0;wait2=0;ev2=0;del=-1;del_errno=2
+TRIAL target=epoll_ctl_add mech=failnth site=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;ev=0;data=0|tfd=0;tfd_ev=0;wait2=0;ev2=0;del=-1;del_errno=2
+TRIAL target=epoll_ctl_add mech=failnth site=3 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;ev=0;data=0|tfd=0;tfd_ev=0;wait2=0;ev2=0;del=-1;del_errno=2
+TRIAL_END target=epoll_ctl_add mech=failnth site=4 reason=no_injection readback=1 ret=0 errno=0
+SUMMARY target=epoll_ctl_add mech=failnth sites=3 trials=3 misses=0 ok_pre=3 ok_post=0 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=6
+TARGET_END target=epoll_ctl_add
+HARNESS_DONE
+[    0.618647] reboot: Power down

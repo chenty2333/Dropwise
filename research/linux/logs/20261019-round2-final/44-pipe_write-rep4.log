@@ -1,0 +1,42 @@
+CMDLINE target=pipe_write verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=pipe_write full=8192 mechs=1
+PROBE target=pipe_write sample=1 ret=8192 errno=0 calls=2 readback=998
+PROBE target=pipe_write sample=2 ret=8192 errno=0 calls=2 readback=998
+PROBE target=pipe_write sample=3 ret=8192 errno=0 calls=2 readback=998
+BASE target=pipe_write side=pre sample=1 obs=read_rc=-1;read_errno=11;np=0;first=-1;last=-1;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_write side=pre sample=2 obs=read_rc=-1;read_errno=11;np=0;first=-1;last=-1;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_write side=post sample=1 ret=8192 errno=0 obs=read_rc=8192;read_errno=0;np=8192;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE target=pipe_write side=post sample=2 ret=8192 errno=0 obs=read_rc=8192;read_errno=0;np=8192;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+BASE_STABLE target=pipe_write stable=1 pre=same post=same
+TRIAL target=pipe_write mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=read_rc=-1;read_errno=11;np=0;first=-1;last=-1;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL target=pipe_write mech=failnth site=2 ret=4096 errno=0 injected=1 readback=0 verdict=OK_PARTIAL obs=read_rc=4096;read_errno=0;np=4096;first=80;last=80;fion=0|fion_after=0;read2=-1;read2_errno=11
+TRIAL_END target=pipe_write mech=failnth site=3 reason=no_injection readback=1 ret=8192 errno=0
+SUMMARY target=pipe_write mech=failnth sites=2 trials=2 misses=0 ok_pre=1 ok_post=0 ok_partial=1 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=2
+TARGET_END target=pipe_write
+HARNESS_DONE
+[    0.602007] reboot: Power down

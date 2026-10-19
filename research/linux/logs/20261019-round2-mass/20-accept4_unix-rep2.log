@@ -1,0 +1,48 @@
+CMDLINE target=accept4_unix verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=accept4_unix full=-2 mechs=1
+PROBE target=accept4_unix sample=1 ret=128 errno=0 calls=8 readback=992
+PROBE target=accept4_unix sample=2 ret=128 errno=0 calls=8 readback=992
+PROBE target=accept4_unix sample=3 ret=128 errno=0 calls=8 readback=992
+BASE target=accept4_unix side=pre sample=1 obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+BASE target=accept4_unix side=pre sample=2 obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+BASE target=accept4_unix side=post sample=1 ret=128 errno=0 obs=accept_rc=-1;accept_errno=11;wrote=0|client_read=-1;client_errno=11;client_byte=-1;soerr=0;accepted_open=1
+BASE target=accept4_unix side=post sample=2 ret=128 errno=0 obs=accept_rc=-1;accept_errno=11;wrote=0|client_read=-1;client_errno=11;client_byte=-1;soerr=0;accepted_open=1
+BASE_STABLE target=accept4_unix stable=1 pre=same post=same
+TRIAL target=accept4_unix mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix mech=failnth site=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix mech=failnth site=3 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix mech=failnth site=4 ret=-1 errno=23 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix mech=failnth site=5 ret=-1 errno=23 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix mech=failnth site=6 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix mech=failnth site=7 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL target=accept4_unix mech=failnth site=8 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=accept_rc=1;accept_errno=0;wrote=1|client_read=1;client_errno=0;client_byte=65;soerr=0;accepted_open=0
+TRIAL_END target=accept4_unix mech=failnth site=9 reason=no_injection readback=1 ret=128 errno=0
+SUMMARY target=accept4_unix mech=failnth sites=8 trials=8 misses=0 ok_pre=8 ok_post=0 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=11
+TARGET_END target=accept4_unix
+HARNESS_DONE
+[    0.594893] reboot: Power down

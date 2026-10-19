@@ -1,0 +1,99 @@
+CMDLINE target=epoll_add_wakeup verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=epoll_add_wakeup full=0 mechs=1
+PROBE target=epoll_add_wakeup sample=1 ret=0 errno=0 calls=53 readback=947
+PROBE target=epoll_add_wakeup sample=2 ret=0 errno=0 calls=54 readback=946
+PROBE target=epoll_add_wakeup sample=3 ret=0 errno=0 calls=54 readback=946
+BASE target=epoll_add_wakeup side=pre sample=1 obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+BASE target=epoll_add_wakeup side=pre sample=2 obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+BASE target=epoll_add_wakeup side=post sample=1 ret=0 errno=0 obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+BASE target=epoll_add_wakeup side=post sample=2 ret=0 errno=0 obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+BASE_STABLE target=epoll_add_wakeup stable=1 pre=same post=same
+TRIAL target=epoll_add_wakeup mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=3 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=4 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=5 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=6 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=7 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+[    0.540546] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+TRIAL target=epoll_add_wakeup mech=failnth site=8 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=9 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+[    0.552370] kobject: kobject_add_internal failed for wakeup10 (error: -12 parent: wakeup)
+TRIAL target=epoll_add_wakeup mech=failnth site=10 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+[    0.558525] kobject: kobject_add_internal failed for wakeup10 (error: -12 parent: wakeup)
+TRIAL target=epoll_add_wakeup mech=failnth site=11 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=12 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=13 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=14 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=15 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=16 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=17 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=18 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=19 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=20 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=21 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=22 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=23 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=24 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=25 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=26 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=11;ws_ep=0;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=27 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+TRIAL target=epoll_add_wakeup mech=failnth site=28 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+TRIAL target=epoll_add_wakeup mech=failnth site=29 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+TRIAL target=epoll_add_wakeup mech=failnth site=30 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=31 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=32 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=33 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=34 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=35 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+[    0.696514] kobject: kobject_add_internal failed for wakeup11 (error: -12 parent: wakeup)
+TRIAL target=epoll_add_wakeup mech=failnth site=36 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=37 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=38 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=39 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=40 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=41 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=42 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=43 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=44 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=45 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=46 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=47 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=48 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=49 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=50 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=51 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=52 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+TRIAL target=epoll_add_wakeup mech=failnth site=53 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=wait_rc=1;wait_errno=0;wait_ev=1;wait_data=4660|tfd=1;tfd_ev=20000019;ws_total=13;ws_ep=1;ws_other=12
+TRIAL target=epoll_add_wakeup mech=failnth site=54 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL target=epoll_add_wakeup mech=failnth site=55 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=12;ws_ep=1;ws_other=11
+TRIAL_END target=epoll_add_wakeup mech=failnth site=56 reason=no_injection readback=1 ret=0 errno=0
+SUMMARY target=epoll_add_wakeup mech=failnth sites=55 trials=55 misses=0 ok_pre=49 ok_post=6 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=317
+TARGET_END target=epoll_add_wakeup
+HARNESS_DONE
+[    0.832773] reboot: Power down

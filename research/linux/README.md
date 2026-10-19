@@ -8,8 +8,11 @@ exactly the partial state its interface allows?
 The prototype runs in a QEMU/KVM guest with a purpose-built 6.19 kernel and
 `CONFIG_FAULT_INJECTION`.  It uses the per-task `fail-nth` interface, two
 calibrated baselines, a forked survivor on the same shared object, and an
-independent observer.  See [RESULTS.md](RESULTS.md) for what was measured and
-[PRIVATE-NOTES.md](PRIVATE-NOTES.md) for the private status line.
+independent observer.  Round 1 is in [RESULTS.md](RESULTS.md); round 2 adds
+signal interruption and fail_function, TLS/overlay/mqueue targets, and a
+confirmed `epoll_ctl(MOD)`+`EPOLLWAKEUP` issue: see
+[RESULTS-round2.md](RESULTS-round2.md).  Private status is in
+[PRIVATE-NOTES.md](PRIVATE-NOTES.md).
 
 ## Layout
 
@@ -17,6 +20,7 @@ independent observer.  See [RESULTS.md](RESULTS.md) for what was measured and
 harness/dw_harness.c        in-guest harness and target definitions
 harness/Makefile            builds build/harness (static)
 run.py                      host runner: initramfs, QEMU, log/CSV parsing
+trace_sites.py              per-N single-boot trace attribution
 prepare_kernel.sh           detached kernel worktree + config + bzImage
 kernel.config.fragment      reference config fragment
 logs/                       raw serial logs and CSVs from the reported runs
