@@ -1,0 +1,2 @@
+[patch.crates-io]
+neo4rs = { path = "@WORK@/neo4rs-0.8.0-fixed" }

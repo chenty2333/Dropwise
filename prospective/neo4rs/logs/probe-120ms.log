@@ -1,0 +1,15 @@
+
+running 1 test
+after connect []
+after warmup [ConnectionStats { client: 127.0.0.1:55694, to_upstream: 164, to_client: 213 }]
+target cancelled=true elapsed=121.058936ms
+connections=[ConnectionStats { client: 127.0.0.1:55694, to_upstream: 239, to_client: 244 }]
+residue=[ConnectionResidue { client: 127.0.0.1:55694, bytes: 96 }]
+v before survivor=Ok(Some(1))
+connections before survivor=[ConnectionStats { client: 127.0.0.1:55694, to_upstream: 239, to_client: 340 }]
+survivor row=<none>
+connections after survivor=[ConnectionStats { client: 127.0.0.1:55694, to_upstream: 300, to_client: 375 }]
+observed v=Ok(Some(1))
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+

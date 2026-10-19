@@ -1,0 +1,129 @@
+diff -ruN a/src/connection.rs b/src/connection.rs
+--- a/src/connection.rs	2026-10-19 12:55:10.788046159 +0900
++++ b/src/connection.rs	2026-10-19 12:55:10.806618934 +0900
+@@ -29,6 +29,10 @@
+ pub struct Connection {
+     version: Version,
+     stream: BufStream<ConnectionStream>,
++    /// Set when an exchange starts and cleared only after it completed
++    /// cleanly. A cancelled exchange leaves it set, so `recycle` discards the
++    /// connection instead of reading the exchange's leftover reply as RESET's.
++    dirty: bool,
+ }
+ 
+ impl Connection {
+@@ -65,7 +69,11 @@
+         let mut response = [0, 0, 0, 0];
+         stream.read_exact(&mut response).await?;
+         let version = Version::parse(response)?;
+-        let mut connection = Connection { version, stream };
++        let mut connection = Connection {
++            version,
++            stream,
++            dirty: false,
++        };
+         let hello = hello_builder.with_version(version).build();
+         match connection.send_recv(hello).await? {
+             BoltResponse::Success(_msg) => Ok(connection),
+@@ -77,6 +85,18 @@
+         }
+     }
+ 
++    pub(crate) fn begin_exchange(&mut self) {
++        self.dirty = true;
++    }
++
++    pub(crate) fn finish_exchange(&mut self) {
++        self.dirty = false;
++    }
++
++    pub(crate) fn is_dirty(&self) -> bool {
++        self.dirty
++    }
++
+     pub async fn reset(&mut self) -> Result<()> {
+         match self.send_recv(BoltRequest::reset()).await? {
+             BoltResponse::Success(_) => Ok(()),
+diff -ruN a/src/errors.rs b/src/errors.rs
+--- a/src/errors.rs	2026-10-19 12:55:10.788075828 +0900
++++ b/src/errors.rs	2026-10-19 12:55:10.806659783 +0900
+@@ -23,6 +23,9 @@
+     #[error("connection error")]
+     ConnectionError,
+ 
++    #[error("connection was returned with an unfinished Bolt exchange")]
++    UnfinishedExchange,
++
+     #[error("attempted to serialize excessively long string")]
+     StringTooLong,
+ 
+diff -ruN a/src/pool.rs b/src/pool.rs
+--- a/src/pool.rs	2026-10-19 12:55:10.788272752 +0900
++++ b/src/pool.rs	2026-10-19 12:55:10.806686350 +0900
+@@ -51,6 +51,12 @@
+     }
+ 
+     async fn recycle(&self, conn: &mut Connection) -> deadpool::managed::RecycleResult<Error> {
++        // A cancelled exchange can have outstanding replies. Sending RESET and
++        // reading one reply would accept one of them as the acknowledgement and
++        // return a desynchronized connection to the pool, so discard it.
++        if conn.is_dirty() {
++            return Err(Error::UnfinishedExchange.into());
++        }
+         Ok(conn.reset().await?)
+     }
+ }
+diff -ruN a/src/query.rs b/src/query.rs
+--- a/src/query.rs	2026-10-19 12:55:10.788283552 +0900
++++ b/src/query.rs	2026-10-19 12:55:10.806718930 +0900
+@@ -56,7 +56,12 @@
+         connection: &mut ManagedConnection,
+     ) -> Result<(), backoff::Error<Error>> {
+         let request = BoltRequest::run(db, &self.query, self.params.clone());
+-        Self::try_run(request, connection).await
++        connection.begin_exchange();
++        let result = Self::try_run(request, connection).await;
++        if result.is_ok() {
++            connection.finish_exchange();
++        }
++        result
+     }
+ 
+     pub(crate) async fn execute_retryable(
+@@ -66,6 +71,9 @@
+         mut connection: ManagedConnection,
+     ) -> Result<DetachedRowStream, backoff::Error<Error>> {
+         let request = BoltRequest::run(db, &self.query, self.params.clone());
++        // The connection stays dirty until the returned stream reaches its
++        // terminal summary. A stream dropped midway is discarded by recycle.
++        connection.begin_exchange();
+         Self::try_execute(request, fetch_size, &mut connection)
+             .await
+             .map(|stream| DetachedRowStream::new(stream, connection))
+diff -ruN a/src/stream.rs b/src/stream.rs
+--- a/src/stream.rs	2026-10-19 12:55:10.788307914 +0900
++++ b/src/stream.rs	2026-10-19 12:55:10.806750868 +0900
+@@ -34,6 +34,10 @@
+ }
+ 
+ impl RowStream {
++    pub(crate) fn is_complete(&self) -> bool {
++        self.state == State::Complete
++    }
++
+     pub(crate) fn new(qid: i64, fields: BoltList, fetch_size: usize) -> Self {
+         RowStream {
+             qid,
+@@ -155,7 +159,11 @@
+     /// if the buffer is empty and the server has more rows left to consume, then a new batch of rows are fetched from the server (using the
+     /// fetch_size value configured see [`crate::ConfigBuilder::fetch_size`])
+     pub async fn next(&mut self) -> Result<Option<Row>> {
+-        self.stream.next(&mut self.connection).await
++        let row = self.stream.next(&mut self.connection).await;
++        if self.stream.is_complete() {
++            self.connection.finish_exchange();
++        }
++        row
+     }
+ 
+     /// Turns this RowStream into a [`futures::stream::TryStream`] where

@@ -1,0 +1,11 @@
+Recorded 2026-10-19 from the actual run environment.
+
+Image tag:    neo4j:5.26.0-community
+Image digest: neo4j@sha256:5a015e53de1895e7eee1574ae0325cf8c4b89587222778108c594bdd45a474b5
+Server:       CALL dbms.components() -> "Neo4j Kernel", ["5.26.0"], "community"
+Transport:    bolt://127.0.0.1:<random published port> (plaintext, loopback only)
+Driver:       neo4rs 0.8.0 (crates.io; latest stable on 2026-10-19)
+Pool:         deadpool 0.9.5, max_connections = 1
+Toolchain:    rustc 1.98.0 (88d9e12ae 2026-08-18), cargo 1.98.0
+Tokio:        1.53.3 (Cargo.lock)
+Pending:      dropwise::net::Proxy, ProxyOptions { reply_delay: 50 ms }

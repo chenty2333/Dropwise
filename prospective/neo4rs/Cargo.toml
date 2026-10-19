@@ -1,0 +1,13 @@
+[package]
+name = "prospective-neo4rs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Neo4j driver target (neo4rs 0.8.0): N1 is a pooled write, N2 a pooled read.
+# Each level runs against the same held-reply proxy (dropwise::net) so the four
+# levels share one scenario skeleton and one Pending mechanism.
+[dependencies]
+dropwise = { path = "../..", features = ["net"] }
+neo4rs = "=0.8.0"
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time"] }

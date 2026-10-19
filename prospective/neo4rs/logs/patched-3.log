@@ -1,0 +1,218 @@
+warning: use of deprecated associated function `chrono::NaiveDateTime::from_timestamp_opt`: use `DateTime::from_timestamp` instead
+  --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date.rs:33:36
+   |
+33 |         let epoch = NaiveDateTime::from_timestamp_opt(0, 0).expect("UNIX epoch is always valid");
+   |                                    ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `chrono::NaiveDateTime::timestamp`: use `.and_utc().timestamp()` instead
+  --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:54:31
+   |
+54 |         let seconds = value.0.timestamp().into();
+   |                               ^^^^^^^^^
+
+warning: use of deprecated method `chrono::NaiveDateTime::timestamp_subsec_nanos`: use `.and_utc().timestamp_subsec_nanos()` instead
+  --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:55:36
+   |
+55 |         let nanoseconds = (value.0.timestamp_subsec_nanos() as i64).into();
+   |                                    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `chrono::NaiveDateTime::from_timestamp_opt`: use `DateTime::from_timestamp` instead
+  --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:68:24
+   |
+68 |         NaiveDateTime::from_timestamp_opt(self.seconds.value, self.nanoseconds.value as u32)
+   |                        ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `chrono::NaiveDateTime::from_timestamp_opt`: use `DateTime::from_timestamp` instead
+  --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:78:24
+   |
+78 |         NaiveDateTime::from_timestamp_opt(value.seconds.value, value.nanoseconds.value as u32)
+   |                        ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `chrono::NaiveDateTime::from_timestamp_opt`: use `DateTime::from_timestamp` instead
+  --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:96:33
+   |
+96 |         let dt = NaiveDateTime::from_timestamp_opt(seconds, nanoseconds)
+   |                                 ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `chrono::NaiveDateTime::timestamp`: use `.and_utc().timestamp()` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:110:29
+    |
+110 |         let seconds = value.timestamp().into();
+    |                             ^^^^^^^^^
+
+warning: use of deprecated associated function `chrono::NaiveDateTime::from_timestamp_opt`: use `DateTime::from_timestamp` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:132:24
+    |
+132 |         NaiveDateTime::from_timestamp_opt(value.seconds.value, value.nanoseconds.value as u32)
+    |                        ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `chrono::NaiveDateTime::from_timestamp_opt`: use `DateTime::from_timestamp` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:172:39
+    |
+172 |         let datetime = NaiveDateTime::from_timestamp_opt(seconds, nanoseconds.value as u32)
+    |                                       ^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `chrono::DateTime::<Tz>::from_utc`: Use TimeZone::from_utc_datetime() or DateTime::from_naive_utc_and_offset instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/date_time.rs:175:22
+    |
+175 |         Ok(DateTime::from_utc(datetime, offset))
+    |                      ^^^^^^^^
+
+warning: use of deprecated method `chrono::DateTime::<Tz>::timestamp_nanos`: use `timestamp_nanos_opt()` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/serde/typ.rs:722:29
+    |
+722 |                     _ => dt.timestamp_nanos(),
+    |                             ^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `chrono::NaiveDateTime::timestamp_micros`: use `.and_utc().timestamp_micros()` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/serde/typ.rs:728:65
+    |
+728 |                     Some("MicroSecondsTimestampVisitor") => ldt.timestamp_micros(),
+    |                                                                 ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `chrono::NaiveDateTime::timestamp_millis`: use `.and_utc().timestamp_millis()` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/serde/typ.rs:729:65
+    |
+729 |                     Some("MilliSecondsTimestampVisitor") => ldt.timestamp_millis(),
+    |                                                                 ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `chrono::NaiveDateTime::timestamp`: use `.and_utc().timestamp()` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/serde/typ.rs:730:60
+    |
+730 |                     Some("SecondsTimestampVisitor") => ldt.timestamp(),
+    |                                                            ^^^^^^^^^
+
+warning: use of deprecated method `chrono::NaiveDateTime::timestamp_nanos`: use `.and_utc().timestamp_nanos_opt()` instead
+   --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/types/serde/typ.rs:731:30
+    |
+731 |                     _ => ldt.timestamp_nanos(),
+    |                              ^^^^^^^^^^^^^^^
+
+warning: struct `Bye` is never constructed
+ --> /home/ava/dropwise-neo4rs-work/neo4rs-0.8.0-fixed/src/messages/bye.rs:5:12
+  |
+5 | pub struct Bye;
+  |            ^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `neo4rs` (lib) generated 16 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/neo4rs.rs (/home/ava/dropwise-neo4rs-work/neo4rs-fixed/target/debug/deps/neo4rs-8eb61c5500b46693)
+
+running 10 tests
+test n1_b1 ... LADDER B1 N1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n1_b2 ... N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+LADDER B2 N1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n1_b3 ... N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+LADDER B3 N1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n1_m ... N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER M N1 [patched]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=0 unknown=0
+LADDER-NOTE M N1: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test n1_m_residue ... N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }
+LADDER M-residue N1 [patched]: plans=6 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=4 unknown=0
+LADDER-VIOLATION M-residue N1 [patched] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N1 [patched] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N1 [patched] plan=#0@3:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N1 [patched] plan=#0@3:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-NOTE M-residue N1: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test n2_b1 ... LADDER B1 N2 [patched]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n2_b2 ... N2 B2 retry returned ["secret-1270981-53:1", "secret-1270981-53:2"]
+N2 B2 retry returned ["secret-1270981-54:1", "secret-1270981-54:2"]
+N2 B2 retry returned ["secret-1270981-55:1", "secret-1270981-55:2"]
+N2 B2 retry returned ["secret-1270981-56:1", "secret-1270981-56:2"]
+N2 B2 retry returned ["secret-1270981-57:1", "secret-1270981-57:2"]
+N2 B2 retry returned ["secret-1270981-58:1", "secret-1270981-58:2"]
+N2 B2 retry returned ["secret-1270981-59:1", "secret-1270981-59:2"]
+N2 B2 retry returned ["secret-1270981-60:1", "secret-1270981-60:2"]
+LADDER B2 N2 [patched]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n2_b3 ... N2 B3 different operation returned ["secret-1270981-62-other:1", "secret-1270981-62-other:2"]
+N2 B3 different operation returned ["secret-1270981-63-other:1", "secret-1270981-63-other:2"]
+N2 B3 different operation returned ["secret-1270981-64-other:1", "secret-1270981-64-other:2"]
+N2 B3 different operation returned ["secret-1270981-65-other:1", "secret-1270981-65-other:2"]
+N2 B3 different operation returned ["secret-1270981-66-other:1", "secret-1270981-66-other:2"]
+N2 B3 different operation returned ["secret-1270981-67-other:1", "secret-1270981-67-other:2"]
+N2 B3 different operation returned ["secret-1270981-68-other:1", "secret-1270981-68-other:2"]
+N2 B3 different operation returned ["secret-1270981-69-other:1", "secret-1270981-69-other:2"]
+LADDER B3 N2 [patched]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n2_m ... N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER M N2 [patched]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=8 mixed=0 neither=0 unknown=0
+LADDER-NOTE M N2: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test n2_m_residue ... N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }
+LADDER M-residue N2 [patched]: plans=8 violations=6 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=6 unknown=0
+LADDER-VIOLATION M-residue N2 [patched] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [patched] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [patched] plan=#0@3:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [patched] plan=#0@3:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [patched] plan=#0@4:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [patched] plan=#0@4:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-NOTE M-residue N2: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 67.06s
+

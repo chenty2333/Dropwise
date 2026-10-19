@@ -1,0 +1,123 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/neo4rs.rs (prospective/neo4rs/target/debug/deps/neo4rs-f3d4d91a31268019)
+
+running 10 tests
+test n1_b1 ... LADDER B1 N1 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n1_b2 ... N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+N1 B2 retry returned 
+LADDER B2 N1 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n1_b3 ... N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+N1 B3 different operation returned 
+LADDER B3 N1 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n1_m ... N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER M N1 [release]: plans=6 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=4 unknown=0
+LADDER-VIOLATION M N1 [release] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER-VIOLATION M N1 [release] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER-VIOLATION M N1 [release] plan=#0@3:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER-VIOLATION M N1 [release] plan=#0@3:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER-NOTE M N1: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test n1_m_residue ... N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }
+N1 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }
+LADDER M-residue N1 [release]: plans=6 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=4 unknown=0
+LADDER-VIOLATION M-residue N1 [release] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N1 [release] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(24) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N1 [release] plan=#0@3:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N1 [release] plan=#0@3:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(100) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-NOTE M-residue N1: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test n2_b1 ... LADDER B1 N2 [release]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n2_b2 ... N2 B2 retry returned ["secret-1258160-53:1", "secret-1258160-53:2"]
+N2 B2 retry returned ["secret-1258160-54:1", "secret-1258160-54:2"]
+N2 B2 retry returned []
+N2 B2 retry returned []
+N2 B2 retry returned ["secret-1258160-57:1", "secret-1258160-57:2"]
+N2 B2 retry returned ["secret-1258160-58:1", "secret-1258160-58:2"]
+N2 B2 retry returned ["secret-1258160-59:1", "secret-1258160-59:2"]
+N2 B2 retry returned ["secret-1258160-60:1", "secret-1258160-60:2"]
+LADDER B2 N2 [release]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n2_b3 ... N2 B3 different operation returned ["secret-1258160-62-other:1", "secret-1258160-62-other:2"]
+N2 B3 different operation returned ["secret-1258160-63-other:1", "secret-1258160-63-other:2"]
+N2 B3 different operation returned []
+N2 B3 different operation returned []
+N2 B3 different operation returned ["secret-1258160-66-other:1", "secret-1258160-66-other:2"]
+N2 B3 different operation returned ["secret-1258160-67-other:1", "secret-1258160-67-other:2"]
+N2 B3 different operation returned ["secret-1258160-68-other:1", "secret-1258160-68-other:2"]
+N2 B3 different operation returned ["secret-1258160-69-other:1", "secret-1258160-69-other:2"]
+LADDER B3 N2 [release]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test n2_m ... N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER M N2 [release]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=6 mixed=0 neither=2 unknown=0
+LADDER-VIOLATION M N2 [release] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER-VIOLATION M N2 [release] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }
+LADDER-NOTE M N2: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: None }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+test n2_m_residue ... N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+N2 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }
+N2 survivor observation: Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }
+N2 survivor observation: Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }
+LADDER M-residue N2 [release]: plans=8 violations=6 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=2 mixed=0 neither=6 unknown=0
+LADDER-VIOLATION M-residue N2 [release] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [release] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Err("value query returned no row"), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(26) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [release] plan=#0@3:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [release] plan=#0@3:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(45) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [release] plan=#0@4:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-VIOLATION M-residue N2 [release] plan=#0@4:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(105) }, pre=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }, post=Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }
+LADDER-NOTE M-residue N2: target(s) #0: pre and post observations are equal (Obs { write: Ok(()), own: Ok(7), own_tag: Ok(["-survivor:1", "-survivor:2"]), visible: Ok(7), residue: Some(0) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 67.58s
+
