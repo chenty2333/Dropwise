@@ -1,0 +1,16 @@
+CMDLINE target=probe_sigkill verbose=0
+PROBE_SIGKILL base total=12 ep=0 other=12
+PROBE_SIGKILL trial=0 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=1 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=2 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=3 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=4 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=5 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=6 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=7 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=8 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL trial=9 entry=1 got_ret=0 ret=-999 ep=0 other=12 fdinfo_events=19 stop=0
+PROBE_SIGKILL summary trials=10 violations=0 unconfirmed=0
+PROBE_DONE probe=probe_sigkill rc=0
+HARNESS_DONE
+[    0.613729] reboot: Power down

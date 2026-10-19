@@ -1,0 +1,53 @@
+CMDLINE target=probe_memcg_selinux verbose=0
+PROBE_SELINUX load size=3874167 written=3874167 errno=0
+PROBE_SELINUX enforce=0PROBE_SELINUX policyvers=35PROBE_SELINUX setxattr_devices_virtual rc=0 errno=0
+PROBE_SELINUX setxattr_class_wakeup rc=0 errno=0
+PROBE_SELINUX getxattr_devices_virtual=system_u:object_r:sysfs_t:s0
+PROBE_CG mounted=1 memory_controller=1
+PROBE_MEMCG base total=11 ep=0 other=11 truncated=0
+[    0.500769] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=0 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33816576 max=1048576
+[    0.527639] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=1 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33939456 max=1048576
+[    0.553748] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=2 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33931264 max=1048576
+[    0.580910] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=3 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33669120 max=1048576
+[    0.613213] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=4 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33923072 max=1048576
+[    0.639386] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=5 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33939456 max=1048576
+[    0.664367] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=6 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33992704 max=1048576
+[    0.690046] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=7 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33890304 max=1048576
+[    0.718595] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=8 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33931264 max=1048576
+[    0.744465] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=9 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33943552 max=1048576
+[    0.769232] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=10 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33996800 max=1048576
+[    0.798535] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=11 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33890304 max=1048576
+[    0.826811] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=12 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33935360 max=1048576
+[    0.855484] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=13 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33947648 max=1048576
+[    0.883485] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=14 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33890304 max=1048576
+[    0.912514] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=15 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33890304 max=1048576
+[    0.940485] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=16 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33939456 max=1048576
+[    0.969099] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=17 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33951744 max=1048576
+[    0.998019] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=18 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33890304 max=1048576
+[    1.023307] kobject: kobject_add_internal failed for wakeup (error: -12 parent: virtual)
+PROBE_MEMCG trial=19 VERDICT=VIOL ret=0 errno=0 base_ep=0 base_other=11 ep=0 other=11 fdinfo_events=20000019 cur_before=33890304 max=1048576
+[    1.042846] Memory cgroup out of memory: Killed process 93 (init) total-vm:10556kB, anon-rss:896kB, file-rss:0kB, shmem-rss:384kB, UID:0 pgtables:52kB oom_score_adj:0
+PROBE_MEMCG pressure killed_by=9 oom_kill=0->1
+PROBE_MEMCG summary trials=20 violations=20 ret_err=0 child_killed=0 base_total=11 base_ep=0
+PROBE_DONE probe=probe_memcg_selinux rc=1
+HARNESS_DONE
+[    1.056486] reboot: Power down

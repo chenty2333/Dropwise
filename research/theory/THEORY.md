@@ -96,7 +96,7 @@ Rust 的所有权是仿射的（值可以随时丢弃），而协议会话是线
 | I2C 总线恢复 | 主控在传输中途复位，从设备还在等剩下的位；规范要求主控发 9 个时钟脉冲让从设备释放总线（UM10204 §3.1.16） | 已核实（多个内核驱动补丁引用；规范原文未逐字核对） |
 | Haskell 异步异常（PLDI 2001）、Kill-safe 抽象（PLDI 2004） | 外部在任意点杀死线程时如何保持资源安全 | 已知 |
 | HTTP Desync / 响应队列投毒（Kettle） | 连接上的残余字节让下一个请求读到错误的响应 | 已知，未逐字核对 |
-| 其他语言的连接池：redis-py#2624（CVE-2023-28858/28859）、aiohttp#12795、sqlalchemy#6592、asyncpg#537、go-redis#267、golang/go#22976、pgx#494、HikariCP#1388 等 | 取消、超时或中断之后，连接带着未读回复或未结束的事务回到池里。aiohttp#12795 是 `CancelledError` 不继承 `Exception`、异常处理漏掉了取消；sqlalchemy#6592 是取消后连接没有被作废 | 编号和标题已核实（FOLLOWUP.md 第十轮），内容只读了标题和摘要 |
+| 其他语言的连接池：redis-py#2624（CVE-2023-28858/28859）、aiohttp#12795、sqlalchemy#6592、asyncpg#537、go-redis#267、golang/go#22976、pgx#494、HikariCP#1388 等 | 取消、超时或中断之后，连接带着未读回复或未结束的事务回到池里。sqlalchemy#6592 是取消或超时后连接没有被作废（aiohttp#12795 的修复虽然是“捕获 `CancelledError`”，但 Python 回溯实验表明任务取消走不到那条路径，issue 的实际症状与取消无关） | 编号和标题已核实（FOLLOWUP.md 第十轮），内容只读了标题和摘要 |
 
 ## 7. Linux 内核中的对应
 

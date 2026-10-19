@@ -38,11 +38,15 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <sys/mount.h>
+#include <sys/ptrace.h>
 #include <sys/reboot.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/user.h>
+#include <sys/xattr.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
@@ -2624,11 +2628,194 @@ static const struct target t_epwake_add = {
 	.teardown = epwake_teardown,
 };
 
+/* ------------------------------------------------------------------ */
+/* epoll MOD when the per-eventpoll wakeup source already exists       */
+/*
+ * The first item is installed with EPOLLWAKEUP, so ep->ws exists before P.
+ * P modifies a second item; only the per-item wakeup source is missing, and
+ * ep_create_wakeup_source() returns -ENOMEM without ever touching ep->ws.
+ * An error must therefore leave ep->ws (and the first item's source) alone.
+ */
+struct epwake_ep_ctx {
+	int epfd;
+	int p1[2];
+	int p2[2];
+	int tfd_count;
+	int ws_total;
+	int ws_ep;
+	int ws_other;
+	unsigned int tfd2_events;
+};
+
+static int epwake_ep_setup(void *p, char phase)
+{
+	struct epwake_ep_ctx *c = p;
+	struct epoll_event ev;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->epfd = epoll_create1(0);
+	if (c->epfd < 0)
+		return -1;
+	if (pipe2(c->p1, O_NONBLOCK) || pipe2(c->p2, O_NONBLOCK))
+		return -1;
+	memset(&ev, 0, sizeof(ev));
+	ev.events = EPOLLIN | EPOLLWAKEUP;
+	ev.data.u64 = 0x11;
+	if (epoll_ctl(c->epfd, EPOLL_CTL_ADD, c->p1[0], &ev))
+		return -1;
+	memset(&ev, 0, sizeof(ev));
+	ev.events = EPOLLIN;
+	ev.data.u64 = 0x22;
+	if (epoll_ctl(c->epfd, EPOLL_CTL_ADD, c->p2[0], &ev))
+		return -1;
+	return 0;
+}
+
+static long epwake_ep_p(void *p, int *err)
+{
+	struct epwake_ep_ctx *c = p;
+	struct epoll_event ev;
+	long ret;
+
+	memset(&ev, 0, sizeof(ev));
+	ev.events = EPOLLIN | EPOLLWAKEUP;
+	ev.data.u64 = 0x1234;
+	errno = 0;
+	ret = epoll_ctl(c->epfd, EPOLL_CTL_MOD, c->p2[0], &ev);
+	*err = ret < 0 ? errno : 0;
+	return ret;
+}
+
+static void epwake_ep_before_survivor(void *p)
+{
+	struct epwake_ep_ctx *c = p;
+
+	if (write(c->p2[1], "E", 1) != 1)
+		out("HARNESS_WARN target=epwake_ep reason=make_readable errno=%d\n",
+		    errno);
+}
+
+static void epwake_ep_survivor(void *p, int wfd)
+{
+	struct epwake_ep_ctx *c = p;
+	struct epoll_event evs[4];
+	long rc;
+	int err;
+
+	memset(evs, 0, sizeof(evs));
+	errno = 0;
+	rc = epoll_wait(c->epfd, evs, 4, 0);
+	err = rc < 0 ? errno : 0;
+	report(wfd, rc, err, rc > 0 ? (long long)evs[0].events : 0,
+	       rc > 0 ? (long long)evs[0].data.u64 : 0, 0, 0, 0);
+}
+
+static void epwake_ep_observer(void *p, const struct kid_report *k,
+			       struct outcome *o, char *obs, size_t cap)
+{
+	struct epwake_ep_ctx *c = p;
+	char path[64], buf[8192];
+	int fd, n, count = 0, ws_total = 0, ws_ep = 0, ws_other = 0;
+	char *s, *save = NULL, *line;
+	unsigned int ev = 0;
+
+	snprintf(path, sizeof(path), "/proc/self/fdinfo/%d", c->epfd);
+	fd = open(path, O_RDONLY);
+	n = -1;
+	if (fd >= 0) {
+		n = read(fd, buf, sizeof(buf) - 1);
+		close(fd);
+	}
+	if (n > 0)
+		buf[n] = 0;
+	else
+		buf[0] = 0;
+	s = buf;
+	while ((s = strstr(s, "tfd:")) != NULL) {
+		int tfd;
+		unsigned int tev;
+
+		count++;
+		if (sscanf(s, "tfd: %d events: %x", &tfd, &tev) == 2 &&
+		    tfd == c->p2[0])
+			ev = tev;
+		s += 4;
+	}
+	c->tfd_count = count;
+	c->tfd2_events = ev;
+
+	memset(buf, 0, sizeof(buf));
+	fd = open("/sys/kernel/debug/wakeup_sources", O_RDONLY);
+	n = -1;
+	if (fd >= 0) {
+		n = read(fd, buf, sizeof(buf) - 1);
+		close(fd);
+	}
+	if (n > 0) {
+		buf[n] = 0;
+		for (line = strtok_r(buf, "\n", &save); line;
+		     line = strtok_r(NULL, "\n", &save)) {
+			char *name = line;
+			char *sp;
+
+			while (*name == ' ' || *name == '\t')
+				name++;
+			sp = name;
+			while (*sp && *sp != ' ' && *sp != '\t')
+				sp++;
+			*sp = 0;
+			if (!strcmp(name, "name") || !name[0])
+				continue;
+			ws_total++;
+			if (!strcmp(name, "eventpoll"))
+				ws_ep++;
+			else
+				ws_other++;
+		}
+	}
+	c->ws_total = ws_total;
+	c->ws_ep = ws_ep;
+	c->ws_other = ws_other;
+	o->aux[0] = c->tfd_count;
+	o->aux[1] = c->tfd2_events;
+	o->aux[2] = c->ws_total;
+	o->aux[3] = c->ws_ep;
+	o->aux[4] = c->ws_other;
+	app(obs, cap,
+	    "wait_rc=%lld;wait_errno=%d;wait_ev=%lld;wait_data=%lld|tfd=%d;tfd2_ev=%x;ws_total=%d;ws_ep=%d;ws_other=%d",
+	    k->rc, k->err, k->v[0], k->v[1], c->tfd_count, c->tfd2_events,
+	    c->ws_total, c->ws_ep, c->ws_other);
+}
+
+static void epwake_ep_teardown(void *p)
+{
+	struct epwake_ep_ctx *c = p;
+
+	close(c->p1[0]);
+	close(c->p1[1]);
+	close(c->p2[0]);
+	close(c->p2[1]);
+	close(c->epfd);
+}
+
+static const struct target t_epwake_ep = {
+	.name = "epoll_mod_wakeup_ep",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = epwake_ep_setup,
+	.p = epwake_ep_p,
+	.before_survivor = epwake_ep_before_survivor,
+	.survivor = epwake_ep_survivor,
+	.observer = epwake_ep_observer,
+	.teardown = epwake_ep_teardown,
+};
+
 static const struct target *all_targets[] = {
 	&t_scm, &t_pipe, &t_tmpfs, &t_epoll, &t_lock, &t_accept,
 	&t_tls_tx, &t_tls_rx, &t_ovl, &t_mq_send,
 	&t_pipe_sig_block, &t_pipe_sig_part,
-	&t_epwake_mod, &t_epwake_add, NULL
+	&t_epwake_mod, &t_epwake_add, &t_epwake_ep, NULL
 };
 
 /* ------------------------------------------------------------------ */
@@ -3392,6 +3579,1035 @@ static int run_target(const struct target *t)
 }
 
 /* ------------------------------------------------------------------ */
+/* round-3 real-trigger probes                                         */
+/*
+ * These probes try to make the wakeup-source allocation fail without
+ * fail-nth/failslab.  They reuse the round-2 observation (epoll fdinfo event
+ * mask + /sys/kernel/debug/wakeup_sources) and print PROBE_* lines.  They are
+ * not part of the target/verdict machinery and are selected with
+ * dw.target=probe_*; main() branches to run_probe() before the selftest.
+ */
+
+#define PROBE_CG_ROOT "/sys/fs/cgroup"
+#define PROBE_CG_MEM  "/sys/fs/cgroup/dwprobe"
+#define PROBE_WS_PATH "/sys/kernel/debug/wakeup_sources"
+
+struct probe_ws {
+	int total;
+	int ep;
+	int other;
+	int truncated;
+};
+
+struct probe_msg {
+	int stage;		/* 1 ready, 2 mod result, -1 error */
+	int iter;
+	int fd;
+	long ret;
+	int err;
+	unsigned int events;
+};
+
+static int probe_read_file(const char *path, char *buf, size_t cap)
+{
+	int fd;
+	ssize_t n, off = 0;
+
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		return -1;
+	while (off < (ssize_t)cap - 1) {
+		n = read(fd, buf + off, cap - 1 - off);
+		if (n < 0) {
+			if (errno == EINTR)
+				continue;
+			close(fd);
+			return -1;
+		}
+		if (n == 0)
+			break;
+		off += n;
+	}
+	close(fd);
+	buf[off] = 0;
+	return (int)off;
+}
+
+static long probe_read_long(const char *path)
+{
+	char b[64];
+	char *end;
+	long v;
+
+	if (probe_read_file(path, b, sizeof(b)) <= 0)
+		return -1;
+	errno = 0;
+	v = strtol(b, &end, 10);
+	if (errno)
+		return -1;
+	return v;
+}
+
+static int probe_write_pid(const char *path, pid_t pid)
+{
+	char b[32];
+	int fd, len;
+	ssize_t n;
+
+	len = snprintf(b, sizeof(b), "%d", (int)pid);
+	fd = open(path, O_WRONLY);
+	if (fd < 0)
+		return -1;
+	n = write(fd, b, len);
+	close(fd);
+	return n == len ? 0 : -1;
+}
+
+static void probe_set_nofile(unsigned long n)
+{
+	struct rlimit rl;
+
+	if (getrlimit(RLIMIT_NOFILE, &rl))
+		return;
+	if (rl.rlim_max < n)
+		rl.rlim_max = n;
+	rl.rlim_cur = rl.rlim_max;
+	setrlimit(RLIMIT_NOFILE, &rl);
+}
+
+static void probe_ws_count(struct probe_ws *c)
+{
+	static char buf[4 * 1024 * 1024];
+	char *line, *save = NULL;
+	size_t off = 0;
+	int fd, n;
+
+	memset(c, 0, sizeof(*c));
+	fd = open(PROBE_WS_PATH, O_RDONLY);
+	if (fd < 0) {
+		c->total = -1;
+		return;
+	}
+	while (off < sizeof(buf) - 1) {
+		n = read(fd, buf + off, sizeof(buf) - 1 - off);
+		if (n < 0) {
+			if (errno == EINTR)
+				continue;
+			break;
+		}
+		if (n == 0)
+			break;
+		off += n;
+	}
+	close(fd);
+	c->truncated = off >= sizeof(buf) - 1;
+	buf[off] = 0;
+	for (line = strtok_r(buf, "\n", &save); line;
+	     line = strtok_r(NULL, "\n", &save)) {
+		char *name = line;
+		char *sp;
+
+		while (*name == ' ' || *name == '\t')
+			name++;
+		sp = name;
+		while (*sp && *sp != ' ' && *sp != '\t')
+			sp++;
+		if (sp == name)
+			continue;
+		if (sp - name == 4 && !strncmp(name, "name", 4))
+			continue;
+		c->total++;
+		if (sp - name == 9 && !strncmp(name, "eventpoll", 9))
+			c->ep++;
+		else
+			c->other++;
+	}
+}
+
+static unsigned int probe_fdinfo_events(int epfd)
+{
+	char path[64], buf[4096];
+	char *s;
+	unsigned int ev = 0;
+	int fd, n;
+
+	snprintf(path, sizeof(path), "/proc/self/fdinfo/%d", epfd);
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		return 0;
+	n = read(fd, buf, sizeof(buf) - 1);
+	close(fd);
+	if (n <= 0)
+		return 0;
+	buf[n] = 0;
+	s = strstr(buf, "events:");
+	if (s)
+		sscanf(s + 7, "%x", &ev);
+	return ev;
+}
+
+static unsigned int probe_pid_fdinfo_events(pid_t pid, int epfd)
+{
+	char path[64], buf[4096];
+	char *s;
+	unsigned int ev = 0;
+	int fd, n;
+
+	snprintf(path, sizeof(path), "/proc/%d/fdinfo/%d", (int)pid, epfd);
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		return 0;
+	n = read(fd, buf, sizeof(buf) - 1);
+	close(fd);
+	if (n <= 0)
+		return 0;
+	buf[n] = 0;
+	s = strstr(buf, "events:");
+	if (s)
+		sscanf(s + 7, "%x", &ev);
+	return ev;
+}
+
+static int probe_epoll_setup(int *epfd, int pfd[2], int add_wakeup)
+{
+	struct epoll_event ev;
+
+	*epfd = epoll_create1(0);
+	if (*epfd < 0)
+		return -1;
+	if (pipe2(pfd, O_NONBLOCK))
+		return -1;
+	memset(&ev, 0, sizeof(ev));
+	ev.events = EPOLLIN | (add_wakeup ? EPOLLWAKEUP : 0);
+	ev.data.u64 = 0x77;
+	if (epoll_ctl(*epfd, EPOLL_CTL_ADD, pfd[0], &ev))
+		return -1;
+	return 0;
+}
+
+static int probe_read_msg_timeout(int fd, struct probe_msg *m, int ms)
+{
+	struct pollfd pfd;
+
+	memset(m, 0, sizeof(*m));
+	memset(&pfd, 0, sizeof(pfd));
+	pfd.fd = fd;
+	pfd.events = POLLIN;
+	if (poll(&pfd, 1, ms) <= 0)
+		return -1;
+	return read_full(fd, m, sizeof(*m));
+}
+
+static int probe_wait_timeout(pid_t pid, int ms, int *status)
+{
+	int i, r;
+
+	for (i = 0; i < ms / 10; i++) {
+		r = waitpid(pid, status, WNOHANG);
+		if (r == pid)
+			return 0;
+		if (r < 0)
+			return -1;
+		usleep(10000);
+	}
+	kill(pid, SIGKILL);
+	waitpid(pid, status, 0);
+	return 1;
+}
+
+static long probe_read_oom_kill(void)
+{
+	char b[4096];
+	char *s;
+
+	if (probe_read_file(PROBE_CG_MEM "/memory.events", b, sizeof(b)) <= 0)
+		return -1;
+	s = strstr(b, "oom_kill ");
+	if (!s)
+		return -1;
+	return strtol(s + 9, NULL, 10);
+}
+
+static int probe_mount_cgroup(void)
+{
+	char b[256];
+
+	mkdir_if_needed(PROBE_CG_ROOT, 0755);
+	if (mount("cgroup2", PROBE_CG_ROOT, "cgroup2", 0, "")) {
+		if (errno != EBUSY) {
+			out("PROBE_CG mount=fail errno=%d\n", errno);
+			return -1;
+		}
+	}
+	if (probe_read_file(PROBE_CG_ROOT "/cgroup.controllers", b,
+			    sizeof(b)) <= 0 || !strstr(b, "memory")) {
+		out("PROBE_CG memory_controller=absent controllers=%s\n",
+		    b[0] ? b : "(none)");
+		return -1;
+	}
+	if (write_str(PROBE_CG_ROOT "/cgroup.subtree_control", "+memory"))
+		out("PROBE_CG subtree_memory=fail errno=%d\n", errno);
+	if (mkdir_if_needed(PROBE_CG_MEM, 0755))
+		return -1;
+	if (write_str(PROBE_CG_MEM "/memory.max", "64M"))
+		out("PROBE_CG memory_max_init=fail errno=%d\n", errno);
+	write_str(PROBE_CG_MEM "/memory.swap.max", "0");
+	out("PROBE_CG mounted=1 memory_controller=1\n");
+	return 0;
+}
+
+static int probe_oom_protect = 1;
+
+static int probe_memcg_one(int trial, const struct probe_ws *base,
+			   int *viol, int *ret_err, int *child_killed)
+{
+	int go[2], res[2], status;
+	pid_t pid;
+	char ch = 'x';
+	struct probe_msg m;
+	struct probe_ws ws;
+	long cur, maxv;
+	char mbuf[32];
+	unsigned int ev = 0;
+	int rc = -1;
+
+	*viol = 0;
+	if (write_str(PROBE_CG_MEM "/memory.max", "64M")) {
+		out("PROBE_MEMCG trial=%d max_reset=fail errno=%d\n", trial, errno);
+		return -1;
+	}
+	if (pipe(go) || pipe(res))
+		return -1;
+	/* Pre-fault both pipe pages so the sync writes below are allocation
+	 * free once memory.max is tightened. */
+	if (write(go[1], &ch, 1) != 1 || read(go[0], &ch, 1) != 1)
+		return -1;
+	if (write(res[1], &ch, 1) != 1 || read(res[0], &ch, 1) != 1)
+		return -1;
+
+	pid = fork();
+	if (pid == 0) {
+		int epfd, pfd[2];
+		void *p;
+		size_t chunk = 32UL << 20;
+		struct epoll_event ev;
+
+		close(go[1]);
+		close(res[0]);
+		/*
+		 * Keep the allocating task out of the memcg OOM victim
+		 * selection.  A charge failure then has to return -ENOMEM
+		 * instead of killing this child, which is what makes a
+		 * memcg-triggered failure observable as a syscall return.
+		 */
+		if (probe_oom_protect &&
+		    write_str("/proc/self/oom_score_adj", "-1000"))
+			out("PROBE_MEMCG trial=%d oom_score_adj=fail errno=%d\n",
+			    trial, errno);
+		if (read(go[0], &ch, 1) != 1)
+			_exit(2);
+		if (probe_epoll_setup(&epfd, pfd, 0)) {
+			memset(&m, 0, sizeof(m));
+			m.stage = -1;
+			m.iter = trial;
+			m.err = errno;
+			write(res[1], &m, sizeof(m));
+			_exit(3);
+		}
+		p = mmap(NULL, chunk, PROT_READ | PROT_WRITE,
+			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+		if (p == MAP_FAILED) {
+			memset(&m, 0, sizeof(m));
+			m.stage = -1;
+			m.iter = trial;
+			m.err = errno;
+			write(res[1], &m, sizeof(m));
+			_exit(4);
+		}
+		memset(p, 0x41, chunk);
+		memset(&m, 0, sizeof(m));
+		m.stage = 1;
+		m.iter = trial;
+		m.fd = epfd;
+		write(res[1], &m, sizeof(m));
+		if (read(go[0], &ch, 1) != 1)
+			_exit(5);
+
+		memset(&ev, 0, sizeof(ev));
+		ev.events = EPOLLIN | EPOLLWAKEUP;
+		ev.data.u64 = 0x1234;
+		errno = 0;
+		memset(&m, 0, sizeof(m));
+		m.stage = 2;
+		m.iter = trial;
+		m.fd = epfd;
+		m.events = ev.events;
+		m.ret = epoll_ctl(epfd, EPOLL_CTL_MOD, pfd[0], &ev);
+		m.err = errno;
+		write(res[1], &m, sizeof(m));
+		if (read(go[0], &ch, 1) != 1)
+			_exit(6);
+		_exit(0);
+	}
+
+	close(go[0]);
+	close(res[1]);
+	if (pid < 0) {
+		close(go[1]);
+		close(res[0]);
+		return -1;
+	}
+	if (probe_write_pid(PROBE_CG_MEM "/cgroup.procs", pid)) {
+		out("PROBE_MEMCG trial=%d move_child=fail errno=%d\n", trial,
+		    errno);
+		goto kill_child;
+	}
+	if (write(go[1], &ch, 1) != 1)
+		goto kill_child;
+	if (probe_read_msg_timeout(res[0], &m, 5000) || m.stage != 1) {
+		out("PROBE_MEMCG trial=%d setup=fail stage=%d errno=%d\n",
+		    trial, m.stage, m.err);
+		goto kill_child;
+	}
+
+	cur = probe_read_long(PROBE_CG_MEM "/memory.current");
+	if (cur < 0)
+		cur = 0;
+	/*
+	 * Put memory.max far below the current usage so the cgroup has no
+	 * headroom at all.  Unaccounted allocations still succeed; any
+	 * accounted allocation on the path must fail.
+	 */
+	maxv = 1024 * 1024;
+	snprintf(mbuf, sizeof(mbuf), "%ld", maxv);
+	if (write_str(PROBE_CG_MEM "/memory.max", mbuf))
+		out("PROBE_MEMCG trial=%d max_tight=fail errno=%d\n", trial,
+		    errno);
+	if (write(go[1], &ch, 1) != 1)
+		goto kill_child;
+
+	if (probe_read_msg_timeout(res[0], &m, 5000) || m.stage != 2) {
+		int st;
+
+		*child_killed = 1;
+		if (probe_wait_timeout(pid, 1000, &st) == 0 &&
+		    WIFSIGNALED(st))
+			out("PROBE_MEMCG trial=%d child_killed_by=%d max=%ld cur=%ld\n",
+			    trial, WTERMSIG(st), maxv, cur);
+		else
+			out("PROBE_MEMCG trial=%d mod_no_result max=%ld cur=%ld\n",
+			    trial, maxv, cur);
+		rc = -2;
+		goto count_and_exit;
+	}
+
+	probe_ws_count(&ws);
+	ev = probe_pid_fdinfo_events(pid, m.fd);
+	if (m.ret == 0) {
+		int ok = ws.ep == base->ep + 1 && ws.other == base->other + 1;
+
+		if (!ok) {
+			*viol = 1;
+			out("PROBE_MEMCG trial=%d VERDICT=VIOL ret=0 errno=%d"
+			    " base_ep=%d base_other=%d ep=%d other=%d"
+			    " fdinfo_events=%x cur_before=%ld max=%ld\n",
+			    trial, m.err, base->ep, base->other, ws.ep,
+			    ws.other, ev, cur, maxv);
+		} else {
+			out("PROBE_MEMCG trial=%d ret=0 errno=%d ep=%d other=%d"
+			    " fdinfo_events=%x cur_before=%ld max=%ld"
+			    " sources=ok\n",
+			    trial, m.err, ws.ep, ws.other, ev, cur, maxv);
+		}
+	} else {
+		(*ret_err)++;
+		out("PROBE_MEMCG trial=%d ret=%ld errno=%d ep=%d other=%d"
+		    " fdinfo_events=%x cur_before=%ld max=%ld\n",
+		    trial, m.ret, m.err, ws.ep, ws.other, ev, cur, maxv);
+	}
+	rc = 0;
+
+count_and_exit:
+	write(go[1], &ch, 1);
+	if (probe_wait_timeout(pid, 5000, &status) != 0)
+		out("PROBE_MEMCG trial=%d child_wait_timeout\n", trial);
+	close(go[1]);
+	close(res[0]);
+	return rc;
+
+kill_child:
+	kill(pid, SIGKILL);
+	waitpid(pid, &status, 0);
+	close(go[1]);
+	close(res[0]);
+	return -1;
+}
+
+static void probe_memcg_pressure(void)
+{
+	int go[2], status;
+	pid_t pid;
+	char ch = 'x';
+	long before, after;
+
+	write_str(PROBE_CG_MEM "/memory.max", "1M");
+	before = probe_read_oom_kill();
+	if (pipe(go))
+		return;
+	pid = fork();
+	if (pid == 0) {
+		void *p;
+
+		close(go[1]);
+		if (read(go[0], &ch, 1) != 1)
+			_exit(2);
+		p = mmap(NULL, 4UL << 20, PROT_READ | PROT_WRITE,
+			 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+		if (p == MAP_FAILED)
+			_exit(3);
+		memset(p, 0x42, 4UL << 20);
+		_exit(0);
+	}
+	close(go[0]);
+	if (pid < 0) {
+		close(go[1]);
+		return;
+	}
+	if (probe_write_pid(PROBE_CG_MEM "/cgroup.procs", pid))
+		out("PROBE_MEMCG pressure_move=fail errno=%d\n", errno);
+	write(go[1], &ch, 1);
+	if (probe_wait_timeout(pid, 5000, &status) == 0) {
+		after = probe_read_oom_kill();
+		if (WIFSIGNALED(status))
+			out("PROBE_MEMCG pressure killed_by=%d oom_kill=%ld->%ld\n",
+			    WTERMSIG(status), before, after);
+		else
+			out("PROBE_MEMCG pressure survived exit=%d oom_kill=%ld->%ld\n",
+			    WIFEXITED(status) ? WEXITSTATUS(status) : -1,
+			    before, after);
+	} else {
+		out("PROBE_MEMCG pressure wait_timeout\n");
+	}
+	close(go[1]);
+}
+
+static int probe_selinux_load(void)
+{
+	const char *ctx = "system_u:object_r:sysfs_t:s0";
+	char b[256];
+	struct stat st;
+	char *buf = NULL;
+	int pfd, fd, r;
+	ssize_t n;
+
+	mkdir_if_needed("/sys/fs/selinux", 0755);
+	if (mount("selinuxfs", "/sys/fs/selinux", "selinuxfs", 0, "")) {
+		out("PROBE_SELINUX mount=fail errno=%d\n", errno);
+		return -1;
+	}
+	pfd = open("/policy.bin", O_RDONLY);
+	if (pfd < 0 || fstat(pfd, &st)) {
+		out("PROBE_SELINUX policy_file=fail errno=%d\n", errno);
+		if (pfd >= 0)
+			close(pfd);
+		return -1;
+	}
+	buf = malloc(st.st_size);
+	if (!buf) {
+		out("PROBE_SELINUX policy_malloc=fail size=%lld\n",
+		    (long long)st.st_size);
+		close(pfd);
+		return -1;
+	}
+	for (n = 0; n < st.st_size; ) {
+		r = read(pfd, buf + n, st.st_size - n);
+		if (r <= 0)
+			break;
+		n += r;
+	}
+	close(pfd);
+	fd = open("/sys/fs/selinux/load", O_WRONLY);
+	if (fd < 0) {
+		out("PROBE_SELINUX load_open=fail errno=%d\n", errno);
+		free(buf);
+		return -1;
+	}
+	errno = 0;
+	r = write(fd, buf, st.st_size);
+	out("PROBE_SELINUX load size=%lld written=%d errno=%d\n",
+	    (long long)st.st_size, r, errno);
+	close(fd);
+	free(buf);
+	if (r != st.st_size)
+		return -1;
+
+	if (write_str("/sys/fs/selinux/enforce", "0"))
+		out("PROBE_SELINUX permissive=fail errno=%d\n", errno);
+	if (probe_read_file("/sys/fs/selinux/enforce", b, sizeof(b)) > 0)
+		out("PROBE_SELINUX enforce=%s", b);
+	if (probe_read_file("/sys/fs/selinux/policyvers", b, sizeof(b)) > 0)
+		out("PROBE_SELINUX policyvers=%s", b);
+
+	errno = 0;
+	r = setxattr("/sys/devices/virtual", "security.selinux", ctx,
+		     strlen(ctx), 0);
+	out("PROBE_SELINUX setxattr_devices_virtual rc=%d errno=%d\n", r,
+	    errno);
+	errno = 0;
+	r = setxattr("/sys/class/wakeup", "security.selinux", ctx,
+		     strlen(ctx), 0);
+	out("PROBE_SELINUX setxattr_class_wakeup rc=%d errno=%d\n", r, errno);
+	n = getxattr("/sys/devices/virtual", "security.selinux", b,
+		     sizeof(b) - 1);
+	if (n > 0) {
+		b[n] = 0;
+		out("PROBE_SELINUX getxattr_devices_virtual=%s\n", b);
+	} else {
+		out("PROBE_SELINUX getxattr_devices_virtual=fail errno=%d\n",
+		    errno);
+	}
+	return 0;
+}
+
+static int probe_memcg(void)
+{
+	struct probe_ws base;
+	int i, viol = 0, ret_err = 0, killed = 0, rc;
+
+	probe_set_nofile(32768);
+	if (probe_mount_cgroup())
+		return 1;
+	probe_ws_count(&base);
+	out("PROBE_MEMCG base total=%d ep=%d other=%d truncated=%d\n",
+	    base.total, base.ep, base.other, base.truncated);
+	for (i = 0; i < 20; i++) {
+		int v = 0;
+
+		rc = probe_memcg_one(i, &base, &v, &ret_err, &killed);
+		if (rc == -1)
+			out("PROBE_MEMCG trial=%d harness_error\n", i);
+		if (v)
+			viol++;
+	}
+	probe_memcg_pressure();
+	out("PROBE_MEMCG summary trials=20 violations=%d ret_err=%d"
+	    " child_killed=%d base_total=%d base_ep=%d\n",
+	    viol, ret_err, killed, base.total, base.ep);
+	return viol ? 1 : 0;
+}
+
+static int probe_memcg_selinux(void)
+{
+	if (probe_selinux_load())
+		out("PROBE_MEMCG_SELINUX selinux_setup=fail continuing\n");
+	return probe_memcg();
+}
+
+static int probe_memcg_selinux_oom(void)
+{
+	probe_oom_protect = 0;
+	if (probe_selinux_load())
+		out("PROBE_MEMCG_SELINUX_OOM selinux_setup=fail continuing\n");
+	return probe_memcg();
+}
+
+/* Control: the same SELinux-labelled sysfs tree, no memory cgroup limit. */
+static int probe_selinux_mod(void)
+{
+	struct probe_ws base, ws;
+	int i, bad = 0, err = 0;
+
+	if (probe_selinux_load())
+		return 1;
+	probe_ws_count(&base);
+	out("PROBE_SELINUX_MOD base total=%d ep=%d other=%d\n", base.total,
+	    base.ep, base.other);
+	for (i = 0; i < 20; i++) {
+		int epfd, pfd[2], r;
+		struct epoll_event ev;
+		unsigned int fi;
+
+		if (probe_epoll_setup(&epfd, pfd, 0)) {
+			out("PROBE_SELINUX_MOD trial=%d setup_fail errno=%d\n", i,
+			    errno);
+			bad++;
+			continue;
+		}
+		memset(&ev, 0, sizeof(ev));
+		ev.events = EPOLLIN | EPOLLWAKEUP;
+		ev.data.u64 = 0x1234;
+		errno = 0;
+		r = epoll_ctl(epfd, EPOLL_CTL_MOD, pfd[0], &ev);
+		probe_ws_count(&ws);
+		fi = probe_fdinfo_events(epfd);
+		if (r == 0 && ws.ep == base.ep + 1 &&
+		    ws.other == base.other + 1) {
+			out("PROBE_SELINUX_MOD trial=%d ret=0 ep=%d other=%d"
+			    " fdinfo_events=%x sources=ok\n", i, ws.ep,
+			    ws.other, fi);
+		} else {
+			bad++;
+			err++;
+			out("PROBE_SELINUX_MOD trial=%d ret=%d errno=%d ep=%d"
+			    " other=%d fdinfo_events=%x sources=bad\n", i, r,
+			    errno, ws.ep, ws.other, fi);
+		}
+		close(pfd[0]);
+		close(pfd[1]);
+		close(epfd);
+	}
+	out("PROBE_SELINUX_MOD summary trials=20 bad=%d errors=%d\n", bad,
+	    err);
+	return bad ? 1 : 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* pending-fatal-signal probe                                          */
+/*
+ * Stop the child at epoll_ctl(2) syscall entry with ptrace, queue SIGKILL,
+ * and let the syscall body run.  SIGKILL stays pending until the syscall
+ * returns to user mode, so this is the one way to run the allocation path
+ * with fatal_signal_pending(current) set without fault injection.  The
+ * parent keeps the epoll fd open, so the wakeup sources survive the child.
+ */
+static int probe_sigkill_once(int trial, const struct probe_ws *base,
+			      int *viol, int *unconfirmed)
+{
+	int epfd, pfd[2], status;
+	pid_t pid;
+	struct user_regs_struct regs;
+	struct probe_ws ws;
+	unsigned int ev;
+	int entry = 0, got_ret = 0, stop_kind = 0;
+	long ret = -999;
+
+	*viol = 0;
+	if (probe_epoll_setup(&epfd, pfd, 0))
+		return -1;
+	pid = fork();
+	if (pid == 0) {
+		struct epoll_event ev2;
+
+		if (ptrace(PTRACE_TRACEME, 0, 0, 0))
+			_exit(2);
+		raise(SIGSTOP);
+		memset(&ev2, 0, sizeof(ev2));
+		ev2.events = EPOLLIN | EPOLLWAKEUP;
+		ev2.data.u64 = 0x1234;
+		errno = 0;
+		epoll_ctl(epfd, EPOLL_CTL_MOD, pfd[0], &ev2);
+		_exit(0);
+	}
+	if (pid < 0) {
+		close(epfd);
+		return -1;
+	}
+	if (waitpid(pid, &status, 0) < 0 || !WIFSTOPPED(status)) {
+		out("PROBE_SIGKILL trial=%d tracee_stop=fail status=%x\n",
+		    trial, status);
+		goto out;
+	}
+	ptrace(PTRACE_SETOPTIONS, pid, 0,
+	       (void *)(long)PTRACE_O_TRACESYSGOOD);
+	for (;;) {
+		if (ptrace(PTRACE_SYSCALL, pid, 0, 0) < 0)
+			break;
+		if (waitpid(pid, &status, 0) < 0)
+			break;
+		if (WIFEXITED(status) || WIFSIGNALED(status)) {
+			stop_kind = 1;
+			break;
+		}
+		if (!WIFSTOPPED(status))
+			break;
+		if (WSTOPSIG(status) == (SIGTRAP | 0x80)) {
+			if (ptrace(PTRACE_GETREGS, pid, 0, &regs) < 0)
+				break;
+			if (!entry) {
+				if ((long)regs.orig_rax == (long)SYS_epoll_ctl) {
+					entry = 1;
+					kill(pid, SIGKILL);
+				}
+			} else {
+				ret = (long)regs.rax;
+				got_ret = 1;
+				stop_kind = 2;
+				ptrace(PTRACE_CONT, pid, 0, 0);
+				break;
+			}
+		} else if (entry && WSTOPSIG(status) == SIGKILL) {
+			if (ptrace(PTRACE_GETREGS, pid, 0, &regs) == 0) {
+				ret = (long)regs.rax;
+				got_ret = 1;
+			}
+			stop_kind = 3;
+			ptrace(PTRACE_CONT, pid, 0, 0);
+			break;
+		}
+	}
+	kill(pid, SIGKILL);
+	waitpid(pid, &status, 0);
+
+	ev = probe_fdinfo_events(epfd);
+	probe_ws_count(&ws);
+	if (got_ret && ret == 0 && ws.ep == base->ep + 1 &&
+	    ws.other == base->other + 1) {
+		out("PROBE_SIGKILL trial=%d entry=1 ret=0 ep=%d other=%d"
+		    " fdinfo_events=%x sources=ok stop=%d\n",
+		    trial, ws.ep, ws.other, ev, stop_kind);
+	} else if (got_ret && ret == 0) {
+		*viol = 1;
+		out("PROBE_SIGKILL trial=%d VERDICT=VIOL entry=1 ret=0 ep=%d"
+		    " other=%d fdinfo_events=%x stop=%d\n",
+		    trial, ws.ep, ws.other, ev, stop_kind);
+	} else if (entry && (ev & EPOLLWAKEUP) &&
+		   !(ws.ep == base->ep + 1 && ws.other == base->other + 1)) {
+		*unconfirmed = 1;
+		out("PROBE_SIGKILL trial=%d UNCONFIRMED entry=1 got_ret=%d"
+		    " ret=%ld ep=%d other=%d fdinfo_events=%x stop=%d\n",
+		    trial, got_ret, ret, ws.ep, ws.other, ev, stop_kind);
+	} else {
+		out("PROBE_SIGKILL trial=%d entry=%d got_ret=%d ret=%ld ep=%d"
+		    " other=%d fdinfo_events=%x stop=%d\n",
+		    trial, entry, got_ret, ret, ws.ep, ws.other, ev,
+		    stop_kind);
+	}
+out:
+	close(epfd);
+	return 0;
+}
+
+static int probe_sigkill(void)
+{
+	struct probe_ws base;
+	int i, viol = 0, unconfirmed = 0;
+
+	for (i = 0; i < 10; i++) {
+		probe_ws_count(&base);
+		if (base.total < 0) {
+			out("PROBE_SIGKILL wakeup_sources=unreadable\n");
+			return 1;
+		}
+		if (!i)
+			out("PROBE_SIGKILL base total=%d ep=%d other=%d\n",
+			    base.total, base.ep, base.other);
+		probe_sigkill_once(i, &base, &viol, &unconfirmed);
+	}
+	out("PROBE_SIGKILL summary trials=10 violations=%d unconfirmed=%d\n",
+	    viol, unconfirmed);
+	return viol ? 1 : 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* capability probe                                                    */
+static int probe_cap(void)
+{
+	int epfd, pfd[2], epfd2, pfd2[2], res[2], status;
+	pid_t pid;
+	struct probe_msg m;
+	struct probe_ws base, ws;
+	unsigned int ev;
+	int n;
+
+	probe_ws_count(&base);
+	out("PROBE_CAP base total=%d ep=%d other=%d\n", base.total, base.ep,
+	    base.other);
+
+	/* Root control: the same MOD on an equivalent epoll. */
+	if (probe_epoll_setup(&epfd2, pfd2, 0)) {
+		out("PROBE_CAP root_setup=fail errno=%d\n", errno);
+		return 1;
+	}
+	{
+		struct epoll_event ev2;
+
+		memset(&ev2, 0, sizeof(ev2));
+		ev2.events = EPOLLIN | EPOLLWAKEUP;
+		ev2.data.u64 = 0x1234;
+		errno = 0;
+		n = epoll_ctl(epfd2, EPOLL_CTL_MOD, pfd2[0], &ev2);
+		ev = probe_fdinfo_events(epfd2);
+		probe_ws_count(&ws);
+		out("PROBE_CAP root ret=%d errno=%d fdinfo_events=%x ep=%d"
+		    " other=%d\n", n, errno, ev, ws.ep, ws.other);
+	}
+	close(epfd2);
+	close(pfd2[0]);
+	close(pfd2[1]);
+
+	if (probe_epoll_setup(&epfd, pfd, 0)) {
+		out("PROBE_CAP child_setup=fail errno=%d\n", errno);
+		return 1;
+	}
+	if (pipe(res)) {
+		close(epfd);
+		return 1;
+	}
+	pid = fork();
+	if (pid == 0) {
+		struct epoll_event ev2;
+
+		close(res[0]);
+		memset(&m, 0, sizeof(m));
+		if (setuid(65534)) {
+			m.stage = -1;
+			m.err = errno;
+			write(res[1], &m, sizeof(m));
+			_exit(3);
+		}
+		memset(&ev2, 0, sizeof(ev2));
+		ev2.events = EPOLLIN | EPOLLWAKEUP;
+		ev2.data.u64 = 0x1234;
+		errno = 0;
+		m.stage = 2;
+		m.fd = epfd;
+		m.events = ev2.events;
+		m.ret = epoll_ctl(epfd, EPOLL_CTL_MOD, pfd[0], &ev2);
+		m.err = errno;
+		write(res[1], &m, sizeof(m));
+		_exit(0);
+	}
+	close(res[1]);
+	if (pid < 0) {
+		close(epfd);
+		close(res[0]);
+		return 1;
+	}
+	if (probe_read_msg_timeout(res[0], &m, 5000) == 0 && m.stage == 2) {
+		ev = probe_fdinfo_events(epfd);
+		probe_ws_count(&ws);
+		out("PROBE_CAP unprivileged ret=%ld errno=%d fdinfo_events=%x"
+		    " ep=%d other=%d\n", m.ret, m.err, ev, ws.ep, ws.other);
+	} else {
+		out("PROBE_CAP unprivileged setuid=fail stage=%d errno=%d\n",
+		    m.stage, m.err);
+	}
+	waitpid(pid, &status, 0);
+	close(res[0]);
+	close(epfd);
+	close(pfd[0]);
+	close(pfd[1]);
+	return 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* sysfs/device-registration probe                                     */
+static int probe_sysfs(void)
+{
+	enum { N = 3000 };
+	int (*pfds)[2] = calloc(N, 2 * sizeof(int));
+	int *efds = calloc(N, sizeof(int));
+	struct probe_ws base, ws;
+	unsigned long t0;
+	int i, created = 0, failed = 0, r;
+	int epfd, pfd[2];
+
+	probe_set_nofile(65536);
+	if (!pfds || !efds) {
+		out("PROBE_SYSFS alloc=fail\n");
+		return 1;
+	}
+	probe_ws_count(&base);
+	out("PROBE_SYSFS base total=%d ep=%d other=%d n=%d\n",
+	    base.total, base.ep, base.other, N);
+	t0 = now_ms();
+	for (i = 0; i < N; i++) {
+		if (probe_epoll_setup(&epfd, pfd, 1)) {
+			int e = errno;
+
+			failed++;
+			if (failed <= 3)
+				out("PROBE_SYSFS add_fail i=%d errno=%d\n", i, e);
+			continue;
+		}
+		efds[created] = epfd;
+		pfds[created][0] = pfd[0];
+		pfds[created][1] = pfd[1];
+		created++;
+	}
+	probe_ws_count(&ws);
+	out("PROBE_SYSFS created=%d failed=%d elapsed_ms=%lu"
+	    " ep=%d other=%d total=%d truncated=%d\n",
+	    created, failed, now_ms() - t0, ws.ep, ws.other, ws.total,
+	    ws.truncated);
+	for (i = 0; i < created; i++) {
+		close(pfds[i][0]);
+		close(pfds[i][1]);
+		close(efds[i]);
+	}
+	probe_ws_count(&ws);
+	out("PROBE_SYSFS after_close ep=%d other=%d total=%d\n", ws.ep,
+	    ws.other, ws.total);
+
+	/* A read-only sysfs mount and a tmpfs mounted over the class
+	 * directory must not affect the kernel's internal kernfs tree. */
+	r = mount(NULL, "/sys", NULL, MS_REMOUNT | MS_RDONLY, NULL);
+	out("PROBE_SYSFS remount_sys_ro rc=%d errno=%d\n", r, errno);
+	if (probe_epoll_setup(&epfd, pfd, 1)) {
+		out("PROBE_SYSFS ro_add=fail errno=%d\n", errno);
+	} else {
+		probe_ws_count(&ws);
+		out("PROBE_SYSFS ro_add=ok ep=%d other=%d\n", ws.ep, ws.other);
+		close(epfd);
+		close(pfd[0]);
+		close(pfd[1]);
+	}
+	if (r == 0)
+		mount(NULL, "/sys", NULL, MS_REMOUNT, NULL);
+
+	r = rmdir("/sys/class/wakeup/wakeup0");
+	out("PROBE_SYSFS rmdir_wakeup0 rc=%d errno=%d\n", r, errno);
+
+	mkdir_if_needed("/sys/class/wakeup", 0755);
+	r = mount("tmpfs", "/sys/class/wakeup", "tmpfs", 0, "size=1m");
+	out("PROBE_SYSFS mount_tmpfs_over_class rc=%d errno=%d\n", r, errno);
+	if (r == 0) {
+		int fd = open("/sys/class/wakeup/wakeup0",
+			      O_CREAT | O_WRONLY, 0644);
+
+		out("PROBE_SYSFS create_wakeup0 fd=%d errno=%d\n", fd, errno);
+		if (fd >= 0)
+			close(fd);
+		if (probe_epoll_setup(&epfd, pfd, 1)) {
+			out("PROBE_SYSFS shadow_add=fail errno=%d\n", errno);
+		} else {
+			probe_ws_count(&ws);
+			out("PROBE_SYSFS shadow_add=ok ep=%d other=%d\n",
+			    ws.ep, ws.other);
+			close(epfd);
+			close(pfd[0]);
+			close(pfd[1]);
+		}
+		umount2("/sys/class/wakeup", MNT_DETACH);
+	}
+	free(pfds);
+	free(efds);
+	return 0;
+}
+
+static int run_probe(const char *name)
+{
+	if (!strcmp(name, "probe_memcg"))
+		return probe_memcg();
+	if (!strcmp(name, "probe_memcg_selinux"))
+		return probe_memcg_selinux();
+	if (!strcmp(name, "probe_memcg_selinux_oom"))
+		return probe_memcg_selinux_oom();
+	if (!strcmp(name, "probe_selinux_mod"))
+		return probe_selinux_mod();
+	if (!strcmp(name, "probe_selinux"))
+		return probe_selinux_load() ? 1 : 0;
+	if (!strcmp(name, "probe_sigkill"))
+		return probe_sigkill();
+	if (!strcmp(name, "probe_cap"))
+		return probe_cap();
+	if (!strcmp(name, "probe_sysfs"))
+		return probe_sysfs();
+	out("PROBE_ERROR unknown=%s\n", name);
+	return 2;
+}
+
+/* ------------------------------------------------------------------ */
 /* main                                                                */
 
 static char selected[64] = "all";
@@ -3495,6 +4711,16 @@ int main(void)
 	mount_all();
 	parse_cmdline();
 	out("CMDLINE target=%s verbose=%d\n", selected, verbose);
+	if (!strncmp(selected, "probe_", 6)) {
+		int pr = run_probe(selected);
+
+		out("PROBE_DONE probe=%s rc=%d\n", selected, pr);
+		out("HARNESS_DONE\n");
+		sync();
+		reboot(RB_POWER_OFF);
+		for (;;)
+			pause();
+	}
 	config_fault_injection();
 	net_setup();
 	if (ff_config_base() < 0) {

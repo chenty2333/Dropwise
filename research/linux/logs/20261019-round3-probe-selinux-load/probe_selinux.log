@@ -1,0 +1,8 @@
+CMDLINE target=probe_selinux verbose=0
+PROBE_SELINUX load size=3874167 written=3874167 errno=0
+PROBE_SELINUX enforce=0PROBE_SELINUX policyvers=35PROBE_SELINUX setxattr_devices_virtual rc=0 errno=0
+PROBE_SELINUX setxattr_class_wakeup rc=0 errno=0
+PROBE_SELINUX getxattr_devices_virtual=system_u:object_r:sysfs_t:s0
+PROBE_DONE probe=probe_selinux rc=0
+HARNESS_DONE
+[    0.621974] reboot: Power down

@@ -1,0 +1,13 @@
+CMDLINE target=probe_sysfs verbose=0
+PROBE_SYSFS base total=12 ep=0 other=12 n=3000
+PROBE_SYSFS created=3000 failed=0 elapsed_ms=33 ep=3000 other=3012 total=6012 truncated=0
+PROBE_SYSFS after_close ep=0 other=12 total=12
+PROBE_SYSFS remount_sys_ro rc=0 errno=17
+PROBE_SYSFS ro_add=ok ep=1 other=13
+PROBE_SYSFS rmdir_wakeup0 rc=-1 errno=20
+PROBE_SYSFS mount_tmpfs_over_class rc=0 errno=17
+PROBE_SYSFS create_wakeup0 fd=3 errno=17
+PROBE_SYSFS shadow_add=ok ep=1 other=13
+PROBE_DONE probe=probe_sysfs rc=0
+HARNESS_DONE
+[   11.889976] reboot: Power down

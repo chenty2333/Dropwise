@@ -1,0 +1,89 @@
+CMDLINE target=overlay_copyup verbose=0
+FF_INJECTABLE entries=1000
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST i915_driver_hw_probe	ERRNO
+FF_LIST i915_driver_mmio_probe	ERRNO
+FF_LIST i915_driver_early_probe	ERRNO
+FF_LIST i915_pci_probe	ERRNO
+FF_LIST __fw_domain_init	ERRNO
+FF_LIST intel_engines_init_mmio	ERRNO
+FF_LIST intel_gt_init	ERRNO
+FF_LIST intel_guc_ct_init	ERRNO
+FF_LIST __uc_init	ERRNO
+FF_LIST uc_fw_rsa_data_create	ERRNO
+FF_LIST intel_connector_register	ERRNO
+FF_LIST intel_display_driver_probe_noirq	ERRNO
+FF_LIST page_pool_alloc_netmems	NULL
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=18
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=overlay_copyup full=0 mechs=5
+PROBE target=overlay_copyup sample=1 ret=0 errno=0 calls=35 readback=965
+PROBE target=overlay_copyup sample=2 ret=0 errno=0 calls=33 readback=967
+PROBE target=overlay_copyup sample=3 ret=0 errno=0 calls=32 readback=968
+BASE target=overlay_copyup side=pre sample=1 obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+BASE target=overlay_copyup side=pre sample=2 obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+BASE target=overlay_copyup side=post sample=1 ret=0 errno=0 obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=1;upper_n=4096;upper_first=76;upper_mode=644;merged_mode=644;lower_mode=644;lower_n=4096
+BASE target=overlay_copyup side=post sample=2 ret=0 errno=0 obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=1;upper_n=4096;upper_first=76;upper_mode=644;merged_mode=644;lower_mode=644;lower_n=4096
+BASE_STABLE target=overlay_copyup stable=1 pre=same post=same
+TRIAL target=overlay_copyup mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=3 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=4 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=5 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=6 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=7 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=8 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=9 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=10 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=11 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=12 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=13 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=14 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=15 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=16 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=17 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=18 ret=-1 errno=28 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=19 ret=-1 errno=28 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=20 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=21 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=22 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=23 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=24 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=25 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=26 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=27 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=0;upper_n=-1;upper_first=-1;upper_mode=0;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=28 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=1;upper_n=4096;upper_first=76;upper_mode=644;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=29 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=1;upper_n=4096;upper_first=76;upper_mode=644;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=30 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=1;upper_n=4096;upper_first=76;upper_mode=644;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=31 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=1;upper_n=4096;upper_first=76;upper_mode=644;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL target=overlay_copyup mech=failnth site=32 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_rc=4096;surv_errno=0;surv_n=4096;surv_L=4096;surv_first=76;surv_mode=420|upper=1;upper_n=4096;upper_first=76;upper_mode=644;merged_mode=644;lower_mode=644;lower_n=4096
+TRIAL_END target=overlay_copyup mech=failnth site=33 reason=no_injection readback=1 ret=0 errno=0
+SUMMARY target=overlay_copyup mech=failnth sites=32 trials=32 misses=0 ok_pre=30 ok_post=2 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=71
+FF_REGISTER func=__filemap_add_folio retval=0xfffffffffffffff4 times=1
+TRIAL_END target=overlay_copyup mech=failfunc site=__filemap_add_folio reason=not_called readback=1
+TRIAL_END target=overlay_copyup mech=failfunc site=__filemap_add_folio reason=not_called readback=1
+SUMMARY target=overlay_copyup mech=failfunc sites=0 trials=0 misses=1 ok_pre=0 ok_post=0 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=7
+TARGET_END target=overlay_copyup
+HARNESS_DONE
+[    0.613665] reboot: Power down

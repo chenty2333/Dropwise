@@ -45,6 +45,7 @@ ALL_TARGETS = [
     "pipe_sig_partial",
     "epoll_mod_wakeup",
     "epoll_add_wakeup",
+    "epoll_mod_wakeup_ep",
 ]
 
 QEMU = shutil.which("qemu-system-x86_64")
@@ -63,14 +64,14 @@ def build_harness():
     ])
 
 
-def build_initramfs():
+def build_initramfs(extra_files=None):
     if not GEN_INIT_CPIO.exists():
         if not (LINUX_SRC / "usr" / "gen_init_cpio.c").exists():
             sys.exit(f"missing {GEN_INIT_CPIO} and {LINUX_SRC}/usr/gen_init_cpio.c")
         run(["gcc", "-O2", "-o", GEN_INIT_CPIO,
              LINUX_SRC / "usr" / "gen_init_cpio.c"])
     spec = BUILD / "initramfs.spec"
-    spec.write_text(f"""\
+    lines = f"""\
 dir /dev 0755 0 0
 nod /dev/console 0600 0 0 c 5 1
 nod /dev/null 0666 0 0 c 1 3
@@ -79,7 +80,10 @@ dir /proc 0555 0 0
 dir /sys 0555 0 0
 dir /tmp 01777 0 0
 file /init {HARNESS} 0755 0 0
-""")
+"""
+    for guest, host, mode in extra_files or []:
+        lines += f"file {guest} {host} {mode} 0 0\n"
+    spec.write_text(lines)
     with open(INITRAMFS, "wb") as out:
         p1 = subprocess.Popen([str(GEN_INIT_CPIO), str(spec)],
                               stdout=subprocess.PIPE)

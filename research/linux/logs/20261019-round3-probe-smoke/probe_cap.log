@@ -1,0 +1,7 @@
+CMDLINE target=probe_cap verbose=0
+PROBE_CAP base total=12 ep=0 other=12
+PROBE_CAP root ret=0 errno=0 fdinfo_events=20000019 ep=1 other=13
+PROBE_CAP unprivileged ret=0 errno=0 fdinfo_events=19 ep=0 other=12
+PROBE_DONE probe=probe_cap rc=0
+HARNESS_DONE
+[    0.597759] reboot: Power down

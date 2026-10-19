@@ -311,7 +311,7 @@ Gemini 说简单取消测试有三种常见写法，各有盲点。RESCAN 的回
 
 | 生态 | 编号 | 内容 |
 |---|---|---|
-| Python | aio-libs/aiohttp#12795（2026-06），修复 commit `4b2e470` | Python 3.8 起 `CancelledError` 继承 `BaseException`，异常处理只捕获 `Exception`，取消时没有关闭连接，半读状态的连接回到 keep-alive 池。与 lettre 同一形状：标记只在出错时设置 |
+| Python | aio-libs/aiohttp#12795（2026-06），修复 commit `4b2e470` | Gemini 的描述：`CancelledError` 继承 `BaseException`，`data_received` 只捕获 `Exception`，取消时没有关闭连接。修复（3.14.1）确实是改成捕获 `BaseException`，但 Python 回溯实验（research/python-retro）发现：任务取消不会走进这个同步回调，两个版本在取消场景下都干净；issue 报的约 2 ms 失败其实是连接回池后读超时定时器没有撤销，由 #12954（3.14.2）修复，与取消无关 |
 | Python | sqlalchemy/sqlalchemy#6592（2021-06），修复 commit `2fa3931` | asyncpg 的连接遇到取消或超时后没有被作废，带着未结束的事务回到池里。与 sqlx#4467 同一形状 |
 | Python | MagicStack/asyncpg#537、#1310（2026-03） | 取消过程中再出错时状态没有复位，下一个借用者报 "another operation is in progress"；`_cancel()` 抛出的异常类型绕过了上层的断连识别 |
 | Python | aio-libs/aiohttp#3281（2018-09） | 后台写 chunk 的任务还没停，连接已被下一个请求复用 |

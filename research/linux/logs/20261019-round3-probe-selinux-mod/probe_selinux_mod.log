@@ -1,0 +1,30 @@
+CMDLINE target=probe_selinux_mod verbose=0
+PROBE_SELINUX load size=3874167 written=3874167 errno=0
+PROBE_SELINUX enforce=0PROBE_SELINUX policyvers=35PROBE_SELINUX setxattr_devices_virtual rc=0 errno=0
+PROBE_SELINUX setxattr_class_wakeup rc=0 errno=0
+PROBE_SELINUX getxattr_devices_virtual=system_u:object_r:sysfs_t:s0
+PROBE_SELINUX_MOD base total=12 ep=0 other=12
+PROBE_SELINUX_MOD trial=0 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=1 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=2 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=3 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=4 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=5 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=6 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=7 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=8 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=9 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=10 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=11 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=12 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=13 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=14 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=15 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=16 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=17 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=18 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD trial=19 ret=0 ep=1 other=13 fdinfo_events=20000019 sources=ok
+PROBE_SELINUX_MOD summary trials=20 bad=0 errors=0
+PROBE_DONE probe=probe_selinux_mod rc=0
+HARNESS_DONE
+[    0.621802] reboot: Power down

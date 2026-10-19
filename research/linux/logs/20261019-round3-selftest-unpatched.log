@@ -1,0 +1,228 @@
+TAP version 13
+1..66
+# Starting 66 tests from 1 test cases.
+#  RUN           global.epoll1 ...
+#            OK  global.epoll1
+ok 1 global.epoll1
+#  RUN           global.epoll2 ...
+#            OK  global.epoll2
+ok 2 global.epoll2
+#  RUN           global.epoll3 ...
+#            OK  global.epoll3
+ok 3 global.epoll3
+#  RUN           global.epoll4 ...
+#            OK  global.epoll4
+ok 4 global.epoll4
+#  RUN           global.epoll5 ...
+#            OK  global.epoll5
+ok 5 global.epoll5
+#  RUN           global.epoll6 ...
+#            OK  global.epoll6
+ok 6 global.epoll6
+#  RUN           global.epoll7 ...
+#            OK  global.epoll7
+ok 7 global.epoll7
+#  RUN           global.epoll8 ...
+#            OK  global.epoll8
+ok 8 global.epoll8
+#  RUN           global.epoll9 ...
+#            OK  global.epoll9
+ok 9 global.epoll9
+#  RUN           global.epoll10 ...
+#            OK  global.epoll10
+ok 10 global.epoll10
+#  RUN           global.epoll11 ...
+#            OK  global.epoll11
+ok 11 global.epoll11
+#  RUN           global.epoll12 ...
+#            OK  global.epoll12
+ok 12 global.epoll12
+#  RUN           global.epoll13 ...
+#            OK  global.epoll13
+ok 13 global.epoll13
+#  RUN           global.epoll14 ...
+#            OK  global.epoll14
+ok 14 global.epoll14
+#  RUN           global.epoll15 ...
+#            OK  global.epoll15
+ok 15 global.epoll15
+#  RUN           global.epoll16 ...
+#            OK  global.epoll16
+ok 16 global.epoll16
+#  RUN           global.epoll17 ...
+#            OK  global.epoll17
+ok 17 global.epoll17
+#  RUN           global.epoll18 ...
+#            OK  global.epoll18
+ok 18 global.epoll18
+#  RUN           global.epoll19 ...
+#            OK  global.epoll19
+ok 19 global.epoll19
+#  RUN           global.epoll20 ...
+#            OK  global.epoll20
+ok 20 global.epoll20
+#  RUN           global.epoll21 ...
+#            OK  global.epoll21
+ok 21 global.epoll21
+#  RUN           global.epoll22 ...
+#            OK  global.epoll22
+ok 22 global.epoll22
+#  RUN           global.epoll23 ...
+#            OK  global.epoll23
+ok 23 global.epoll23
+#  RUN           global.epoll24 ...
+#            OK  global.epoll24
+ok 24 global.epoll24
+#  RUN           global.epoll25 ...
+#            OK  global.epoll25
+ok 25 global.epoll25
+#  RUN           global.epoll26 ...
+#            OK  global.epoll26
+ok 26 global.epoll26
+#  RUN           global.epoll27 ...
+#            OK  global.epoll27
+ok 27 global.epoll27
+#  RUN           global.epoll28 ...
+#            OK  global.epoll28
+ok 28 global.epoll28
+#  RUN           global.epoll29 ...
+#            OK  global.epoll29
+ok 29 global.epoll29
+#  RUN           global.epoll30 ...
+#            OK  global.epoll30
+ok 30 global.epoll30
+#  RUN           global.epoll31 ...
+#            OK  global.epoll31
+ok 31 global.epoll31
+#  RUN           global.epoll32 ...
+#            OK  global.epoll32
+ok 32 global.epoll32
+#  RUN           global.epoll33 ...
+#            OK  global.epoll33
+ok 33 global.epoll33
+#  RUN           global.epoll34 ...
+#            OK  global.epoll34
+ok 34 global.epoll34
+#  RUN           global.epoll35 ...
+#            OK  global.epoll35
+ok 35 global.epoll35
+#  RUN           global.epoll36 ...
+#            OK  global.epoll36
+ok 36 global.epoll36
+#  RUN           global.epoll37 ...
+#            OK  global.epoll37
+ok 37 global.epoll37
+#  RUN           global.epoll38 ...
+#            OK  global.epoll38
+ok 38 global.epoll38
+#  RUN           global.epoll39 ...
+#            OK  global.epoll39
+ok 39 global.epoll39
+#  RUN           global.epoll40 ...
+#            OK  global.epoll40
+ok 40 global.epoll40
+#  RUN           global.epoll41 ...
+#            OK  global.epoll41
+ok 41 global.epoll41
+#  RUN           global.epoll42 ...
+#            OK  global.epoll42
+ok 42 global.epoll42
+#  RUN           global.epoll43 ...
+#            OK  global.epoll43
+ok 43 global.epoll43
+#  RUN           global.epoll44 ...
+#            OK  global.epoll44
+ok 44 global.epoll44
+#  RUN           global.epoll45 ...
+#            OK  global.epoll45
+ok 45 global.epoll45
+#  RUN           global.epoll46 ...
+#            OK  global.epoll46
+ok 46 global.epoll46
+#  RUN           global.epoll47 ...
+#            OK  global.epoll47
+ok 47 global.epoll47
+#  RUN           global.epoll48 ...
+#            OK  global.epoll48
+ok 48 global.epoll48
+#  RUN           global.epoll49 ...
+#            OK  global.epoll49
+ok 49 global.epoll49
+#  RUN           global.epoll50 ...
+#            OK  global.epoll50
+ok 50 global.epoll50
+#  RUN           global.epoll51 ...
+#            OK  global.epoll51
+ok 51 global.epoll51
+#  RUN           global.epoll52 ...
+#            OK  global.epoll52
+ok 52 global.epoll52
+#  RUN           global.epoll53 ...
+#            OK  global.epoll53
+ok 53 global.epoll53
+#  RUN           global.epoll54 ...
+#            OK  global.epoll54
+ok 54 global.epoll54
+#  RUN           global.epoll55 ...
+#            OK  global.epoll55
+ok 55 global.epoll55
+#  RUN           global.epoll56 ...
+#            OK  global.epoll56
+ok 56 global.epoll56
+#  RUN           global.epoll57 ...
+#            OK  global.epoll57
+ok 57 global.epoll57
+#  RUN           global.epoll58 ...
+#            OK  global.epoll58
+ok 58 global.epoll58
+#  RUN           global.epoll59 ...
+#            OK  global.epoll59
+ok 59 global.epoll59
+#  RUN           global.epoll60 ...
+#            OK  global.epoll60
+ok 60 global.epoll60
+#  RUN           global.epoll61 ...
+#            OK  global.epoll61
+ok 61 global.epoll61
+#  RUN           global.epoll62 ...
+#            OK  global.epoll62
+ok 62 global.epoll62
+#  RUN           global.epoll63 ...
+#            OK  global.epoll63
+ok 63 global.epoll63
+#  RUN           global.epoll64 ...
+#            OK  global.epoll64
+ok 64 global.epoll64
+#  RUN           global.epoll65 ...
+#            OK  global.epoll65
+ok 65 global.epoll65
+#  RUN           global.epoll66 ...
+#            OK  global.epoll66
+ok 66 global.epoll66
+# PASSED: 66 / 66 tests passed.
+# Totals: pass:66 fail:0 xfail:0 xpass:0 skip:0 error:0
+[   33.673114] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000000
+[   33.673477] CPU: 1 UID: 0 PID: 1 Comm: init Not tainted 7.3.0-rc2 #1 PREEMPT(lazy) 
+[   33.673872] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.17.0-10.fc44 06/10/2025
+[   33.674311] Call Trace:
+[   33.674440]  <TASK>
+[   33.674556]  dump_stack_lvl+0x4d/0x70
+[   33.674893]  vpanic+0xf6/0x2d0
+[   33.675062]  panic+0x66/0x66
+[   33.675210]  do_exit.cold+0x41/0x41
+[   33.675389]  ? handle_mm_fault+0xb0/0x280
+[   33.675638]  do_group_exit+0x28/0xb0
+[   33.675856]  __x64_sys_exit_group+0x13/0x20
+[   33.676063]  x64_sys_call+0x1567/0x1570
+[   33.676247]  do_syscall_64+0xde/0x4b0
+[   33.676428]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
+[   33.676803] RIP: 0033:0x44dfe8
+[   33.676980] Code: 00 00 48 c7 c0 e8 ff ff ff 64 c7 00 26 00 00 00 eb cf f3 0f 1e fa 48 c7 c6 e8 ff ff ff eb 04 0f 1f 00 f4 b8 e7 00 00 00 0f 05 <48> 3d 00 f0 ff ff 76 f0 f7 d8 64 89 06 eb e9 66 0f 1f 84 00 00 00
+[   33.677975] RSP: 002b:00007fff6dc18e38 EFLAGS: 00000246 ORIG_RAX: 00000000000000e7
+[   33.678379] RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 000000000044dfe8
+[   33.678760] RDX: 000000000ec54708 RSI: ffffffffffffffe8 RDI: 0000000000000000
+[   33.679124] RBP: 00007fff6dc18e90 R08: 0000000000000000 R09: 000000000ec56630
+[   33.679509] R10: 0000000000000110 R11: 0000000000000246 R12: 0000000000000000
+[   33.679930] R13: 0000000000000000 R14: 0000000000000000 R15: 00000000004e5740
+[   33.680293]  </TASK>
+[   33.680497] Kernel Offset: disabled

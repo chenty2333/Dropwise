@@ -1,0 +1,29 @@
+CMDLINE target=probe_memcg verbose=0
+PROBE_CG mounted=1 memory_controller=1
+PROBE_MEMCG base total=12 ep=0 other=12 truncated=0
+PROBE_MEMCG trial=0 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=33816576 max=33820672 sources=ok
+PROBE_MEMCG trial=1 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34078720 max=34082816 sources=ok
+PROBE_MEMCG trial=2 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34078720 max=34082816 sources=ok
+PROBE_MEMCG trial=3 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34078720 max=34082816 sources=ok
+PROBE_MEMCG trial=4 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34168832 max=34172928 sources=ok
+PROBE_MEMCG trial=5 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34144256 max=34148352 sources=ok
+PROBE_MEMCG trial=6 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34111488 max=34115584 sources=ok
+PROBE_MEMCG trial=7 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34086912 max=34091008 sources=ok
+PROBE_MEMCG trial=8 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34181120 max=34185216 sources=ok
+PROBE_MEMCG trial=9 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34078720 max=34082816 sources=ok
+PROBE_MEMCG trial=10 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34078720 max=34082816 sources=ok
+PROBE_MEMCG trial=11 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34095104 max=34099200 sources=ok
+PROBE_MEMCG trial=12 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34095104 max=34099200 sources=ok
+PROBE_MEMCG trial=13 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34078720 max=34082816 sources=ok
+PROBE_MEMCG trial=14 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34185216 max=34189312 sources=ok
+PROBE_MEMCG trial=15 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34144256 max=34148352 sources=ok
+PROBE_MEMCG trial=16 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34127872 max=34131968 sources=ok
+PROBE_MEMCG trial=17 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34127872 max=34131968 sources=ok
+PROBE_MEMCG trial=18 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34078720 max=34082816 sources=ok
+PROBE_MEMCG trial=19 ret=0 errno=0 ep=1 other=13 fdinfo_events=20000019 cur_before=34091008 max=34095104 sources=ok
+[    0.976200] Memory cgroup out of memory: Killed process 98 (init) total-vm:10552kB, anon-rss:1060kB, file-rss:0kB, shmem-rss:460kB, UID:0 pgtables:52kB oom_score_adj:0
+PROBE_MEMCG pressure killed_by=9 oom_kill=0->1
+PROBE_MEMCG summary trials=20 violations=0 ret_err=0 child_killed=0 base_total=12 base_ep=0
+PROBE_DONE probe=probe_memcg rc=0
+HARNESS_DONE
+[    0.989780] reboot: Power down

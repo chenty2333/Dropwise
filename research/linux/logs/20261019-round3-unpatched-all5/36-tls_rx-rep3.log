@@ -1,0 +1,61 @@
+CMDLINE target=tls_rx verbose=0
+FF_INJECTABLE entries=1000
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST i915_driver_hw_probe	ERRNO
+FF_LIST i915_driver_mmio_probe	ERRNO
+FF_LIST i915_driver_early_probe	ERRNO
+FF_LIST i915_pci_probe	ERRNO
+FF_LIST __fw_domain_init	ERRNO
+FF_LIST intel_engines_init_mmio	ERRNO
+FF_LIST intel_gt_init	ERRNO
+FF_LIST intel_guc_ct_init	ERRNO
+FF_LIST __uc_init	ERRNO
+FF_LIST uc_fw_rsa_data_create	ERRNO
+FF_LIST intel_connector_register	ERRNO
+FF_LIST intel_display_driver_probe_noirq	ERRNO
+FF_LIST page_pool_alloc_netmems	NULL
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=18
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=tls_rx full=0 mechs=5
+PROBE target=tls_rx sample=1 ret=0 errno=0 calls=4 readback=996
+PROBE target=tls_rx sample=2 ret=0 errno=0 calls=4 readback=996
+PROBE target=tls_rx sample=3 ret=0 errno=0 calls=4 readback=996
+BASE target=tls_rx side=pre sample=1 obs=recv_rc=16;recv_errno=0;b0=23;b1=3;b2=3|peer_send_rc=1;peer_send_errno=0;rx_conf=0
+BASE target=tls_rx side=pre sample=2 obs=recv_rc=16;recv_errno=0;b0=23;b1=3;b2=3|peer_send_rc=1;peer_send_errno=0;rx_conf=0
+BASE target=tls_rx side=post sample=1 ret=0 errno=0 obs=recv_rc=1;recv_errno=0;b0=72;b1=-1;b2=-1|peer_send_rc=1;peer_send_errno=0;rx_conf=1
+BASE target=tls_rx side=post sample=2 ret=0 errno=0 obs=recv_rc=1;recv_errno=0;b0=72;b1=-1;b2=-1|peer_send_rc=1;peer_send_errno=0;rx_conf=1
+BASE_STABLE target=tls_rx stable=1 pre=same post=same
+TRIAL target=tls_rx mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=recv_rc=16;recv_errno=0;b0=23;b1=3;b2=3|peer_send_rc=1;peer_send_errno=0;rx_conf=0
+TRIAL target=tls_rx mech=failnth site=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=recv_rc=16;recv_errno=0;b0=23;b1=3;b2=3|peer_send_rc=1;peer_send_errno=0;rx_conf=0
+TRIAL target=tls_rx mech=failnth site=3 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=recv_rc=16;recv_errno=0;b0=23;b1=3;b2=3|peer_send_rc=1;peer_send_errno=0;rx_conf=0
+TRIAL target=tls_rx mech=failnth site=4 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=recv_rc=16;recv_errno=0;b0=23;b1=3;b2=3|peer_send_rc=1;peer_send_errno=0;rx_conf=0
+TRIAL_END target=tls_rx mech=failnth site=5 reason=no_injection readback=1 ret=0 errno=0
+SUMMARY target=tls_rx mech=failnth sites=4 trials=4 misses=0 ok_pre=4 ok_post=0 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=7
+FF_REGISTER func=should_fail_net_realloc_skb retval=0x1 times=1
+TRIAL_END target=tls_rx mech=failfunc site=should_fail_net_realloc_skb reason=not_called readback=1
+TRIAL_END target=tls_rx mech=failfunc site=should_fail_net_realloc_skb reason=not_called readback=1
+SUMMARY target=tls_rx mech=failfunc sites=0 trials=0 misses=1 ok_pre=0 ok_post=0 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=8
+TARGET_END target=tls_rx
+HARNESS_DONE
+[    0.613701] reboot: Power down
