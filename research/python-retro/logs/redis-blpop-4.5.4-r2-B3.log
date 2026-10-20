@@ -1,0 +1,19 @@
+case=redis target=blpop version=4.5.4 url=redis://127.0.0.1:32930/0 round=2
+case=redis level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=3 seconds=4.04
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=1 ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=1 ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=1 ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=1 ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=1 ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=1 ok 
+  plan=pending#3 rep=1 target=completed/y4/realized=False verdict=- obs=1 ok 
+  plan=pending#3 rep=2 target=completed/y4/realized=False verdict=- obs=1 ok 
+  plan=pending#3 rep=3 target=completed/y4/realized=False verdict=- obs=1 ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs=1 ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs=1 ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs=1 ok 
+verdicts={'-': 12}
+SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=3 seconds=4.04
+=== FINAL ===
+SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=3 seconds=4.04
+violations_by_plan=[]

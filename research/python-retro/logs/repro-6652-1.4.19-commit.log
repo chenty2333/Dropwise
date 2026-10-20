@@ -1,0 +1,5 @@
+target: CancelledError
+pool after target: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+survivor write=ok elapsed=0.02s
+own: 7 observer: 7
+pool final: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0

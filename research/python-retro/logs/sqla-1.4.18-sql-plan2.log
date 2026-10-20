@@ -1,0 +1,17 @@
+[SQL c=2352] CREATE TABLE IF NOT EXISTS dw_kv (id text primary key, v int not null) args=()
+[SQL c=2352] INSERT INTO dw_kv (id, v) VALUES ($1, 0) ON CONFLICT (id) DO UPDATE SET v = 0 args=('dropwise:py:row',)
+[SQL c=9648] BEGIN ISOLATION LEVEL READ COMMITTED; args=()
+[SQL c=9648] ROLLBACK; args=()
+[SQL c=9648] BEGIN ISOLATION LEVEL READ COMMITTED; args=()
+[SQL c=9648] COMMIT; args=()
+--- setup done ---
+[SQL c=9648] BEGIN ISOLATION LEVEL READ COMMITTED; args=()
+target CancelledError
+--- target done, survivor ---
+[SQL c=9648] SAVEPOINT __asyncpg_savepoint_9__; args=()
+[SQL c=9648] RELEASE SAVEPOINT __asyncpg_savepoint_9__; args=()
+[SQL c=9648] SAVEPOINT __asyncpg_savepoint_b__; args=()
+[SQL c=9648] ROLLBACK TO __asyncpg_savepoint_b__; args=()
+survivor: {'write': 'ok', 'own': 7}
+observer: 0
+pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0

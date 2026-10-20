@@ -1,0 +1,6 @@
+target raised CancelledError 
+pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+GREENLET 1 dead=True
+other greenlets 1
+survivor: {'write': 'ok', 'own': 7}
+observer: 7

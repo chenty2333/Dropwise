@@ -1,0 +1,13 @@
+case=sqlalchemy-current version=2.1.5 driver=asyncpg round=1 plans=1 url=postgresql+asyncpg://dropwise:dropwise@127.0.0.1:32933/dropwise
+case=sqlalchemy-current level=M1 yields=7 trials=3 violations=3 unknown=0 unrealized=0 seconds=1.40
+note: pre == post (degenerate observation)
+pre=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+post=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+  plan=pending#1 rep=1 target=cancelled/y2/realized=True verdict=Neither obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 0} VIOLATION Neither under atomic: observed {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 0}, pre={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, post={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}
+  plan=pending#1 rep=2 target=cancelled/y2/realized=True verdict=Neither obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 0} VIOLATION Neither under atomic: observed {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 0}, pre={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, post={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}
+  plan=pending#1 rep=3 target=cancelled/y2/realized=True verdict=Neither obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 0} VIOLATION Neither under atomic: observed {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 0}, pre={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, post={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}
+verdicts={'Neither': 3}
+SUMMARY level=M1 yields=7 trials=3 violations=3 unknown=0 unrealized=0 seconds=1.40
+=== FINAL ===
+SUMMARY level=M1 yields=7 trials=3 violations=3 unknown=0 unrealized=0 seconds=1.40
+violations_by_plan=['pending#1', 'pending#1', 'pending#1']

@@ -1,0 +1,26 @@
+file	K	trials	violations	unknown	unrealized	verdicts	viol_plans
+logs/sqla-1.4.18-triage-r1-M1-plans2-6.log	7	15	3	0	0	'Neither': 3, 'Pre': 12	'pending#2', 'pending#2', 'pending#2'
+logs/sqla-1.4.18-triage-r2-M1-plans2-6.log	7	15	3	0	0	'Neither': 3, 'Pre': 12	'pending#2', 'pending#2', 'pending#2'
+logs/sqla-1.4.18-triage-r3-M1-plans2-6.log	7	15	3	0	0	'Neither': 3, 'Pre': 12	'pending#2', 'pending#2', 'pending#2'
+logs/sqla-1.4.19-triage-r1-M1-plans2-6.log	7	15	0	0	0	'Pre': 15	
+logs/sqla-1.4.19-triage-r2-M1-plans2-6.log	7	15	0	0	0	'Pre': 15	
+logs/sqla-1.4.19-triage-r3-M1-plans2-6.log	7	15	0	0	0	'Pre': 15	
+logs/sqla-1.4.18-patched-r1-M1-plans2-6.log	7	15	0	0	0	'Pre': 15	
+logs/sqla-1.4.18-patched-r2-M1-plans2-6.log	7	15	0	0	0	'Pre': 15	
+logs/sqla-1.4.18-patched-r3-M1-plans2-6.log	7	15	0	0	0	'Pre': 15	
+logs/sqla-current-2.0.55-asyncpg-r1-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-current-2.0.55-asyncpg-r2-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-current-2.0.55-asyncpg-r3-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-current-2.0.55-psycopg-r1-M1.log	8	24	0	0	0	'Pre': 24	
+logs/sqla-current-2.0.55-psycopg-r2-M1.log	8	24	0	0	0	'Pre': 24	
+logs/sqla-current-2.0.55-psycopg-r3-M1.log	8	24	0	0	0	'Pre': 24	
+logs/sqla-current-2.1.5-asyncpg-r1-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-current-2.1.5-asyncpg-r2-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-current-2.1.5-asyncpg-r3-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-current-2.1.5-psycopg-r1-M1.log	8	24	0	0	0	'Pre': 24	
+logs/sqla-current-2.1.5-psycopg-r2-M1.log	8	24	0	0	0	'Pre': 24	
+logs/sqla-current-2.1.5-psycopg-r3-M1.log	8	24	0	0	0	'Pre': 24	
+logs/sqla-current-2.0.55-asyncpg-py312-r1-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-current-2.1.5-asyncpg-py312-r1-M1.log	7	21	0	0	0	'Pre': 21	
+logs/sqla-2.1.5-regressed-M1-p1.log	7	3	3	0	0	'Neither': 3	'pending#1', 'pending#1', 'pending#1'
+logs/sqla-2.1.5-regressed-M1-p6.log	7	3	3	0	0	'Neither': 3	'pending#6', 'pending#6', 'pending#6'

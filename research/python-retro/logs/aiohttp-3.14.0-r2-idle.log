@@ -1,0 +1,2 @@
+case=aiohttp mode=idle version=3.14.0 round=2 base=http://127.0.0.1:41389
+{"aiohttp": "3.14.0", "pooled_after_idle": {"connected": true, "exception": "SocketTimeoutError('Timeout on reading data from socket')", "read_timeout_handle_armed": false, "should_close": true}, "pooled_after_normal_read": {"connected": true, "exception": null, "read_timeout_handle_armed": true}, "survivor_1": {"exc": "SocketTimeoutError", "ms": 0.26, "msg": "Timeout on reading data from socket", "ok": false}, "survivor_2": {"body": "fast", "ms": 0.69, "ok": true}}

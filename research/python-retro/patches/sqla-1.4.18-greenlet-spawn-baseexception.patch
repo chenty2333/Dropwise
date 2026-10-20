@@ -1,0 +1,14 @@
+Minimal patch for SQLAlchemy 1.4.18: let asyncio.CancelledError enter the
+greenlet, where the normal DBAPI exception/invalidate path runs.
+
+--- a/sqlalchemy/util/_concurrency_py3k.py
++++ b/sqlalchemy/util/_concurrency_py3k.py
+@@ -118,7 +118,7 @@
+                 # wait for a coroutine from await_ and then return its
+                 # result back to it.
+                 value = await result
+-            except Exception:
++            except BaseException:
+                 # this allows an exception to be raised within
+                 # the moderated greenlet so that it can continue
+                 # its expected flow.

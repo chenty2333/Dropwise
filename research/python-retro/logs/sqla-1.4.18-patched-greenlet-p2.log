@@ -1,0 +1,7 @@
+target raised CancelledError 
+pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+current greenlet <greenlet.greenlet object at 0x7efcba1cc7c0 (otid=0x7efcba284840) current active started main> dead=False
+
+GREENLET 1: <_AsyncIoGreenlet object at 0x7efcba1e8240 (otid=0x7efcba284840) dead> dead=True parent=<greenlet.greenlet object at 0x7efcba1cc7c0 (otid=0x7efcba284840) current active started main>
+  (no gr_frame)
+total other greenlets 1

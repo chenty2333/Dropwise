@@ -1,0 +1,4 @@
+target CancelledError
+pool after target: Pool size: 1  Connections in pool: 0 Current Overflow: 0 Current Checked out connections: 1
+checkout raised TimeoutError  after 3.00s
+pool after checkout: Pool size: 1  Connections in pool: 0 Current Overflow: 0 Current Checked out connections: 1

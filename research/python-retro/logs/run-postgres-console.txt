@@ -1,0 +1,56 @@
+postgres container=dw-py-pg-1560729 port=127.0.0.1:32931 image=postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+PostgreSQL 18.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+--- sqlalchemy 1.4.17 timeout-begin round=1 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r1-B1.log
+--- sqlalchemy 1.4.17 timeout-begin round=1 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r1-B2.log
+--- sqlalchemy 1.4.17 timeout-begin round=1 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r1-B3.log
+--- sqlalchemy 1.4.17 timeout-begin round=1 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r1-M1.log
+--- sqlalchemy 1.4.18 timeout-begin round=1 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r1-B1.log
+--- sqlalchemy 1.4.18 timeout-begin round=1 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r1-B2.log
+--- sqlalchemy 1.4.18 timeout-begin round=1 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r1-B3.log
+--- sqlalchemy 1.4.18 timeout-begin round=1 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r1-M1.log
+--- sqlalchemy 1.4.17 ladder round=1 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r1-B1.log
+--- sqlalchemy 1.4.17 ladder round=1 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r1-B2.log
+--- sqlalchemy 1.4.17 ladder round=1 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r1-B3.log
+--- sqlalchemy 1.4.17 ladder round=1 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r1-M1.log
+--- sqlalchemy 1.4.18 ladder round=1 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r1-B1.log
+--- sqlalchemy 1.4.18 ladder round=1 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r1-B2.log
+--- sqlalchemy 1.4.18 ladder round=1 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r1-B3.log
+--- sqlalchemy 1.4.18 ladder round=1 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r1-M1.log
+--- sqlalchemy 1.4.17 timeout-begin round=2 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r2-B1.log
+--- sqlalchemy 1.4.17 timeout-begin round=2 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r2-B2.log
+--- sqlalchemy 1.4.17 timeout-begin round=2 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r2-B3.log
+--- sqlalchemy 1.4.17 timeout-begin round=2 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r2-M1.log
+--- sqlalchemy 1.4.18 timeout-begin round=2 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r2-B1.log
+--- sqlalchemy 1.4.18 timeout-begin round=2 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r2-B2.log
+--- sqlalchemy 1.4.18 timeout-begin round=2 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r2-B3.log
+--- sqlalchemy 1.4.18 timeout-begin round=2 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r2-M1.log
+--- sqlalchemy 1.4.17 ladder round=2 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r2-B1.log
+--- sqlalchemy 1.4.17 ladder round=2 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r2-B2.log
+--- sqlalchemy 1.4.17 ladder round=2 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r2-B3.log
+--- sqlalchemy 1.4.17 ladder round=2 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r2-M1.log
+--- sqlalchemy 1.4.18 ladder round=2 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r2-B1.log
+--- sqlalchemy 1.4.18 ladder round=2 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r2-B2.log
+--- sqlalchemy 1.4.18 ladder round=2 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r2-B3.log
+--- sqlalchemy 1.4.18 ladder round=2 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r2-M1.log
+--- sqlalchemy 1.4.17 timeout-begin round=3 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r3-B1.log
+--- sqlalchemy 1.4.17 timeout-begin round=3 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r3-B2.log
+--- sqlalchemy 1.4.17 timeout-begin round=3 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r3-B3.log
+--- sqlalchemy 1.4.17 timeout-begin round=3 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.17-r3-M1.log
+--- sqlalchemy 1.4.18 timeout-begin round=3 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r3-B1.log
+--- sqlalchemy 1.4.18 timeout-begin round=3 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r3-B2.log
+--- sqlalchemy 1.4.18 timeout-begin round=3 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r3-B3.log
+--- sqlalchemy 1.4.18 timeout-begin round=3 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-timeout-begin-1.4.18-r3-M1.log
+--- sqlalchemy 1.4.17 ladder round=3 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r3-B1.log
+--- sqlalchemy 1.4.17 ladder round=3 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r3-B2.log
+--- sqlalchemy 1.4.17 ladder round=3 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r3-B3.log
+--- sqlalchemy 1.4.17 ladder round=3 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.17-r3-M1.log
+--- sqlalchemy 1.4.18 ladder round=3 level=B1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r3-B1.log
+--- sqlalchemy 1.4.18 ladder round=3 level=B2 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r3-B2.log
+--- sqlalchemy 1.4.18 ladder round=3 level=B3 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r3-B3.log
+--- sqlalchemy 1.4.18 ladder round=3 level=M1 -> /home/ava/Desktop/Dropwise/research/python-retro/logs/sqla-ladder-1.4.18-r3-M1.log
+=== docker ps -a ===
+dw-py-pg-1560729 postgres:18-alpine Up 2 minutes
+dw-py-pg-probe postgres:18-alpine Up About an hour
+dw-py-redis-probe redis:8-alpine Up About an hour
+rsbi-rtems-cold-20261014 ubuntu:24.04 Exited (255) 3 days ago
+done

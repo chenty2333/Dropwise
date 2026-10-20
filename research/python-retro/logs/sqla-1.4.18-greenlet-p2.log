@@ -1,0 +1,13 @@
+target raised CancelledError 
+pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+current greenlet <greenlet.greenlet object at 0x7f791188a540 (otid=0x7f7911949180) current active started main> dead=False
+
+GREENLET 1: <_AsyncIoGreenlet object at 0x7f79118b2080 (otid=0x7f7911949180) suspended active started> dead=False parent=<greenlet.greenlet object at 0x7f791188a540 (otid=0x7f7911949180) current active started main>
+  /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py:67 await_only
+  /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:449 execute
+  /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/engine/default.py:717 do_execute
+  /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/engine/base.py:1770 _execute_context
+  /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/engine/base.py:1451 _execute_clauseelement
+  /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/sql/elements.py:324 _execute_on_connection
+  /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/engine/base.py:1582 _execute_20
+total other greenlets 1

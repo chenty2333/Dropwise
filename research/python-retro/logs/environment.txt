@@ -1,0 +1,79 @@
+# Python retro environment (2026-10-19T14:53:45+09:00)
+
+## Docker images
+redis:8-alpine RepoDigests=[redis@sha256:9d317178eceac8454a2284a9e6df2466b93c745529947f0cd42a0fa9609d7005] Created=2026-06-22T20:02:55.947207425Z
+postgres:18-alpine RepoDigests=[postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa] Created=2026-06-16T23:00:10.312931057Z
+
+## Servers (probe containers at time of writing)
+Redis server v=8.8.0 sha=00000000:1 malloc=jemalloc-5.3.0 bits=64 build=e746d25c628d3faa
+PostgreSQL 18.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+
+## Python interpreters
+redis-4.5.2: 3.10.20 redis 4.5.2
+redis-4.5.3: 3.10.20 redis 4.5.3
+redis-4.5.4: 3.10.20 redis 4.5.4
+sqlalchemy-1.4.17: 3.9.25 sqlalchemy 1.4.17 asyncpg 0.23.0
+sqlalchemy-1.4.18: 3.9.25 sqlalchemy 1.4.18 asyncpg 0.23.0
+aiohttp-3.14.0: 3.13.13 aiohttp 3.14.0
+aiohttp-3.14.1: 3.13.13 aiohttp 3.14.1
+
+## pip freeze
+### redis-4.5.2
+
+### redis-4.5.3
+
+### redis-4.5.4
+
+### sqlalchemy-1.4.17
+
+### sqlalchemy-1.4.18
+
+### aiohttp-3.14.0
+
+### aiohttp-3.14.1
+
+## pip freeze (uv pip freeze)
+### redis-4.5.2
+async-timeout==5.0.1
+redis==4.5.2
+
+### redis-4.5.3
+async-timeout==5.0.1
+redis==4.5.3
+
+### redis-4.5.4
+async-timeout==5.0.1
+redis==4.5.4
+
+### sqlalchemy-1.4.17
+asyncpg==0.23.0
+greenlet==3.2.5
+sqlalchemy==1.4.17
+
+### sqlalchemy-1.4.18
+asyncpg==0.23.0
+greenlet==3.2.5
+sqlalchemy==1.4.18
+
+### aiohttp-3.14.0
+aiohappyeyeballs==2.7.1
+aiohttp==3.14.0
+aiosignal==1.4.0
+attrs==26.1.0
+frozenlist==1.8.0
+idna==3.20
+multidict==6.9.1
+propcache==0.5.4
+yarl==1.25.1
+
+### aiohttp-3.14.1
+aiohappyeyeballs==2.7.1
+aiohttp==3.14.1
+aiosignal==1.4.0
+attrs==26.1.0
+frozenlist==1.8.0
+idna==3.20
+multidict==6.9.1
+propcache==0.5.4
+yarl==1.25.1
+

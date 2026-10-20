@@ -1,0 +1,20 @@
+[STATE enter _start_transaction] started=False adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] started=True adapter_tx=<asyncpg.Transaction state:started read_committed 0x7f6ee429d200> top_xact=<asyncpg.Transaction state:started read_committed 0x7f6ee429d200> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter rollback] started=True adapter_tx=<asyncpg.Transaction state:started read_committed 0x7f6ee429d200> top_xact=<asyncpg.Transaction state:started read_committed 0x7f6ee429d200> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE exit-ok rollback] started=False adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE enter _start_transaction] started=False adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] started=True adapter_tx=<asyncpg.Transaction state:started read_committed 0x7f6ee429d270> top_xact=<asyncpg.Transaction state:started read_committed 0x7f6ee429d270> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter commit] started=True adapter_tx=<asyncpg.Transaction state:started read_committed 0x7f6ee429d270> top_xact=<asyncpg.Transaction state:started read_committed 0x7f6ee429d270> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE exit-ok commit] started=False adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE enter rollback] started=False adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok rollback] started=False adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+warm done, pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+[POOL checkout] rec=<sqlalchemy.pool.base._ConnectionRecord object at 0x7f6ee42fb6a0> dbapi=<sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_connection object at 0x7f6ee42ec840>
+[STATE enter _start_transaction] started=False adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] started=True adapter_tx=<asyncpg.Transaction state:started read_committed 0x7f6ee429d510> top_xact=<asyncpg.Transaction state:started read_committed 0x7f6ee429d510> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter commit] started=True adapter_tx=<asyncpg.Transaction state:started read_committed 0x7f6ee429d510> top_xact=<asyncpg.Transaction state:started read_committed 0x7f6ee429d510> top_state=TransactionState.STARTED proto_in_tx=True
+target raised CancelledError 
+after target: pool Pool size: 1  Connections in pool: 0 Current Overflow: 0 Current Checked out connections: 1 checkedout 1 checkedin 0
+REC 0: <sqlalchemy.pool.base._ConnectionRecord object at 0x7f6ee42fb6a0> checked_out=None
+[STATE rec0] started=True adapter_tx=<asyncpg.Transaction state:failed read_committed 0x7f6ee429d510> top_xact=None top_state=None proto_in_tx=True
+queue inspect err 'AsyncAdaptedQueue' object has no attribute 'queue'

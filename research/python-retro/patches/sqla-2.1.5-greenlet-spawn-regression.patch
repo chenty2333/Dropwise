@@ -1,0 +1,15 @@
+Causal regression test only (do NOT apply to production): revert the 2.1.5
+greenlet_spawn guard to the 1.4 behavior, so cancellation bypasses the
+greenlet again.  Used to show the guard is what prevents P1.
+
+--- a/sqlalchemy/util/concurrency.py
++++ b/sqlalchemy/util/concurrency.py
+@@ -203,7 +203,7 @@
+             # wait for a coroutine from await_ and then return its
+             # result back to it.
+             value = await result
+-        except BaseException:
++        except Exception:
+             # this allows an exception to be raised within
+             # the moderated greenlet so that it can continue
+             # its expected flow.

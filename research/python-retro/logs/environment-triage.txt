@@ -1,0 +1,17 @@
+# Triage environment (2026-10-19)
+pwd=/home/ava/Desktop/Dropwise
+date_utc=Mon Oct 19 10:34:27 AM UTC 2026
+python_system=Python 3.14.8
+--- venvs ---
+/home/ava/dropwise-py-work/triage/venv-2.0.55/bin/python python=3.13.13 sqlalchemy=2.0.55 asyncpg=0.32.0 psycopg=3.3.6 greenlet=3.5.6
+/home/ava/dropwise-py-work/triage/venv-py313/bin/python python=3.13.13 sqlalchemy=2.1.5 asyncpg=0.32.0 psycopg=3.3.6 greenlet=3.5.6
+/home/ava/dropwise-py-work/triage/venv-2.1.5-py312/bin/python python=3.12.13 sqlalchemy=2.1.5 asyncpg=0.32.0 psycopg=3.3.6 greenlet=3.5.6
+/home/ava/dropwise-py-work/triage/venv-2.0.55-py312/bin/python python=3.12.13 sqlalchemy=2.0.55 asyncpg=0.32.0 psycopg=3.3.6 greenlet=3.5.6
+/home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/bin/python python=3.9.25 sqlalchemy=1.4.18 asyncpg=0.23.0 psycopg=ERR:No module named 'psycopg' greenlet=3.2.5
+/home/ava/dropwise-py-work/triage/venv-1.4.19/bin/python python=3.9.25 sqlalchemy=1.4.19 asyncpg=0.23.0 psycopg=ERR:No module named 'psycopg' greenlet=3.2.5
+--- postgres ---
+PostgreSQL 18.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+image_digest=[postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa] created=2026-06-16T23:00:10.312931057Z
+--- asyncpg transaction/adaptor source paths ---
+1.4.18: /home/ava/dropwise-py-work/venvs/sqlalchemy-1.4.18/lib/python3.9/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py
+2.1.5:  /home/ava/dropwise-py-work/triage/venv-py313/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py

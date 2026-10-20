@@ -1,0 +1,14 @@
+target raised CancelledError 
+pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+GREENLET 1 dead=False
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/util/concurrency.py:167 await_
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/connectors/asyncio.py:256 execute
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/engine/default.py:1192 do_execute
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/engine/base.py:1953 _exec_single_context
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/engine/base.py:1832 _execute_context
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/engine/base.py:1678 _execute_clauseelement
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/sql/elements.py:533 _execute_on_connection
+  /home/ava/dropwise-py-work/triage/sqla-2.1.5-regressed/sqlalchemy/engine/base.py:1458 execute
+other greenlets 1
+survivor: {'write': 'ok', 'own': 7}
+observer: 7

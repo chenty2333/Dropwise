@@ -1,0 +1,11 @@
+case=sqlalchemy-current version=2.0.55 driver=asyncpg round=0 plans=7 url=postgresql+asyncpg://dropwise:dropwise@127.0.0.1:32933/dropwise
+case=sqlalchemy-current level=M1 yields=7 trials=1 violations=0 unknown=0 unrealized=0 seconds=1.77
+note: pre == post (degenerate observation)
+pre=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+post=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+  plan=pending#7 rep=1 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+verdicts={'Pre': 1}
+SUMMARY level=M1 yields=7 trials=1 violations=0 unknown=0 unrealized=0 seconds=1.77
+=== FINAL ===
+SUMMARY level=M1 yields=7 trials=1 violations=0 unknown=0 unrealized=0 seconds=1.77
+violations_by_plan=[]

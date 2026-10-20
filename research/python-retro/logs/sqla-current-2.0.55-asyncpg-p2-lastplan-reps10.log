@@ -1,0 +1,20 @@
+case=sqlalchemy-current version=2.0.55 driver=asyncpg round=1 plans=7 url=postgresql+asyncpg://dropwise:dropwise@127.0.0.1:32933/dropwise
+case=sqlalchemy-current level=M1 yields=7 trials=10 violations=0 unknown=0 unrealized=0 seconds=5.60
+note: pre == post (degenerate observation)
+pre=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+post=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+  plan=pending#7 rep=1 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=2 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=3 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=4 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=5 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=6 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=7 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=8 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=9 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#7 rep=10 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+verdicts={'Pre': 10}
+SUMMARY level=M1 yields=7 trials=10 violations=0 unknown=0 unrealized=0 seconds=5.60
+=== FINAL ===
+SUMMARY level=M1 yields=7 trials=10 violations=0 unknown=0 unrealized=0 seconds=5.60
+violations_by_plan=[]

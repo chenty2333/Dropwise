@@ -1,0 +1,2 @@
+target: CancelledError
+pool after target: Pool size: 1  Connections in pool: 0 Current Overflow: 0 Current Checked out connections: 1

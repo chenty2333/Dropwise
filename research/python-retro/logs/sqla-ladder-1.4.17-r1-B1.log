@@ -1,0 +1,22 @@
+case=sqlalchemy version=1.4.17 mode=ladder round=1 plans=2,3,4,5,6 url=postgresql+asyncpg://dropwise:dropwise@127.0.0.1:32931/dropwise
+case=sqlalchemy level=B1 yields=7 trials=15 violations=0 unknown=0 unrealized=0 seconds=1.17
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y6/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y6/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y6/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y7/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y7/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y7/realized=True verdict=- obs=None ok 
+  plan=pending#5 rep=1 target=cancelled/y8/realized=True verdict=- obs=None ok 
+  plan=pending#5 rep=2 target=cancelled/y8/realized=True verdict=- obs=None ok 
+  plan=pending#5 rep=3 target=cancelled/y8/realized=True verdict=- obs=None ok 
+  plan=pending#6 rep=1 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#6 rep=2 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#6 rep=3 target=cancelled/y9/realized=True verdict=- obs=None ok 
+verdicts={'-': 15}
+SUMMARY level=B1 yields=7 trials=15 violations=0 unknown=0 unrealized=0 seconds=1.17
+=== FINAL ===
+SUMMARY level=B1 yields=7 trials=15 violations=0 unknown=0 unrealized=0 seconds=1.17
+violations_by_plan=[]

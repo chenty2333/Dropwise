@@ -1,0 +1,9 @@
+case=sqlalchemy version=1.4.17 mode=ladder round=0 plans=7 url=postgresql+asyncpg://dropwise:dropwise@127.0.0.1:32933/dropwise
+Timeout (0:00:06)!
+Thread 0x00007f7048483740 (most recent call first):
+  File "/home/ava/.local/share/uv/python/cpython-3.9-linux-x86_64-gnu/lib/python3.9/selectors.py", line 469 in select
+  File "/home/ava/.local/share/uv/python/cpython-3.9-linux-x86_64-gnu/lib/python3.9/asyncio/base_events.py", line 1869 in _run_once
+  File "/home/ava/.local/share/uv/python/cpython-3.9-linux-x86_64-gnu/lib/python3.9/asyncio/base_events.py", line 601 in run_forever
+  File "/home/ava/.local/share/uv/python/cpython-3.9-linux-x86_64-gnu/lib/python3.9/asyncio/base_events.py", line 634 in run_until_complete
+  File "/home/ava/.local/share/uv/python/cpython-3.9-linux-x86_64-gnu/lib/python3.9/asyncio/runners.py", line 44 in run
+  File "/home/ava/dropwise-py-work/triage/probe_hang.py", line 6 in <module>

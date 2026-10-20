@@ -1,0 +1,25 @@
+case=sqlalchemy version=1.4.19 mode=ladder round=3 plans=2,3,4,5,6 url=postgresql+asyncpg://dropwise:dropwise@127.0.0.1:32933/dropwise
+case=sqlalchemy level=M1 yields=7 trials=15 violations=0 unknown=0 unrealized=0 seconds=2.55
+note: pre == post (degenerate observation)
+pre=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+post=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+  plan=pending#2 rep=1 target=cancelled/y4/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#2 rep=2 target=cancelled/y4/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#2 rep=3 target=cancelled/y4/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#3 rep=1 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#3 rep=2 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#3 rep=3 target=cancelled/y7/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#4 rep=1 target=cancelled/y8/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#4 rep=2 target=cancelled/y8/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#4 rep=3 target=cancelled/y8/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#5 rep=1 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#5 rep=2 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#5 rep=3 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#6 rep=1 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#6 rep=2 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+  plan=pending#6 rep=3 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+verdicts={'Pre': 15}
+SUMMARY level=M1 yields=7 trials=15 violations=0 unknown=0 unrealized=0 seconds=2.55
+=== FINAL ===
+SUMMARY level=M1 yields=7 trials=15 violations=0 unknown=0 unrealized=0 seconds=2.55
+violations_by_plan=[]

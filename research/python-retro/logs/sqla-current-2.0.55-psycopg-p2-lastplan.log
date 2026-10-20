@@ -1,0 +1,11 @@
+case=sqlalchemy-current version=2.0.55 driver=psycopg round=0 plans=8 url=postgresql+psycopg://dropwise:dropwise@127.0.0.1:32933/dropwise
+case=sqlalchemy-current level=M1 yields=8 trials=1 violations=0 unknown=0 unrealized=0 seconds=1.76
+note: pre == post (degenerate observation)
+pre=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+post=[{'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}, {'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7}]
+  plan=pending#8 rep=1 target=cancelled/y8/realized=True verdict=Pre obs={'survivor': {'own': 7, 'write': 'ok'}, 'observer': 7} ok 
+verdicts={'Pre': 1}
+SUMMARY level=M1 yields=8 trials=1 violations=0 unknown=0 unrealized=0 seconds=1.76
+=== FINAL ===
+SUMMARY level=M1 yields=8 trials=1 violations=0 unknown=0 unrealized=0 seconds=1.76
+violations_by_plan=[]

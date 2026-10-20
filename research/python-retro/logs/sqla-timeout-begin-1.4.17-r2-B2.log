@@ -1,0 +1,27 @@
+case=sqlalchemy version=1.4.17 mode=timeout-begin round=2 plans=2,3,4,5,6 url=postgresql+asyncpg://dropwise:dropwise@127.0.0.1:32932/dropwise
+timeout_begin_pre=[{'survivor': {'write': 'ok', 'own': 7}, 'observer': 7}, {'survivor': {'write': 'ok', 'own': 7}, 'observer': 7}]
+timeout_begin_post=[{'survivor': {'write': 'ok', 'own': 7}, 'observer': 7}, {'survivor': {'write': 'ok', 'own': 7}, 'observer': 7}]
+calibration_ok=True
+  level=B2 plan=begin-timeout rep=1 target=caught obs=ERR DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.NoActiveSQLTransactionError'>: SAVEPOINT can only be used in transaction blocks
+[SQL: UPDATE dw_kv SET v = 1 WHERE id = %s]
+[parameters: ('dropwise:py:row',)]
+(Background on this error at: http://sqlalche.me/e/14/dbapi) VIOLATION ERR DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.NoActiveSQLTransactionError'>: SAVEPOINT can only be used in transaction blocks
+[SQL: UPDATE dw_kv SET v = 1 WHERE id = %s]
+[parameters: ('dropwise:py:row',)]
+(Background on this error at: http://sqlalche.me/e/14/dbapi)
+  level=B2 plan=begin-timeout rep=2 target=caught obs=ERR DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.NoActiveSQLTransactionError'>: SAVEPOINT can only be used in transaction blocks
+[SQL: UPDATE dw_kv SET v = 1 WHERE id = %s]
+[parameters: ('dropwise:py:row',)]
+(Background on this error at: http://sqlalche.me/e/14/dbapi) VIOLATION ERR DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.NoActiveSQLTransactionError'>: SAVEPOINT can only be used in transaction blocks
+[SQL: UPDATE dw_kv SET v = 1 WHERE id = %s]
+[parameters: ('dropwise:py:row',)]
+(Background on this error at: http://sqlalche.me/e/14/dbapi)
+  level=B2 plan=begin-timeout rep=3 target=caught obs=ERR DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.NoActiveSQLTransactionError'>: SAVEPOINT can only be used in transaction blocks
+[SQL: UPDATE dw_kv SET v = 1 WHERE id = %s]
+[parameters: ('dropwise:py:row',)]
+(Background on this error at: http://sqlalche.me/e/14/dbapi) VIOLATION ERR DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.NoActiveSQLTransactionError'>: SAVEPOINT can only be used in transaction blocks
+[SQL: UPDATE dw_kv SET v = 1 WHERE id = %s]
+[parameters: ('dropwise:py:row',)]
+(Background on this error at: http://sqlalche.me/e/14/dbapi)
+=== FINAL ===
+SUMMARY level=B2 plan=begin-timeout reps=3

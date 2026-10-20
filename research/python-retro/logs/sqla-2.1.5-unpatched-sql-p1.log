@@ -1,0 +1,17 @@
+[SQL c=7744] CREATE TABLE IF NOT EXISTS dw_kv (id text primary key, v int not null) args=()
+[SQL c=7744] INSERT INTO dw_kv (id, v) VALUES ($1, 0) ON CONFLICT (id) DO UPDATE SET v = 0 args=('dropwise:py:row',)
+[SQL c=4848] BEGIN; args=()
+[SQL c=4848] ROLLBACK; args=()
+[SQL c=4848] BEGIN; args=()
+[SQL c=4848] COMMIT; args=()
+--- setup done ---
+[SQL c=4848] BEGIN; args=()
+target CancelledError
+--- target done, survivor ---
+[SQL c=8176] BEGIN; args=()
+[SQL c=8176] COMMIT; args=()
+[SQL c=8176] BEGIN; args=()
+[SQL c=8176] ROLLBACK; args=()
+survivor: {'write': 'ok', 'own': 7}
+observer: 7
+pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0

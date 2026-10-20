@@ -1,0 +1,26 @@
+case=aiohttp mode=ladder version=3.14.0 round=2 base=http://127.0.0.1:32957
+case=aiohttp level=M1 yields=5 trials=15 violations=0 unknown=0 unrealized=0 seconds=0.47
+note: pre == post (degenerate observation)
+pre=[{'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'}, {'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'}]
+post=[{'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'}, {'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'}]
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#5 rep=1 target=cancelled/y5/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#5 rep=2 target=cancelled/y5/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+  plan=pending#5 rep=3 target=cancelled/y5/realized=True verdict=Pre obs={'survivor': {'body': 'survivor', 'status': 200}, 'observer': 'survivor'} ok 
+verdicts={'Pre': 15}
+SUMMARY level=M1 yields=5 trials=15 violations=0 unknown=0 unrealized=0 seconds=0.47
+=== FINAL ===
+SUMMARY level=M1 yields=5 trials=15 violations=0 unknown=0 unrealized=0 seconds=0.47
+violations_by_plan=[]
+instrument={"baseexc": [], "calls": 103, "serving": false, "while_cancelling": 0}

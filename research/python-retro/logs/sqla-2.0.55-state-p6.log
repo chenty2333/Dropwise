@@ -1,0 +1,48 @@
+[STATE enter _start_transaction] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter rollback] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE exit-ok rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE enter _start_transaction] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter commit] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d150> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE exit-ok commit] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE enter rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+warm pool: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+[POOL checkout] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1ee50>>
+[STATE enter _start_transaction] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9cf20> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9cf20> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter commit] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9cf20> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9cf20> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE exit-CancelledError commit] adapter_tx=None top_xact=None top_state=None proto_in_tx=True
+[HANDLE] CancelledError is_exit=True closed=False
+[POOL invalidate] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1ee50>> e=CancelledError()
+[POOL close] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1ee50>>
+[POOL checkin] None
+[HANDLE done] invalidated=True closed=False
+target raised CancelledError 
+pool after target: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+GREENLET <_AsyncIoGreenlet object at 0x7f3e0d368740 (otid=0x4073fbf0) dead> dead=True
+[POOL checkout] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1f850>>
+[STATE enter _start_transaction] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter commit] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE exit-ok commit] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE enter rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[POOL checkin] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1f850>>
+[STATE checkin] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[POOL checkout] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1f850>>
+[STATE enter _start_transaction] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok _start_transaction] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE enter rollback] adapter_tx=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_xact=<asyncpg.Transaction state:started 0x7f3e0cb9d4d0> top_state=TransactionState.STARTED proto_in_tx=True
+[STATE exit-ok rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[POOL checkin] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1f850>>
+[STATE checkin] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+survivor: {'write': 'ok', 'own': 7}
+observer: 7
+pool final: Pool size: 1  Connections in pool: 1 Current Overflow: 0 Current Checked out connections: 0
+[POOL close] <AdaptedConnection <asyncpg.connection.Connection object at 0x7f3e0cb1f850>>
+[STATE enter close] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE enter rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok rollback] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
+[STATE exit-ok close] adapter_tx=None top_xact=None top_state=None proto_in_tx=False
