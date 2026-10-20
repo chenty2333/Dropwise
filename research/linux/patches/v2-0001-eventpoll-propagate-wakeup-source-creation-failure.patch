@@ -1,0 +1,99 @@
+Subject: [PATCH v2] eventpoll: propagate wakeup source creation failure in ep_modify()
+
+epoll_ctl(EPOLL_CTL_MOD) with EPOLLWAKEUP can return 0 while no wakeup
+source was registered.  ep_modify() stores the new event mask and data,
+then calls ep_create_wakeup_source() but ignores its return value, and
+returns 0.  ep_insert() has the opposite behaviour: it checks the error,
+removes the item and returns it to userspace.
+
+The result is an item whose epi->event.events advertises EPOLLWAKEUP but
+whose epi->ws is NULL.  ep_pm_stay_awake() and ep_pm_stay_awake_rcu() are
+no-ops without a source, so the suspend-prevention guarantee documented
+for EPOLLWAKEUP in epoll_ctl(2) is silently absent until a later MOD
+retries the allocation.  There is no memory corruption and no security
+impact; it is a power-management functional defect.
+
+The failure is reachable without fault injection.  In a SELinux system,
+security_kernfs_init_security() labels each new kernfs node and
+kernfs_xattr_set() -> simple_xattr_set() allocates the security.selinux
+value and name with GFP_KERNEL_ACCOUNT.  If the allocating task runs in a
+memory cgroup at memory.max and survives the charge failure (for example
+oom_score_adj=-1000, so the memcg OOM killer has no victim), the xattr
+allocation fails, device_add() fails, wakeup_source_register() returns
+NULL and ep_create_wakeup_source() returns -ENOMEM.  Setting memory.max
+needs ownership or delegation of the cgroup; oom_score_adj=-1000 needs
+CAP_SYS_RESOURCE, and without that protection the memcg OOM killer
+usually kills the caller, in which case epoll_ctl() does not return.
+EPOLLWAKEUP itself requires CAP_BLOCK_SUSPEND; without it the flag is
+cleared before ep_modify() and this path is not taken.
+
+With fail-nth injection the same path is easy to see: MOD returns 0,
+fdinfo still shows EPOLLWAKEUP, and /sys/kernel/debug/wakeup_sources has
+no new eventpoll source, while ADD under the same injection returns
+-ENOMEM and removes the item.  Measured on v7.3-rc2: 60/60 MOD calls
+returned 0 with both wakeup sources missing when the guest had a loaded
+SELinux policy, labelled /sys/devices/virtual and /sys/class/wakeup,
+memory.max=1M and oom_score_adj=-1000; the same real trigger also
+reproduced on v6.19 (20/20).  The same setup without SELinux, or without
+the memory limit, had 0/20 failures.
+
+Fix this by creating the wakeup source before committing the new mask.
+If the per-item source cannot be created, return the error with the old
+mask and data still in place.  A failed MOD may leave a newly created
+per-eventpoll source cached until ep_free(), just as a failed ADD does.
+This is harmless: no per-item source was installed, and a later operation
+can reuse the per-eventpoll source.
+
+Fixes: 4d7e30d98939 ("epoll: Add a flag, EPOLLWAKEUP, to prevent suspend while epoll events are ready")
+
+---
+Changes in v2:
+- Keep the per-eventpoll wakeup source on failure, as ep_insert() does.
+- Add the verified Fixes tag for the original EPOLLWAKEUP commit.
+
+ fs/eventpoll.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/fs/eventpoll.c b/fs/eventpoll.c
+index e0c4bf88a838..71c32fe09fa8 100644
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -1982,11 +1982,23 @@ static int ep_modify(struct eventpoll *ep, struct epitem *epi,
+ {
+ 	int pwake = 0;
+ 	poll_table pt;
++	int error;
+ 
+ 	lockdep_assert_irqs_enabled();
+ 
+ 	init_poll_funcptr(&pt, NULL);
+ 
++	/*
++	 * Create the wakeup source before committing the new event mask.
++	 * A failed ep_create_wakeup_source() must not leave EPOLLWAKEUP
++	 * advertised on the item; ep_insert() has the same ordering.
++	 */
++	if ((event->events & EPOLLWAKEUP) && !ep_has_wakeup_source(epi)) {
++		error = ep_create_wakeup_source(epi);
++		if (error)
++			return error;
++	}
++
+ 	/*
+ 	 * Set the new event interest mask before calling f_op->poll();
+ 	 * otherwise we might miss an event that happens between the
+@@ -1994,12 +2006,9 @@ static int ep_modify(struct eventpoll *ep, struct epitem *epi,
+ 	 */
+ 	epi->event.events = event->events; /* need barrier below */
+ 	epi->event.data = event->data; /* protected by mtx */
+-	if (epi->event.events & EPOLLWAKEUP) {
+-		if (!ep_has_wakeup_source(epi))
+-			ep_create_wakeup_source(epi);
+-	} else if (ep_has_wakeup_source(epi)) {
++	if (!(epi->event.events & EPOLLWAKEUP) &&
++	    ep_has_wakeup_source(epi))
+ 		ep_destroy_wakeup_source(epi);
+-	}
+ 
+ 	/*
+ 	 * The following barrier has two effects:

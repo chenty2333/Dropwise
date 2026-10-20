@@ -720,3 +720,308 @@ Logs (all under `research/linux/logs/`):
 - Not verified: real distro/SELinux enforcing behavior, other policies, a
   confirmed in-body fatal-signal return, global-OOM allocation failure,
   v6.19 patched build.
+
+
+## v2
+
+Test date: 2026-10-19. This section supersedes the v1 cleanup rationale and
+source-count expectations in §§3 and 7 above; the original sections and v1
+patch are retained as historical results.
+
+### Changes and source-tree state
+
+The actual kernel checkout is `/home/ava/dropwise-linux-work73/linux/`.
+Before editing, Git showed HEAD at v7.3-rc2, a shallow repository, and only
+`fs/eventpoll.c` modified. Its diff exactly matched the v1 patch. No commit
+was made. The v2 working-tree diff is **14 insertions, 5 deletions**, only in
+`fs/eventpoll.c`:
+
+- Remove `created_ep_ws` and all failure-time unregister/reset logic.
+- Create the per-item wakeup source before assigning either `epi->event`
+  field; return the creation error immediately on failure.
+- Retain the shared per-eventpoll source until `ep_free()`, just like ADD.
+  In v7.3-rc2, `ep_create_wakeup_source()` creates `ep->ws` first;
+  `ep_insert()` removes the item on failure but does not unregister `ep->ws`;
+  `ep_free()` unregisters it. A failed MOD retaining the same inactive,
+  reusable source is harmless, not an item-state rollback failure.
+- Update the message accordingly and add the verified Fixes tag.
+
+Artifact:
+[`patches/v2-0001-eventpoll-propagate-wakeup-source-creation-failure.patch`](patches/v2-0001-eventpoll-propagate-wakeup-source-creation-failure.patch).
+The v1 file is unchanged. Neither patch has new author headers or a
+Signed-off-by line.
+
+**No-commit packaging detail:** `git format-patch -v2 -1 --stdout
+--zero-commit --no-signature HEAD` supplied the v2 mail framing. Since
+`format-patch` normally operates on commits and this task explicitly forbids
+committing, the working-tree `git diff --stat` and `git diff` payload and
+updated message were substituted, and the unrelated HEAD author/date/from
+headers were removed. No temporary commit or commit object was created. This
+is a format-patch-framed working-tree export, not an unedited format-patch
+export of a new commit. `git apply --reverse --check` against the patched
+tree succeeds.
+
+### Fixes verification
+
+The shallow checkout cannot establish the 2012 history. Read-only GitHub API
+queries against `torvalds/linux` were used instead:
+
+```
+gh api 'repos/torvalds/linux/commits?path=fs/eventpoll.c&since=2012-01-01T00:00:00Z&until=2012-09-01T00:00:00Z&per_page=100'
+gh api repos/torvalds/linux/commits/4d7e30d98939a0340022ccd49325a3d70f7e0238
+gh api 'repos/torvalds/linux/contents/fs/eventpoll.c?ref=4d7e30d98939a0340022ccd49325a3d70f7e0238'
+```
+
+The [commit](https://github.com/torvalds/linux/commit/4d7e30d98939a0340022ccd49325a3d70f7e0238)
+is by Arve Hjønnevåg, author date 2012-05-01, with the complete subject used
+below. Its diff **adds** the unchecked call in `ep_modify()` (hunk
+`@@ -1229,6 +1288,12 @@`), not merely a flag definition. The resulting
+[`fs/eventpoll.c`, lines 1288–1296](https://github.com/torvalds/linux/blob/4d7e30d98939a0340022ccd49325a3d70f7e0238/fs/eventpoll.c#L1288-L1296)
+has:
+
+```c
+	epi->event.events = event->events;
+	pt._key = event->events;
+	epi->event.data = event->data; /* protected by mtx */
+	if (epi->event.events & EPOLLWAKEUP) {
+		if (!epi->ws)
+			ep_create_wakeup_source(epi);
+	} else if (epi->ws) {
+		ep_destroy_wakeup_source(epi);
+	}
+```
+
+The helper already returns `-ENOMEM` on registration failure at lines
+1118–1133, whereas `ep_modify()` returns 0 at line 1327. Thus the original
+EPOLLWAKEUP commit, not a later refactor, introduced the ignored error:
+
+```
+Fixes: 4d7e30d98939 ("epoll: Add a flag, EPOLLWAKEUP, to prevent suspend while epoll events are ready")
+```
+
+### Shared ADD/MOD error rule
+
+The old ADD-only `epwake_add_error_ok()` already explicitly permitted a
+cached per-epoll source, checking that the interest list was empty and
+`epoll_wait()` returned 0. MOD instead required exact observation-string
+equality, so a harmless `ws_ep=1` cache would have been called a violation.
+
+Both now use **one** `epwake_error_ok()`:
+
+- On error, allow `ws_ep` 0 or 1 for these fresh-epoll targets; require
+  `ws_other` to equal its per-trial pre-operation count and
+  `ws_total == ws_ep + ws_other`. No new per-item source is permitted.
+- ADD must still have `tfd=0`, no mask, and no returned event.
+- MOD must still have `tfd=1`, old mask `0x19`, and deliver the old
+  `EPOLLIN` event with data `0x77` (119), not the requested `0x1234` (4660).
+- Success still requires exact post-baseline equality; baseline stability
+  and generic Unknown handling are unchanged. Source-count reads that fail
+  or fill the buffer are not accepted as valid counts.
+
+This is not a MOD-only relaxation: ADD's existing cache allowance is shared
+with MOD and tightened to check the per-item-source count explicitly.
+In the **v1 ADD data**, 119 failed trials already had `ws_ep=1`,
+`ws_other=12`, `ws_total=13`, an empty interest list and no delivered event
+(the other 125 errors had `ws_ep=0`). Example: v1 all5, run 14, site 29.
+In the **v2 ADD data**, 118 errors have that same cached-source shape and
+125 have no per-epoll source; all are clean under the shared rule. V2 MOD
+has 115 cached-source errors and 116 errors without the source.
+
+Representative v2 observations (all5, repetition 1):
+
+```
+MOD site=27 ret=-1 errno=12 verdict=OK_PRE
+  wait_rc=1;wait_errno=0;wait_ev=1;wait_data=119|tfd=1;tfd_ev=19;ws_total=13;ws_ep=1;ws_other=12
+ADD site=29 ret=-1 errno=12 verdict=OK_PRE
+  wait_rc=0;wait_errno=0;wait_ev=0;wait_data=0|tfd=0;tfd_ev=0;ws_total=13;ws_ep=1;ws_other=12
+```
+
+An initial attempt at the new predicate incorrectly read child-local context
+from the judging parent. It was stopped and discarded, not counted below.
+The corrected observer transports the ADD/MOD flag and pre-source count
+through the existing outcome `aux` fields; the complete campaign was rerun.
+As a negative control with this final harness, the unpatched kernel still
+produces **46 violations / 51 MOD trials** (5 OK_POST), while ADD has
+**0 / 54** (48 OK_PRE, 6 OK_POST). The new rule does not hide the original
+success-without-a-source bug.
+
+### Injection results
+
+Both v2 configurations were rebuilt successfully using the existing
+`build-patched` and `build-patched-memcg` configurations. Runtime checks
+below ran only in QEMU/KVM guests, with the round-3 scripts/harness.
+
+```
+cd /home/ava/Desktop/Dropwise/research/linux
+./run.py --kernel /home/ava/dropwise-linux-work73/build-patched/arch/x86/boot/bzImage --targets all --reps 5 --outdir logs/20261019-round3-v2-all5
+```
+
+**75/75 boots completed and were stable**, without harness errors. All
+measured mechanisms have zero violations and zero Unknown. V1 comparison
+is the existing round-3 `patched-all5` plus `patched-ep5` outputs, not a new
+v1 run. PRE/POST/PARTIAL below are the harness's OK verdict counts:
+
+| target | mechanism | v1 trials / PRE / POST / PARTIAL | v2 trials / PRE / POST / PARTIAL | v2 violations / unknown |
+|---|---|---|---|---|
+| `scm_rights` | failnth | 15 / 15 / 0 / 0 | 14 / 14 / 0 / 0 | 0 / 0 |
+| `pipe_write` | failnth | 10 / 0 / 10 / 0 | 10 / 0 / 10 / 0 | 0 / 0 |
+| `tmpfs_pwrite` | failnth | 5 / 5 / 0 / 0 | 5 / 5 / 0 / 0 | 0 / 0 |
+| `epoll_ctl_add` | failnth | 15 / 15 / 0 / 0 | 15 / 15 / 0 / 0 | 0 / 0 |
+| `fcntl_setlk` | failnth | 20 / 15 / 5 / 0 | 20 / 15 / 5 / 0 | 0 / 0 |
+| `accept4_unix` | failnth | 40 / 40 / 0 / 0 | 40 / 40 / 0 / 0 | 0 / 0 |
+| `tls_tx` | failnth | 10 / 10 / 0 / 0 | 10 / 10 / 0 / 0 | 0 / 0 |
+| `tls_tx` | failfunc | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 |
+| `tls_rx` | failnth | 20 / 20 / 0 / 0 | 21 / 20 / 1 / 0 | 0 / 0 |
+| `tls_rx` | failfunc | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 |
+| `overlay_copyup` | failnth | 161 / 155 / 6 / 0 | 160 / 156 / 4 / 0 | 0 / 0 |
+| `overlay_copyup` | failfunc | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 |
+| `mq_send_full` | signal | 40 / 40 / 0 / 0 | 40 / 40 / 0 / 0 | 0 / 0 |
+| `pipe_sig_block` | signal | 40 / 40 / 0 / 0 | 40 / 40 / 0 / 0 | 0 / 0 |
+| `pipe_sig_partial` | signal | 40 / 0 / 0 / 40 | 40 / 0 / 0 / 40 | 0 / 0 |
+| `epoll_mod_wakeup` | failnth | 255 / 228 / 27 / 0 | 256 / 231 / 25 / 0 | 0 / 0 |
+| `epoll_add_wakeup` | failnth | 270 / 244 / 26 / 0 | 270 / 243 / 27 / 0 | 0 / 0 |
+| `epoll_mod_wakeup_ep` | failnth | 120 / 107 / 13 / 0 | 120 / 107 / 13 / 0 | 0 / 0 |
+
+ADD and all other targets retain the same clean/violating classification as
+v1; the individual site and PRE/POST counts are **not exactly identical**.
+For the non-epoll count differences, an additional five-boot run of
+`scm_rights,tls_rx,overlay_copyup` with the **same v2 kernel and final
+harness** gave respectively `15/15/0/0`, `20/20/0/0`, and `161/155/6/0`
+(trials/PRE/POST/PARTIAL), exactly matching their v1 aggregates. All 15
+repeat boots completed/stabilized with zero violations/Unknown. This
+confirms run-to-run variation without changing the patch; the specific
+allocation-stack cause of each changed site was **未核实** in this task.
+The three fail-function mechanisms each still have 0 injected trials and
+5 misses; those are not positive coverage claims.
+
+### Real trigger and selftest
+
+```
+python3 real_triggers.py --kernel /home/ava/dropwise-linux-work73/build-patched-memcg/arch/x86/boot/bzImage --probe probe_memcg_selinux --policy /etc/selinux/targeted/policy/policy.35 --outdir logs/20261019-round3-v2-memcg-selinux
+```
+
+Policy.35 was loaded, the two sysfs labels installed, and the same
+`memory.max=1M`, `oom_score_adj=-1000` setup used. **20/20** trials returned
+userspace `ret=-1, errno=12` (kernel `-ENOMEM`); all retained
+`fdinfo_events=19`, `ep=0`, `other=12`. Summary:
+
+```
+PROBE_MEMCG summary trials=20 violations=0 ret_err=20 child_killed=0 base_total=12 base_ep=0
+```
+
+The separate pressure control was killed by SIGKILL and `oom_kill=0->1`, as
+in v1; no MOD test child was killed. The real-trigger probe observes the
+mask, not the data field; old-data preservation is observed in the injection
+campaign above. Real distro/enforcing-mode behavior remains **未核实**.
+
+`tools/testing/selftests/filesystems/epoll/Makefile` lists only
+`epoll_wakeup_test`. It was rebuilt statically from this checkout and run
+as `/init` under the v2 non-MEMCG guest, as in round 3. Output:
+
+```
+# PASSED: 66 / 66 tests passed.
+# Totals: pass:66 fail:0 xfail:0 xpass:0 skip:0 error:0
+```
+
+After the totals, the successful PID 1 exits with code 0, so the guest logs
+`Attempted to kill init! exitcode=0x00000000`; `panic=1` plus `-no-reboot`
+ends QEMU. This is the direct-/init test-runner shutdown, not a failing
+selftest or a claim of panic-free boot. QEMU exited 0.
+
+### checkpatch and get_maintainer
+
+Commands run **from the v7.3-rc2 kernel checkout**:
+
+```
+scripts/checkpatch.pl --strict /home/ava/Desktop/Dropwise/research/linux/patches/v2-0001-eventpoll-propagate-wakeup-source-creation-failure.patch
+```
+
+Unmodified strict output (exit 1):
+
+```
+ERROR: Missing Signed-off-by: line(s)
+
+total: 1 errors, 0 warnings, 0 checks, 37 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+/home/ava/Desktop/Dropwise/research/linux/patches/v2-0001-eventpoll-propagate-wakeup-source-creation-failure.patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+```
+
+The sole error is the deliberately absent Signed-off-by requested for the
+user to add. It was not silently ignored or fixed by inventing an identity.
+With only that check disabled:
+
+```
+scripts/checkpatch.pl --strict --no-signoff /home/ava/Desktop/Dropwise/research/linux/patches/v2-0001-eventpoll-propagate-wakeup-source-creation-failure.patch
+total: 0 errors, 0 warnings, 0 checks, 37 lines checked
+
+/home/ava/Desktop/Dropwise/research/linux/patches/v2-0001-eventpoll-propagate-wakeup-source-creation-failure.patch has no obvious style problems and is ready for submission.
+```
+
+Thus all code/message style checks pass: **0 errors, 0 warnings, 0 checks,
+37 lines checked**; raw `--strict` alone is not claimed to pass.
+
+```
+scripts/get_maintainer.pl /home/ava/Desktop/Dropwise/research/linux/patches/v2-0001-eventpoll-propagate-wakeup-source-creation-failure.patch
+Alexander Viro <viro@zeniv.linux.org.uk> (maintainer:FILESYSTEMS (VFS and infrastructure))
+Christian Brauner <brauner@kernel.org> (maintainer:FILESYSTEMS (VFS and infrastructure))
+Jan Kara <jack@suse.cz> (reviewer:FILESYSTEMS (VFS and infrastructure))
+"Rafael J. Wysocki" <rjw@rjwysocki.net> (blamed_fixes:1/1=100%)
+NeilBrown <neil@brown.name> (blamed_fixes:1/1=100%)
+"Arve Hjønnevåg" <arve@android.com> (blamed_fixes:1/1=100%)
+linux-fsdevel@vger.kernel.org (open list:FILESYSTEMS (VFS and infrastructure))
+linux-kernel@vger.kernel.org (open list)
+```
+
+These are the script's current outputs, including identities derived from
+the Fixes tag; no recipient was contacted.
+
+### Outputs and final boundaries
+
+Runtime outputs are the existing runners' normal logs/CSVs under:
+
+- `logs/20261019-round3-v2-all5/`
+- `logs/20261019-round3-v2-repeat5/`
+- `logs/20261019-round3-v2-unpatched-control/`
+- `logs/20261019-round3-v2-memcg-selinux/`
+- `logs/20261019-round3-v2-selftest.log`
+
+`git diff --check` and the kernel-tree diff check pass. V1 is retained,
+`RESULTS-round2.md` is unchanged, no Dropwise library code changed, and
+nothing under `/home/ava/Worktrees/linux/` was modified. No commit, push,
+email, submission, issue or comment was made. All QEMU guests were stopped;
+final process inspection found no remaining QEMU process.
+
+### First public submission (2026-10-19)
+
+After explicit user authorization, the submission was reduced to a concise
+commit message and the inaccurate `ep_insert() has the same ordering`
+comment was replaced. Removing comments from the final source and the
+VM-tested v2 source gives identical text; no functional change was made
+and the runtime tests above were not rerun for this comment-only revision.
+
+A single signed commit was created on `codex/eventpoll-mod-wakeup-error`
+in `/home/ava/dropwise-linux-work73/linux/`, with `Assisted-by: LLM`.
+`git format-patch -1 --base=HEAD^` generated the first public `[PATCH]`;
+test results were placed below `---`, and SMTP headers were added without
+changing the inline body. Internal v1 and v2 artifacts remain unchanged.
+The final email is at
+`/home/ava/Desktop/linux/outgoing/eventpoll-wakeup/0001-eventpoll-propagate-wakeup-source-creation-failure-i.patch`.
+Full `scripts/checkpatch.pl --strict` passes with **0 errors, 0 warnings,
+0 checks, 36 lines checked**, and reverse-apply checking succeeds.
+
+Sent from `hi@tychen.cc` to Alexander Viro, Christian Brauner and Jan Kara,
+with the filesystem/kernel lists, Rafael J. Wysocki, Arve Hjønnevåg and
+NeilBrown copied, as selected by `get_maintainer.pl`. SMTP accepted all
+recipients (`refused={}`). Read-only IMAP `BODY.PEEK` verified the direct
+self-copy in INBOX and confirmed its decoded inline body matches the
+outgoing message. Message-ID:
+`<179240281988.1700986.8309527041821666235@tychen.cc>`.
+This confirms SMTP acceptance and self-copy delivery, not list delivery or
+maintainer acceptance. No Git branch was pushed and no file under
+`/home/ava/Worktrees/linux/` was modified.

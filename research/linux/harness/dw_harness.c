@@ -2277,7 +2277,10 @@ struct epwake_ctx {
 	int ws_total;
 	int ws_epoll;
 	int ws_other;
+	int ws_other_pre;
 };
+
+static void epwake_count_sources(struct epwake_ctx *c);
 
 static int epwake_setup(void *p, char phase)
 {
@@ -2297,6 +2300,10 @@ static int epwake_setup(void *p, char phase)
 		if (epoll_ctl(c->epfd, EPOLL_CTL_ADD, c->pfd[0], &ev))
 			return -1;
 	}
+	epwake_count_sources(c);
+	if (c->ws_other < 0)
+		return -1;
+	c->ws_other_pre = c->ws_other;
 	return 0;
 }
 
@@ -2340,36 +2347,10 @@ static void epwake_survivor(void *p, int wfd)
 	       rc > 0 ? (long long)evs[0].data.u64 : 0, 0, 0, 0);
 }
 
-static void epwake_observer(void *p, const struct kid_report *k,
-			    struct outcome *o, char *obs, size_t cap)
+static void epwake_count_sources(struct epwake_ctx *c)
 {
-	struct epwake_ctx *c = p;
-	char path[64], buf[8192];
-	int fd, n, count = 0, ws_total = 0, ws_ep = 0, ws_other = 0;
-	char *s, *save = NULL, *line;
-	unsigned int ev = 0;
-
-	snprintf(path, sizeof(path), "/proc/self/fdinfo/%d", c->epfd);
-	fd = open(path, O_RDONLY);
-	n = -1;
-	if (fd >= 0) {
-		n = read(fd, buf, sizeof(buf) - 1);
-		close(fd);
-	}
-	if (n > 0)
-		buf[n] = 0;
-	else
-		buf[0] = 0;
-	s = buf;
-	while ((s = strstr(s, "tfd:")) != NULL) {
-		count++;
-		s += 4;
-	}
-	s = strstr(buf, "events:");
-	if (s)
-		sscanf(s + 7, "%x", &ev);
-	c->tfd_count = count;
-	c->tfd_events = ev;
+	char buf[8192], *save = NULL, *line;
+	int fd, n, ws_total = 0, ws_ep = 0, ws_other = 0;
 
 	fd = open("/sys/kernel/debug/wakeup_sources", O_RDONLY);
 	n = -1;
@@ -2399,27 +2380,78 @@ static void epwake_observer(void *p, const struct kid_report *k,
 				ws_other++;
 		}
 	}
+	if (n <= 0 || n == sizeof(buf) - 1) {
+		c->ws_total = c->ws_epoll = c->ws_other = -1;
+		return;
+	}
 	c->ws_total = ws_total;
 	c->ws_epoll = ws_ep;
 	c->ws_other = ws_other;
+}
+
+static void epwake_observer(void *p, const struct kid_report *k,
+			    struct outcome *o, char *obs, size_t cap)
+{
+	struct epwake_ctx *c = p;
+	char path[64], buf[8192];
+	int fd, n, count = 0;
+	char *s;
+	unsigned int ev = 0;
+
+	snprintf(path, sizeof(path), "/proc/self/fdinfo/%d", c->epfd);
+	fd = open(path, O_RDONLY);
+	n = -1;
+	if (fd >= 0) {
+		n = read(fd, buf, sizeof(buf) - 1);
+		close(fd);
+	}
+	if (n > 0)
+		buf[n] = 0;
+	else
+		buf[0] = 0;
+	s = buf;
+	while ((s = strstr(s, "tfd:")) != NULL) {
+		count++;
+		s += 4;
+	}
+	s = strstr(buf, "events:");
+	if (s)
+		sscanf(s + 7, "%x", &ev);
+	c->tfd_count = count;
+	c->tfd_events = ev;
+
+	epwake_count_sources(c);
 	o->aux[0] = c->tfd_count;
 	o->aux[1] = c->tfd_events;
 	o->aux[2] = c->ws_total;
 	o->aux[3] = c->ws_epoll;
 	o->aux[4] = c->ws_other;
+	/* Context lives in the isolated child; pass it back with the outcome. */
+	o->aux[5] = c->add;
+	o->aux[6] = c->ws_other_pre;
 	app(obs, cap,
 	    "wait_rc=%lld;wait_errno=%d;wait_ev=%lld;wait_data=%lld|tfd=%d;tfd_ev=%x;ws_total=%d;ws_ep=%d;ws_other=%d",
 	    k->rc, k->err, k->v[0], k->v[1], c->tfd_count, c->tfd_events,
 	    c->ws_total, c->ws_epoll, c->ws_other);
 }
 
-static int epwake_add_error_ok(void *p, struct outcome *o)
+static int epwake_error_ok(void *p, struct outcome *o)
 {
 	(void)p;
-	/* ep_insert() removed the item before returning the error.  The
-	 * per-epoll "eventpoll" wakeup source may stay cached; that does
-	 * not change the interest list. */
-	return o->aux[0] == 0 && o->kid.rc == 0;
+
+	/* ADD and MOD may cache a per-epoll source until ep_free().  Neither
+	 * may leave a per-item source on error.  The interest list and the
+	 * delivered event/data must still match the operation's pre state. */
+	if (o->aux[3] < 0 || o->aux[3] > 1 ||
+	    o->aux[4] != o->aux[6] ||
+	    o->aux[2] != o->aux[3] + o->aux[4] || o->kid.err != 0)
+		return 0;
+	if (o->aux[5])
+		return o->aux[0] == 0 && o->aux[1] == 0 && o->kid.rc == 0;
+	return o->aux[0] == 1 &&
+	       o->aux[1] == (EPOLLIN | EPOLLERR | EPOLLHUP) &&
+	       o->kid.rc == 1 && o->kid.v[0] == EPOLLIN &&
+	       o->kid.v[1] == 0x77;
 }
 
 static void epwake_teardown(void *p)
@@ -2612,6 +2644,7 @@ static const struct target t_epwake_mod = {
 	.before_survivor = epwake_before_survivor,
 	.survivor = epwake_survivor,
 	.observer = epwake_observer,
+	.error_ok = epwake_error_ok,
 	.teardown = epwake_teardown,
 };
 
@@ -2624,7 +2657,7 @@ static const struct target t_epwake_add = {
 	.before_survivor = epwake_before_survivor,
 	.survivor = epwake_survivor,
 	.observer = epwake_observer,
-	.error_ok = epwake_add_error_ok,
+	.error_ok = epwake_error_ok,
 	.teardown = epwake_teardown,
 };
 

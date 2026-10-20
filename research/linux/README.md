@@ -14,6 +14,13 @@ confirmed `epoll_ctl(MOD)`+`EPOLLWAKEUP` issue: see
 [RESULTS-round2.md](RESULTS-round2.md).  Private status is in
 [PRIVATE-NOTES.md](PRIVATE-NOTES.md).
 
+Round 3, the v2 patch and its existing VM validation are in
+[RESULTS-round3.md](RESULTS-round3.md). The first public patch was sent on
+2026-10-19; SMTP acceptance and the self-copy were verified, not mailing-list
+delivery or maintainer acceptance. The v1/v2 files under `patches/` are internal
+preparation versions, not the signed outgoing email. The original prototype
+description and limitations below refer to round 1 unless stated otherwise.
+
 ## Layout
 
 ```
@@ -214,5 +221,5 @@ The full source paths and contracts are in [RESULTS.md](RESULTS.md).
   probe/site counts varied (see RESULTS.md).
 - `--mode trace` is diagnostic only; trace runs are not part of the reported
   verdict counts.
-- No confirmed kernel issue was found, so there are no private issue details;
+- Round 1 found no confirmed kernel issue, so there were no private issue details;
   `PRIVATE-NOTES.md` contains only that status.

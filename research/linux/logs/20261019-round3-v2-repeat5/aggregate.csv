@@ -1,0 +1,6 @@
+target,mech,reps,done,stable,sites,trials,misses,ok_pre,ok_post,ok_partial,ok_poisoned,violations,unknown,wall_s
+scm_rights,failnth,5,5,5,15,15,0,15,0,0,0,0,0,5.01
+tls_rx,failnth,5,5,5,20,20,0,20,0,0,0,0,0,5.01
+tls_rx,failfunc,5,5,5,0,0,5,0,0,0,0,0,0,5.01
+overlay_copyup,failnth,5,5,5,161,161,0,155,6,0,0,0,0,5.16
+overlay_copyup,failfunc,5,5,5,0,0,5,0,0,0,0,0,0,5.16
