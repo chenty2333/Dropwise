@@ -2,11 +2,36 @@
 name = "dropwise"
 version = "0.1.0"
 edition = "2024"
+description = "Cancellation-correctness testing for async Rust (Tokio)"
+repository = "https://github.com/chenty2333/Dropwise"
+readme = "README.md"
+keywords = ["testing", "cancellation", "async", "tokio"]
+categories = ["development-tools::testing"]
+# Verified against the source (edition 2024 plus let-chains), not inferred from
+# dependency versions: `cargo +1.88.0 check --locked` and the test suite.
+rust-version = "1.88"
+# The package is the library, its public docs, runnable examples and tests.
+# Research/prospective/repro trees, logs, private notes and the Python engine
+# are not part of the package.
+include = [
+    "/Cargo.toml",
+    "/README.md",
+    "/src/**/*.rs",
+    "/examples/**/*.rs",
+    "/tests/**/*.rs",
+    "/docs/choosing-targets.md",
+    "/docs/using-dropwise.md",
+]
+
+# `license` / `license-file` are intentionally absent: the repository has not
+# declared a license. Do not publish until the owner chooses one.
 
 [features]
-# Optional TCP proxy and residue check for experiments that reuse a connection
-# after a cancellation (`dropwise::net`). Off by default: the core tests need
-# no network and no extra tokio features.
+# Optional loopback TCP proxy and Linux residue check for experiments that
+# reuse a connection after a cancellation (`dropwise::net`). Off by default:
+# the core tests need no network and no extra tokio features. `Proxy` is a
+# loopback forwarder; `Proxy::residue`/`max_residue` inspect client sockets
+# through /proc and return `Unsupported` outside Linux.
 net = ["tokio/net", "tokio/io-util", "dep:libc"]
 
 [dependencies]

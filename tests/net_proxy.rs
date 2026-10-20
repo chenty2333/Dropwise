@@ -117,6 +117,10 @@ async fn residue_sees_reply_the_client_has_not_read() {
     // where `residue` must see it.
     let bytes = wait_for_residue(&proxy, client_addr, |n| n > 0).await;
     assert!(bytes > 0, "no unread reply visible in the client socket");
+    assert!(
+        proxy.max_residue().expect("read max residue") >= bytes,
+        "max_residue must include the unread client socket"
+    );
 }
 
 #[cfg(target_os = "linux")]

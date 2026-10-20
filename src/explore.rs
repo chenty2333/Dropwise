@@ -105,8 +105,9 @@ pub enum Verdict {
     Mixed,
     /// Equal to no calibration: a partial or contaminated state.
     Neither,
-    /// Two samples of a calibration side disagreed, so the observation cannot
-    /// be judged. Not a violation.
+    /// The calibration could not judge the observation: the two samples of a
+    /// side disagreed, or a side failed to produce an observation (see
+    /// [`Report::calibration_errors`]). Not a violation.
     Unknown,
 }
 
@@ -227,20 +228,41 @@ pub struct Cut {
     pub race: Race,
 }
 
-/// One run's cancellation plan, including the optional dimensions that are not
-/// visible as separate [`Cut`]s.
-#[derive(Debug, Clone, Default)]
-struct Plan {
-    cuts: Vec<Cut>,
+/// One cancellation plan: which targets lose, after which observed `Pending`,
+/// with which competitor timing, and which gap substitution.
+///
+/// The exploration records this plan on every [`Trial`]; [`Trial::replay_plan`]
+/// returns one suitable for [`replay`] or [`replay_observed`]. A plan is an
+/// instruction to *attempt the same cancellation again*, not a deterministic
+/// replay: target creation order and `Pending` counts can change between runs,
+/// especially with real I/O, and a plan whose boundary is not reached is
+/// reported as unrealized.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct Plan {
+    /// Cuts in target-index order. Each target appears at most once; a cut
+    /// with `after_pending == 0` is reserved for calibration and is rejected by
+    /// the replay functions.
+    pub cuts: Vec<Cut>,
     /// `cuts[0]` also applies to every later target created at the same call
     /// site, at that target's own `after_pending`-th `Pending`.
-    repeat: bool,
-    /// Per `Ctx::gap` registration, the selected `Config::gap_choices` index;
-    /// `None` means the scenario's own default.
-    gaps: Vec<Option<usize>>,
+    pub repeat: bool,
+    /// A prefix of the [`Ctx::gap`] registrations in call order: the
+    /// substituted gap, or `None` for the scenario's own default. Trailing
+    /// defaults may be omitted. `Ctx::gap` uses these values directly, so a
+    /// replay keeps the original assignment.
+    pub gaps: Vec<Option<Gap>>,
 }
 
 impl Plan {
+    /// A plan with one or more cuts, no repeated-site expansion and no gap
+    /// substitution.
+    pub fn new(cuts: Vec<Cut>) -> Self {
+        Self {
+            cuts,
+            ..Self::default()
+        }
+    }
+
     fn is_calibration_skip(&self) -> bool {
         !self.cuts.is_empty() && self.cuts.iter().all(|c| c.after_pending == 0)
     }
@@ -271,8 +293,6 @@ type Check = Box<dyn FnOnce() -> Result<(), String> + Send>;
 
 struct RunState {
     plan: Plan,
-    /// Snapshot of `Config::gap_choices`, for `Ctx::gap`.
-    gap_choices: Vec<Gap>,
     targets: Vec<TargetRecord>,
     checks: Vec<Check>,
     /// The scenario's default for every `Ctx::gap` call so far, in call order:
@@ -380,13 +400,7 @@ impl Ctx {
         let mut st = self.state.lock().unwrap();
         let index = st.gap_defaults.len();
         st.gap_defaults.push(default);
-        let chosen = st
-            .plan
-            .gaps
-            .get(index)
-            .copied()
-            .flatten()
-            .map(|choice| st.gap_choices[choice]);
+        let chosen = st.plan.gaps.get(index).copied().flatten();
         GapWait::new(chosen.unwrap_or(default))
     }
 
@@ -899,6 +913,9 @@ pub enum CutOutcome {
 #[derive(Debug, Clone)]
 pub struct Trial {
     pub plan: Vec<Cut>,
+    /// True if the plan also cancelled every later instance created at the
+    /// first cut's call site (see [`Config::repeat_at_site`]).
+    pub repeat: bool,
     /// Call sites of the planned targets, parallel to `plan`; `None` if the
     /// target was not created in this run.
     pub sites: Vec<Option<&'static Location<'static>>>,
@@ -907,13 +924,19 @@ pub struct Trial {
     /// How many target instances this plan actually cancelled. With
     /// [`Config::repeat_at_site`] this can exceed `plan.len()`.
     pub cancelled: usize,
-    /// Per `Ctx::gap` registration, the substituted gap; `None` means the
-    /// scenario's own default was used. Empty when no `Ctx::gap` was called.
+    /// A prefix of the `Ctx::gap` registrations, as assigned in the plan:
+    /// `None` means the scenario's own default was used. Trailing defaults are
+    /// omitted, so this is empty when no gap was substituted.
     pub gaps: Vec<Option<Gap>>,
     /// How the observed value compared with the calibration, when the run was
-    /// started by [`explore_observed`]. `None` for [`explore`], or when the
-    /// scenario produced no observation.
+    /// started by [`explore_observed`] or [`replay_observed`]. `None` for
+    /// [`explore`], or when the scenario produced no observation.
     pub verdict: Option<Verdict>,
+    /// Human-readable comparison of the observation with its calibration, for
+    /// diagnosis only. Equality is always decided by the scenario's
+    /// `PartialEq`; this text is never used as the oracle. `None` when the
+    /// scenario produced no observation or no calibration was computed.
+    pub comparison: Option<String>,
     pub invariant: Result<(), String>,
     pub leaks: Vec<Leak>,
     /// False if the settle phase was cut short by the watchdog: late effects
@@ -929,6 +952,26 @@ impl Trial {
     pub fn is_realized(&self) -> bool {
         !self.outcomes.contains(&CutOutcome::Unrealized)
     }
+
+    /// The plan to pass to [`replay`] or [`replay_observed`] to attempt this
+    /// cancellation again.
+    pub fn replay_plan(&self) -> Plan {
+        Plan {
+            cuts: self.plan.clone(),
+            repeat: self.repeat,
+            gaps: self.gaps.clone(),
+        }
+    }
+
+    /// The cuts of this trial as `#target@pending:race`, joined with `+`.
+    /// The repeated-site dimension is not included; see [`Trial::repeat`].
+    pub fn plan_label(&self) -> String {
+        self.plan
+            .iter()
+            .map(|cut| format!("#{}@{}:{:?}", cut.target, cut.after_pending, cut.race))
+            .collect::<Vec<_>>()
+            .join("+")
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -936,14 +979,23 @@ pub struct Report {
     pub trials: Vec<Trial>,
     /// Problems seen in the uncancelled run itself (not caused by cancellation).
     pub baseline_errors: Vec<String>,
+    /// Calibration runs that failed, leaked or produced no observation, so the
+    /// affected plan could not be judged. Kept separate from
+    /// [`Report::baseline_errors`]: the baseline is not what failed.
+    pub calibration_errors: Vec<String>,
     /// Number of targets reached in the uncancelled run.
     pub baseline_targets: usize,
     /// False if the uncancelled run's settle phase was cut short by the watchdog.
     pub baseline_settled: bool,
     /// True if every plan within the limits was run: `max_runs` did not cut the
     /// search short and at least one target was reached. Says nothing about
-    /// source-level `.await`s, inputs or schedules that were not exercised.
+    /// source-level `.await`s, inputs or schedules that were not exercised, and
+    /// can be true when the marked targets never returned `Pending`; check
+    /// [`Report::coverage_gaps`] for that case.
     pub exhaustive: bool,
+    /// True if the run budget (`Config::max_runs`) left plans unrun, either by
+    /// stopping the search or by skipping a subtree that could not fit.
+    pub truncated: bool,
     /// Non-degenerate hints, e.g. a calibration whose `pre` and `post` are
     /// equal. Informational only; they do not affect [`Report::is_clean`].
     pub notes: Vec<String>,
@@ -980,18 +1032,171 @@ impl Report {
             .count()
     }
 
+    /// Reasons a clean report is not yet a "nothing was observed within
+    /// coverage" conclusion.
+    ///
+    /// This covers calibration failures and unstable calibrations, plans whose
+    /// planned `Pending` boundary was never reached, plans the settle watchdog
+    /// cut short, a truncated search, and a scenario that marked no target or
+    /// whose targets never returned `Pending`. Violations and baseline errors
+    /// are not coverage gaps; they are reported by [`Report::violations`] and
+    /// [`Report::baseline_errors`].
+    pub fn coverage_gaps(&self) -> Vec<String> {
+        let mut gaps = Vec::new();
+        if self.baseline_targets == 0 && !self.truncated {
+            gaps.push(
+                "no target was marked with Ctx::target/Ctx::race: nothing was explored".to_string(),
+            );
+        } else if self.trials.is_empty() && !self.truncated {
+            gaps.push(
+                "no marked target returned Pending: no cancellation plan was generated \
+                 (the cancellation point is absent or was not reached)"
+                    .to_string(),
+            );
+        }
+        if !self.baseline_settled {
+            gaps.push(
+                "the baseline observation window ended before settling (settle watchdog)"
+                    .to_string(),
+            );
+        }
+        if self.truncated {
+            gaps.push(
+                "the search was truncated by Config::max_runs: some plans were never run"
+                    .to_string(),
+            );
+        } else if !self.exhaustive && self.baseline_targets > 0 {
+            gaps.push("the search was not exhaustive within the configured limits".to_string());
+        }
+        let unsettled = self.unsettled().count();
+        if unsettled > 0 {
+            gaps.push(format!(
+                "{unsettled} plan(s) were not settled: late effects may be missing"
+            ));
+        }
+        let unrealized = self.unrealized().count();
+        if unrealized > 0 {
+            gaps.push(format!(
+                "{unrealized} plan(s) were not realized: the planned Pending boundary was never reached"
+            ));
+        }
+        let unknown = self.unknown().count();
+        if unknown > 0 {
+            gaps.push(format!(
+                "{unknown} plan(s) are undecided: a calibration side failed or its two samples disagree"
+            ));
+        }
+        for error in &self.calibration_errors {
+            gaps.push(format!("calibration failed: {error}"));
+        }
+        gaps
+    }
+
+    /// `is_clean()` plus a complete, decidable observation within the configured
+    /// limits: no coverage gaps, baseline errors or violations.
+    ///
+    /// This is still not a proof for untested inputs, schedules, unmarked
+    /// futures or effects the scenario did not observe. It is the strongest
+    /// conclusion one [`Report`] can support.
+    pub fn is_clean_within_coverage(&self) -> bool {
+        self.is_clean() && self.coverage_gaps().is_empty()
+    }
+
     /// Nothing was *observed* to go wrong: the baseline run reported no problem
     /// and no trial violated its invariant or leaked.
     ///
     /// This is not a pass conclusion on its own. It says nothing about plans
     /// that were never realized ([`Trial::is_realized`]), observation windows
     /// cut short by the settle watchdog ([`Report::unsettled`]), plans the run
-    /// budget did not reach (`exhaustive`), or schedules and inputs the scenario
-    /// did not exercise. [`assert_cancel_correct`] also checks realization,
-    /// settling and completeness within the configured limits, but cannot
-    /// establish correctness for untested schedules or inputs.
+    /// budget did not reach (`exhaustive`), calibration failures or unstable
+    /// calibrations ([`Report::coverage_gaps`]), or schedules and inputs the
+    /// scenario did not exercise. Prefer [`Report::is_clean_within_coverage`]
+    /// when a conclusion should require all of those.
     pub fn is_clean(&self) -> bool {
         self.baseline_errors.is_empty() && self.violations().next().is_none()
+    }
+
+    /// A detailed, multi-line dump of the baseline, calibration failures, every
+    /// trial (plan, call sites, outcomes, gaps, verdict, comparison, invariant,
+    /// leaks) and the coverage gaps. `Display` prints only what needs
+    /// attention; use this when a clean or undecided report has to be explained.
+    pub fn diagnostics(&self) -> String {
+        use std::fmt::Write as _;
+
+        let mut out = String::new();
+        let _ = writeln!(
+            out,
+            "dropwise diagnostics: {} target(s), {} trial(s), exhaustive={}, truncated={}",
+            self.baseline_targets,
+            self.trials.len(),
+            self.exhaustive,
+            self.truncated
+        );
+        if !self.baseline_settled {
+            let _ = writeln!(
+                out,
+                "baseline: observation window ended before settling (settle watchdog)"
+            );
+        }
+        for error in &self.baseline_errors {
+            let _ = writeln!(out, "baseline error: {error}");
+        }
+        for error in &self.calibration_errors {
+            let _ = writeln!(out, "calibration error: {error}");
+        }
+        for (index, trial) in self.trials.iter().enumerate() {
+            let _ = writeln!(out, "plan {}: {}", index + 1, trial.plan_label());
+            if trial.repeat {
+                let _ = writeln!(out, "  repeat at the first cut's call site");
+            }
+            for ((cut, site), outcome) in trial.plan.iter().zip(&trial.sites).zip(&trial.outcomes) {
+                let site = site.map_or("not created".to_string(), |site| site.to_string());
+                let _ = writeln!(
+                    out,
+                    "  target #{} after pending #{} ({}): {site} -> {outcome:?}",
+                    cut.target, cut.after_pending, cut.race
+                );
+            }
+            for (site, gap) in trial.gaps.iter().enumerate() {
+                if let Some(gap) = gap {
+                    let _ = writeln!(out, "  gap #{site} = {gap}");
+                }
+            }
+            if trial.cancelled > trial.plan.len() {
+                let _ = writeln!(out, "  cancelled instances: {}", trial.cancelled);
+            }
+            let _ = writeln!(
+                out,
+                "  verdict: {}, settled: {}",
+                trial
+                    .verdict
+                    .map_or("none (not an observed run)".to_string(), |verdict| format!(
+                        "{verdict:?}"
+                    )),
+                trial.settled
+            );
+            if let Some(comparison) = &trial.comparison {
+                let _ = writeln!(out, "  comparison: {comparison}");
+            }
+            match &trial.invariant {
+                Ok(()) => {
+                    let _ = writeln!(out, "  invariant: ok");
+                }
+                Err(error) => {
+                    let _ = writeln!(out, "  invariant: {error}");
+                }
+            }
+            for leak in &trial.leaks {
+                let _ = writeln!(out, "  leak: {leak}");
+            }
+        }
+        for note in &self.notes {
+            let _ = writeln!(out, "note: {note}");
+        }
+        for gap in self.coverage_gaps() {
+            let _ = writeln!(out, "coverage gap: {gap}");
+        }
+        out
     }
 }
 
@@ -1019,6 +1224,9 @@ fn describe(t: &Trial) -> String {
     if !gaps.is_empty() {
         s.push_str(&format!(" [{}]", gaps.join(", ")));
     }
+    if t.repeat {
+        s.push_str(" [repeat at the same call site]");
+    }
     if t.cancelled > t.plan.len() {
         s.push_str(&format!(" [{} instances cancelled]", t.cancelled));
     }
@@ -1043,9 +1251,20 @@ impl fmt::Display for Report {
                 f,
                 "  the uncancelled run reached no target: nothing was explored (mark ctx.target/ctx.race)"
             )?;
+        } else if self.trials.is_empty() {
+            writeln!(
+                f,
+                "  no marked target returned Pending: no cancellation plan was generated (the cancellation point is absent or was not reached)"
+            )?;
         }
         for e in &self.baseline_errors {
             writeln!(f, "  baseline (no cancellation): {e}")?;
+        }
+        if !self.calibration_errors.is_empty() {
+            writeln!(f, "  calibration problem(s):")?;
+            for error in &self.calibration_errors {
+                writeln!(f, "    calibration failed: {error}")?;
+            }
         }
         for t in self.violations() {
             writeln!(f, "  {}:", describe(t))?;
@@ -1096,19 +1315,58 @@ impl fmt::Display for Report {
                 self.verdict_count(Verdict::Unknown),
             )?;
         }
+        if self.truncated {
+            writeln!(
+                f,
+                "  search truncated by Config::max_runs: some plans were not run"
+            )?;
+        }
         let unknown: Vec<_> = self.unknown().collect();
         if !unknown.is_empty() {
             writeln!(
                 f,
-                "  {} plan(s) cannot be decided (unstable calibration):",
+                "  {} plan(s) cannot be decided (calibration failed or is unstable):",
                 unknown.len()
             )?;
-            for t in unknown {
+            for t in &unknown {
                 writeln!(f, "    {}", describe(t))?;
+                if let Some(comparison) = &t.comparison {
+                    writeln!(f, "      {comparison}")?;
+                }
             }
         }
         for note in &self.notes {
             writeln!(f, "  note: {note}")?;
+        }
+        let gaps = self.coverage_gaps();
+        if !self.baseline_errors.is_empty() {
+            writeln!(
+                f,
+                "  result: baseline failed (no cancellation); fix the uncancelled run first"
+            )?;
+        } else if self.violations().next().is_some() {
+            writeln!(f, "  result: violation observed")?;
+        } else if !self.calibration_errors.is_empty() {
+            writeln!(
+                f,
+                "  result: calibration failed; affected plans could not be judged"
+            )?;
+        } else if !unknown.is_empty() {
+            writeln!(
+                f,
+                "  result: undecided; calibration samples disagree for at least one plan"
+            )?;
+        } else if !gaps.is_empty() {
+            writeln!(
+                f,
+                "  result: no violation observed, but coverage is incomplete ({} gap(s)); this is not a clean conclusion",
+                gaps.len()
+            )?;
+        } else {
+            writeln!(
+                f,
+                "  result: no violation observed within the explored coverage"
+            )?;
         }
         Ok(())
     }
@@ -1273,7 +1531,6 @@ where
     let ctx = Ctx {
         state: Arc::new(Mutex::new(RunState {
             plan,
-            gap_choices: config.gap_choices.clone(),
             targets: Vec::new(),
             checks: Vec::new(),
             gap_defaults: Vec::new(),
@@ -1329,7 +1586,7 @@ fn outcome(rec: Option<&TargetRecord>) -> CutOutcome {
     }
 }
 
-fn trial_from(config: &Config, plan: &Plan, res: &RunResult) -> Trial {
+fn trial_from(plan: &Plan, res: &RunResult) -> Trial {
     let sites = plan
         .cuts
         .iter()
@@ -1345,18 +1602,15 @@ fn trial_from(config: &Config, plan: &Plan, res: &RunResult) -> Trial {
         .iter()
         .filter(|r| r.lost_race && r.status == Status::Cancelled)
         .count();
-    let gaps = plan
-        .gaps
-        .iter()
-        .map(|choice| choice.map(|i| config.gap_choices[i]))
-        .collect();
     Trial {
         plan: plan.cuts.clone(),
+        repeat: plan.repeat,
         sites,
         outcomes,
         cancelled,
-        gaps,
+        gaps: plan.gaps.clone(),
         verdict: None,
+        comparison: None,
         invariant: res.invariant.clone(),
         leaks: res.leaks.clone(),
         settled: res.settled,
@@ -1422,13 +1676,16 @@ fn extend_queue(
                         let templates = variants.clone();
                         for template in templates {
                             for (gap, default) in res.gap_defaults.iter().enumerate() {
-                                for (choice, substitute) in config.gap_choices.iter().enumerate() {
-                                    if substitute == default {
+                                for substitute in &config.gap_choices {
+                                    if substitute == default
+                                        || template.gaps.get(gap).copied().flatten()
+                                            == Some(*substitute)
+                                    {
                                         continue;
                                     }
                                     let mut variant = template.clone();
                                     variant.gaps.resize(gap + 1, None);
-                                    variant.gaps[gap] = Some(choice);
+                                    variant.gaps[gap] = Some(*substitute);
                                     variants.push(variant);
                                 }
                             }
@@ -1472,6 +1729,8 @@ struct Judgement {
     verdict: Option<Verdict>,
     /// Appended to the trial's invariant result.
     violation: Option<String>,
+    /// Human-readable observation/calibration comparison, for diagnosis only.
+    comparison: Option<String>,
 }
 
 /// The breadth-first plan search shared by [`explore`] and [`explore_observed`].
@@ -1491,17 +1750,11 @@ fn search(
         let (res, judgement) = step(&plan, &mut report);
 
         if plan.cuts.is_empty() {
-            report.baseline_targets = res.targets.len();
-            report.baseline_settled = res.settled;
-            if let Err(e) = &res.invariant {
-                report.baseline_errors.push(e.clone());
-            }
-            report
-                .baseline_errors
-                .extend(res.leaks.iter().map(|l| l.to_string()));
+            record_baseline(&mut report, &res);
         } else {
-            let mut trial = trial_from(config, &plan, &res);
+            let mut trial = trial_from(&plan, &res);
             trial.verdict = judgement.verdict;
+            trial.comparison = judgement.comparison;
             if let Some(message) = judgement.violation {
                 trial.invariant = match trial.invariant {
                     Ok(()) => Err(message),
@@ -1515,8 +1768,22 @@ fn search(
         extend_queue(config, &plan, &res, slots, &mut queue, &mut truncated);
     }
 
-    report.exhaustive = queue.is_empty() && !truncated && report.baseline_targets > 0;
+    report.truncated = truncated || !queue.is_empty();
+    report.exhaustive = queue.is_empty() && !report.truncated && report.baseline_targets > 0;
     report
+}
+
+/// Copy the uncancelled run's result into the report. Shared by the search and
+/// the replay functions so a replay does not hide a baseline failure.
+fn record_baseline(report: &mut Report, res: &RunResult) {
+    report.baseline_targets = res.targets.len();
+    report.baseline_settled = res.settled;
+    if let Err(error) = &res.invariant {
+        report.baseline_errors.push(error.clone());
+    }
+    report
+        .baseline_errors
+        .extend(res.leaks.iter().map(|leak| leak.to_string()));
 }
 
 fn run_observed<T, S, Fut>(
@@ -1541,7 +1808,8 @@ where
     let mut res = run_once(config, &mut wrapper, plan);
     let observed = slot.lock().unwrap().take();
     // The wrapper maps to `()`, so put a scenario error back where the report
-    // shows it (baseline_errors for the baseline, the invariant for a trial).
+    // shows it (baseline_errors for the baseline, the invariant for a trial or
+    // a calibration error when this run is a calibration sample).
     if let Some(Err(e)) = &observed {
         res.invariant = match std::mem::replace(&mut res.invariant, Ok(())) {
             Ok(()) => Err(e.clone()),
@@ -1584,12 +1852,12 @@ fn calibration_targets(plan: &Plan, res: &RunResult) -> Vec<usize> {
 struct CalibrationKey {
     targets: Vec<usize>,
     skipped: Vec<bool>,
-    gaps: Vec<Option<usize>>,
+    gaps: Vec<Option<Gap>>,
 }
 
 impl CalibrationKey {
     /// `targets` must be sorted and deduplicated, `skipped` parallel to it.
-    fn new(targets: &[usize], skipped: Vec<bool>, gaps: &[Option<usize>]) -> Self {
+    fn new(targets: &[usize], skipped: Vec<bool>, gaps: &[Option<Gap>]) -> Self {
         let mut gaps = gaps.to_vec();
         while gaps.last() == Some(&None) {
             gaps.pop();
@@ -1662,8 +1930,8 @@ impl<T: PartialEq> Side<T> {
         matches!(self, Side::Stable(v) if v == actual)
     }
 
-    fn unstable(&self) -> bool {
-        matches!(self, Side::Unstable)
+    fn undecided(&self) -> bool {
+        matches!(self, Side::Unstable | Side::Absent)
     }
 }
 
@@ -1750,7 +2018,7 @@ fn classify<T: PartialEq>(
         Verdict::Pre
     } else if mixed.iter().any(|side| side.matches(actual)) {
         Verdict::Mixed
-    } else if pre.unstable() || post.unstable() || mixed.iter().any(|side| side.unstable()) {
+    } else if pre.undecided() || post.undecided() || mixed.iter().any(|side| side.undecided()) {
         Verdict::Unknown
     } else {
         Verdict::Neither
@@ -1830,11 +2098,11 @@ fn calibration_keys(
 ///
 /// Each calibration is sampled twice; disagreement makes the verdict
 /// [`Verdict::Unknown`] instead of a violation. Calibration failures (the
-/// scenario returns `Err`, or leaks) are recorded in [`Report::baseline_errors`]
-/// rather than panicking. Samples are cached by target set, skip/complete
-/// assignment and gap assignment, so plans that differ only in `after_pending`
-/// or `race` share them. Calibration runs are not counted against
-/// `Config::max_runs` and do not appear as trials.
+/// scenario returns `Err`, leaks or produces no observation) are recorded in
+/// [`Report::calibration_errors`] rather than panicking. Samples are cached by
+/// target set, skip/complete assignment and gap assignment, so plans that
+/// differ only in `after_pending` or `race` share them. Calibration runs are not
+/// counted against `Config::max_runs` and do not appear as trials.
 ///
 /// [`Expect`] is the scenario author's contract: `Atomic` allows `pre`, `post`
 /// or a mixture, `Completed` allows only `post`, and `Undone` allows only `pre`
@@ -1860,52 +2128,296 @@ where
     search(config, |plan, report| {
         let (res, observed) = run_observed(config, &mut scenario, plan.clone());
         let mut judgement = Judgement::default();
-        let Some(Ok(actual)) = &observed else {
-            return (res, judgement);
-        };
-        let targets = calibration_targets(plan, &res);
-        if plan.cuts.is_empty() || targets.is_empty() {
-            return (res, judgement);
-        }
-        let (pre_key, post_key, mixed_keys) = calibration_keys(&targets, plan, expect);
-        for key in [&pre_key, &post_key].into_iter().chain(&mixed_keys) {
-            ensure_calibrated(
+        if let Some(Ok(actual)) = &observed {
+            let mut judge = Judge {
                 config,
-                &mut scenario,
-                &mut cache,
-                key,
-                &mut report.baseline_errors,
-            );
-        }
-        let pre = &cache[&pre_key];
-        let post = &cache[&post_key];
-        let mixed: Vec<_> = mixed_keys.iter().map(|key| &cache[key]).collect();
-        let verdict = classify(pre, post, &mixed, actual);
-        if !allows(expect, verdict) {
-            let mixtures = if mixed.is_empty() {
-                String::new()
-            } else {
-                format!(", and {} mixed calibration(s)", mixed.len())
+                scenario: &mut scenario,
+                cache: &mut cache,
+                expect,
             };
-            judgement.violation = Some(format!(
-                "{verdict:?} under {expect:?}: observed {actual:?}, pre={}, post={}{mixtures}",
-                pre.describe(),
-                post.describe()
-            ));
-        }
-        judgement.verdict = Some(verdict);
-        if let Some(note) = degeneracy_note(&targets, pre, post)
-            && !report.notes.contains(&note)
-        {
-            report.notes.push(note);
+            judgement = judge.judge(plan, &res, actual, report);
         }
         (res, judgement)
     })
 }
 
+/// One plan's observation compared with its calibration, shared by the search
+/// and by [`replay_observed`].
+struct Judge<'a, T, S> {
+    config: &'a Config,
+    scenario: &'a mut S,
+    cache: &'a mut HashMap<CalibrationKey, Side<T>>,
+    expect: Expect,
+}
+
+impl<T, S> Judge<'_, T, S>
+where
+    T: PartialEq + fmt::Debug,
+{
+    fn judge<Fut>(
+        &mut self,
+        plan: &Plan,
+        res: &RunResult,
+        actual: &T,
+        report: &mut Report,
+    ) -> Judgement
+    where
+        S: FnMut(Ctx) -> Fut,
+        Fut: Future<Output = Result<T, String>>,
+    {
+        let targets = calibration_targets(plan, res);
+        if plan.cuts.is_empty() || targets.is_empty() {
+            return Judgement::default();
+        }
+        let (pre_key, post_key, mixed_keys) = calibration_keys(&targets, plan, self.expect);
+        for key in [&pre_key, &post_key].into_iter().chain(&mixed_keys) {
+            ensure_calibrated(
+                self.config,
+                self.scenario,
+                self.cache,
+                key,
+                &mut report.calibration_errors,
+            );
+        }
+        let pre = &self.cache[&pre_key];
+        let post = &self.cache[&post_key];
+        let mixed: Vec<_> = mixed_keys.iter().map(|key| &self.cache[key]).collect();
+        let verdict = classify(pre, post, &mixed, actual);
+        let comparison = comparison_text(actual, pre, post, mixed.len());
+        let violation = (!allows(self.expect, verdict))
+            .then(|| format!("{verdict:?} under {:?}: {comparison}", self.expect));
+        if let Some(note) = degeneracy_note(&targets, pre, post)
+            && !report.notes.contains(&note)
+        {
+            report.notes.push(note);
+        }
+        Judgement {
+            verdict: Some(verdict),
+            violation,
+            comparison: Some(comparison),
+        }
+    }
+}
+
+fn comparison_text<T: fmt::Debug>(
+    actual: &T,
+    pre: &Side<T>,
+    post: &Side<T>,
+    mixed: usize,
+) -> String {
+    let mut text = format!(
+        "observed {actual:?}, pre={}, post={}",
+        pre.describe(),
+        post.describe()
+    );
+    if mixed > 0 {
+        text.push_str(&format!(", {mixed} mixed calibration(s)"));
+    }
+    text
+}
+
+/// One cancellation plan that can be replayed, validated before it runs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ReplayError {
+    /// A replay needs at least one cut; the baseline is a separate run.
+    EmptyPlan,
+    /// `after_pending == 0` is an internal calibration cut, not a plan.
+    CalibrationCut { target: usize },
+    /// A plan may cut each target at most once.
+    DuplicateTarget { target: usize },
+    /// Cuts must be in target-index order.
+    UnsortedTargets,
+    /// The repeated-site dimension applies to one cut only.
+    RepeatWithSeveralCuts,
+    /// The scenario registered fewer `Ctx::gap` sites than the plan assigned,
+    /// so part of the plan could not be attempted. Rejecting it avoids silently
+    /// substituting the scenario default for the missing assignment.
+    UnappliedGap { assigned: usize, registered: usize },
+    /// The plan has more cuts than the replay configuration allows.
+    ExceedsMaxCancellations { cuts: usize, max: usize },
+}
+
+impl fmt::Display for ReplayError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ReplayError::EmptyPlan => {
+                write!(
+                    f,
+                    "a replay needs at least one cut (the baseline is a separate run)"
+                )
+            }
+            ReplayError::CalibrationCut { target } => write!(
+                f,
+                "target #{target} has after_pending == 0, which is a calibration-only cut, not a replayable plan"
+            ),
+            ReplayError::DuplicateTarget { target } => {
+                write!(f, "target #{target} appears more than once in the plan")
+            }
+            ReplayError::UnsortedTargets => write!(
+                f,
+                "cuts must be sorted by target index (the exploration generates them that way)"
+            ),
+            ReplayError::RepeatWithSeveralCuts => write!(
+                f,
+                "the repeated-site dimension applies to a plan with exactly one cut"
+            ),
+            ReplayError::UnappliedGap {
+                assigned,
+                registered,
+            } => write!(
+                f,
+                "the plan assigned {assigned} gap site(s) but this run registered {registered}; \
+                 refusing to silently use defaults for the unapplied assignment(s)"
+            ),
+            ReplayError::ExceedsMaxCancellations { cuts, max } => write!(
+                f,
+                "the plan has {cuts} cuts but Config::max_cancellations is {max}"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for ReplayError {}
+
+fn validate_plan(config: &Config, plan: &Plan) -> Result<(), ReplayError> {
+    if plan.cuts.is_empty() {
+        return Err(ReplayError::EmptyPlan);
+    }
+    if plan.repeat && plan.cuts.len() != 1 {
+        return Err(ReplayError::RepeatWithSeveralCuts);
+    }
+    let mut previous = None;
+    for cut in &plan.cuts {
+        if cut.after_pending == 0 {
+            return Err(ReplayError::CalibrationCut { target: cut.target });
+        }
+        if let Some(previous) = previous {
+            if cut.target == previous {
+                return Err(ReplayError::DuplicateTarget { target: cut.target });
+            }
+            if cut.target < previous {
+                return Err(ReplayError::UnsortedTargets);
+            }
+        }
+        previous = Some(cut.target);
+    }
+    if plan.cuts.len() > config.max_cancellations {
+        return Err(ReplayError::ExceedsMaxCancellations {
+            cuts: plan.cuts.len(),
+            max: config.max_cancellations,
+        });
+    }
+    Ok(())
+}
+
+/// Reject a plan whose gap assignment the run could not fully apply. A missing
+/// site is a changed scenario, not permission to use a different experiment.
+fn check_applied_gaps(plan: &Plan, res: &RunResult) -> Result<(), ReplayError> {
+    let registered = res.gap_defaults.len();
+    if plan.gaps.len() > registered && plan.gaps[registered..].iter().any(Option::is_some) {
+        return Err(ReplayError::UnappliedGap {
+            assigned: plan.gaps.len(),
+            registered,
+        });
+    }
+    Ok(())
+}
+
+/// Re-run one cancellation plan with [`explore`]'s scenario shape and report
+/// what that attempt produced.
+///
+/// The plan is validated first ([`ReplayError`]): empty plans, calibration-only
+/// cuts, duplicate or unsorted targets, repeated-site plans with several cuts,
+/// and plans exceeding `Config::max_cancellations` are rejected instead of
+/// being silently turned into a different experiment. After the attempt, a
+/// gap assignment the scenario no longer registers is also rejected
+/// ([`ReplayError::UnappliedGap`]) rather than replaced with a default. All
+/// other configuration (flavor, settle, timeouts, race modes inside the cuts and
+/// gap values inside the plan) is honored.
+///
+/// This **re-attempts the same plan; it is not a deterministic replay**. With
+/// real I/O, target creation order or `Pending` counts can differ. If a planned
+/// boundary is not reached, the returned trial says so with
+/// [`CutOutcome::Unrealized`], and [`Report::coverage_gaps`] reports it. The
+/// uncancelled baseline is rerun too, so a baseline failure or an unsettled
+/// baseline is not hidden; `exhaustive` refers to the single-plan replay scope,
+/// not a fresh search.
+pub fn replay<S, Fut>(config: &Config, plan: &Plan, mut scenario: S) -> Result<Report, ReplayError>
+where
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<(), String>>,
+{
+    validate_plan(config, plan)?;
+    let baseline = run_once(config, &mut scenario, Plan::default());
+    let res = run_once(config, &mut scenario, plan.clone());
+    check_applied_gaps(plan, &res)?;
+    let mut report = Report {
+        exhaustive: true,
+        ..Report::default()
+    };
+    record_baseline(&mut report, &baseline);
+    report.trials.push(trial_from(plan, &res));
+    Ok(report)
+}
+
+/// Re-run one cancellation plan with [`explore_observed`]'s scenario shape,
+/// including the same calibration and the caller's [`Expect`] contract.
+///
+/// The plan is validated exactly like [`replay`]. This re-attempts the plan and
+/// re-calibrates it; with real I/O the attempt is not deterministic. A target
+/// site or `Pending` count that changed is visible in
+/// [`Trial::sites`]/[`Trial::outcomes`], and a calibration that disagrees with
+/// itself is reported as [`Verdict::Unknown`] or in
+/// [`Report::calibration_errors`], never as a pass.
+pub fn replay_observed<T, S, Fut>(
+    config: &Config,
+    expect: Expect,
+    plan: &Plan,
+    mut scenario: S,
+) -> Result<Report, ReplayError>
+where
+    T: PartialEq + fmt::Debug + Send + 'static,
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    validate_plan(config, plan)?;
+    let (baseline, _) = run_observed(config, &mut scenario, Plan::default());
+    let (res, observed) = run_observed(config, &mut scenario, plan.clone());
+    check_applied_gaps(plan, &res)?;
+    let mut report = Report {
+        exhaustive: true,
+        ..Report::default()
+    };
+    record_baseline(&mut report, &baseline);
+    let mut judgement = Judgement::default();
+    if let Some(Ok(actual)) = &observed {
+        let mut cache: HashMap<CalibrationKey, Side<T>> = HashMap::new();
+        let mut judge = Judge {
+            config,
+            scenario: &mut scenario,
+            cache: &mut cache,
+            expect,
+        };
+        judgement = judge.judge(plan, &res, actual, &mut report);
+    }
+    let mut trial = trial_from(plan, &res);
+    trial.verdict = judgement.verdict;
+    trial.comparison = judgement.comparison;
+    if let Some(message) = judgement.violation {
+        trial.invariant = match trial.invariant {
+            Ok(()) => Err(message),
+            Err(previous) => Err(format!("{previous}; {message}")),
+        };
+    }
+    report.trials.push(trial);
+    Ok(report)
+}
+
 /// Like [`explore_observed`] with default config, panicking with the report on
-/// any violation, unknown verdict, unrealized plan, unsettled run, calibration
-/// failure, or incomplete search.
+/// any violation, calibration failure or unstable calibration, unrealized plan,
+/// unsettled run, or incomplete search. It also fails when no plan was
+/// generated (for example a target that never returned `Pending`), so a clean
+/// result always covers at least one cancellation attempt.
 #[track_caller]
 pub fn assert_observed<T, S, Fut>(expect: Expect, scenario: S)
 where
@@ -1914,17 +2426,14 @@ where
     Fut: Future<Output = Result<T, String>>,
 {
     let report = explore_observed(&Config::default(), expect, scenario);
-    let ok = report.is_clean()
-        && report.exhaustive
-        && report.baseline_settled
-        && report.unrealized().next().is_none()
-        && report.unsettled().next().is_none()
-        && report.unknown().next().is_none();
-    assert!(ok, "{report}");
+    assert!(report.is_clean_within_coverage(), "{report}");
 }
 
 /// Like [`explore`] with default config, panicking with the report on any
-/// violation, unrealized plan, unsettled run, or incomplete search.
+/// violation, calibration failure, unrealized plan, unsettled run, incomplete
+/// search or missing cancellation point. It also fails when no plan was
+/// generated, so a clean result always covers at least one cancellation
+/// attempt.
 #[track_caller]
 pub fn assert_cancel_correct<S, Fut>(scenario: S)
 where
@@ -1932,10 +2441,5 @@ where
     Fut: Future<Output = Result<(), String>>,
 {
     let report = explore(&Config::default(), scenario);
-    let ok = report.is_clean()
-        && report.exhaustive
-        && report.baseline_settled
-        && report.unrealized().next().is_none()
-        && report.unsettled().next().is_none();
-    assert!(ok, "{report}");
+    assert!(report.is_clean_within_coverage(), "{report}");
 }

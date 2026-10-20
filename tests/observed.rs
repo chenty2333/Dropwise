@@ -207,9 +207,10 @@ fn unstable_calibration_is_unknown() {
     assert!(result.is_err(), "assert_observed must fail on Unknown");
 }
 
-/// A failing calibration run lands in `baseline_errors`; it must not panic.
+/// A failing calibration run lands in `calibration_errors` (not
+/// `baseline_errors`) and makes the plan undecidable, not a violation.
 #[test]
-fn failing_calibration_is_a_baseline_error() {
+fn failing_calibration_is_a_calibration_error() {
     let calls = Arc::new(AtomicUsize::new(0));
     let report = explore_observed(&immediate(), Expect::Atomic, move |ctx: Ctx| {
         let calls = calls.clone();
@@ -221,9 +222,19 @@ fn failing_calibration_is_a_baseline_error() {
             Ok(1u32)
         }
     });
-    let errors = report.baseline_errors.join("\n");
+    assert!(report.baseline_errors.is_empty(), "{report}");
+    let errors = report.calibration_errors.join("\n");
     assert!(errors.contains("calibration pre"), "{report}");
     assert!(errors.contains("calibration boom"), "{report}");
+    assert_eq!(report.unknown().count(), 1, "{report}");
+    assert!(
+        report
+            .coverage_gaps()
+            .iter()
+            .any(|gap| gap.contains("calibration")),
+        "{report}"
+    );
+    assert!(!report.is_clean_within_coverage(), "{report}");
 }
 
 /// A plan with several cuts calibrates "all skipped" as `pre` and "none

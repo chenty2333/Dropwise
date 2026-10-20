@@ -9,6 +9,31 @@ context* allows? For example, a received message must be delivered, requeued or
 explicitly abandoned; a connection may be closed after an interrupted request
 but not reused as if it were at a message boundary.
 
+## Start here
+
+This checkout is not published on crates.io. Add it as a development dependency
+by path or git, then write one target operation, one survivor and one
+independent observation:
+
+```toml
+[dev-dependencies]
+dropwise = { path = "../Dropwise" }   # or: { git = "https://github.com/chenty2333/Dropwise" }
+```
+
+```sh
+cargo run --example quickstart       # cancellable worker loop, buggy + fixed
+cargo run --example direct_handle    # handle outside the target future
+cargo run --example pooled_handoff   # one-connection pool handed to the next user
+cargo run --example limits           # unknown calibration, no Pending, truncation
+cargo test                           # library, integration and doctests
+```
+
+All examples are in-process teaching models with no external service. The
+[user guide](docs/using-dropwise.md) covers the dependency, the direct-handle and
+pooled shapes, per-run reset, the `Expect` contract, report signals and plan
+replay. You do not need the research trees to use the crate. The crate supports
+Rust 1.88 and later.
+
 ## Usage
 
 `cargo run --example quickstart` is the same shape as below, runnable, with the
@@ -89,10 +114,19 @@ than counted as passes; `assert_cancel_correct` fails on them.
   whose program keeps polling the losing future cannot be skipped for `pre`: that
   calibration times out and is reported as a calibration failure. The
   contract is declared by the scenario author, never inferred. Calibration is
-  computed on demand and cached by target set and gap assignment; a failed calibration
-  run is a `baseline_error`, not a panic. Equal `pre`/`post` observations add a
-  `Report::notes` entry: that observation can see contamination, not whether the
-  operation happened.
+  computed on demand and cached by target set and gap assignment; a failed
+  calibration run is a `Report::calibration_errors` entry (not a baseline error
+  and not a panic). Equal `pre`/`post` observations add a `Report::notes` entry:
+  that observation can see contamination, not whether the operation happened.
+- **Plan replay.** Every `Trial` records its cancellation plan; `Trial::replay_plan`
+  returns the value to pass to `replay` or `replay_observed`. Replay reattempts
+  exactly that plan (cuts, race timing, gap substitutions, repeated-site flag)
+  and re-runs the baseline, contract, calibration, settling and coverage checks.
+  Empty, calibration-only, duplicated/unsorted, repeated-site-with-several-cuts
+  or over-budget plans are rejected with `ReplayError`; a gap assignment the
+  scenario no longer registers is rejected too (`UnappliedGap`), not silently
+  replaced by a default. Real-I/O replays are attempts, not deterministic
+  replays, and report `Unrealized` when the boundary moved.
 - **Repeated cancellation at one call site.** `Config::repeat_at_site` adds, for
   each single cut, a plan that also cancels every later target created at the
   same call site at its own `after_pending`-th `Pending`. `Trial::cancelled`
@@ -102,11 +136,14 @@ than counted as passes; `assert_cancel_correct` fails on them.
 - **Schedulable gaps.** `Ctx::gap(default)` returns a future for the wait before
   a shared object is reused, using `Gap::{Now, Yield(n), Sleep(d)}`. The scenario
   passes what it does in production; `Config::gap_choices` substitutes each
-  choice at each gap site (numbered in `Ctx::gap` call order), so the
-  exploration covers both "the reply arrived first" and "it did not". The
-  assignment is recorded in `Trial::gaps` and included in the calibration cache
-  key. A fake-server task given a `Ctx` clone can call `ctx.gap` too, so its
-  reply delay is part of the explored assignment as well.
+  choice at each gap site of a **single-cut** plan (numbered in `Ctx::gap` call
+  order), so the exploration covers both "the reply arrived first" and "it did
+  not". The assignment is recorded in `Trial::gaps` and included in the
+  calibration cache key. A fake-server task given a `Ctx` clone can call
+  `ctx.gap` too, so its reply delay is part of the explored assignment as well.
+  Multi-cut plans are not expanded with gap choices; `replay` does accept a
+  manually supplied plan that has both (see `Plan`), and repeated-site plans
+  have one cut and can carry a gap. Repeated-site plus several cuts is rejected.
 - **Residual bytes (`net` feature, Linux).** `dropwise::net::Proxy` listens on
   `127.0.0.1` only, forwards to one upstream, and counts bytes in both
   directions per client connection. `Proxy::residue()` reports how many bytes
@@ -127,15 +164,23 @@ A run can come back without a violation for reasons that are not success. The
 |---|---|
 | `baseline_errors` | the *uncancelled* run already fails or leaks: fix that before reading the trials |
 | `violations()` | a plan found a problem: the invariant failed, or an `Obligation` was dropped unresolved or left outstanding |
+| `calibration_errors` | a calibration run failed, leaked or produced no observation, so the affected plan could not be judged |
+| `unknown()` | a calibration side's two samples disagreed (or a side was absent), so `explore_observed` could not judge that plan; not a violation |
 | `unrealized()` | a planned `Pending` boundary was never reached, so that plan tested nothing |
 | `unsettled()`, `!baseline_settled` | `Settle::watchdog` cut the observation window short: late effects may be missing, so a clean result is inconclusive |
-| `!exhaustive` | `max_runs` did not cover the frontier, or the scenario marked no target at all |
-| `unknown()` | a calibration side's two samples disagreed, so `explore_observed` could not judge that plan; not a violation, but `assert_observed` fails |
+| `truncated` | `max_runs` left plans unrun (either stopped the search or skipped an unqueueable subtree) |
+| `!exhaustive` | the search did not cover every generated plan within the configured limits |
+| no trials with `baseline_targets > 0` | a target was marked but never returned `Pending`: no cancellation plan was generated |
+| `coverage_gaps()` | the coverage/decidability gaps above, as text (baseline failures and violations are separate signals) |
 | `notes` | non-degenerate hints, e.g. this plan's `pre` and `post` observations are equal, so the observation cannot tell whether the operation happened |
 | `is_clean()` | no baseline error or trial violation was *observed* — does not imply realization, settling or exhaustive exploration |
+| `is_clean_within_coverage()` | clean and no coverage gaps: the strongest conclusion this report supports |
 
-`assert_cancel_correct` requires all of them: clean, exhaustive, settled, realized.
-`assert_observed` additionally requires that no plan was left `Unknown`.
+`assert_cancel_correct` and `assert_observed` use
+`is_clean_within_coverage()`: no violation, baseline or calibration failure,
+unknown verdict, unrealized/unsettled plan, truncated search or missing
+cancellation point. `diagnostics()` prints every trial's plan, sites, outcomes,
+gaps, verdict and observation/calibration comparison.
 
 ### What is and is not guaranteed
 
@@ -144,7 +189,9 @@ A run can come back without a violation for reasons that are not success. The
   immediately are never boundaries. Unmarked futures dropped inside
   combinators are not enumerated.
 - `exhaustive` means every plan within the configured limits was run for this
-  scenario's input and schedule. It is not coverage of all inputs, schedules or
+  scenario's input and schedule. It can be true for a scenario whose marked
+  targets never returned `Pending` (no plan exists); check `coverage_gaps()` or
+  `is_clean_within_coverage()`. It is not coverage of all inputs, schedules or
   source-level cancellation points.
 - `Flavor::CurrentThread` pauses Tokio time: timers and task scheduling are
   reproducible. Real I/O, `std::time`, the blocking pool and the OS scheduler
@@ -160,14 +207,22 @@ late completions) and `tests/explorer.rs`.
 ## Development
 
 ```sh
-cargo run --example quickstart   # the usage shape above, runnable end to end
-cargo test                       # harness tests
-cargo test --features net        # optional proxy/residue tests (Linux)
-cargo clippy --all-targets
+cargo run --example quickstart       # the usage shape above, end to end
+cargo run --example direct_handle    # long-lived handle outside the target
+cargo run --example pooled_handoff   # pool return path and next borrower
+cargo run --example limits           # inconclusive results and coverage gaps
+cargo test                           # library, integration and doctests
+cargo test --features net            # optional proxy/residue tests (Linux)
+cargo clippy --locked --all-targets -- -D warnings
 ```
 
-Core CI runs the tests, Clippy, API documentation build and quickstart on stable
-Rust. It does not run the separate research experiments or claim their results.
+The crate requires Rust 1.88, verified with `cargo +1.88.0 check --locked` and
+the test suite. The default feature set needs no network; `net` is optional and
+its residue inspection is Linux-only.
+
+Core CI runs the tests (including the `net` feature), Clippy, the API
+documentation build and the four in-process examples on stable Rust. It does not
+run the separate research experiments or claim their results.
 Formatting of the root crate is gated too: CI runs
 `cargo +stable fmt --check --package dropwise`, which covers `src/`, `tests/` and
 `examples/` only. The separate research crates under `prospective/`, `repro/`
@@ -176,6 +231,13 @@ and `research/` keep their own formatting and are not checked by Core CI.
 The root crate is the library plus its tests and examples: `cargo test` needs a
 Rust toolchain and nothing else — no upstream checkouts, no services, every
 scenario in-process on `tokio`.
+
+The package manifest uses an explicit `include` list (library, README, the public
+docs, examples and tests); the research/prospective/repro trees, logs and
+private notes cannot enter a package. Run `cargo package --list` to inspect the
+result. **No license is declared yet**, so this checkout is not ready for a
+public release; the owner must choose a license first. Everything else needed to
+build and consume the package independently is present.
 
 The research halves are separate crates and documents, and are **not** part of
 that command:

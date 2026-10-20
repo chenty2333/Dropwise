@@ -37,3 +37,12 @@ jobs:
         run: cargo +stable doc --locked --no-deps
       - name: Run quickstart
         run: timeout 60s cargo +stable run --locked --example quickstart
+      - name: Run direct, pooled and limits examples
+        run: |
+          for example in direct_handle pooled_handoff limits; do
+            timeout 60s cargo +stable run --locked --example "$example"
+          done
+      - name: Test and lint the optional network feature
+        run: |
+          timeout 180s cargo +stable test --locked --features net
+          cargo +stable clippy --locked --all-targets --features net -- -D warnings

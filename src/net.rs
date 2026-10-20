@@ -168,6 +168,23 @@ impl Proxy {
             ))
         }
     }
+
+    /// The largest [`Proxy::residue`] value over all accepted client
+    /// connections, or 0 when no connection has unread bytes or none was
+    /// accepted.
+    ///
+    /// Most scenarios only need one number for "how many unread bytes did the
+    /// cancelled exchange leave behind". The same limits as [`Proxy::residue`]
+    /// apply; in particular, call it only while the client is idle and the peer
+    /// has stopped sending.
+    pub fn max_residue(&self) -> io::Result<usize> {
+        Ok(self
+            .residue()?
+            .into_iter()
+            .map(|entry| entry.bytes)
+            .max()
+            .unwrap_or(0))
+    }
 }
 
 impl Drop for Proxy {
