@@ -1116,6 +1116,26 @@ COMMIT 已被 server 处理，caller 的 future 被 drop，observer 看到
 “clean”与“取消后可安全假设回滚”区分开了。旧 probe 仍保留，新的 ladder
 文件只追加 supersede 指针。
 
+### 12.11 A 线收口：Rust 主名单逐族状态
+
+这张表只汇总“有没有真实接入/阶梯/对照”，不把不同版本的执行次数相加。
+
+| 族 | 复用模式 | 本轮/已有证据 | 状态 |
+|---|---|---|---|
+| bolt-client + bb8-bolt | pooled + direct | round 2 四层；pooled B2/B3/M1 有 2/6 级违规；bb8 `is_valid` 修复对照 | 已完成；旧结果 |
+| async-imap | direct | round 1/2 四层；B2 flag duplication、B3/M1 append 错误；APPEND continuation patch | 已完成；旧结果 |
+| async-smtp | direct | round 1/2 四层；6/8 cancellation plans 违规（354/timeout），observer 证明邮件未丢；dependency guard patch | 已完成；旧结果 |
+| orientdb-client | pool + held session | 四层 + generated：0/120 main、0/124 generated；**2 条物理流** | 弱阴性；未 clean |
+| skytable | pool + direct | 原版 42/72；修复 pooled 0/48、direct 18/24 fail-closed；§12.4 | **有 patch contrast 的候选** |
+| tokio-modbus | direct | B1 0/2、B2/B3/M1 2/2；stale txid；§12.3 | 候选；无 patch |
+| async-pop | direct | B1 0/8、B2 2/8、B3 6/8；M1 2 clean + 6 unresolved；§12.3 | 部分候选；无 patch |
+| gel-tokio | pooled/single（无 public direct） | 96 cut trials 0；M1 Pre21/Post3；§12.10 | 阴性；单模式 |
+| http-client H1Client | pooled（async-std） | **未执行**：async-std runtime 不能进现有 Tokio ladder；不把 hyper_client 冒充 H1Client | 运行时边界排除；覆盖缺口 |
+
+Gel 的“无 direct handle”和 http-client 的“运行时边界”都是**版本/架构限制**，
+不是阴性结果。A 线可执行的主名单到此收口；http-client 若要覆盖，需要
+单独的 async-std bridge 或把 `hyper_client` 作为另一个 family 重新立项。
+
 ## 附录 A：关键文件
 
 - 预测：[ROUND3-PREDICTIONS.md](ROUND3-PREDICTIONS.md)
