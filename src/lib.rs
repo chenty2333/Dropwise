@@ -94,6 +94,7 @@
 //! toolchain).
 
 mod explore;
+pub mod fields;
 pub mod models;
 #[cfg(feature = "net")]
 pub mod net;
@@ -102,7 +103,12 @@ pub mod support;
 
 pub use explore::{
     Config, Ctx, Cut, CutOutcome, Expect, Flavor, Gap, GapWait, Plan, Preempt, Race, Raced,
-    ReplayError, Report, Settle, Target, Trial, Verdict, assert_cancel_correct, assert_observed,
-    explore, explore_observed, replay, replay_observed,
+    ReplayError, Report, Settle, Target, Trial, Verdict, assert_cancel_correct, assert_fields,
+    assert_observed, explore, explore_fields, explore_observed, replay, replay_fields,
+    replay_observed,
+};
+pub use fields::{
+    Field, FieldContract, FieldEvaluation, FieldJudgment, FieldKind, FieldStatus, Invariant,
+    InvariantEvaluation, InvariantResult, Observation, Outcome, Value,
 };
 pub use obligation::{Leak, LeakKind, Obligation};

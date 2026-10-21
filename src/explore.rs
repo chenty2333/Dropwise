@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::fmt;
 use std::future::Future;
 use std::panic::Location;
@@ -8,6 +8,7 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::task::{Context, Poll, Wake, Waker};
 use std::time::Duration;
 
+use crate::fields::{FieldContract, FieldJudgment, Observation};
 use crate::obligation::{CurrentLedger, Leak, Ledger, set_current};
 
 /// When the competing branch wins, measured from the moment the target returns
@@ -937,6 +938,11 @@ pub struct Trial {
     /// `PartialEq`; this text is never used as the oracle. `None` when the
     /// scenario produced no observation or no calibration was computed.
     pub comparison: Option<String>,
+    /// Per-field judgment, when the run was started by
+    /// [`explore_fields`] or [`replay_fields`]. Definite field violations make
+    /// [`Trial::is_violation`] true; field coverage gaps are reported by
+    /// [`Report::field_coverage_gaps`] and [`Report::coverage_gaps`].
+    pub field_judgment: Option<FieldJudgment>,
     pub invariant: Result<(), String>,
     pub leaks: Vec<Leak>,
     /// False if the settle phase was cut short by the watchdog: late effects
@@ -946,7 +952,12 @@ pub struct Trial {
 
 impl Trial {
     pub fn is_violation(&self) -> bool {
-        self.invariant.is_err() || !self.leaks.is_empty()
+        self.invariant.is_err()
+            || !self.leaks.is_empty()
+            || self
+                .field_judgment
+                .as_ref()
+                .is_some_and(FieldJudgment::has_violation)
     }
 
     pub fn is_realized(&self) -> bool {
@@ -999,6 +1010,11 @@ pub struct Report {
     /// Non-degenerate hints, e.g. a calibration whose `pre` and `post` are
     /// equal. Informational only; they do not affect [`Report::is_clean`].
     pub notes: Vec<String>,
+    /// Field-contract problems: a malformed contract, a declared field that
+    /// the baseline observation never produced, or (for a strict contract) an
+    /// observed field that was not declared. They are coverage gaps, not trial
+    /// violations.
+    pub contract_errors: Vec<String>,
 }
 
 impl Report {
@@ -1043,7 +1059,10 @@ impl Report {
     /// [`Report::baseline_errors`].
     pub fn coverage_gaps(&self) -> Vec<String> {
         let mut gaps = Vec::new();
-        if self.baseline_targets == 0 && !self.truncated {
+        for error in &self.contract_errors {
+            gaps.push(format!("contract/coverage: {error}"));
+        }
+        if self.baseline_targets == 0 && !self.truncated && self.contract_errors.is_empty() {
             gaps.push(
                 "no target was marked with Ctx::target/Ctx::race: nothing was explored".to_string(),
             );
@@ -1089,7 +1108,26 @@ impl Report {
         for error in &self.calibration_errors {
             gaps.push(format!("calibration failed: {error}"));
         }
+        gaps.extend(self.field_coverage_gaps());
         gaps
+    }
+
+    /// Unique field-coverage gaps across all trials, with the number of plans
+    /// affected. A field that is uncovered, degenerate or unstable is not a
+    /// pass; it means this scenario did not decide that field.
+    pub fn field_coverage_gaps(&self) -> Vec<String> {
+        let mut counts: BTreeMap<String, usize> = BTreeMap::new();
+        for trial in &self.trials {
+            if let Some(judgment) = &trial.field_judgment {
+                for gap in judgment.gaps() {
+                    *counts.entry(gap).or_insert(0) += 1;
+                }
+            }
+        }
+        counts
+            .into_iter()
+            .map(|(gap, plans)| format!("{plans} plan(s): field coverage: {gap}"))
+            .collect()
     }
 
     /// `is_clean()` plus a complete, decidable observation within the configured
@@ -1141,6 +1179,9 @@ impl Report {
         for error in &self.baseline_errors {
             let _ = writeln!(out, "baseline error: {error}");
         }
+        for error in &self.contract_errors {
+            let _ = writeln!(out, "contract/coverage error: {error}");
+        }
         for error in &self.calibration_errors {
             let _ = writeln!(out, "calibration error: {error}");
         }
@@ -1188,6 +1229,10 @@ impl Report {
             }
             for leak in &trial.leaks {
                 let _ = writeln!(out, "  leak: {leak}");
+            }
+            if let Some(judgment) = &trial.field_judgment {
+                let _ = writeln!(out, "  fields:");
+                out.push_str(&judgment.render());
             }
         }
         for note in &self.notes {
@@ -1246,12 +1291,12 @@ impl fmt::Display for Report {
                 " (NOT exhaustive)"
             }
         )?;
-        if self.baseline_targets == 0 {
+        if self.baseline_targets == 0 && self.contract_errors.is_empty() {
             writeln!(
                 f,
                 "  the uncancelled run reached no target: nothing was explored (mark ctx.target/ctx.race)"
             )?;
-        } else if self.trials.is_empty() {
+        } else if self.trials.is_empty() && self.contract_errors.is_empty() {
             writeln!(
                 f,
                 "  no marked target returned Pending: no cancellation plan was generated (the cancellation point is absent or was not reached)"
@@ -1259,6 +1304,12 @@ impl fmt::Display for Report {
         }
         for e in &self.baseline_errors {
             writeln!(f, "  baseline (no cancellation): {e}")?;
+        }
+        if !self.contract_errors.is_empty() {
+            writeln!(f, "  contract/coverage problem(s):")?;
+            for error in &self.contract_errors {
+                writeln!(f, "    {error}")?;
+            }
         }
         if !self.calibration_errors.is_empty() {
             writeln!(f, "  calibration problem(s):")?;
@@ -1270,6 +1321,11 @@ impl fmt::Display for Report {
             writeln!(f, "  {}:", describe(t))?;
             if let Err(e) = &t.invariant {
                 writeln!(f, "    invariant violated: {e}")?;
+            }
+            if let Some(judgment) = &t.field_judgment {
+                for violation in judgment.violations() {
+                    writeln!(f, "    field: {violation}")?;
+                }
             }
             for l in &t.leaks {
                 writeln!(f, "    {l}")?;
@@ -1337,6 +1393,13 @@ impl fmt::Display for Report {
         }
         for note in &self.notes {
             writeln!(f, "  note: {note}")?;
+        }
+        let field_gaps = self.field_coverage_gaps();
+        if !field_gaps.is_empty() {
+            writeln!(f, "  field coverage incomplete:")?;
+            for gap in &field_gaps {
+                writeln!(f, "    {gap}")?;
+            }
         }
         let gaps = self.coverage_gaps();
         if !self.baseline_errors.is_empty() {
@@ -1611,6 +1674,7 @@ fn trial_from(plan: &Plan, res: &RunResult) -> Trial {
         gaps: plan.gaps.clone(),
         verdict: None,
         comparison: None,
+        field_judgment: None,
         invariant: res.invariant.clone(),
         leaks: res.leaks.clone(),
         settled: res.settled,
@@ -1731,6 +1795,8 @@ struct Judgement {
     violation: Option<String>,
     /// Human-readable observation/calibration comparison, for diagnosis only.
     comparison: Option<String>,
+    /// Per-field judgment for [`explore_fields`].
+    fields: Option<FieldJudgment>,
 }
 
 /// The breadth-first plan search shared by [`explore`] and [`explore_observed`].
@@ -1755,6 +1821,7 @@ fn search(
             let mut trial = trial_from(&plan, &res);
             trial.verdict = judgement.verdict;
             trial.comparison = judgement.comparison;
+            trial.field_judgment = judgement.fields;
             if let Some(message) = judgement.violation {
                 trial.invariant = match trial.invariant {
                     Ok(()) => Err(message),
@@ -1945,6 +2012,49 @@ impl<T: fmt::Debug> Side<T> {
     }
 }
 
+fn calibration_samples<T, S, Fut>(
+    config: &Config,
+    scenario: &mut S,
+    key: &CalibrationKey,
+    errors: &mut Vec<String>,
+) -> Option<Vec<T>>
+where
+    T: PartialEq + fmt::Debug,
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    let mut samples = Vec::new();
+    for _ in 0..2 {
+        let (res, observed) = run_observed(config, scenario, key.plan());
+        if let Err(e) = &res.invariant {
+            errors.push(format!("{} failed: {e}", key.label()));
+            return None;
+        }
+        if !res.leaks.is_empty() {
+            let leaks = res
+                .leaks
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join("; ");
+            errors.push(format!("{} leaked: {leaks}", key.label()));
+            return None;
+        }
+        match observed {
+            Some(Ok(value)) => samples.push(value),
+            Some(Err(e)) => {
+                errors.push(format!("{} failed: {e}", key.label()));
+                return None;
+            }
+            None => {
+                errors.push(format!("{} produced no observation", key.label()));
+                return None;
+            }
+        }
+    }
+    Some(samples)
+}
+
 fn calibration_side<T, S, Fut>(
     config: &Config,
     scenario: &mut S,
@@ -1956,36 +2066,10 @@ where
     S: FnMut(Ctx) -> Fut,
     Fut: Future<Output = Result<T, String>>,
 {
-    let mut samples = Vec::new();
-    for _ in 0..2 {
-        let (res, observed) = run_observed(config, scenario, key.plan());
-        if let Err(e) = &res.invariant {
-            errors.push(format!("{} failed: {e}", key.label()));
-            return Side::Absent;
-        }
-        if !res.leaks.is_empty() {
-            let leaks = res
-                .leaks
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join("; ");
-            errors.push(format!("{} leaked: {leaks}", key.label()));
-            return Side::Absent;
-        }
-        match observed {
-            Some(Ok(value)) => samples.push(value),
-            Some(Err(e)) => {
-                errors.push(format!("{} failed: {e}", key.label()));
-                return Side::Absent;
-            }
-            None => {
-                errors.push(format!("{} produced no observation", key.label()));
-                return Side::Absent;
-            }
-        }
+    match calibration_samples(config, scenario, key, errors) {
+        Some(samples) => Side::from_samples(samples),
+        None => Side::Absent,
     }
-    Side::from_samples(samples)
 }
 
 fn ensure_calibrated<T, S, Fut>(
@@ -2195,8 +2279,179 @@ where
             verdict: Some(verdict),
             violation,
             comparison: Some(comparison),
+            fields: None,
         }
     }
+}
+
+/// Two samples of one calibration side for field judging. `None` means the
+/// side failed (the reason was recorded in `calibration_errors`).
+type FieldCache = HashMap<CalibrationKey, Option<Vec<Observation>>>;
+
+fn ensure_field_calibrated<S, Fut>(
+    config: &Config,
+    scenario: &mut S,
+    cache: &mut FieldCache,
+    key: &CalibrationKey,
+    errors: &mut Vec<String>,
+) where
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<Observation, String>>,
+{
+    if cache.contains_key(key) {
+        return;
+    }
+    let samples = calibration_samples(config, scenario, key, errors);
+    cache.insert(key.clone(), samples);
+}
+
+/// Like [`explore_observed`], but judges a named observation field by field.
+///
+/// The scenario returns a [`Observation`] and the caller declares a
+/// [`FieldContract`].  For every plan the same `pre` and `post` calibration is
+/// sampled twice (the `post` side lets every target complete; the `pre` side
+/// drops every cut target before its first poll).  Each declared field is then
+/// compared with its own calibration:
+///
+/// * an **effect** field must differ between `pre` and `post`; the trial must
+///   equal one of them according to the field's [`Expect`], and equality with
+///   both is [`FieldStatus::Degenerate`] (the cut did not discriminate it);
+/// * a **state** field must agree between the two calibrations and hold in the
+///   trial;
+/// * cross-field [`Invariant`]s relate effect outcomes (for example, all or
+///   none of a set, exactly one, or one effect implies another).
+///
+/// Unlike [`explore_observed`], no mixed calibration runs are needed for a
+/// multi-cut plan: a mixture is expressible per field, because each field
+/// chooses its own `pre`/`post` outcome.  A field whose trial value is neither
+/// calibration is [`FieldStatus::Neither`] and is a definite violation; a field
+/// that is missing, unstable or degenerate is a coverage gap and never a pass.
+///
+/// The contract is validated before any run.  Invalid contracts, fields missing
+/// from the baseline observation, and (with [`FieldContract::strict`])
+/// undeclared observed fields are reported in [`Report::contract_errors`] and
+/// in [`Report::coverage_gaps`], so [`Report::is_clean_within_coverage`] fails
+/// on them.
+pub fn explore_fields<S, Fut>(config: &Config, contract: FieldContract, mut scenario: S) -> Report
+where
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<Observation, String>>,
+{
+    let contract_errors = contract.validate();
+    if !contract_errors.is_empty() {
+        return Report {
+            contract_errors,
+            ..Report::default()
+        };
+    }
+    let mut cache: FieldCache = HashMap::new();
+    search(config, |plan, report| {
+        let (res, observed) = run_observed(config, &mut scenario, plan.clone());
+        let mut judgement = Judgement::default();
+        if plan.cuts.is_empty() {
+            if let Some(Ok(baseline)) = &observed {
+                report
+                    .contract_errors
+                    .extend(contract.check_baseline(baseline));
+            }
+        } else if let Some(Ok(actual)) = &observed {
+            let targets = calibration_targets(plan, &res);
+            if !targets.is_empty() {
+                let pre_key = CalibrationKey::new(&targets, vec![true; targets.len()], &plan.gaps);
+                let post_key =
+                    CalibrationKey::new(&targets, vec![false; targets.len()], &plan.gaps);
+                ensure_field_calibrated(
+                    config,
+                    &mut scenario,
+                    &mut cache,
+                    &pre_key,
+                    &mut report.calibration_errors,
+                );
+                ensure_field_calibrated(
+                    config,
+                    &mut scenario,
+                    &mut cache,
+                    &post_key,
+                    &mut report.calibration_errors,
+                );
+                let pre = cache.get(&pre_key).and_then(Option::as_deref);
+                let post = cache.get(&post_key).and_then(Option::as_deref);
+                if let (Some(pre), Some(post)) = (pre, post) {
+                    judgement.fields = Some(contract.judge(pre, post, actual));
+                }
+            }
+        }
+        (res, judgement)
+    })
+}
+
+/// Re-run one cancellation plan with [`explore_fields`]'s scenario shape,
+/// including the same two-sample field calibration and the same contract.
+///
+/// The plan is validated exactly like [`replay`].  A contract that fails static
+/// validation is returned as a report with [`Report::contract_errors`] rather
+/// than a plan error: the plan itself may still be well formed.
+pub fn replay_fields<S, Fut>(
+    config: &Config,
+    contract: FieldContract,
+    plan: &Plan,
+    mut scenario: S,
+) -> Result<Report, ReplayError>
+where
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<Observation, String>>,
+{
+    let contract_errors = contract.validate();
+    if !contract_errors.is_empty() {
+        return Ok(Report {
+            contract_errors,
+            ..Report::default()
+        });
+    }
+    validate_plan(config, plan)?;
+    let (baseline, baseline_observed) = run_observed(config, &mut scenario, Plan::default());
+    let (res, observed) = run_observed(config, &mut scenario, plan.clone());
+    check_applied_gaps(plan, &res)?;
+    let mut report = Report {
+        exhaustive: true,
+        ..Report::default()
+    };
+    record_baseline(&mut report, &baseline);
+    if let Some(Ok(baseline)) = &baseline_observed {
+        report
+            .contract_errors
+            .extend(contract.check_baseline(baseline));
+    }
+    let mut trial = trial_from(plan, &res);
+    if let Some(Ok(actual)) = &observed {
+        let targets = calibration_targets(plan, &res);
+        if !targets.is_empty() {
+            let mut cache: FieldCache = HashMap::new();
+            let pre_key = CalibrationKey::new(&targets, vec![true; targets.len()], &plan.gaps);
+            let post_key = CalibrationKey::new(&targets, vec![false; targets.len()], &plan.gaps);
+            ensure_field_calibrated(
+                config,
+                &mut scenario,
+                &mut cache,
+                &pre_key,
+                &mut report.calibration_errors,
+            );
+            ensure_field_calibrated(
+                config,
+                &mut scenario,
+                &mut cache,
+                &post_key,
+                &mut report.calibration_errors,
+            );
+            let pre = cache.get(&pre_key).and_then(Option::as_deref);
+            let post = cache.get(&post_key).and_then(Option::as_deref);
+            if let (Some(pre), Some(post)) = (pre, post) {
+                trial.field_judgment = Some(contract.judge(pre, post, actual));
+            }
+        }
+    }
+    report.trials.push(trial);
+    Ok(report)
 }
 
 fn comparison_text<T: fmt::Debug>(
@@ -2426,6 +2681,20 @@ where
     Fut: Future<Output = Result<T, String>>,
 {
     let report = explore_observed(&Config::default(), expect, scenario);
+    assert!(report.is_clean_within_coverage(), "{report}");
+}
+
+/// Like [`explore_fields`] with default config, panicking with the report on
+/// any field or invariant violation, contract problem, uncovered/degenerate/
+/// unstable field, calibration failure, unrealized plan, unsettled run or
+/// incomplete search.
+#[track_caller]
+pub fn assert_fields<S, Fut>(contract: FieldContract, scenario: S)
+where
+    S: FnMut(Ctx) -> Fut,
+    Fut: Future<Output = Result<Observation, String>>,
+{
+    let report = explore_fields(&Config::default(), contract, scenario);
     assert!(report.is_clean_within_coverage(), "{report}");
 }
 
