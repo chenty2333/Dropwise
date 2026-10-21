@@ -461,3 +461,18 @@ Dropwise 根 crate 的 net 测试再次通过。没有残留本次的实验容�
 本轮实际运行输出：IMAP `logs/run.BoHOuF`（依赖测试）、`logs/run.RIqBa8`（真实服务）；
 SMTP `logs/run.k6pHPj`（原版）、`logs/run.6kB1B2`（poison）；
 BOLT `logs/run.fRK0vO`。这些是普通 runner 输出，不是重新生成的历史数据。
+
+
+## 10. 上游提交（2026-10-21，用户授权后）
+
+- async-smtp：[issue #73](https://github.com/chatmail/async-smtp/issues/73)。报告取消后
+  返回 354 / DATA-mode 等待，附无需外部服务的复现和真实服务结果；明确普通 450/550
+  下实验 poison 策略会拒绝本可继续使用的连接，因此未提交该补丁为正式 PR。
+- async-imap：[PR #150](https://github.com/chatmail/async-imap/pull/150)。只修复 APPEND
+  continuation 之前的响应处理，并附六项支持两个运行时的回归测试。保留通知、拒绝
+  本命令提前完成、处理 BYE/EOF；不声称解决旧 continuation 歧义或 SELECT 元数据污染。
+  PR 明确披露 pin-utils 0.1.1 的既有严格构建问题；上游接受/合并另行确认。
+- bb8：[PR #325 补充评论](https://github.com/djc/bb8/pull/325#issuecomment-6309524388)。
+  提供 bb8-bolt/Neo4j 的独立验证、连接丢弃重建计数和重跑结果，没有重复开 issue。
+
+链接创建成功只表示已提交，不代表维护者确认或修复已发布。
