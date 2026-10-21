@@ -5,6 +5,14 @@ were in scope; this fragment covers **psycopg pool + direct, asyncpg pool +
 direct, aiomysql direct** (5 units). aiomysql pool and
 mysql-connector-python were **not run** (timebox); no claim is made about them.
 
+> **Correction (round 3, later same day):** the psycopg/asyncpg **B2/B3 0
+> values below are invalid as evidence** — `_tx_write()` did not propagate
+> failed stages (`dict` without `ok` / `None`), so `level_retry` could not see a
+> real error. Corrected reruns (`logs/run.1HLY38/`) reproduce 0 stage failures
+> but only those logs support it; M1 counts are unchanged. See
+> [RESULTS-FRAGMENT-fixed.md](RESULTS-FRAGMENT-fixed.md). aiomysql is another
+> agent's scope.
+
 ## 1. Versions, images, environment
 
 | item | value |
