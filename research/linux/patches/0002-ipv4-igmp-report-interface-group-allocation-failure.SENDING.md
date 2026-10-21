@@ -1,7 +1,11 @@
 # Sending notes: ipv4: igmp: report interface group allocation failure on join
 
-Status: **local draft, 2026-10-22**.  Not sent, not pushed, no issue or pull
-request.  The patch file is a review draft, not a signed outgoing email.
+Status: **sent to netdev, 2026-10-22**, as `[PATCH net]`. SMTP accepted all
+recipients; the received self-copy has an identical patch body. Message-ID: `<179260356668.911829.6576504063198285556@tychen.cc>`.
+The outgoing mail was generated with `git format-patch` from the signed
+commit in `/home/ava/dropwise-linux-r4`; strict checkpatch passed.
+The adjacent patch remains the original preparation draft. The notes below
+describe preparation; submission does not mean maintainer acceptance.
 
 Patch: `0002-ipv4-igmp-report-interface-group-allocation-failure.patch`
 (`net/ipv4/igmp.c` only, 28 insertions, 9 deletions).

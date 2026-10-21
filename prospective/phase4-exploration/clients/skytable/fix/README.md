@@ -97,4 +97,6 @@ patch -p1 < .../fix/drop-poison.patch
   the client is 0.8.12.
 - Upstream: `client-rust` v0.8.12 is still the latest tag (2025-02-16) and no
   newer master commit or matching issue/PR was found when checked; no upstream
-  contact was made.  The PR draft is `PR-DRAFT.md`.
+  contact had been made at preparation time. Submitted on 2026-10-22 as
+  [PR #37](https://github.com/skytable/client-rust/pull/37); the preparation
+  draft is `PR-DRAFT.md`.

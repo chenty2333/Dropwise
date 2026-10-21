@@ -1,8 +1,9 @@
 # PR draft: fail closed when a query or pipeline future is cancelled
 
-Status: **local draft, 2026-10-22.  Not sent, no remote PR, no upstream
-contact.**  This text is for review; the sender must add their own
-`Signed-off-by`.
+Status: **submitted, 2026-10-22**: https://github.com/skytable/client-rust/pull/37.
+The upstream branch contains one signed commit. The final PR description is
+shorter than the preparation draft below. On the upstream checkout, all 17
+library tests, all-target checks, formatting and diff checks passed.
 
 ## Summary
 
