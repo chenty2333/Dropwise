@@ -48,7 +48,7 @@ units (`grep baseline_error` in `run.1HLY38/*fixed.txt` is empty).
 | asyncpg direct | B3 | 3 | 9 | 0 | 0 | 0 | – |
 | asyncpg direct | M1 | 3 | 9 | **9** | 0 | 0 | Neither 9 |
 
-214 ladder trials; **21 violations, 21 executions of the same two root causes**
+228 ladder trials; **21 violations, 21 executions of the same two root causes**
 (psycopg direct handle, asyncpg direct handle). Pool modes contribute 0.
 
 ### Old vs new delta
