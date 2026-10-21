@@ -1,0 +1,839 @@
+# 第三轮结果：共性作为“发现启发式”的检验
+
+状态：2026-10-21，未冻结探索；不是 Phase 4 数据，不改写 Phase 4 表。
+问题：我们总结出的共性，能否**事先**指导未知问题的发现，而不仅仅解释已经知道的案例？
+
+本文件是主报告；预测原文在
+[ROUND3-PREDICTIONS.md](ROUND3-PREDICTIONS.md)，硬规则在
+[ROUND3-BRIEF.md](ROUND3-BRIEF.md)。所有结论按“确认 / 已知 / 契约外 /
+阴性 / 未覆盖”分开，不把零结果写成安全证明。
+
+---
+
+## 0. 直接回答（先给结论，后给证据）
+
+**能，但只能到“指导往哪看、怎么切、观察什么”这一层；不能到“预测具体缺陷”这一层。**
+
+- 共性告诉我们：在**会话建立 / 检出 / 第一次写之后**下刀，用**后继者的具体返回值 +
+  独立观察者 + 协议/资源状态**去判定，而不是只看 `Ok`。这一轮它确实把
+  我们带到了五个新的事实：
+  1. **三个 direct handle 家族**：psycopg direct **M1 12/18**、asyncpg direct
+     **M1 9/9**、aiomysql direct **M1 9/9**，三者的 B1/B2/B3 都是 0。后继
+     `write=Ok`、`own=7`，独立观察者却看到空表；asyncpg 的
+     `is_in_transaction()` 在 pending#1 还报告 `False`（BEGIN 还在客户端
+     队列里），aiomysql 则是 sticky `InterfaceError`（fail-fast）。这是
+     “返回值/状态报告与实际效果不一致”的干净样本，且只有 M1 能看到。
+  2. **skytable**：pool + direct，**35/72 ladder plans**、generated **84/120**
+     违规；pooled `#0@1:Immediate` 的 survivor `write=Ok`、`own=Err("row not
+     found")`、`visible=Ok(7)`，server row 正确；pool 仍返回同一条 desynced
+     连接（`connections_created=1`）。这是**预测命中**（第 7 节）的 Rust
+     新客户端实例，仍是 response-association 族。
+  3. **aiosmtplib**：B1 0/12，B2/B3/M1 各 12/12；取消后的 DATA 留下一个
+     `250`，下一次 DATA 把它当成“不是 354”，抛 `SMTPDataError: (250,'OK')`；
+     3/12 直接 `TimeoutError`，NOOP 也卡住。它与第二轮 async-smtp 同族，
+     是新客户端实例，不是新机制类别；但没有找到 aiosmtplib 的上游报告。
+  4. **httpx**：B1 0/18，B2/B3/M1 各 3/18；取消后连接停在 `ACTIVE`，
+     `max_connections=1` 时同一 client 的 retry 根本不到服务器，2 s 后
+     `TimeoutError`；`max_connections=2` 时新连接可用，旧连接仍卡住。
+     这是**已知上游问题**（httpx #2821 / httpcore #726），不是本轮新发现，
+     但它是共性跨家族迁移的确定性复现；源码定位到
+     `httpcore.PoolByteStream.aclose()` 的 shield 窗口。
+  5. **Linux IPv4 multicast join**：`setsockopt(IP_ADD_MEMBERSHIP)` 返回 0，
+     设备层组却没加入；v6.19 与 v7.3-rc2 都可复现，5/5 rep 稳定。
+     这是**新的独立根因类别**（`____ip_mc_inc_group()` 的 `kzalloc` 失败被
+     `void` 辅助函数吞掉），而且**与取消无关**——它是纯 success-without-effect。
+- 共性**没有**告诉我们具体会在哪个函数、哪一行、哪个分配点出问题。
+  Linux 的这个新 bug 不是预测命中的，是**按“成功但没效果 / 可失败子步骤被忽略”
+  这个广义形状做源码审计**找到的；同一批预测里的 mmap/mremap/mprotect 虽然
+  行为命中，却属于契约外；orientdb 预测“likely violation”但 0/120 主阶梯计划；
+  skytable 在**客户端家族**这一层被预测到并命中（35/72），但没有预测到具体是
+  bb8 validation 消费 stale reply。**家族级预测有命中；函数级预测命中率不高。**
+- 因此更准确的说法是：共性是一个**契约设计原则 + 搜索启发式 + 判定 oracle**，
+  不是一个“缺陷位置预测器”。它最有价值的地方不是“猜中下一个 bug”，而是
+  让我们**不再把 `Ok` 当正确**，并且知道要把哪些状态放进观测。
+
+---
+
+## 1. 本轮覆盖了什么
+
+### 1.1 客户端（Rust）
+
+| family | 版本 / 服务 | 模式 | 级别 | 结果 | 状态 |
+|---|---|---|---|---|---|
+| orientdb-client | 0.6.0 / mobc 0.7.3；orientdb 3.0.23 | pool `max_size=1` | B1/B2/B3/M1，3 reps | 30+30+30+30 plans，**0 violations** | 已执行；物理流覆盖有限 |
+| orientdb-client | 同上 | held session | S-B1/S-B2/S-B3/S-M1，3 reps | 6 plans/level，**0 violations** | 已执行 |
+| skytable | 0.8.12 / bb8 0.9.1；skytable 0.8.4 | pool + direct | B1–M1 + generated，3 reps | **35 violations / 72 plans**；pooled B1 0/4、B2 2/4、B3 2–3/4、M1 2–3/4；direct B1 0/2、B2 0–1/2、B3 2/2、M1 2/2；generated 84/120 | **确认的客户端缺陷**；response association 新实例 |
+| gel-tokio | 0.11.0；gel 7.1 | pool `max_concurrency=1` | 仅 3 次 10 ms probe | 3/3：cancel 后 observer `(0,"seed")`，same-client survivor `Ok((7,"survivor"))`，own/observer 一致 | 只算 probe，不算阶梯 |
+| http-client | 6.5.3 | — | — | `H1Client` 需要 async-std/async-h1/deadpool；在 Tokio 下要第二 runtime，按规则排除 | 未执行 |
+
+Rust 侧**新增一个确认的客户端缺陷**：skytable 的 response association
+（见 §3.5）。orientdb 的 0 违规仍是**弱阴性**：`SessionPool` 的
+`max_size=1` 只限制一个逻辑 session；实测 proxy 上稳定有 **2 条物理 TCP
+流**，`ConnectionOptions::pool_size` 没有反映到内部 `Cluster`。因此“没有看到
+stale reply”不能证明“连接被正确重置”——stale reply 可能被另一条流掩盖。
+这一点在 `orientdb/SCENARIO.md` 和 `RESULTS-FRAGMENT.md` 里明确记录。
+
+### 1.2 客户端（Python）
+
+| package | 版本 | 模式 | 级别 | 结果 | 状态 |
+|---|---|---|---|---|---|
+| psycopg | 3.3.6 / psycopg-pool 3.3.3 | pool + direct | B1/B2/B3/M1，3 reps | pool **M1 0/18**（release 时 rollback INTRANS→IDLE，同一 backend pid，正例）；direct **M1 12/18**（#1–#4），B1/B2/B3 0/18；survivor `write=Ok`、`own=7`，observer `rows=[]` | 状态泄漏；B2/B3 的值里有 `INTRANS`，但只有 M1 判 |
+| asyncpg | 0.32.0 | pool + direct | B1/B2/B3/M1，3 reps | pool **M1 0/12**（release 时 reset）；direct **M1 9/9**，B1/B2/B3 **0/9**；#1 是 `is_in_transaction()=False` 的“BEGIN 仍在队列里”，#2 是 `idle in transaction`，#3 是 stale-state-only | 强阳性；#1 比“遗留事务”更强 |
+| aiomysql | 0.3.2 / MariaDB 11.4 | direct | B1/B2/B3/M1，3 reps | B1/B2/B3 **0/9**；M1 **9/9**；survivor `InterfaceError: Cancelled during execution`（sticky），observer `rows=[]` | 新客户端实例；fail-fast，不是静默写 |
+| httpx | 0.28.1 / httpcore 1.0.9 | pool | B1/B2/B3/M1，3 reps | B1 **0/18**；B2 **3/18**；B3 **3/18**；M1 **3/18**；pending#6 retry `TimeoutError` | **已知上游相关**（#2821 / httpcore #726）；本轮源码定位到 `PoolByteStream.aclose` |
+| aiosmtplib | 5.1.3 / GreenMail 2.1.14 | direct | B1/B2/B3/M1，3 reps | B1 **0/12**；B2 **12/12**；B3 **12/12**；M1 **12/12**；9/12 `SMTPDataError: (250,'OK')`，3/12 `TimeoutError` | **同 async-smtp 族的新客户端实例**；未找到 aiosmtplib 上游报告 |
+| aiomysql pool / mysql-connector | — | — | — | 时间窗内未完成 | 未覆盖 |
+| pymongo / neo4j / curl-cffi | — | — | — | 未执行（时间窗） | 未覆盖 |
+
+Python 侧的**新实例**是 asyncpg direct 的“direct handle 未重置”类；
+psycopg direct 是同一类的更早实例，aiomysql direct 是同一族里的
+**fail-fast** 变体（sticky `InterfaceError`，没有静默未提交写）。
+aiosmtplib 是第二轮 async-smtp 的**同族新客户端**（响应关联/desync），
+httpx 是**已知上游相关**的 cancellation cleanup 缺陷。三者都不是全新的
+机制类别；本轮真正新的机制类别只有 Linux multicast。
+
+Python 批次共 **300 trials**（psycopg 72+90，asyncpg 84，aiomysql 36），
+**30 个 violating trials**（12+9+9）——这是执行次数，不是 30 个 bug。
+
+### 1.3 Linux
+
+11 个 target，5 reps，fail-nth 或 signal；`aggregate.csv`：
+
+| target | mech | reps | sites | trials | violations | 结论 |
+|---|---|---:|---:|---:|---:|---|
+| `mmap_fixed_replace` | failnth | 5 | 5 | 5 | **5** | 契约外（MAP_FIXED 破坏性） |
+| `mremap_fixed_dst` | failnth | 5 | 15 | 15 | **5** | 契约外（目标洞） |
+| `mprotect_multi` | failnth | 5 | 16 | 16 | **10** | 契约外（部分 VMA 已改） |
+| `ip_add_membership` | failnth | 5 | 21 | 21 | **5** | **新根因**（成功但设备组未加入） |
+| `tmpfs_setxattr_replace` | failnth | 5 | 15 | 15 | 0 | 阴性 |
+| `tmpfs_rename_exchange` | failnth | 5 | 10 | 10 | 0 | 阴性 |
+| `tmpfs_fallocate` | failnth | 5 | 85 | 85 | 0 | 阴性（17 sites/rep；80 pre + 5 post） |
+| `pipe_set_size` | failnth | 5 | 5 | 5 | 0 | 阴性 |
+| `so_attach_filter` | failnth | 5 | 51 | 51 | 0 | 阴性（43 pre + 8 post） |
+| `semtimedop_eintr` | signal | 5 | 40 | 40 | 0 | 阴性 |
+| `fcntl_setlkw_eintr` | signal | 5 | 40 | 40 | 0 | 阴性 |
+
+`mmap/mremap/mprotect` 的 20 次 violation 是**同一类契约外行为**，不是 20 个
+根因；`ip_add_membership` 的 5 次是**同一个根因**的 5 个 rep。按根因计数时
+不能按 trigger/组合/失败计划数膨胀。
+
+---
+
+## 2. 新确认的根因：IPv4 multicast join 的“成功但没效果”
+
+### 2.1 契约
+
+`setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq))` 返回 0，
+按 `ip(7)` 的语义表示 socket 已加入该组；内核应发送 IGMP 报告并在设备上建立
+组记录。返回 0 但设备层没有组，意味着后续 multicast 收包不会到达该 socket，
+而调用方没有任何错误可查。
+
+### 2.2 代码路径
+
+`net/ipv4/igmp.c`：
+
+```c
+int __ip_mc_join_group(struct sock *sk, struct ip_mreqn *imr, unsigned int mode)
+{
+        ...
+        iml = kzalloc(sizeof(*iml), GFP_KERNEL);
+        if (!iml) return -ENOMEM;
+        ...
+        err = ip_mc_join_group_ssm(sk, iml, mode);
+        if (err) { kfree(iml); return err; }
+        return 0;
+}
+```
+
+`____ip_mc_inc_group()` 是 `void`，内部：
+
+```c
+im = kzalloc(sizeof(*im), GFP_KERNEL);
+if (!im)
+        return;          /* 失败被吞掉 */
+```
+
+`__ip_mc_join_group()` 已经把 `iml` 链入 `inet->mc_list`，随后调用这个
+`void` 辅助函数；`kzalloc` 失败时 socket 级 membership 已经存在，设备级
+`ip_mc_list` 没有建立，syscall 仍返回 0。结果是“socket 认为自己加入了，
+设备没有加入”。
+
+### 2.3 证据
+
+`research/linux/logs/20261021-r4-mass/09-ip_add_membership-rep1.log`：
+
+```text
+TRIAL target=ip_add_membership mech=failnth site=1 ret=-1 errno=105 injected=1 readback=0 verdict=OK_PRE
+  obs=surv_msf=-1;surv_errno=99|obs_msf=-1;obs_errno=99;igmp_group=0
+TRIAL target=ip_add_membership mech=failnth site=2 ret=0 errno=0 injected=1 readback=0 verdict=VIOL_MIXED
+  obs=surv_msf=0;surv_errno=0|obs_msf=0;obs_errno=0;igmp_group=0
+TRIAL target=ip_add_membership mech=failnth site=3 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST
+  obs=surv_msf=0;surv_errno=0|obs_msf=0;obs_errno=0;igmp_group=1
+```
+
+- pre：`IP_MSFILTER` 查询 `surv_msf=-1/errno=99`，`/proc/net/igmp` 无组；
+- post：`surv_msf=0`，`igmp_group=1`；
+- site 2：`ret=0`（成功）、`igmp_group=0`（实际没加入）→ `VIOL_MIXED`；
+- site 1：`ret=-1 errno=105 ENOBUFS`（干净的错误基线）；
+- site 3–5：`ret=0` 且 `igmp_group=1`（后续非致命分配，效果完成）。
+
+5/5 reps 都是 site 2 违规；site 数在 4–5 之间浮动，但违规点稳定。独立
+initramfs 复现（v6.19 与 v7.3-rc2）：
+
+- n=1：`ret=-1 errno=105`，无组（错误基线）；
+- n=2：`ret=0 errno=0`，`/proc/net/igmp` 无 `030201EF`（成功但没效果）；
+- n=3：`ret=0`，组存在（后续分配，效果完成）。
+
+这排除了“harness 的 fail-nth 读回本身有问题”：同一个 target 在 n=1 会
+干净地报错，在 n=3 会干净地成功，只有 n=2 是 success-without-effect。
+
+### 2.4 分类与限制
+
+- **真实契约违反**：返回 0 是“已加入”的承诺；设备层无组是 silent effect loss。
+- **fault-injection-only（本 guest）**：没有 MEMCG、没有内存压力，不能声称
+  真实环境经常触发。它是“注入可达”的缺陷，不是“已经观测到线上故障”的缺陷。
+- **与取消无关**：没有任务取消、没有异步中断；这是纯 success-without-effect。
+  它把共性从“未完成交换”推广到“报告的 result 与共享对象的实际状态不一致”，
+  同时**反驳**了“共性必须涉及取消”的窄版本。
+- **上游检索**：未找到同一路径的公开报告（本轮检索范围内）；按“新候选”
+  记录，不声称“全社区未知”。
+
+### 2.5 修复与 original/fixed
+
+修复：把 `____ip_mc_inc_group()` 改为返回 `int`，`kzalloc` 失败返回
+`-ENOBUFS`；`__ip_mc_join_group()` 在把 `iml` 链入 `mc_list` **之前**调用它，
+失败时 `sock_kfree_s()` 释放 `iml` 并返回错误。`__ip_mc_inc_group()`（接口
+up/init 路径）保留 `void` 包装，注释说明该路径无法向用户报错。
+
+original/fixed 对比（同一个 harness、同一个 fail-nth site 2、5 reps）：
+
+| 内核 | site 2 结果 | 判定 |
+|---|---|---|
+| original（v7.3-rc2，`bzImage-stock`） | `ret=0 errno=0`，`igmp_group=0` | **VIOL_MIXED，5/5** |
+| fixed（`bzImage-fixed`，patch above） | `ret=-1 errno=105 ENOBUFS`，`igmp_group=0` | **OK_PRE，5/5，0 violation** |
+
+fixed 下 site 1 仍是 `-ENOBUFS`，site 3/4 仍是 `ret=0; igmp_group=1`；
+`aggregate.csv`：`done=5, stable=5, sites=20, trials=20, ok_pre=10,
+ok_post=10, violations=0`。也就是说：**失败现在干净地报错，成功仍然真的成功**，
+不再有 `ret=0; igmp_group=0`。
+
+回归：同一批 26 个 target（15 个已有 + 11 个新；29 行含 failnth/failfunc/signal 变体）
+在 stock 与 fixed 上各 1 rep（`stockregress` / `fixedregress`）。fixed 上 `ip_add_membership` 从 1 violation 变 0；其余
+target 的 pre/post 分布与 violation 数不变（`mmap/mremap/mprotect` 仍是
+契约外的 1/2/3；`epoll_mod_wakeup` 的 45 个 `ok_poisoned` 是既定分类，
+不是新 violation）。没有看到 fixed 引入的新失败。`kfree`/
+`sock_kfree_s` 的配对、`in_dev` 引用和 `done` 路径已按原函数检查；
+没有改 `__ip_mc_inc_group()` 的接口路径。
+
+---
+
+## 3. 已知类别的实例：direct handle 在取消后没有重置
+
+### 3.1 asyncpg direct（强阳性，M1-only）
+
+`asyncpg 0.32.0`，direct，3 reps × 3 plans = 9 trials：
+
+| level | trials | violations |
+|---|---:|---:|
+| B1 | 9 | 0 |
+| B2 | 9 | 0 |
+| B3 | 9 | 0 |
+| M1 | 9 | **9** |
+
+三个 plan 不是同一种形状：
+
+| plan | `is_in_transaction()` | server `pg_stat_activity` | observer | 读法 |
+|---|---|---|---|---|
+| #1（y1） | **False** | `state='idle'`，last query `SELECT 1`（BEGIN 还在客户端队列） | `[]` | **reported-state vs actual-state divergence**：下一个写与排队的 BEGIN 一起 flush，写成功但不提交 |
+| #2（y2） | True | `idle in transaction`（BEGIN） | `[]` | 遗留事务；写进了目标事务，未提交 |
+| #3（y3） | True（但 stale） | last query 是 target INSERT（已有 xid） | `[survivor,target]` | value-only 看是合法 Post；只有状态字段把它变成 Neither，**不是丢写** |
+
+- #1 的 pre/post/injected：
+  ```text
+  pre:  survivor={in_tx:False, write:Ok, own:7}; observer=[["survivor",7]]
+  post: survivor={in_tx:False, write:Ok, own:7}; observer=[["survivor",7],["target",1]]
+  inj:  survivor={in_tx:False, write:Ok, own:7}; observer=[]
+  ```
+  `is_in_transaction()` 和 server 的 `state='idle'` 都说“没有事务”，但
+  `BEGIN` 仍在客户端队列里；survivor 的写把 `BEGIN` 一起 flush，写进了
+  一个未提交事务。**状态信号本身在下一个操作之前是缺失的**，比“遗留事务”
+  更强。
+- #2：`in_tx=True`，server `idle in transaction`；写进目标事务，observer 空。
+- #3：`in_tx=True` 但 server 已经执行了 target 的 INSERT/COMMIT；
+  observer 最终有 survivor+target。value-only 分解是合法的 Post；只有
+  acquire-time 状态字段让它变成 Neither。**不能把它算成 6/9 之外的丢写。**
+- value-only 分解：**6/9 丢写（#1/#2）+ 3/9 stale-state-only（#3）**。
+- 显式 `ROLLBACK` 在 cancel 后对 #2/#3 有效（`Ok`，in_tx False，survivor
+  可见）；#1 没有做 rollback 对比。
+- pool 模式 0/12：release 时打印 “Resetting connection with an active
+  transaction”，即 pool 主动 reset；正例。
+- 上游：asyncpg #537/#1310 已复现；层是 driver/session，不是 SQLAlchemy
+  #6652；asyncpg pool 本身 clean。
+
+**分类**：direct handle 的“取消后未 reset”类的 **reported-state 变体**；
+与 psycopg direct、BOLT direct 同族。额外价值是它把“状态字段”变成 M1 的
+必要部分，同时给出一个反例：状态字段也会把合法的 Post 变成 Neither，
+必须把“丢写”和“stale-state-only”分开报。
+
+### 3.2 psycopg direct（同类别，M1 12/18）
+
+`psycopg 3.3.6` / `psycopg-pool 3.3.3`，direct，3 reps × 6 plans = 18 trials：
+
+| level | trials | violations |
+|---|---:|---:|
+| B1 | 18 | 0 |
+| B2 | 18 | 0 |
+| B3 | 18 | 0 |
+| M1 | 18 | **12**（#1–#4） |
+
+- survivor acquire 时 `status_after_acquire=INTRANS`；单条 autocommit INSERT
+  返回 `Ok('INSERT 0 1')`，same-conn readback 7，observer `rows=[]`；
+  后续 `COMMIT` 把**被放弃的前一个事务**提交了。
+- #5/#6 是 Post（COMMIT 已经执行），合法。
+- B2/B3 都是 0/18，但它们的值里明确有 `status_after_acquire=INTRANS`、
+  `BEGIN/INSERT/COMMIT` 全部 `Ok`；B2/B3 只判“是否抛错/超时”，不看返回值，
+  所以**看不见**。M1 把 `in_tx` 加进 acquire-time observation 后抓到
+  12/18；这是“同一根因、observation 是否含状态字段 → 不同判定”的方法证据。
+- pool 模式 0/18：release 时打印 “rolling back returned connection:
+  <AsyncConnection [INTRANS]>”，下一次 acquire 是 IDLE，同一 backend pid；
+  正例。
+- 分类：**契约缺口/调用方义务**（手写 `BEGIN`/`COMMIT`；`conn.transaction()`
+  或显式 `rollback()` 是工具），不是已确认的库 bug。相关 psycopg
+  discussions #555/#1208 只有搜索片段，未核实文档承诺。
+
+### 3.3 aiomysql direct（同族，fail-fast 变体）
+
+`aiomysql 0.3.2` + MariaDB 11.4，direct，3 reps × 3 plans = 9 trials：
+
+| level | trials | violations |
+|---|---:|---:|
+| B1 | 9 | 0 |
+| B2 | 9 | 0 |
+| B3 | 9 | 0 |
+| M1 | 9 | **9** |
+
+- cancel 后同一个 handle 在 survivor 的 write/readback 上抛
+  `InterfaceError: Cancelled during execution`（sticky flag）；observer
+  `rows=[]`；`in_tx` 为 0 或 1，但 handle 已经不可用。
+- 这**不是静默未提交写**：它 fail-fast，错误可见；但“同一个 handle 不能
+  再用”本身仍是取消后的状态泄漏。
+- B2/B3 0/9 是**检测层的假阴性**：`_tx_write` 把 `InterfaceError` 捕获后
+  返回 `None`，而 `level_retry` 只把字符串 `ERR ...` 当错误；返回值里的
+  错误结构没有被检查。M1 的 survivor 直接看到 error 值，所以 9/9。
+- 分类：direct-handle 类的 fail-fast 变体；没有找到上游报告，未做 patch
+  contrast，按“候选/未决”记录，不声称已确认库 bug。
+
+### 3.4 aiosmtplib（SMTP 响应关联；同族新客户端）
+
+`aiosmtplib 5.1.3` + GreenMail 2.1.14，direct，4 plans × 3 reps：
+
+| level | trials | violations |
+|---|---:|---:|
+| B1 | 12 | 0 |
+| B2 | 12 | **12** |
+| B3 | 12 | **12** |
+| M1 | 12 | **12** |
+
+- 9/12 的后继是 `SMTPDataError: (250,'OK')`；3/12（pending#3）是 2 s
+  `TimeoutError`，NOOP 也超时。
+- 机制：目标在 `DATA` 之后被取消，server 的 `250` 留在流里；下一次 `DATA`
+  期待 `354`，读到 `250`，于是把它当成“服务器拒绝了 DATA”抛
+  `SMTPDataError`。`NOOP` 也被同一个残留回复卡住。
+- M1 的具体值（pre/post/injected）：
+  - pre：mailbox `['<run> survivor']`，survivor own/send `final=OK`，NOOP 250；
+  - post：mailbox `['<run> survivor','<run> target']`，survivor own/send OK；
+  - injected：`pending#1–#3` mailbox `[]`（target 没投递），`pending#4`
+    mailbox 只有 target（target 投递了，survivor 没投递）；survivor 的
+    send/own 都是上面的错误，NOOP 超时。
+- **分类**：与第二轮 `async-smtp` 同一个 **SMTP DATA/354/250 响应关联**族，
+  但这是一个新的客户端实例；未找到 aiosmtplib 自己的上游 cancellation 报告。
+  不算全新机制类别，但“已知形状迁移到新客户端”是明确的命中。
+- 修法方向（未做 patch contrast）：取消时关闭/重新同步连接，或把未读的
+  DATA 回复读完后再放回；不能把连接直接留给下一次 `DATA`。
+
+### 3.5 skytable（response association；Rust 新实例）
+
+`skytable 0.8.12`（官方 pool = bb8 0.9.1）+ `skytable/skytable:0.8.4`，pool 和
+direct 两种模式，3 reps：
+
+| mode | B1 | B2 | B3 | M1 |
+|---|---|---|---|---|
+| pooled（4 plans） | 0/4 ×3 | 2/4 ×3 | 3/4, 2/4, 3/4 | 3/4, 2/4, 2/4 |
+| direct（2 plans） | 0/2 ×3 | 1/2, 0/2, 1/2 | 2/2 ×3 | 2/2 ×3 |
+
+合计 **35 violation executions / 72 ladder plans**；unrealized=0、baseline=0、
+exhaustive=true。生成器（`combine.rs`）10 cases × 3 reps：**84/120 violations**，
+0 skipped/unrun；所有 read-back/select successor 都 4/4 失败，plain update
+1–2/4。
+
+具体反例（pooled `#0@1:Immediate`）：
+
+```text
+pre:  before=0, write=Ok, own=Ok(7), visible=Ok(7)
+post: before=1, write=Ok, own=Ok(7), visible=Ok(7)
+inj:  before=0, write=Ok, own=Err("row not found (empty response)"), visible=Ok(7)
+```
+
+direct `#0@1:AfterWake`：`own=Err("server error 6")`，observer 仍看到正确的
+row；server 的 row 一直是对的，坏的是**客户端自己的读**。
+
+- 机制：被丢掉的 query future 把 reply（或 split packet 的前缀）留在连接上；
+  下一次请求（pooled 里是 bb8 validation，direct 里是 survivor update）把它
+  当成自己的 reply 消费。
+- **pool 不自治愈**：cancel 后 `connections=1`、`connections_created=1`、
+  `connections_closed_broken=0`；pool 把同一条 desynced TCP 还回来。
+  这是“pool checkout/validation 把 stale reply 往后推一个请求”的干净样本。
+- **B3 会返回 stale `Ok(0)` 却通过 Ok-only 规则**；B2 也有“retry Ok 但
+  消费了 stale reply”的情况。M1 的 `own`/`visible` 才抓到。
+  direct rep2：B2 0/2 vs M1 2/2；pooled rep1：B2 2/4 vs M1 3/4。
+- 分类：**确认的客户端缺陷，一个根因**——response association 被取消破坏；
+  与 BOLT/async-smtp 同族，但这是新的 Rust 客户端实例。没有文档化的
+  cancellation/reset 保证；上游检索和 patch contrast **未做**，所以不声称
+  “已知/新”。
+
+### 3.6 为什么它是“契约缺口”而不是“必然库 bug”
+
+psycopg 文档说明取消后连接状态可能不确定，调用方应使用 `rollback()` 或
+丢弃连接；asyncpg 暴露 `is_in_transaction()` / `reset()`，pool 在 release
+时 reset；aiomysql 则用 sticky `InterfaceError` 直接拒绝继续使用。三者都把
+“恢复”留给调用方、pool 或客户端 guard。对 direct handle，调用方如果不读
+这个信号，就会把后继写进前一个事务，或者拿到一个不可用的 handle。把它称为
+“库缺陷”需要证明文档承诺了自动重置；本轮没有找到这样的承诺，因此按
+**契约缺口/调用方义务**记录，但它满足共性最核心的形状：
+**信号存在（或信号本身失真），下一个决策者没读它**。
+
+注意：asyncpg #1 比“信号存在”更强——`is_in_transaction()` 和 server 的
+`state='idle'` 都表示“没有事务”，但 `BEGIN` 还在客户端队列里；下一个写
+把它一起 flush，静默不提交。这是**信号本身缺失/错误**，不是调用方没读。
+#3 又是反过来：状态字段 stale，value-only 是合法的 Post；把状态字段加进
+判定会把它变成 Neither，但它不是丢写。**“加状态字段”不是免费的正确性：
+它既能抓到真泄漏，也能把合法结果误判，必须分开报。**
+
+---
+
+## 4. 已知上游：httpx 取消后连接池退化
+
+`httpx 0.28.1` + `httpcore 1.0.9`，pool，18 trials/level：
+
+| level | violations | 观测 |
+|---|---:|---|
+| B1 | 0/18 | 取消本身不报错 |
+| B2 | **3/18** | pending#6 retry `ERR post-target TimeoutError` |
+| B3 | **3/18** | pending#6 `ERR post-b3 TimeoutError` |
+| M1 | **3/18** | survivor POST 未发出、readback 失败、observer 仍是 target |
+
+triage（`triage-pending6.log`）：
+
+```text
+limit=1:
+  after cancel: conns=[... ACTIVE, Request Count: 2], queued=1
+  server rows after cancel: [('post', '...-target')]
+  retry result: ERR retry TimeoutError
+  server rows after retry: [('post', '...-target')]      # retry 根本没到服务器
+  aclose of wedged client: done
+  fresh client result: <Response [200 OK]>
+
+limit=2:
+  retry result: <Response [200 OK]>
+  server rows after retry: [target, survivor]
+  after retry: [ACTIVE, IDLE]                            # 旧连接仍卡住
+```
+
+- 取消后连接停在 `ACTIVE`，没有被归还；`max_connections=1` 时 retry 排队等
+  一个永远不会释放的 slot；`max_connections=2` 时新连接可用，旧连接仍 ACTIVE。
+- `aclose()` 只能把整个 client 关掉；fresh client 正常。
+- 源码定位（`httpcore 1.0.9`）：`PoolByteStream.aclose()` 先置
+  `_closed=True`，然后
+  `with AsyncShieldCancellation(): await stream.aclose()`，**之后**才
+  `del self._pool_request` / 把连接归还。原始 `Task.cancel()` 落在这个
+  `await` 上时，`AsyncShieldCancellation` 并不屏蔽 raw cancel；异常在
+  `_pool_request` 删除前抛出，httpx 随后的 `response.aclose()` 因
+  `_closed=True` 变成 no-op。连接和 pool request 就永久留在 ACTIVE。
+  一个最小 probe 确认 anyio 的 shield 不屏蔽 raw `Task.cancel()`。
+- 上游：行为与 [httpx #2821](https://github.com/encode/httpx/discussions/2821)
+  描述一致（“cancelled at precisely the wrong time … degraded state …
+  PoolTimeout … 新 client 才恢复”）；相关还有 #3154、httpcore #844/#726。
+  但**具体窗口是否已被上游修复、#2821 是否就是这个窗口，未核实**
+  （GitHub 抓取受限）；本轮也没有做 patch contrast。
+- **分类：确认的客户端 cleanup 缺陷；与已知上游讨论同族，不是全新机制类别。**
+  它的价值是：我们在没读 #2821 的情况下用共性预测了“取消会留下未完成交换/
+  资源”，并确定性地在 pending#6 复现；同时把窗口缩小到 `aclose()` 的
+  shield 段。这是**迁移命中 + 源码定位**，不是发现一个全新类别。
+
+---
+
+## 5. 契约外：mmap / mremap / mprotect 的部分破坏
+
+Linux mass 结果：
+
+- `mmap(MAP_FIXED)`：5/5 violation；旧映射在失败前已被 unmap，返回错误时
+  地址空间出现洞/新映射不完整。
+- `mremap(MREMAP_FIXED)`：5/5；目标地址先被 unmap，移动失败时目标洞。
+- `mprotect` 多 VMA：10/10；错误返回时前面的 VMA 已经改了保护。
+
+这些**不是**“实现 bug”，而是 API 契约本身允许的破坏性行为。LKML 2023
+“MREMAP_FIXED unmaps dest on error” 线程里 David Hildenbrand 明确说：
+mapping syscalls 从不保证出错时状态不变；`MAP_FIXED` 先 unmap 是设计。
+v6.19 还故意在 `MAP_FIXED` 失败时恢复一个 gap；2024 Jann Horn 的
+`mm: mark mas allocation in vms_abort_munmap_vmas as __GFP_NOFAIL`
+修的是 abort 路径的 UAF，不是“出错必须原子”。
+
+**分类：契约外，不是 bug；不提交修复。** 它们是有用的反例：`ret != 0`
+不等于“没有效果”；但把“部分效果”当缺陷会误报。共性在这里能解释现象，
+但不能把它算成新根因。
+
+---
+
+## 6. 阴性结果与覆盖缺口
+
+### 6.1 orientdb：0 违规，但物理流覆盖有限
+
+- 24 个 level run，3 reps，B1/B2/B3/M1 主 + S-B1/S-B2/S-B3/S-M1；
+- 0 violations / 0 unrealized / 0 unsettled / 0 baseline/calibration errors；
+- B1 30 plans；B2 30（全部 `Ok((1,"target"))`）；B3 30（24 个 `(0,"seed")`，
+  6 个 `(1,"target")`，都 `Ok`）；M1 30（pre=29/post=1，无 mixed/neither/unknown）；
+- S 系列 6 plans/level；S-M1 pre=3/post=3；
+- 具体值：每个 realized plan `own=visible=write=(7,"survivor")`，
+  `before ∈ {(0,"seed"),(1,"target")}`；没有 attributed stale reply；
+- **限制**：proxy 上稳定 2 条物理 TCP 流；`max_size=1` 只限制逻辑 session；
+  `ConnectionOptions::pool_size` 未反映。stale reply 可能被另一条流掩盖，
+  所以这是**弱阴性**，不是“orientdb 安全”。
+- recovery contrast：5 ms cut 在 checkout 到 wire 之前触发，stale pool 没有
+  状态；stale 与 fresh reconnect 都成功，**不构成** recovery contrast。
+
+### 6.2 其他
+
+- psycopg pool：0/18；release 时 rollback，正例。
+- asyncpg pool：B1/B2 0/12；release 时 reset，正例。
+- aiosmtplib：不是阴性，是 12/12 阳性；列在这里是为了和“SMTP 族”对照。
+- Linux clean：`tmpfs_setxattr_replace` 15/15、`tmpfs_rename_exchange` 10/10、
+  `tmpfs_fallocate` 85/85、`pipe_set_size` 5/5、`so_attach_filter` 51/51、
+  `semtimedop_eintr` 40/40、`fcntl_setlkw_eintr` 40/40；全部 0 violation，
+  且 pre/post 非退化（有 OK_PRE / OK_POST 分裂），说明注入点覆盖到了。
+- skytable：不是阴性，是 35/72 + generated 84/120 阳性；见 §3.5，不列在这里。
+- gel：3/3 probe 干净；没有 B1/B2/B3/M1、没有 calibration/generator，
+  **只算 probe**。
+- http-client：runtime 不兼容，未执行。
+- aiomysql / mysql-connector / pymongo / neo4j / curl-cffi：
+  时间窗内未执行；**未覆盖**。
+- Linux `TCP_ULP` / `prctl` / `io_uring` / timerfd / inotify / msgrcv 等：
+  预测里列出但**没有跑**；不能写成 clean。
+
+---
+
+## 7. 预测对照
+
+### 7.1 客户端
+
+| 预测 | 实际 | 判定 |
+|---|---|---|
+| skytable direct 可能违规 | **35/72 ladder plans；direct B2/B3/M1 都有违规** | **命中** |
+| skytable pool 可能 clean/同 direct | pool 也违规（B2 2/4、B3/M1 2–3/4）；不自治愈 | **命中“同 direct”** |
+| orientdb pool 可能违规（BOLT-like） | 0/120 主阶梯 plans；但 2 条物理流 | **miss / 弱阴性** |
+| gel pool 可能违规 | 3/3 probe 干净 | **未检验（probe）** |
+| httpx 可能 confirmed/clean | B2/B3/M1 3/18 timeout | **命中（已知上游相关）** |
+| aiosmtplib 可能 confirmed | B1 0/12；B2/B3/M1 12/12 | **命中（同 SMTP 族新客户端）** |
+| psycopg 可能 confirmed | pool clean；direct M1 12/18 INTRANS；B2/B3 0 | **命中（direct 契约缺口）** |
+| asyncpg 可能 confirmed | direct M1 9/9；pool clean | **命中（同一 direct 类）** |
+| aiomysql 可能 confirmed | direct M1 9/9，B2/B3 0（sticky InterfaceError） | **命中（同族 fail-fast）** |
+| mysql-connector / pymongo / neo4j | 未跑 | **未检验** |
+| http-client 可能违规 | runtime 排除 | **未检验** |
+
+### 7.2 Linux
+
+| 预测 | 实际 | 判定 |
+|---|---|---|
+| mmap MAP_FIXED 可能违规，契约可能弱 | 5/5 违规 | **行为命中；契约外** |
+| mremap FIXED 可能违规 | 5/5 | **行为命中；契约外** |
+| mprotect 可能部分生效 | 10/10 | **行为命中；契约外** |
+| TCP_ULP / prctl / io_uring 可能 | 未跑 | **未检验** |
+| 其余（setxattr/rename/fallocate/pipe/BPF/semtimedop/fcntl）预测 clean | 7 个 target 全 0 | **命中** |
+| **multicast join 未被预测** | **5/5 违规，新根因** | **未预测的发现** |
+
+### 7.3 方法预测
+
+| 预测 | 实际 | 判定 |
+|---|---|---|
+| B1 只抓 hang/panic | httpx B1 0/18；asyncpg 0/9；psycopg 0/18；aiomysql 0/9；aiosmtplib 0/12；skytable 0/4+0/2 | 支持 |
+| B2 抓硬错误但漏 stale value | httpx B2 3/18 timeout；aiosmtplib B2 12/12；skytable pooled 2/4、direct 0–1/2；asyncpg/psycopg B2 0；aiomysql B2 0（返回值错误未被 level 看见） | 支持，但有检测层缺口 |
+| B3 抓部分关联错误但仍漏 value | httpx B3 3/18；aiosmtplib B3 12/12；skytable pooled 2–3/4、direct 2/2；asyncpg/psycopg B3 0；aiomysql B3 0（同上） | 支持，但有检测层缺口 |
+| M1 是唯一能看到 “Ok but wrong value” 的 | asyncpg M1 9/9；psycopg M1 12/18；aiomysql M1 9/9；skytable M1 2–3/4 + 2/2；aiosmtplib/httpx 的 B2 已先抓到 | **支持（但依赖 observation 是否含状态）** |
+| 至少一个 B2 抓到而 M1 抓不到的案例 | 本轮没有：httpx/aiosmtplib 的 B2 与 M1 都是同样违规 | **未命中** |
+| 至少一个 B2/B3 过、M1 失败的案例 | asyncpg 9/9、psycopg 12/18、aiomysql 9/9、skytable 都是 | **命中** |
+| B2/B3 的“not-error”只看逃逸异常 | aiomysql 的 `InterfaceError` 被 case 捕获成返回值，B2/B3 0；M1 9/9 | **新发现的方法缺口** |
+| Linux 多数 clean | 7/11 clean；1 新 bug；3 契约外 | 大体支持 |
+| 只有分配失败、无真实 trigger 的发现不应夸大 | multicast 正是 fault-injection-only | **支持（按此措辞）** |
+
+预测校准的结论：**行为/方法层面的预测命中率明显高于“具体缺陷位置”层面**。
+7.3 里唯一明确没命中的是“B2 抓到而 M1 抓不到”——本轮没有这种案例；B2 的
+价值是更便宜地先抓到**逃逸**的硬失败（httpx/aiosmtplib/skytable），不是抓到
+M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok(0)` 却
+通过 Ok-only 规则，M1 的 `own`/`visible` 才抓到。更重要的新发现是：
+**B2/B3 的“not-error”只检查逃逸异常/字符串 ERR；如果 case 把异常捕获成
+返回值（aiomysql），B2/B3 会给出假阴性。**
+下一轮应把 `level_retry` 改成检查 `normalize(value)` 里的错误结构，而不是只
+看 `isinstance(value, str) and value.startswith("ERR ")`。
+
+---
+
+## 8. 方法增量（这一轮真正学到的东西）
+
+1. **`Ok` 不是正确性，连“状态字段”也可能骗人。**
+   - asyncpg direct #1：`write=Ok`、`own=7`，observer 空表；`is_in_transaction()`
+     和 server `state='idle'` 都说“没有事务”，但 `BEGIN` 还在客户端队列里。
+   - psycopg direct：`write=Ok`、`own=7`，observer 空表；`INTRANS` 就在
+     acquire-time 状态里，但 B2/B3 不看它，M1 加进去后 12/18。
+   - aiomysql direct：不静默写，而是 sticky `InterfaceError`；handle 不可用
+     本身也是状态泄漏。
+   - skytable：`write=Ok`、`own=Err("row not found")`、`visible=Ok(7)`；
+     server 的 row 一直正确；pool 仍返回同一条连接。
+2. **B2/B3 是“便宜的第一道网”，M1 是“值/观察者/状态的第二道网”。**
+   - httpx：B2 已经用 `TimeoutError` 抓到；M1 只是解释“survivor 没发出”。
+   - aiosmtplib：B2 12/12 已经用 `SMTPDataError: (250,'OK')` 抓到；
+     M1 只是把“target 是否投递、survivor 是否投递”分开。
+   - asyncpg 9/9、psycopg 12/18、aiomysql 9/9：B1/B2/B3 全 0，M1 才抓到；
+     这是 M1 不可替代的样本。
+   - skytable：B2/B3 各抓到一部分，但 B3 会返回 stale `Ok(0)` 却通过
+     Ok-only；M1 的 `own`/`visible` 才把它变成违规。
+   - **但 B2/B3 的“not-error”只检查逃逸异常/字符串 `ERR`。** aiomysql 的
+     `InterfaceError` 被 case 捕获成返回值，B2/B3 就 0/9；这是**检测层的
+     假阴性**，不是“重试成功”。下一轮要么把 `level_retry` 改成检查
+     `normalize(value)` 的错误结构，要么让 case 重新抛出。
+3. **状态字段不是免费的：它既能抓真泄漏，也能把合法 Post 变成 Neither。**
+   - asyncpg #3：value-only 是合法 Post（observer 有 survivor+target），
+     只有 `in_tx` stale 才变 Neither；**这不是丢写**，要单列
+     “stale-state-only”。
+   - psycopg：把 `in_tx` 加进 observation 后，M1 从 0/18 变 12/18；
+     同一根因、不同 observation → 不同判定，**观察协议本身要审计**。
+4. **Linux 需要“独立观察者字段”，不能只看 syscall 返回值。**
+   - `igmp_group` 从 `/proc/net/igmp` 读，和 `surv_msf` 分开；
+   - site 2 的 `ret=0` 只有和 `igmp_group=0` 一起才是违规；
+   - 如果只判 `ret`，会得到 0 violation 的假阴性。
+5. **pre/post 校准 + 注入点枚举是必要条件。**
+   - ip target site 1 `-ENOBUFS`、site 3/4 成功、site 2 违规、site 5 无注入；
+     这四点把“注入确实命中”与“效果是否完成”分开；
+   - 5/5 reps 稳定；没有把 site 数浮动当成结论。
+6. **零结果必须带覆盖说明。**
+   - orientdb 0/120 主阶梯但有 2 条物理流，写成弱阴性；
+   - gel 只有 3 次 probe 写成未覆盖/弱阳性，不写成 clean；
+   - modbus/async-pop、Linux 未跑 target 写成未覆盖；
+   - `mmap` 等写成契约外，不写成新 bug。
+7. **`combine.rs` 的 same/different object/payload 生成器在 orientdb 上
+   跑了 13 cases / 124 plans，0 violations；但 generator 的 `Obs` 缺
+   pre-target 快照，9 个 update-target case 退化为 pre/post 同值。**
+   这说明生成器本身也要做“观察是否退化”的元检查，不能只看 0 violation。
+   skytable 的同一生成器（10 cases）跑出 84/120，说明“生成器 + 0 违规”
+   并不是安全信号，必须结合 case 的观察字段和 successor 语义读。
+
+---
+
+## 9. 共性的哪一部分被支持、哪一部分被反驳
+
+### 支持
+
+- **取消后未完成交换会留下状态**：httpx（连接 ACTIVE、slot 不释放）、
+  asyncpg/psycopg direct（事务未 reset；psycopg 12/18、asyncpg 9/9）、
+  aiomysql direct（sticky `InterfaceError`）、skytable（stale reply 留在
+  连接上；35/72）、aiosmtplib（DATA 的 250 留在流里）、BOLT direct（历史）
+  都支持。
+- **决定复用的一方常常不读这个状态**：psycopg direct 的 `INTRANS` 没被
+  survivor 读；asyncpg 的 `is_in_transaction()` 甚至报 `False`；httpx 的 pool
+  不知道连接还 ACTIVE；skytable 的 bb8 validation 把 stale reply 当成自己的
+  reply；aiosmtplib 的下一次 DATA 把残留 250 当成拒绝。
+- **池如果读了状态并 reset，就能修复**：psycopg pool rollback、asyncpg pool
+  reset 都是正例；但 **skytable 的 pool 不修复**——`connections_created=1`、
+  `closed_broken=0`，checkout/validation 只是把 stale reply 往后推一个请求。
+  所以“池”本身不是修复，只有“读状态并 reset”的池才是。
+- **“报告的 result 与共享对象实际状态不一致”是比“取消”更准确的抽象**：
+  Linux multicast 是纯 success-without-effect，也被这个抽象覆盖。
+- **状态字段本身也要被审计**：psycopg 加 `in_tx` 后 M1 12/18；asyncpg #3
+  加 `in_tx` 把合法 Post 变 Neither；所以“加状态”既能抓漏，也能误判，
+  必须把“丢写”和“stale-state-only”分开。
+
+### 反驳 / 边界
+
+- **不是所有池都会把脏连接交出去**：orientdb 0/120 主阶梯（弱阴性）、
+  psycopg pool 0、asyncpg pool 0；但 skytable pool 是反例（35/72，且
+  validation 消费 stale reply）；把“session pool 必然脏”或“pool 必然干净”
+  当普遍规律都是错的。
+- **不是所有缺陷都涉及取消**：multicast 没有取消、没有异步；窄版共性
+  （“async cancellation leaves unfinished exchange”）无法解释它。
+- **共性不能预测具体位置**：它预测到了 skytable 这个客户端“可能违规”，
+  但没有预测到是 **bb8 validation 消费 stale reply**、也没有预测到
+  `____ip_mc_inc_group()` 的 `kzalloc` 会被吞；具体函数/分支仍要靠源码
+  审计和实验定位。
+- **“信号存在”不等于“信号正确”**：asyncpg 的 `is_in_transaction()` 在
+  手写 BEGIN 下会报 `False`（BEGIN 还在队列）；psycopg 的 `INTRANS` 是对的
+  但没人读；aiomysql 直接 fail-fast。三者都说明需要**独立观察者**，不能只信
+  客户端自报状态。
+- **B2/B3 的“not-error”实现有缺口**：aiomysql 的返回值错误被漏掉；零违规
+  不能直接读成“重试可用”。
+
+### 一句话
+
+共性作为**契约/oracle 理论**是成立的：`Ok` 之后要问“共享对象的实际状态
+是什么、下一个决策者能不能看到”。作为**缺陷位置预测器**是不成立的：
+它给的是搜索方向和观测清单，不是具体答案。
+
+---
+
+## 10. 修复、提交、剩余问题
+
+### 10.1 修复
+
+- **Linux multicast**：已在独立 v7.3-rc2 worktree `~/dropwise-linux-r4` 上
+  做最小修复：`____ip_mc_inc_group()` 返回 `int`，`kzalloc` 失败返回
+  `-ENOBUFS`；`__ip_mc_join_group()` 先建组再链入 `mc_list`，失败
+  `sock_kfree_s()` 并返回错误。original `ret=0; igmp_group=0`（5/5
+  VIOL_MIXED）；fixed `ret=-1/ENOBUFS; igmp_group=0`（5/5 OK_PRE，0
+  violation）。site 1/3/4 行为不变。其他 10 个 target 尚未在 fixed 内核上
+  全量重跑。
+- **httpx**：上游已知相关（#2821 / httpcore #726），不在本轮提交；源码窗口
+  已定位但未做 patch contrast。
+- **asyncpg/psycopg/aiomysql direct**：不提交库补丁；记录为调用方/pool
+  契约，给出最小恢复（`rollback()` / `reset()` / 丢弃 handle）。
+- **aiosmtplib**：不提交库补丁；记录为 SMTP 响应关联族的新客户端实例；
+  候选修法是取消时关闭/重同步连接。
+- **skytable**：确认客户端 response-association 缺陷，不提交库补丁；候选
+  修法是取消时丢弃/重连连接，pool 在 return 时校验并 discard；未做上游
+  检索和 patch contrast。
+- **mmap/mremap/mprotect**：契约外，不提交。
+
+### 10.2 本地提交
+
+本轮只做本地逻辑提交，不 push、不建 issue/PR；历史 BOLT 日志和 Phase 4
+冻结数据不动。提交内容应包含：
+- `prospective/phase4-exploration/ROUND3-*.md`；
+- 新客户端源码、SCENARIO/RESULTS-FRAGMENT、run 脚本、小日志；
+- Python cases、日志；
+- `research/linux/harness/dw_harness.c`、`run.py`、新日志、`RESULTS-round4.md`；
+- 不包含 `target/`、`__pycache__`、历史 BOLT 日志、Phase 4 数据。
+
+### 10.3 剩余问题
+
+1. skytable 已确认 35/72，但上游检索、patch contrast、pool>1、pipeline、
+   TLS、server restart 未做；不能声称“已修复”或“已知/新”。
+2. gel 只有 3 次 probe；需要完整 B1/B2/B3/M1 + calibration。
+3. modbus/async-pop 未开始；aiomysql pool、mysql-connector、pymongo、
+   neo4j、curl-cffi 未跑。
+4. orientdb 的 2 条物理流无法排除“stale reply 被另一条流掩盖”；需要
+   单物理流控制或协议级 request id 观察。
+5. Linux `TCP_ULP` / `prctl` / `io_uring` / timerfd / inotify / msgrcv 未跑；
+   不能写成 clean。
+6. multicast 只有 fault-injection 触发；没有 MEMCG/真实内存压力 trigger；
+   需要真实 trigger 才能评估线上频率。
+7. asyncpg/psycopg/aiomysql 的 direct 状态泄漏需要查文档/上游 issue，确定是
+   “调用方义务”还是“库承诺自动 reset”；目前按契约缺口记录，aiomysql 是
+   候选/未决。
+8. 修复后的内核已做 26 个 target × 1 rep 的 stock/fixed 回归：ip target
+   从 1 violation 变 0，site 1/3/4 行为不变；其他 target 的 pre/post 与
+   violation 数不变（mmap/mremap/mprotect 仍是契约外，epoll 的
+   `ok_poisoned` 是既定分类）。没有新失败；但只有 1 rep，仍建议在最终
+   提交前保留这次回归记录。
+9. `level_retry` 只看逃逸异常/字符串 `ERR`，aiomysql 的返回值错误被漏；
+   需要修 engine 或让 case 重新抛出。
+
+### 10.4 下一步
+
+- 补 multicast fixed 内核上的其他 10 个 target 回归；
+- 再补 skytable 的上游检索/patch contrast，以及 gel / aiomysql pool /
+  mysql-connector / modbus / async-pop 的**可复现**阶梯；
+- 把“状态字段”加入所有 M1 observation（`in_tx`、`transaction_status`、
+  `igmp_group`、连接池 Active/Idle/Queued），同时把“丢写”和
+  “stale-state-only”分开报；
+- 修 `level_retry`：检查 `normalize(value)` 的错误结构，不只检查字符串；
+- 在 Linux 侧把“void 辅助函数吞掉可失败分配”做成 Coccinelle/sparse 规则，
+  这是本轮证明有效的搜索启发式；
+- 报告时继续按**独立根因类别**计数，不按 trigger/组合/管理器/失败计划计数。
+
+---
+
+## 11. 对原问题的最终回答
+
+**能指导“发现”，而且在“客户端家族”这一层做到了事先预测；但不能保证
+“具体函数/具体分支”的预测。**
+
+- 如果“指导”指的是：告诉我们去哪个**客户端家族/交接点**下刀、用什么观察、
+  什么样的结果可疑，答案是**能**。这一轮的 skytable（预测 direct/pool 可能
+  违规，实测 **35/72** + generated **84/120**）、asyncpg M1 9/9、psycopg
+  M1 12/18、aiomysql M1 9/9、aiosmtplib B2/B3/M1 12/12、httpx 的 pool slot
+  泄漏，都是这个指导的产物；其中 asyncpg/psycopg/aiomysql 是“只有 M1 能
+  看到”的干净样本。
+- 如果“指导”指的是：在不知道实现的情况下，事先说出“下一个 bug 在哪个
+  **函数/哪一行**”，答案是**不能**。skytable 预测到了“这个客户端会坏”，
+  但没预测到是 **bb8 validation 消费 stale reply**；multicast 根本没被
+  预测到；orientdb 预测违规但 0/120 主阶梯（弱阴性）；mmap/mremap/mprotect
+  虽然行为命中，却是契约外。**新的独立机制类别**（multicast）来自按广义
+  形状做源码审计，不是盲预测。
+- 所以共性的正确用法是：**把它当作契约设计原则和搜索/oracle 启发式**，
+  先问“谁报告了成功、谁拥有共享状态、谁决定复用、他读不读这个状态”，
+  再用独立观察者去验证。它不能替代源码阅读、契约判断和覆盖说明。
+
+一个更精确的版本是：
+
+> 共性预测“哪类客户端/哪类交接点值得怀疑、哪类 `Ok` 不可信、需要把哪些
+> 状态放进观察”，并能在新客户端上**发现已知类别的新实例**（skytable）；
+> 它不预测“具体是哪个函数/哪一行”，也不保证每个预测都命中（orientdb
+> 弱阴性、mmap 契约外、multicast 未被预测）。
+
+---
+
+## 附录 A：关键文件
+
+- 预测：[ROUND3-PREDICTIONS.md](ROUND3-PREDICTIONS.md)
+- 硬规则：[ROUND3-BRIEF.md](ROUND3-BRIEF.md)
+- orientdb：[SCENARIO.md](clients/orientdb/SCENARIO.md)、
+  [RESULTS-FRAGMENT.md](clients/orientdb/RESULTS-FRAGMENT.md)、
+  [logs/run.CI4tHK](clients/orientdb/logs/run.CI4tHK)
+- gel：[RESULTS-FRAGMENT.md](clients/gel/RESULTS-FRAGMENT.md)
+- skytable：[SCENARIO.md](clients/skytable/SCENARIO.md)、
+  [RESULTS-FRAGMENT.md](clients/skytable/RESULTS-FRAGMENT.md)、
+  [logs/run.VlevMa](clients/skytable/logs/run.VlevMa)
+- Python PG/MySQL：[SCENARIO.md](python/pg-mysql/SCENARIO.md)、
+  [RESULTS-FRAGMENT.md](python/pg-mysql/RESULTS-FRAGMENT.md)、
+  [logs/run.KqRbB4](python/pg-mysql/logs/run.KqRbB4)
+- Python HTTP：[SCENARIO.md](python/http-mongo-neo4j-smtp/SCENARIO.md)、
+  [RESULTS-FRAGMENT.md](python/http-mongo-neo4j-smtp/RESULTS-FRAGMENT.md)、
+  [httpx logs](python/http-mongo-neo4j-smtp/logs/run.uyIk2F)、
+  [aiosmtplib logs](python/http-mongo-neo4j-smtp/logs/run.RpMq5v)
+- Linux mass：[logs/20261021-r4-mass](research/linux/logs/20261021-r4-mass)、
+  `aggregate.csv`、`summary.csv`
+- Linux original/fixed：[fixed-orig](research/linux/logs/20261021-r4-fixed-orig)、
+  [fixed-patched](research/linux/logs/20261021-r4-fixed-patched)
+- Linux 报告：[RESULTS-round4.md](research/linux/RESULTS-round4.md)
+
+## 附录 B：计数口径
+
+- **独立根因类别**：按“同一个机制”计，不按 target/trigger/rep/客户端/管理器计。
+- 本轮的机制表：
+
+| 机制 | 本轮状态 | 证据 | 计数 |
+|---|---|---|---|
+| void 辅助函数吞掉可失败分配 → success-without-effect | **新类别** | Linux `ip_add_membership` 5/5；original/fixed | **1 个新类别** |
+| direct handle 留下未提交事务 | 已知类（BOLT direct 历史）；新实例 | psycopg 12/18、asyncpg #2 6/9 | 同一类，不算 3 个 |
+| direct handle 的 queued BEGIN / 状态报告为 False | asyncpg #1 的子机制；比“遗留事务”更强 | asyncpg 3/9 | 归入 direct-handle 类，单列子机制 |
+| direct handle 的 sticky cancel flag / fail-fast | aiomysql 新实例；无静默写 | aiomysql 9/9 | 同一族的 fail-fast 变体 |
+| SMTP DATA/354/250 响应关联 | 已知族（async-smtp 第二轮）；新客户端 | aiosmtplib 12/12 | 同一类的新实例 |
+| 客户端 response association 被取消破坏 | 已知族（BOLT/SMTP）；新 Rust 客户端 + pool 不自治愈 | skytable 35/72 + generated 84/120 | 同一类的新实例 |
+| httpcore cancellation cleanup 窗口 | 已知上游相关（#2821/#726）；新源码定位 | httpx 3/18 | 同一类的新实例 |
+| 部分破坏性失败（mmap/mremap/mprotect） | 契约外 | 5/5、5/5、10/10 | **不是 bug**，不算根因 |
+| pool reset/rollback | clean 正例 | psycopg/asyncpg pool 0 | 不是 bug |
+
+- **一句话计数**：
+  - **真正新的独立机制类别：1 个**（Linux multicast 的 void 辅助函数）。
+  - **新观察到的客户端实例（行为可复现，根因确认程度不同）：5 个**——
+    psycopg direct 12/18（契约缺口）、asyncpg direct 9/9（已知上游相关）、
+    aiomysql direct 9/9（fail-fast 候选，根因未决）、aiosmtplib 12/12
+    （同 SMTP 族）、skytable 35/72（response association，客户端缺陷）；
+    httpx 是已知上游相关的第 6 个实例。**“实例”不等于“新根因”**。
+  - **不要**把 psycopg/asyncpg/aiomysql 的 3 个家族直接数成 3 个新根因：
+    它们同属 direct-handle 族，只是三个变体（遗留事务 / queued BEGIN /
+    fail-fast）。其中 asyncpg #1 和 aiomysql sticky 可以单列**子机制**，
+    但不是三个互不相干的新类别。
+  - **35 个 skytable violating plans** / 72 是执行次数，不是 35 个 bug；
+    **30 个 Python violating trials**（12+9+9）也是执行次数，不是 30 个 bug；
+    `mmap` 5 次、`mremap` 5 次、`mprotect` 10 次是同一契约类的 20 次执行，
+    不是 20 个 bug；ip 的 5 个 rep 是同一个 bug 的 5 次复现。
+- 弱阴性/未覆盖：orientdb 0/120（2 条物理流）、gel（probe only）、
+  aiomysql pool/mysql-connector/pymongo/neo4j/curl-cffi（未跑）、
+  modbus/async-pop（未开始）。这些都不计入“已确认 clean”。
