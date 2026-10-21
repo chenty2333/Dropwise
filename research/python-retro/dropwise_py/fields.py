@@ -79,7 +79,6 @@ class Field:
     name: str
     kind: FieldKind = FieldKind.EFFECT
     expect: Expect = Expect.ATOMIC
-    required: bool = True
 
     def __post_init__(self) -> None:
         if not self.name or self.name.startswith(".") or self.name.endswith("."):
@@ -123,10 +122,11 @@ def flatten_observation(value: Any, prefix: str = "") -> dict[str, Any]:
         out: dict[str, Any] = {}
         for key, val in value.items():
             name = f"{prefix}.{key}" if prefix else str(key)
-            if isinstance(val, dict):
-                out.update(flatten_observation(val, name))
-            else:
-                out[name] = normalize(val)
+            leaves = flatten_observation(val, name) if isinstance(val, dict) else {name: normalize(val)}
+            duplicate = out.keys() & leaves.keys()
+            if duplicate:
+                raise FieldContractError(f"ambiguous dotted observation fields: {sorted(duplicate)}")
+            out.update(leaves)
         return out
     return {prefix or "value": normalize(value)}
 
@@ -171,7 +171,7 @@ class FieldJudgment:
 
     @property
     def violations(self) -> list[FieldVerdict]:
-        return [f for f in self.fields if f.status is FieldStatus.VIOLATION]
+        return [f for f in self.fields if f.status in (FieldStatus.VIOLATION, FieldStatus.NEITHER)]
 
 
 def _precedence(statuses: Iterable[FieldStatus]) -> FieldStatus:
@@ -205,6 +205,8 @@ def judge_trial(
 ) -> FieldJudgment:
     """Judge one flattened observation against two stable calibrations."""
     obs = flatten_observation(observation)
+    pre_samples = [flatten_observation(s) for s in pre_samples]
+    post_samples = [flatten_observation(s) for s in post_samples]
     verdicts: list[FieldVerdict] = []
     for field in contract.fields:
         present = field.name in obs
@@ -217,6 +219,11 @@ def judge_trial(
             verdicts.append(FieldVerdict(
                 field.name, field.kind, FieldStatus.UNCOVERED, None, pre, post,
                 "required field absent from the observation"))
+            continue
+        if any(field.name not in sample for sample in pre_samples + post_samples):
+            verdicts.append(FieldVerdict(
+                field.name, field.kind, FieldStatus.UNCOVERED, value, pre, post,
+                "field absent from calibration; missing is not an observed None"))
             continue
         if not pre_stable or not post_stable:
             verdicts.append(FieldVerdict(
@@ -323,16 +330,22 @@ def calibration(
 ) -> dict[str, dict[str, Any]]:
     """Per-field calibration facts, useful in a report even without trials."""
     out = {}
+    pre_samples = [flatten_observation(s) for s in pre_samples]
+    post_samples = [flatten_observation(s) for s in post_samples]
     for field in contract.fields:
         pre, pre_stable = _stable([s.get(field.name) for s in pre_samples])
         post, post_stable = _stable([s.get(field.name) for s in post_samples])
+        covered = bool(pre_samples and post_samples) and all(
+            field.name in sample for sample in pre_samples + post_samples)
+        stable = covered and pre_stable and post_stable
         out[field.name] = {
             "kind": field.kind.value,
             "expect": field.expect.value,
             "pre": pre,
             "post": post,
-            "stable": pre_stable and post_stable,
-            "discriminates": field.kind is FieldKind.EFFECT and pre != post,
+            "covered": covered,
+            "stable": stable,
+            "discriminates": stable and field.kind is FieldKind.EFFECT and pre != post,
         }
     return out
 
@@ -366,6 +379,12 @@ async def explore_fields(
     elif plans is not None and set(plans) != set(range(1, first.yields + 1)):
         report.exhaustive = False
         report.notes.append("explicit plans do not cover the discovered suspension range")
+
+    if first.outcome != "completed":
+        report.baseline_errors.append(f"uncancelled target: {first.outcome} {first.error or ''}")
+        report.exhaustive = False
+        report.seconds = time.monotonic() - started
+        return report
 
     for _ in range(2):
         obs, _ = await _observed_once(

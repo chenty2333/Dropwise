@@ -88,6 +88,31 @@ CONTRACT_COMPLETED = FieldContract((
 
 
 class FieldJudgingTests(unittest.TestCase):
+    def test_missing_calibration_is_not_none(self):
+        contract = FieldContract((Field("x"), Field("state", FieldKind.STATE)))
+        pre = [{"x": 0}]
+        post = [{"x": 1}]
+        result = judge_trial(contract, pre, post, {"x": 1, "state": None})
+        self.assertIs(result.by_name()["state"].status, FieldStatus.UNCOVERED)
+        self.assertFalse(result.coverage_complete)
+        self.assertFalse(calibration(contract, pre, post)["state"]["stable"])
+        result = judge_trial(FieldContract((Field("x"),)), [{}], [{"x": 1}], {"x": None})
+        self.assertIs(result.status, FieldStatus.UNCOVERED)
+
+    def test_explicit_none_and_nested_calibration_are_valid(self):
+        contract = FieldContract((Field("a.x"),))
+        result = judge_trial(contract, [{"a": {"x": None}}], [{"a": {"x": 1}}], {"a": {"x": None}})
+        self.assertIs(result.status, FieldStatus.PRE)
+        self.assertTrue(result.coverage_complete)
+
+    def test_flatten_rejects_alias_collision(self):
+        with self.assertRaises(FieldContractError):
+            flatten_observation({"a.b": 1, "a": {"b": 2}})
+
+    def test_neither_is_a_field_violation(self):
+        result = judge_trial(FieldContract((Field("x"),)), [{"x": 0}], [{"x": 1}], {"x": 2})
+        self.assertEqual(len(result.violations), 1)
+
     def test_flatten_dotted_names(self):
         flat = flatten_observation({"survivor": {"a": 1, "nested": {"b": 2}},
                                     "observer": {"rows": []}})
@@ -193,6 +218,27 @@ class FieldJudgingTests(unittest.TestCase):
 
 
 class ExploreFieldsTests(unittest.IsolatedAsyncioTestCase):
+    async def test_first_baseline_failure_stops_exploration(self):
+        class FailsOnce(SplitScenario):
+            async def target(self):
+                raise RuntimeError("baseline failed")
+        calls = 0
+        def factory():
+            nonlocal calls
+            calls += 1
+            return FailsOnce() if calls == 1 else SplitScenario()
+        report = await explore_fields("failed-first", factory, CONTRACT_MIXED, reps=1)
+        self.assertEqual(calls, 1)
+        self.assertTrue(report.baseline_errors)
+        self.assertFalse(report.exhaustive)
+        self.assertEqual(report.trials, [])
+
+    async def test_unrealized_field_cut_is_not_judged(self):
+        report = await explore_fields("unrealized", split_factory(), CONTRACT_MIXED, reps=1, plans=[999])
+        self.assertFalse(report.exhaustive)
+        self.assertIsNone(report.trials[0].judgment)
+
+
     async def test_mixed_effect_allowed_and_completed_violation(self):
         report = await explore_fields(
             "split", split_factory(), CONTRACT_MIXED, reps=1, plans=[1])

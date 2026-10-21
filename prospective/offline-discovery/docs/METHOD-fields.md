@@ -93,7 +93,7 @@ requires per effect; the blob has one expectation for all of them.
 
 The same tests pin `Uncovered` (a required `observer.rows` field absent),
 `Degenerate` (an always-empty observer field), a `STATE` guard violation, an
-unstable calibration (`Unknown`), and dotted flattening.  13 tests, no service
+unstable calibration (`Unknown`), and dotted flattening.  19 tests, no service
 or network needed:
 
 ```sh
@@ -122,6 +122,11 @@ cancellation engine and a sync signal harness, and the sync target was not used
 to design the field contract.  It is not a migration of the *injection* method
 (sync signals vs asyncio cancellation); the two targets have different
 reachable states, which is the point of §3 in the results report.
+
+Integration corrections: calibration presence is checked separately from value
+(`None` is a valid value), dotted-name aliases are rejected, a failed initial
+yield-count baseline stops exploration, and unrealized cuts remain unjudged.
+All declared fields are required; no unused optional-field switch is exposed.
 
 ## 6. Limits
 

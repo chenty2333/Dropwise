@@ -105,30 +105,35 @@ def install() -> None:
     _orig_exit = psycopg.Transaction.__exit__
 
     def enter(self):
-        try:
-            return _orig_enter(self)
-        except _INTERRUPTED as exc:
-            # The original __enter__ holds and releases the lock itself; take it
-            # again for the repair so no other thread can observe the state.
+        # Mirror the pinned upstream method, with repair inside the SAME lock
+        # scope. Calling _orig_enter first would publish broken state when its
+        # with block unwinds, before a wrapper can reacquire the lock.
+        with self._conn.lock:
             try:
-                with self._conn.lock:
+                self._conn.wait(self._enter_gen())
+            except _INTERRUPTED as exc:
+                try:
                     self._repair_action = _repair_entry(self._conn, self, exc)
-            except BaseException:
-                _close_quiet(self._conn)
-                self._repair_action = "closed-repair-raised"
-            raise
+                except BaseException:
+                    _close_quiet(self._conn)
+                    self._repair_action = "closed-repair-raised"
+                raise
+        return self
 
     def exit_(self, exc_type, exc_val, exc_tb):
-        try:
-            return _orig_exit(self, exc_type, exc_val, exc_tb)
-        except _INTERRUPTED as exc:
+        with self._conn.lock:
+            if self.pgconn.status != pq.ConnStatus.OK:
+                self.status = self.Status.FAILED
+                return False
             try:
-                with self._conn.lock:
+                return self._conn.wait(self._exit_gen(exc_type, exc_val, exc_tb))
+            except _INTERRUPTED as exc:
+                try:
                     self._repair_action = _repair_exit(self._conn, self, exc)
-            except BaseException:
-                _close_quiet(self._conn)
-                self._repair_action = "closed-repair-raised"
-            raise
+                except BaseException:
+                    _close_quiet(self._conn)
+                    self._repair_action = "closed-repair-raised"
+                raise
 
     psycopg.Transaction.__enter__ = enter
     psycopg.Transaction.__exit__ = exit_

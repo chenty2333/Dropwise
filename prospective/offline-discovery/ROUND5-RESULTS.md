@@ -5,6 +5,34 @@ report is [`docs/RESULTS-sync-signal.md`](docs/RESULTS-sync-signal.md); the
 method report is [`docs/METHOD-fields.md`](docs/METHOD-fields.md); the harness
 and reproduction instructions are in [`README.md`](README.md).
 
+## Integration review (2026-10-22)
+
+The synchronous prototype now holds the original connection lock throughout
+entry/exit and repair. The former wrapper released it before reacquiring it,
+allowing another thread to see broken state. Four regression tests check the
+first-unlock boundary, successful paths, and fail-closed repair interruption.
+This remains a bounded prototype, not arbitrary-signal safety.
+
+Field judgment now rejects missing calibration fields rather than treating them
+as observed `None`, rejects colliding dotted paths, and stops after a failed
+initial baseline. Actual `None` values and nested calibration remain supported;
+unrealized cuts remain unjudged. Six added tests cover these boundaries.
+
+Independent rerun: Python suites 33 + 11 tests passed; the complete sync runner
+finished with 60 signal trials, 48 calibrations and 72 interrupted trials per
+original/fix matrix (no calibration failures or trial errors), original/fixed
+pool cases, three SIGINT trials, the ownership contrast and 16 field trials.
+The repaired B/D/S4 retry and survivor cases were visible 3/3 each; C rejected
+reuse explicitly 3/3 per mode. All six fixed pool victims succeeded on the same
+backend. Field replay reported 12 interrupted violations and 4 normal controls.
+The signal sweep reached 22 clean, 8 pre-send, 12 unread-reply and 18 wait
+states; these host-specific counts are not production probabilities.
+
+The old records below remain historical runs; the rerun does not expand the
+prototype's nested/pipeline/async scope. In this report, an invisible write is
+uncommitted at the observation boundary, not proof of permanent loss before
+rollback or connection closure.
+
 ## What was actually built and run
 
 * **Sync psycopg harness** (`python/pgsync/`): a loopback PostgreSQL frame

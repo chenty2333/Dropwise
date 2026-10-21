@@ -9,7 +9,7 @@ support each other:
    exception at transaction entry/exit can produce four states: an advanced
    local counter with an idle server (D), an unread reply (C), an open server
    transaction with a local counter (B), and an open server transaction with no
-   local owner (S4).  B and S4 silently lose the next transaction's write; D is
+   local owner (S4).  B and S4 leave the next transaction's write uncommitted; D is
    invisible to `info.transaction_status` and is reused by `psycopg_pool` across
    checkouts; C is loud but unusable.  A candidate repair fixes B, S4 and D,
    fails C closed, and keeps the pool safe.
