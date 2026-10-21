@@ -818,7 +818,7 @@ M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok
 | mysql-connector 26.7.0 direct | B1 0/12；B2 12/12、B3 12/12 结构化 fail-fast；M1 12/12 Neither：6/12 丢写/未提交，3/12 已提交但误报，3/12 反序列化错位 | **候选客户端缺陷**；M1 才看到静默后果 |
 | psycopg 3.3.6 direct | B1/B2/B3 0/18；M1 12/18（6 Post、12 Neither）；B2/B3 的值里已有 `status_after_acquire=INTRANS`，但 level 只看逃逸错误 | **direct-handle 静默泄漏**；B2/B3 语义盲，M1 才是判据 |
 | psycopg pool | B1/B2/B3/M1 全 0/18；release rollback INTRANS→IDLE | **clean/self-heal 正例** |
-| asyncpg 0.32.0 direct | 新 B1-B3 0/9、M1 **9/9**；k1 `in_tx=False` + observer []、k2/k3 `in_tx=True` + [] | direct-handle 族；B2/B3 语义盲，M1 判据 |
+| asyncpg 0.32.0 direct | 新 B1-B3 0/9、M1 **9/9**；k1 `in_tx=False` + observer []、k2 `in_tx=True` + []、k3 `in_tx=True` + observer 有 survivor+target（仅 stale state） | direct-handle 族；6/9 丢写 + 3/9 stale-state；B2/B3 语义盲，M1 判据 |
 | asyncpg pool | 新 B1/B2/B3/M1 全 0/12；M1 Pre 6/Post 6；最终`run.WcLcOp` 24/24 pool 对照无 timeout | 本阶梯 clean；不写成普遍保证 |
 | redis-py 8.1.0（pool/direct × tx/set） | 120 trials，全 0；M1 Pre/Post 合法；DISCARD/UNWATCH/reconnect 对照 10/10 | 阴性；本场景 clean |
 | pymongo 4.19.0 | 4 units，144 trials，全 0；M1 Pre/Post 合法；cancel 后 socket discarded/reconnect | 阴性；self-heal 正例 |
