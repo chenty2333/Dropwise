@@ -28,6 +28,16 @@ backend. Field replay reported 12 interrupted violations and 4 normal controls.
 The signal sweep reached 22 clean, 8 pre-send, 12 unread-reply and 18 wait
 states; these host-specific counts are not production probabilities.
 
+Mainline update (same date): the field contract now also exists in the Rust
+engine (`src/fields.rs`, `explore_fields`/`replay_fields`/`assert_fields`) with
+per-field `Expect`, cross-field invariants, baseline/strict checks and
+`FieldStatus` coverage gaps.  The Python logs below are unchanged and were not
+re-judged by the Rust code; the port deliberately does not sample mixed
+calibrations, so a fused aggregate can differ from the Python blob's `Mixed`
+verdict.  The ownership witness is implemented in `prospective/online-guards`
+as RAII claims (nested, owner-only recovery, handoff, forgotten-claim
+retirement); it is not a psycopg patch.
+
 The old records below remain historical runs; the rerun does not expand the
 prototype's nested/pipeline/async scope. In this report, an invisible write is
 uncommitted at the observation boundary, not proof of permanent loss before
@@ -108,11 +118,13 @@ The highest-value lead (sync entry + pool) was taken to a closed loop: mechanism
   (source reading + round-4 phase map, no new async run); the ownership
   argument in the legitimate-vs-abandoned contrast (constructed three-way
   comparison, not a production trace).
-* **Proposal, not result:** an upstream psycopg patch with its test suite; a
-  public/private ownership witness for pools and guards; an eBPF/kernel
-  observation experiment (the negative result in §4.6 predicts it cannot
-  recover ownership alone); the Rust port of the field contract; tests on
-  SQLAlchemy/anyio/pipeline targets not used in the design.
+* **Proposal, not result:** an upstream psycopg patch with its test suite; an
+  eBPF/kernel observation experiment (the negative result in §4.6 predicts it
+  cannot recover ownership alone); auto-deriving fields from resource identity;
+  tests on SQLAlchemy/anyio/pipeline targets not used in the design.
+* **Ported outside this Python round:** the Rust field contract and the online
+  ownership claims (see the mainline update above).  They are separate
+  implementations with their own tests, not new measurements of this harness.
 
 ## Residual limits
 
@@ -131,6 +143,6 @@ contract is declared, not discovered, and assumes effect independence.
    nested-entry/exit and non-autocommit cases.
 2. Build an explicit live-owner witness and test it against the legitimate
    nested transaction in §4.6; measure false positives before any guard ships.
-3. Port the field contract to the Rust engine and auto-derive fields from
-   resource identity, then re-run round-3/4 cases to see which “passes” were
-   actually uncovered.
+3. Auto-derive fields from resource identity in the Rust engine and re-run
+   round-3/4 cases to see which “passes” were actually uncovered; the manual
+   port is done, but its discovery claim is not yet measured on those cases.
