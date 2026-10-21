@@ -1,0 +1,88 @@
+test_cancelled_start_does_not_poison_connection (tests.test_transaction.TestTransaction.test_cancelled_start_does_not_poison_connection) ... FAIL
+test_cancelled_start_pool_release (tests.test_transaction.TestTransaction.test_cancelled_start_pool_release) ... FAIL
+test_cancelled_start_refuses_reuse_until_reset (tests.test_transaction.TestTransaction.test_cancelled_start_refuses_reuse_until_reset) ... FAIL
+test_isolation_level (tests.test_transaction.TestTransaction.test_isolation_level) ... ok
+test_nested_isolation_level (tests.test_transaction.TestTransaction.test_nested_isolation_level) ... ok
+test_nested_savepoint_failure_keeps_outer_transaction (tests.test_transaction.TestTransaction.test_nested_savepoint_failure_keeps_outer_transaction) ... ok
+test_nested_start_failure_keeps_outer_transaction (tests.test_transaction.TestTransaction.test_nested_start_failure_keeps_outer_transaction) ... ok
+test_start_failure_does_not_poison_connection (tests.test_transaction.TestTransaction.test_start_failure_does_not_poison_connection) ... FAIL
+test_transaction_interface_errors (tests.test_transaction.TestTransaction.test_transaction_interface_errors) ... ok
+test_transaction_nested (tests.test_transaction.TestTransaction.test_transaction_nested) ... ok
+test_transaction_regular (tests.test_transaction.TestTransaction.test_transaction_regular) ... ok
+test_transaction_within_manual_transaction (tests.test_transaction.TestTransaction.test_transaction_within_manual_transaction) ... ok
+
+======================================================================
+FAIL: test_cancelled_start_does_not_poison_connection (tests.test_transaction.TestTransaction.test_cancelled_start_does_not_poison_connection)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ava/Worktrees/asyncpg/repo/asyncpg/_testbase/__init__.py", line 92, in wrapper
+    self.loop.run_until_complete(coro)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/ava/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/ava/Worktrees/asyncpg/repo/tests/test_transaction.py", line 288, in test_cancelled_start_does_not_poison_connection
+    self.assertEqual(
+    ~~~~~~~~~~~~~~~~^
+        await other.fetch('SELECT a FROM test_cancelled_start'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        [(1,)])
+        ^^^^^^^
+AssertionError: Lists differ: [] != [(1,)]
+
+Second list contains 1 additional elements.
+First extra element 0:
+(1,)
+
+- []
++ [(1,)]
+
+======================================================================
+FAIL: test_cancelled_start_pool_release (tests.test_transaction.TestTransaction.test_cancelled_start_pool_release)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ava/Worktrees/asyncpg/repo/asyncpg/_testbase/__init__.py", line 92, in wrapper
+    self.loop.run_until_complete(coro)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/ava/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/ava/Worktrees/asyncpg/repo/tests/test_transaction.py", line 491, in test_cancelled_start_pool_release
+    self.assertIsNone(con._con._top_xact)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: <asyncpg.Transaction state:failed 0x7fe22a4f5850> is not None
+
+======================================================================
+FAIL: test_cancelled_start_refuses_reuse_until_reset (tests.test_transaction.TestTransaction.test_cancelled_start_refuses_reuse_until_reset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ava/Worktrees/asyncpg/repo/asyncpg/_testbase/__init__.py", line 92, in wrapper
+    self.loop.run_until_complete(coro)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/ava/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/ava/Worktrees/asyncpg/repo/tests/test_transaction.py", line 328, in test_cancelled_start_refuses_reuse_until_reset
+    self.assertIsNone(self.con._top_xact)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: <asyncpg.Transaction state:failed 0x7fe22a4f5bd0> is not None
+
+======================================================================
+FAIL: test_start_failure_does_not_poison_connection (tests.test_transaction.TestTransaction.test_start_failure_does_not_poison_connection)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ava/Worktrees/asyncpg/repo/asyncpg/_testbase/__init__.py", line 92, in wrapper
+    self.loop.run_until_complete(coro)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/ava/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/ava/Worktrees/asyncpg/repo/tests/test_transaction.py", line 206, in test_start_failure_does_not_poison_connection
+    self.assertIsNone(self.con._top_xact)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: <asyncpg.Transaction state:failed 0x7fe22a4f5d20> is not None
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.255s
+
+FAILED (failures=4)

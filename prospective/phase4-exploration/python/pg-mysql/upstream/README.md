@@ -16,3 +16,58 @@ The transaction scripts demonstrate a successful retry whose insert is not
 visible from an independent connection. The MySQL script confirms the first
 query is running before cancelling it, then demonstrates its reply being
 returned for `SELECT 42`.
+
+## Local patch worktrees (2026-10-22)
+
+Three independent clean worktrees, each branched from the verified upstream
+baseline. All changes are local commits; nothing was pushed and no upstream PR
+was opened. Each branch was tested with its production change reverted to the
+baseline (`git show HEAD^:<file>`) to confirm the new tests fail before the fix.
+
+### psycopg #1451
+
+- checkout: `/home/ava/Worktrees/psycopg/tx-cancel`
+- branch: `codex/tx-entry-cancel`
+- baseline: `origin/master` `99356800` ("fix: don't poll the cancel connection if the socket is not ready")
+- patch: `5f295ab1` ("fix: recover async transaction state on cancelled entry")
+- files: `psycopg/psycopg/transaction.py`, `tests/test_transaction_async.py`, `docs/news.rst`
+- fixed tests: `PSYCOPG_TEST_DSN='host=127.0.0.1 port=32919 user=postgres password=dw dbname=dw' .venv/bin/python -m pytest tests/test_transaction_async.py tests/test_transaction.py -q` -> 175 passed, 9 skipped
+- baseline: 6 failed, 169 passed, 9 skipped; the six failures are the new entry-cancellation/savepoint tests, while the lock-wait control and the sync transaction tests pass
+- broader async suite (`test_connection_async`, `test_cursor_*_async`, `test_pipeline_async`, `test_tpc_async`, `test_prepared_async`, `test_concurrency_async`, `test_notify_async`): 784 passed, 37 skipped excluding `test_resolve_error_host` (the local resolver maps `nosuchhost.example.com` to a non-public address instead of failing DNS as the test expects)
+- checks: `black --check`, `flake8`, `mypy --follow-imports=silent` clean on changed files
+- PR draft: `PSYCOPG-PR-1451.md`
+- remaining coordinator checks: pipeline-entry cancellation is not covered (pipeline variants skip); full suite and remote CI were not run
+
+### asyncpg #1386
+
+- checkout: `/home/ava/Worktrees/asyncpg/repo`
+- branch: `codex/tx-start-cleanup`
+- baseline: `13b01910` ("Open 0.33.0 development")
+- patch: `ff1bb8d6` ("Fix stale _top_xact after a failed Transaction.start()")
+- files: `asyncpg/transaction.py`, `tests/test_transaction.py`
+- fixed tests: `PGHOST=127.0.0.1 PGPORT=32919 PGUSER=postgres PGPASSWORD=dw PGDATABASE=dw .venv/bin/python -m unittest -q tests.test_transaction` -> 12 tests, OK
+- baseline: same command -> 4 failures (`test_start_failure_does_not_poison_connection`, `test_cancelled_start_does_not_poison_connection`, `test_cancelled_start_refuses_reuse_until_reset`, `test_cancelled_start_pool_release`); the two nested-transaction tests pass on both versions
+- additional fixed runs: `tests.test_pool` 66 OK, 4 skipped; `tests.test_cancellation` + `tests.test_timeout` 23 OK; `tests.test__sourcecode` 2 OK, 1 skipped; `flake8` clean
+- PR draft: `ASYNCPG-PR-1386.md`; baseline failure log: `asyncpg-baseline-failure-1386.txt`
+- remaining coordinator checks: no deterministic server-side `BEGIN` `ErrorResponse` was produced (nested `SAVEPOINT` failure covers the same cleanup path); direct `conn.execute()` after a cancelled `BEGIN` remains a manual-transaction caveat; full suite and remote CI were not run
+
+### mysql-connector-python #112
+
+- checkout: `/home/ava/Worktrees/mysql-connector/aio-cancel`
+- branch: `codex/aio-cancel-stream`
+- baseline: `origin/trunk` `79f34351` ("Fix mysqld version parsing for multi-digit components")
+- patch: `e7a02b6` ("Fix aio connection reuse after a cancelled command")
+- files: `lib/mysql/connector/aio/network.py`, `lib/mysql/connector/aio/abstracts.py`, `lib/mysql/connector/aio/cursor.py`, `tests/test_aio_connection.py`
+- fixed focused tests: `cd mysql-connector-python && ../.venv/bin/python unittests.py --use-external-server --host 127.0.0.1 --port 32922 --user root --password dw -T tests.test_aio_connection.MySQLAioCancellationTests --verbosity 1` -> 11 tests, OK
+- baseline: same command -> 5 failures + 4 errors in 7.7 s; buffered, unbuffered and `nextset()` reuse the cancelled reply as `[(0,)]` / `('cancelled_value',)`, the cancelled fetch blocks for more than 5 s on the stale reply, the prepared case gets `InterfaceError: Expected Binary OK packet`, both cursor-context cases get `InternalError: Unread result found` instead of `CancelledError`, the compressed-write unit test gets `WriteTimeoutError` instead of `CancelledError`, and the socket-poisoning unit test fails on the missing `_is_poisoned` attribute; the two controls pass on both versions
+- fixed module runs: `aio_connection` 94 OK, 7 skipped; `aio_cursor` 75 OK; `aio_pooling` 18 OK; `qa_aio_timeout` 22 OK, 5 skipped
+- manual compressed check with `compress=True`: cancellation disconnects the socket, the next query raises `OperationalError`, a fresh connection returns `[(42)]` / `('next_value',)`
+- checks: `black --check` clean on the four changed files; `isort --check-only` clean on the three production files (`tests/test_aio_connection.py` retains import-order differences already present on trunk); `compileall` passes
+- PR draft: `MYSQL-PR-112.md`
+- remaining coordinator checks: C-extension path and a dedicated cancelled server-side prepared fetch are not covered; compression is covered by a unit test plus the manual check but not by an integration test; full suite and remote CI were not run
+
+## Remaining work before publishing
+
+- Human/coordinator review of the three diffs and PR drafts.
+- Upstream CI (including the projects' Python/OS matrices) not run.
+- No push, PR, comment, email or CLA action has been performed.
