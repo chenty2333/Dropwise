@@ -276,8 +276,8 @@ rather than a counter peek.
   around commit; the maintainer declined to document the expected behaviour,
   calling it emerging behaviour.  This round does not contradict that; it
   measures what the emerging behaviour is on the sync path.
-* #1384 (closed): `SystemExit` is in `_INTERRUPTED`; our repair treats it like
-  `KeyboardInterrupt`.
+* #1384: `SystemExit` is in `_INTERRUPTED` in this version; our repair treats
+  it like `KeyboardInterrupt`.  (The issue state was not re-checked here.)
 * #1444 (open, 2026-10-16) / #1448 (open): a **second** Ctrl-C during
   `Connection.wait()` cancel cleanup can leave the connection ACTIVE/busy; #1448
   proposes closing.  Our C state is a **single** interruption with an unread
