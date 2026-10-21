@@ -1,0 +1,8 @@
+case=mysqlconnector mode=direct mysql-connector=26.7.0 python=3.13.13 host=127.0.0.1 port=32888 db=dw_r4_mcfix_696697 round=0 delay=0.05 bound=2.0
+DIAG setup={'setup': {'cid': 12, 'in_tx': False, 'unread': False}, 'setup_autocommit': ('ok', True), 'setup_connected': ('ok', True)}
+DIAG reuse=[(('ok', 1), ('ok', [(12,)])), (('ok', 1), ('ok', [(12,)])), (('ok', 1), ('ok', [(12,)]))] state={'cid': 12, 'in_tx': False, 'unread': False}
+DIAG pre obs={'survivor': ['ok', {'in_tx': False, 'write': ['ok', 1], 'own': ['ok', [[7]]], 'release': None}], 'observer': ['ok', {'rows': [['survivor', 7]], 'error': None}]}
+DIAG post target=completed/3 result=OpResult(ok=True, stage='commit', value={'cid': 12, 'in_tx_before': False, 'start_transaction': ('ok', None), 'insert': ('ok', 1), 'commit': ('ok', None), 'in_tx_after': False}, error=None) diag={'setup': {'cid': 12, 'in_tx': False, 'unread': False}, 'setup_autocommit': ('ok', True), 'setup_connected': ('ok', True), 'survivor_start': {'cid': 12, 'in_tx': False, 'unread': False}, 'survivor_end': {'cid': 12, 'in_tx': False, 'unread': False}, 'stages': ['start_transaction', 'insert', 'commit'], 'after_target': {'cid': 12, 'in_tx': False, 'unread': False}}
+DIAG post obs={'survivor': ['ok', {'in_tx': False, 'write': ['ok', 1], 'own': ['ok', [[7]]], 'release': None}], 'observer': ['ok', {'rows': [['survivor', 7], ['target', 1]], 'error': None}]}
+DIAG pre==post False
+exit=0

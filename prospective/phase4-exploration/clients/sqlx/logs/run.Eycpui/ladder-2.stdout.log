@@ -1,0 +1,96 @@
+=== SQLX LADDER REPETITION 2 START (run sqlx-690075-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms target=UPSERT3 rows=3
+SQLX-SNAPSHOT run=2 stage=after_setup proxy_connections=1 conn=[127.0.0.1:35244/493/766] residue=Ok(0)
+B1-TARGET run=2 result=Ok(rows_affected=3)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:35244/690/821] residue=Ok(0)
+SQLX-SNAPSHOT run=2 stage=after_setup proxy_connections=1 conn=[127.0.0.1:59232/535/787] residue=Ok(0)
+B1-TARGET run=2 result=cancelled
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:59232/685/787] residue=Ok(0)
+SQLX-SNAPSHOT run=2 stage=after_setup proxy_connections=1 conn=[127.0.0.1:59900/525/782] residue=Ok(0)
+B1-TARGET run=2 result=cancelled
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:59900/675/805] residue=Ok(23)
+SQLX-SNAPSHOT run=2 stage=after_setup proxy_connections=1 conn=[127.0.0.1:47234/541/790] residue=Ok(0)
+B1-TARGET run=2 result=cancelled
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:47234/691/813] residue=Ok(0)
+SQLX-SNAPSHOT run=2 stage=after_setup proxy_connections=1 conn=[127.0.0.1:48102/487/763] residue=Ok(0)
+B1-TARGET run=2 result=cancelled
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:48102/684/818] residue=Ok(32)
+LADDER B1 UPSERT3 [sqlx]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+SQLX-TRIAL B1 UPSERT3 index=0 plan=#0@1:Immediate outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:290]
+SQLX-TRIAL B1 UPSERT3 index=1 plan=#0@1:AfterWake outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:290]
+SQLX-TRIAL B1 UPSERT3 index=2 plan=#0@2:Immediate outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:290]
+SQLX-TRIAL B1 UPSERT3 index=3 plan=#0@2:AfterWake outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:290]
+B2-TARGET run=2 baseline completed
+B2-RESULT run=2 retry=Ok(3)
+SQLX-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:42018/852/850] residue=Ok(0)
+B2-RESULT run=2 retry=Ok(3)
+SQLX-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:47974/878/863] residue=Ok(0)
+B2-RESULT run=2 retry=Ok(3)
+SQLX-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:36546/809/889] residue=Ok(0)
+B2-RESULT run=2 retry=Ok(3)
+SQLX-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:59034/713/841] residue=Ok(0)
+LADDER B2 UPSERT3 [sqlx]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+SQLX-TRIAL B2 UPSERT3 index=0 plan=#0@1:Immediate outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:314]
+SQLX-TRIAL B2 UPSERT3 index=1 plan=#0@1:AfterWake outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:314]
+SQLX-TRIAL B2 UPSERT3 index=2 plan=#0@2:Immediate outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:314]
+SQLX-TRIAL B2 UPSERT3 index=3 plan=#0@2:AfterWake outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:314]
+B3-TARGET run=2 baseline completed
+B3-RESULT run=2 expected_rows=1 rows_affected=Ok(1)
+SQLX-SNAPSHOT run=2 stage=after_other proxy_connections=1 conn=[127.0.0.1:34494/831/873] residue=Ok(0)
+B3-RESULT run=2 expected_rows=1 rows_affected=Ok(1)
+SQLX-SNAPSHOT run=2 stage=after_other proxy_connections=1 conn=[127.0.0.1:55422/837/876] residue=Ok(0)
+B3-RESULT run=2 expected_rows=1 rows_affected=Ok(1)
+SQLX-SNAPSHOT run=2 stage=after_other proxy_connections=1 conn=[127.0.0.1:58688/824/878] residue=Ok(0)
+B3-RESULT run=2 expected_rows=1 rows_affected=Ok(1)
+SQLX-SNAPSHOT run=2 stage=after_other proxy_connections=1 conn=[127.0.0.1:53394/852/892] residue=Ok(0)
+LADDER B3 UPDATE_B3 [sqlx]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+SQLX-TRIAL B3 UPDATE_B3 index=0 plan=#0@1:Immediate outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:351]
+SQLX-TRIAL B3 UPDATE_B3 index=1 plan=#0@1:AfterWake outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:351]
+SQLX-TRIAL B3 UPDATE_B3 index=2 plan=#0@2:Immediate outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:351]
+SQLX-TRIAL B3 UPDATE_B3 index=3 plan=#0@2:AfterWake outcomes=[Cancelled] cancelled=1 verdict=None settled=true sites=[src/main.rs:351]
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:43878/770/861] residue=Ok(0)
+M1-TARGET run=2 cancelled=false
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:43878/917/914] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:40632/501/770] residue=Ok(0)
+M1-TARGET run=2 cancelled=true
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:40632/798/846] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:42316/527/783] residue=Ok(0)
+M1-TARGET run=2 cancelled=true
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:42316/674/836] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:40830/465/752] residue=Ok(0)
+M1-TARGET run=2 cancelled=true
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:40830/612/805] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:34652/758/855] residue=Ok(0)
+M1-TARGET run=2 cancelled=false
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:34652/905/908] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:39526/678/815] residue=Ok(0)
+M1-TARGET run=2 cancelled=false
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:39526/825/868] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:55806/619/777] residue=Ok(23)
+M1-TARGET run=2 cancelled=true
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:55806/766/830] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:37662/717/826] residue=Ok(0)
+M1-TARGET run=2 cancelled=true
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:37662/911/911] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:56740/758/855] residue=Ok(32)
+M1-TARGET run=2 cancelled=true
+SQLX-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:56740/905/908] residue=Ok(0)
+SQLX-OBS run=2 before=Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+LADDER M1 UPSERT3 [sqlx]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=3 post=1 mixed=0 neither=0 unknown=0
+SQLX-TRIAL M1 UPSERT3 index=0 plan=#0@1:Immediate outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true sites=[src/main.rs:391]
+SQLX-COMPARISON M1 UPSERT3 index=0 observed Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, pre=Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, post=Obs { before: Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }
+SQLX-TRIAL M1 UPSERT3 index=1 plan=#0@1:AfterWake outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true sites=[src/main.rs:391]
+SQLX-COMPARISON M1 UPSERT3 index=1 observed Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, pre=Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, post=Obs { before: Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }
+SQLX-TRIAL M1 UPSERT3 index=2 plan=#0@2:Immediate outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true sites=[src/main.rs:391]
+SQLX-COMPARISON M1 UPSERT3 index=2 observed Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, pre=Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, post=Obs { before: Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }
+SQLX-TRIAL M1 UPSERT3 index=3 plan=#0@2:AfterWake outcomes=[Cancelled] cancelled=1 verdict=Some(Post) settled=true sites=[src/main.rs:391]
+SQLX-COMPARISON M1 UPSERT3 index=3 observed Obs { before: Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, pre=Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }, post=Obs { before: Ok([("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }
+=== SQLX LADDER REPETITION 2 END ===

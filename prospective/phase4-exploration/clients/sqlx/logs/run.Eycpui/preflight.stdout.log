@@ -1,0 +1,4 @@
+SQLX-SNAPSHOT run=0 stage=preflight_setup proxy_connections=1 conn=[127.0.0.1:47450/495/767] residue=Ok(0)
+SQLX-SNAPSHOT run=0 stage=preflight_after proxy_connections=1 conn=[127.0.0.1:47450/1009/1010] residue=Ok(0)
+PREFLIGHT server=127.0.0.1:32885 initial=[("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)] target_rows=3 after=[("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)] write_rows=4 own=7 second=7 all=[("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)] proxy_connections=1
+PREFLIGHT-OK observer_effect=t1..t3:0->1 survivor=t1..t3,b3:->7 same_handle=reused proxy_connections=1

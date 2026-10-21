@@ -1,0 +1,3 @@
+case=txphase driver=asyncpg python=3.13.13 host=127.0.0.1 port=32891 db=dw delay=0.05 bound=2.0 recovery=none
+COUNT driver=asyncpg outcome=completed yields=3 result=OpResult(ok=True, stage='commit', value={'write': 'INSERT 0 1', 'status_after': {'driver': 'asyncpg', 'in_transaction': False, 'closed': False, 'tx_state': 'COMMITTED', 'top_xact_is_tx': False}}, error=None) diag={'setup_pid': 100, 'after_commit': {'driver': 'asyncpg', 'in_transaction': False, 'closed': False, 'tx_state': 'COMMITTED', 'top_xact_is_tx': False}, 'preflight': {'write': {'write': 'INSERT 0 1', 'status_after': {'driver': 'asyncpg', 'in_transaction': False, 'closed': False, 'tx_state': 'COMMITTED', 'top_xact_is_tx': False}}, 'rows': [['target', 1]]}}
+exit=0

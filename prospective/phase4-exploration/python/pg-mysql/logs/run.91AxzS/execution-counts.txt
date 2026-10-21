@@ -1,0 +1,2 @@
+psycopg-pool-acquire executions=35 clean=33 records_with_issues=2 shapes=11
+asyncpg-pool-acquire executions=25 clean=23 records_with_issues=2 shapes=8

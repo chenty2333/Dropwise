@@ -1,0 +1,3 @@
+SQLX-SNAPSHOT run=0 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:38162/666/832] residue=Ok(0)
+SQLX-OBS run=0 before=Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]) write=Ok(4) own=Ok(7) visible=Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]) usable=Ok(42)
+SQLX-CAL side=pre obs=Obs { before: Ok([("b3", 3), ("t1", 0), ("t2", 0), ("t3", 0)]), write: Ok(4), own: Ok(7), visible: Ok([("b3", 7), ("t1", 7), ("t2", 7), ("t3", 7)]), usable: Ok(42) }

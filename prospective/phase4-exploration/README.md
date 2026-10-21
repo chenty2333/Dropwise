@@ -6,9 +6,11 @@ after reading the round-1 results; it is a follow-up on the same three clients,
 not a new client batch, not a Phase 4 expansion, and not a preregistered study.
 It does **not** change or freeze the formal Phase 4 draft list, gates or budget.
 
-Current reviewed findings and next steps are in [ROUND3-RESULTS.md](ROUND3-RESULTS.md),
-with the [adapter audit](ADAPTER-AUDIT-ROUND3.md) separating valid observations
-from old invalid runs. [RESULTS.md](RESULTS.md) and the description below retain
+The latest transaction-entry, recovery and pool-handoff results are in
+[ROUND4-RESULTS.md](ROUND4-RESULTS.md), including the scope of integration review.
+[ROUND3-RESULTS.md](ROUND3-RESULTS.md) and the
+[adapter audit](ADAPTER-AUDIT-ROUND3.md) retain the preceding all-client findings
+and separate valid observations from old invalid runs. [RESULTS.md](RESULTS.md) and the description below retain
 the rounds 1–2 context; they are not the current all-client summary.
 
 ## First batch (written before any cancellation run)

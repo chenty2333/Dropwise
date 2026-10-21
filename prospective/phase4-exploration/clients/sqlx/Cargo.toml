@@ -1,0 +1,19 @@
+[package]
+name = "p4e-sqlx"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../../../..", features = ["net"] }
+sqlx = { version = "=0.8.6", default-features = false, features = ["runtime-tokio", "postgres"] }
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
+tokio-postgres = { version = "=0.7.18", default-features = false, features = ["runtime"] }
+
+[[bin]]
+name = "sqlx-ladder"
+path = "src/main.rs"
+
+[[bin]]
+name = "pg-probe"
+path = "src/pg_probe.rs"

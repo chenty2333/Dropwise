@@ -1,0 +1,18 @@
+case=mysqlconnector mode=direct mysql-connector=26.7.0 python=3.13.13 host=127.0.0.1 port=32876 db=dw_r4_mcfix_680562 round=0 delay=0.05 bound=2.0
+PROBE k=1 target=cancelled realized=True yields=1 err=None diag={'setup': {'cid': 22, 'in_tx': False, 'unread': False}, 'setup_autocommit': ('ok', True), 'setup_connected': ('ok', True), 'stages': [], 'after_target': {'cid': 22, 'in_tx': False, 'unread': False}, 'survivor_start': {'cid': 22, 'in_tx': False, 'unread': False}, 'survivor_end': {'cid': 22, 'in_tx': True, 'unread': False}}
+        survivor=('ok', {'in_tx': False, 'write': ('err', "ProgrammingError: Failed processing format-parameters; 'NoneType' object is not subscriptable"), 'own': ('ok', [['ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION']]), 'release': None})
+        observer=('ok', {'rows': [], 'error': None}) seconds=0.20
+PROBE k=2 target=cancelled realized=True yields=2 err=None diag={'setup': {'cid': 24, 'in_tx': False, 'unread': False}, 'setup_autocommit': ('ok', True), 'setup_connected': ('ok', True), 'stages': ['start_transaction'], 'after_target': {'cid': 24, 'in_tx': True, 'unread': False}, 'survivor_start': {'cid': 24, 'in_tx': True, 'unread': False}, 'survivor_end': {'cid': 24, 'in_tx': True, 'unread': False}}
+        survivor=('ok', {'in_tx': True, 'write': ('ok', 1), 'own': ('ok', []), 'release': None})
+        observer=('ok', {'rows': [], 'error': None}) seconds=0.31
+PROBE k=3 target=cancelled realized=True yields=3 err=None diag={'setup': {'cid': 26, 'in_tx': False, 'unread': False}, 'setup_autocommit': ('ok', True), 'setup_connected': ('ok', True), 'stages': ['start_transaction'], 'after_target': {'cid': 26, 'in_tx': True, 'unread': False}, 'survivor_start': {'cid': 26, 'in_tx': True, 'unread': False}, 'survivor_end': {'cid': 26, 'in_tx': True, 'unread': False}}
+        survivor=('ok', {'in_tx': True, 'write': ('ok', 1), 'own': ('ok', []), 'release': None})
+        observer=('ok', {'rows': [], 'error': None}) seconds=0.36
+PROBE k=4 target=cancelled realized=True yields=4 err=None diag={'setup': {'cid': 28, 'in_tx': False, 'unread': False}, 'setup_autocommit': ('ok', True), 'setup_connected': ('ok', True), 'stages': ['start_transaction', 'insert'], 'after_target': {'cid': 28, 'in_tx': True, 'unread': False}, 'survivor_start': {'cid': 28, 'in_tx': True, 'unread': False}, 'survivor_end': {'cid': 28, 'in_tx': False, 'unread': False}}
+        survivor=('ok', {'in_tx': True, 'write': ('ok', 0), 'own': ('ok', []), 'release': None})
+        observer=('ok', {'rows': [['survivor', 7], ['target', 1]], 'error': None}) seconds=0.47
+<sys>:0: RuntimeWarning: coroutine 'MySQLConnectorScenario._exec_conn' was never awaited
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+<sys>:0: RuntimeWarning: coroutine 'MySQLConnection.commit' was never awaited
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+exit=0

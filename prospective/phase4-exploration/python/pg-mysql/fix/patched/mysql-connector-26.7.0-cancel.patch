@@ -1,0 +1,145 @@
+diff -ruN a/mysql/connector/aio/abstracts.py b/mysql/connector/aio/abstracts.py
+--- a/mysql/connector/aio/abstracts.py
++++ b/mysql/connector/aio/abstracts.py
+@@ -1510,6 +1510,16 @@
+         Raises:
+             InternalError: When there are pending results and they were not consumed.
+         """
++        close_reason = getattr(getattr(self, "_socket", None), "_close_reason", None)
++        if close_reason:
++            # DW-PATCH: the transport was closed by _close_on_cancel(); refuse
++            # to send anything else on a reply stream whose position is unknown.
++            # Do not raise while a cancellation is being unwound: cursor/context
++            # cleanup calls this method, and raising here would replace the
++            # in-flight CancelledError with InterfaceError.
++            task = asyncio.current_task()
++            if task is None or not task.cancelling():
++                raise InterfaceError(f"{close_reason}; connection is not reusable")
+         if self._consume_results:
+             await self.consume_results()
+         elif self.unread_result:
+diff -ruN a/mysql/connector/aio/network.py b/mysql/connector/aio/network.py
+--- a/mysql/connector/aio/network.py
++++ b/mysql/connector/aio/network.py
+@@ -555,6 +555,9 @@
+         self._address: Optional[str] = None
+         self._netbroker: NetworkBroker = NetworkBrokerPlain()
+         self._is_connected: bool = False
++        # DW-PATCH (mysql-connector-python 26.7.0): set when an in-flight
++        # command is cancelled; the reply stream is then in an unknown state.
++        self._close_reason: Optional[str] = None
+ 
+     @property
+     def address(self) -> str:
+@@ -588,6 +591,25 @@
+         """
+         return self._is_connected
+ 
++    def _close_on_cancel(self) -> None:
++        """Close the transport after a cancelled in-flight read/write.
++
++        DW-PATCH: mirrors aiomysql's ``Connection._close_on_cancel``.  A
++        cancellation lands while the server's reply is still in flight, so
++        the stream position is unknown; the connection must not be reused.
++        ``_close_reason`` makes every later command fail with InterfaceError.
++        """
++        self._close_reason = "Cancelled during execution"
++        self._is_connected = False
++        if self._writer is not None:
++            try:
++                self._writer.close()
++                # Same transport.abort() workaround as close_connection().
++                if self._writer.transport is not None:
++                    self._writer.transport.abort()
++            except Exception:  # pylint: disable=broad-exception-caught
++                pass
++
+     def set_connection_timeout(self, timeout: int) -> None:
+         """Set the connection timeout."""
+         self._connection_timeout = timeout
+@@ -629,18 +651,30 @@
+         write_timeout: Optional[int] = None,
+     ) -> None:
+         """Send packets to the MySQL server."""
+-        await self._netbroker.write(
+-            self._writer,
+-            self.address,
+-            payload,
+-            packet_number=packet_number,
+-            compressed_packet_number=compressed_packet_number,
+-            write_timeout=write_timeout,
+-        )
++        try:
++            await self._netbroker.write(
++                self._writer,
++                self.address,
++                payload,
++                packet_number=packet_number,
++                compressed_packet_number=compressed_packet_number,
++                write_timeout=write_timeout,
++            )
++        except asyncio.CancelledError:
++            # DW-PATCH: an interrupted write may have sent a partial packet.
++            self._close_on_cancel()
++            raise
+ 
+     async def read(self, read_timeout: Optional[int] = None) -> bytearray:
+         """Read packets from the MySQL server."""
+-        return await self._netbroker.read(self._reader, self.address, read_timeout)
++        try:
++            return await self._netbroker.read(
++                self._reader, self.address, read_timeout
++            )
++        except asyncio.CancelledError:
++            # DW-PATCH: the reply to the in-flight command is unread.
++            self._close_on_cancel()
++            raise
+ 
+     def build_ssl_context(
+         self,
+Binary files a/mysql/connector/aio/plugins/__pycache__/caching_sha2_password.cpython-313.pyc and b/mysql/connector/aio/plugins/__pycache__/caching_sha2_password.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/plugins/__pycache__/__init__.cpython-313.pyc and b/mysql/connector/aio/plugins/__pycache__/__init__.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/plugins/__pycache__/mysql_native_password.cpython-313.pyc and b/mysql/connector/aio/plugins/__pycache__/mysql_native_password.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/abstracts.cpython-313.pyc and b/mysql/connector/aio/__pycache__/abstracts.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/authentication.cpython-313.pyc and b/mysql/connector/aio/__pycache__/authentication.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/charsets.cpython-313.pyc and b/mysql/connector/aio/__pycache__/charsets.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/connection.cpython-313.pyc and b/mysql/connector/aio/__pycache__/connection.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/cursor.cpython-313.pyc and b/mysql/connector/aio/__pycache__/cursor.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/_decorating.cpython-313.pyc and b/mysql/connector/aio/__pycache__/_decorating.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/__init__.cpython-313.pyc and b/mysql/connector/aio/__pycache__/__init__.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/logger.cpython-313.pyc and b/mysql/connector/aio/__pycache__/logger.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/network.cpython-313.pyc and b/mysql/connector/aio/__pycache__/network.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/pooling.cpython-313.pyc and b/mysql/connector/aio/__pycache__/pooling.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/protocol.cpython-313.pyc and b/mysql/connector/aio/__pycache__/protocol.cpython-313.pyc differ
+Binary files a/mysql/connector/aio/__pycache__/utils.cpython-313.pyc and b/mysql/connector/aio/__pycache__/utils.cpython-313.pyc differ
+Binary files a/mysql/connector/locales/__pycache__/__init__.cpython-313.pyc and b/mysql/connector/locales/__pycache__/__init__.cpython-313.pyc differ
+Binary files a/mysql/connector/opentelemetry/__pycache__/constants.cpython-313.pyc and b/mysql/connector/opentelemetry/__pycache__/constants.cpython-313.pyc differ
+Binary files a/mysql/connector/opentelemetry/__pycache__/context_propagation.cpython-313.pyc and b/mysql/connector/opentelemetry/__pycache__/context_propagation.cpython-313.pyc differ
+Binary files a/mysql/connector/opentelemetry/__pycache__/__init__.cpython-313.pyc and b/mysql/connector/opentelemetry/__pycache__/__init__.cpython-313.pyc differ
+Binary files a/mysql/connector/plugins/__pycache__/caching_sha2_password.cpython-313.pyc and b/mysql/connector/plugins/__pycache__/caching_sha2_password.cpython-313.pyc differ
+Binary files a/mysql/connector/plugins/__pycache__/__init__.cpython-313.pyc and b/mysql/connector/plugins/__pycache__/__init__.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/abstracts.cpython-313.pyc and b/mysql/connector/__pycache__/abstracts.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/authentication.cpython-313.pyc and b/mysql/connector/__pycache__/authentication.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/charsets.cpython-313.pyc and b/mysql/connector/__pycache__/charsets.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/connection_cext.cpython-313.pyc and b/mysql/connector/__pycache__/connection_cext.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/connection.cpython-313.pyc and b/mysql/connector/__pycache__/connection.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/constants.cpython-313.pyc and b/mysql/connector/__pycache__/constants.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/conversion.cpython-313.pyc and b/mysql/connector/__pycache__/conversion.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/cursor_cext.cpython-313.pyc and b/mysql/connector/__pycache__/cursor_cext.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/cursor.cpython-313.pyc and b/mysql/connector/__pycache__/cursor.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/custom_types.cpython-313.pyc and b/mysql/connector/__pycache__/custom_types.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/dbapi.cpython-313.pyc and b/mysql/connector/__pycache__/dbapi.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/_decorating.cpython-313.pyc and b/mysql/connector/__pycache__/_decorating.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/errorcode.cpython-313.pyc and b/mysql/connector/__pycache__/errorcode.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/errors.cpython-313.pyc and b/mysql/connector/__pycache__/errors.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/__init__.cpython-313.pyc and b/mysql/connector/__pycache__/__init__.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/logger.cpython-313.pyc and b/mysql/connector/__pycache__/logger.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/network.cpython-313.pyc and b/mysql/connector/__pycache__/network.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/optionfiles.cpython-313.pyc and b/mysql/connector/__pycache__/optionfiles.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/pooling.cpython-313.pyc and b/mysql/connector/__pycache__/pooling.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/protocol.cpython-313.pyc and b/mysql/connector/__pycache__/protocol.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/_scripting.cpython-313.pyc and b/mysql/connector/__pycache__/_scripting.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/tls_ciphers.cpython-313.pyc and b/mysql/connector/__pycache__/tls_ciphers.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/types.cpython-313.pyc and b/mysql/connector/__pycache__/types.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/utils.cpython-313.pyc and b/mysql/connector/__pycache__/utils.cpython-313.pyc differ
+Binary files a/mysql/connector/__pycache__/version.cpython-313.pyc and b/mysql/connector/__pycache__/version.cpython-313.pyc differ

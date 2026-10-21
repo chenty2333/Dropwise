@@ -1,0 +1,6 @@
+mysql.connector.__file__ = /home/ava/Desktop/Dropwise/prospective/phase4-exploration/python/pg-mysql/fix/patched/mysql/connector/__init__.py
+aio.network.__file__     = /home/ava/Desktop/Dropwise/prospective/phase4-exploration/python/pg-mysql/fix/patched/mysql/connector/aio/network.py
+aio.abstracts.__file__   = /home/ava/Desktop/Dropwise/prospective/phase4-exploration/python/pg-mysql/fix/patched/mysql/connector/aio/abstracts.py
+version                  = 26.7.0
+PATCH ACTIVE
+exit=0

@@ -1,0 +1,9 @@
+test_clean_completion_is_not_a_cut (tests.test_txphase.PhaseTaskTest.test_clean_completion_is_not_a_cut) ... ok
+test_double_cancel_records_cleanup_phase (tests.test_txphase.PhaseTaskTest.test_double_cancel_records_cleanup_phase) ... ok
+test_single_cut_records_enter_and_body (tests.test_txphase.PhaseTaskTest.test_single_cut_records_enter_and_body) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.018s
+
+OK
+exit=0

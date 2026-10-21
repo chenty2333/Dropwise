@@ -1,0 +1,21 @@
+date=2026-10-22T01:50:34+09:00
+repo=/home/ava/Desktop/Dropwise
+container_name=dw-r4-sqlx-688749
+container=09e34e09ae61a150ef4a67b95d032d6afe085449e43d7d1acfbf61bc11c2eb8b
+postgres_endpoint=127.0.0.1:32885 (loopback only)
+docker_image=postgres:18-alpine
+docker_image_id=sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+docker_repo_digests=["postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa"]
+server_version=18.4
+client=sqlx 0.8.6 (postgres feature, runtime-tokio, direct PgConnection, no pool)
+sqlx_lock=version = "0.8.6"
+sqlx_postgres_lock=version = "0.8.6"
+tokio_lock=version = "1.54.0"
+tokio_postgres_lock=version = "0.7.18"
+dropwise=path:/home/ava/Desktop/Dropwise
+proxy=dropwise::net::Proxy reply_delay=50ms
+config=max_runs=64 races=Immediate,AfterWake max_cancellations=1 scenario_timeout=20s settle=0/0 workers=1
+target=INSERT t1..t3 ON CONFLICT rows_affected=3
+cargo 1.98.0 (797e8a9bc 2026-08-05)
+rustc 1.98.0 (88d9e12ae 2026-08-18)
+Docker version 29.8.2, build 2.fc44

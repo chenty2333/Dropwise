@@ -1,0 +1,67 @@
+== environment ==
+2026-10-22T01:50:04+09:00
+Python 3.13.13
+git_head=7197eb24726b9cc77141b9e68363adb7d6379601
+python=3.13.13
+psycopg=3.3.6
+psycopg_pool=3.3.3
+asyncpg=0.32.0
+postgres:18-alpine repo_digest=postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa image_id=sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+container=/dw-pa-pg-685323 image=postgres:18-alpine image_id=sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+postgres (PostgreSQL) 18.4
+port=32878 run=logs/run.91AxzS
+
+== installed mechanism sources (file:line) ==
+-- psycopg_pool/pool_async.py --
+38:    CLIENT_EXCEPTIONS = (Exception, asyncio.CancelledError)
+40:    CLIENT_EXCEPTIONS = Exception
+230:    async def getconn(self, timeout: float | None = None) -> ACT:
+290:    async def _getconn_unchecked(self, timeout: float) -> ACT:
+298:                self._waiting.append(pos)
+309:            except CLIENT_EXCEPTIONS:
+310:                if pos.conn:
+362:    async def putconn(self, conn: ACT) -> None:
+397:    async def _putconn(self, conn: ACT, from_getconn: bool) -> None:
+611:            except CLIENT_EXCEPTIONS:
+702:        except CLIENT_EXCEPTIONS:
+823:    async def _add_to_pool(self, conn: ACT) -> None:
+861:                if await self._waiting.popleft().set(conn):
+-- psycopg_pool/pool_async.py WaitingClient --
+175:    async def wait(self, timeout: float = 30.0) -> None:
+948:class WaitingClient(Generic[ACT]):
+964:    async def wait(self, timeout: float) -> ACT:
+985:    async def set(self, conn: ACT) -> bool:
+-- asyncpg/pool.py --
+205:            except (Exception, asyncio.CancelledError) as ex:
+214:                    # do the necessary cleanup via _release_on_close().
+223:    async def release(self, timeout: Optional[float]) -> None:
+232:            # return the holder to the pool via _release_on_close().
+275:        except (Exception, asyncio.CancelledError) as ex:
+302:            # Connection.close() will call _release_on_close() to
+308:            # Connection.terminate() will call _release_on_close() to
+343:    def _release_on_close(self) -> None:
+347:        self._pool._schedule_min_size_maintenance()
+498:        except (Exception, asyncio.CancelledError):
+507:            self._schedule_min_size_maintenance()
+542:    def _schedule_min_size_maintenance(self):
+591:    def get_size(self):
+623:    def get_idle_size(self):
+678:            except (Exception, asyncio.CancelledError) as ex:
+687:                    # do the necessary cleanup via _release_on_close().
+994:    async def _acquire(self, timeout):
+996:            ch = await self._queue.get()  # type: PoolConnectionHolder
+999:            except (Exception, asyncio.CancelledError):
+1001:                self._schedule_min_size_maintenance()
+1019:    async def release(self, connection, *, timeout=None):
+1098:        except (Exception, asyncio.CancelledError):
+-- asyncpg/pool.py PoolConnectionHolder --
+186:    async def acquire(self) -> PoolConnectionProxy:
+223:    async def release(self, timeout: Optional[float]) -> None:
+349:    def _release(self) -> None:
+366:        self._pool._queue.put_nowait(self)
+1019:    async def release(self, connection, *, timeout=None):
+
+== commands ==
+cd /home/ava/Desktop/Dropwise/prospective/phase4-exploration/python/pg-mysql
+PYTHONPATH=".:/home/ava/Desktop/Dropwise/research/python-retro" /home/ava/dropwise-py-work-r3/venv313/bin/python -m pool_acquire.psycopg_acquire_case --port 32878 --reps 5
+PYTHONPATH=".:/home/ava/Desktop/Dropwise/research/python-retro" /home/ava/dropwise-py-work-r3/venv313/bin/python -m pool_acquire.asyncpg_acquire_case --port 32878 --reps 5

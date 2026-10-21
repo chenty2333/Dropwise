@@ -1,0 +1,6 @@
+PGPROBE trial=1 target_future_dropped_after_server_apply proxy_reply_delay=50ms
+PGPROBE-RESULT trial=1 cancelled=true before=[("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)] next_rows_affected=1 own=7 visible=[("b3", 3), ("t1", 7), ("t2", 1), ("t3", 1)] client_closed=false proxy_connections=1
+PGPROBE trial=2 target_future_dropped_after_server_apply proxy_reply_delay=50ms
+PGPROBE-RESULT trial=2 cancelled=true before=[("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)] next_rows_affected=1 own=7 visible=[("b3", 3), ("t1", 7), ("t2", 1), ("t3", 1)] client_closed=false proxy_connections=1
+PGPROBE trial=3 target_future_dropped_after_server_apply proxy_reply_delay=50ms
+PGPROBE-RESULT trial=3 cancelled=true before=[("b3", 3), ("t1", 1), ("t2", 1), ("t3", 1)] next_rows_affected=1 own=7 visible=[("b3", 3), ("t1", 7), ("t2", 1), ("t3", 1)] client_closed=false proxy_connections=1

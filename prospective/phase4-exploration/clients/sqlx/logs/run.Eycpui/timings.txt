@@ -1,0 +1,9 @@
+preflight rc=0 seconds=0
+calibrate-pre-1 rc=0 seconds=1
+calibrate-pre-2 rc=0 seconds=0
+calibrate-post-1 rc=0 seconds=1
+calibrate-post-2 rc=0 seconds=1
+ladder-1 rc=0 seconds=12
+ladder-2 rc=0 seconds=11
+ladder-3 rc=0 seconds=12
+probe-pg rc=0 seconds=2
