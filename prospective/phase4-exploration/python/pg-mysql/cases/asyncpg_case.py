@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import contextlib
+import json
 import time
 
 import asyncpg
@@ -25,10 +26,15 @@ from .common import (  # also puts research/python-retro on sys.path
     DELAY,
     DelayProxy,
     add_db_args,
+    add_event,
     bound,
     close_quiet,
     compact,
+    err_text,
+    must_ok,
     observation,
+    op_failure,
+    sanitize,
     unique_table,
 )
 from dropwise_py import (
@@ -38,7 +44,7 @@ from dropwise_py import (
     level_retry,
     print_report,
 )
-from dropwise_py.engine import _await_target
+from dropwise_py.engine import OpResult, _await_target
 
 TARGET_ROW = "target"
 SURVIVOR_ROW = "survivor"
@@ -47,6 +53,14 @@ B3_ROW = "b3"
 
 def dsn(host: str, port: int, user: str, password: str, dbname: str) -> str:
     return f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+
+
+class _StageFailure(Exception):
+    """Internal: abort a transaction-block stage without swallowing cancel."""
+
+    def __init__(self, result: OpResult) -> None:
+        super().__init__(result.error)
+        self.result = result
 
 
 class AsyncpgScenario(Scenario):
@@ -58,48 +72,89 @@ class AsyncpgScenario(Scenario):
         self.pool: asyncpg.Pool | None = None
         self.conn: asyncpg.Connection | None = None
         self.observer: asyncpg.Connection | None = None
+        self.target_style = getattr(args, "target_style", "manual")
+        self.sample_server = False
+        self.events: list[dict] = []
+        self.dsn_direct: str | None = None
+        self.dsn_proxy: str | None = None
         self.diag: dict = {}
 
     async def setup(self) -> None:
         a = self.args
         self.proxy = DelayProxy(a.host, a.port, delay=DELAY)
         client_port = await asyncio.wait_for(self.proxy.start(), BOUND)
-        direct = dsn(a.host, a.port, a.user, a.password, a.dbname)
-        via_proxy = dsn(a.host, client_port, a.user, a.password, a.dbname)
+        self.dsn_direct = dsn(a.host, a.port, a.user, a.password, a.dbname)
+        self.dsn_proxy = dsn(a.host, client_port, a.user, a.password, a.dbname)
 
-        obs = await bound(asyncpg.connect(direct, timeout=BOUND))
-        if obs[0] != "ok":
-            raise RuntimeError(f"observer connect failed: {obs}")
-        self.observer = obs[1]
+        obs = await bound(asyncpg.connect(self.dsn_direct, timeout=BOUND))
+        self.observer = must_ok("observer connect", obs)
         created = await bound(
             self.observer.execute(
                 f"CREATE TABLE {self.table} (k text PRIMARY KEY, v integer NOT NULL)"
             )
         )
-        if created[0] != "ok":
-            raise RuntimeError(f"create table failed: {created}")
+        must_ok("create table", created)
+        must_ok("observer ping", await bound(self.observer.execute("SELECT 1")))
 
         if self.mode == "pool":
-            pool = await bound(
-                asyncpg.create_pool(via_proxy, min_size=1, max_size=1, timeout=BOUND)
-            )
-            if pool[0] != "ok":
-                raise RuntimeError(f"pool create failed: {pool}")
-            self.pool = pool[1]
-            warm = await bound(self._pool_exec("SELECT 1"))
-            if warm[0] != "ok":
-                raise RuntimeError(f"warm-up failed: {warm}")
+            await self._open_pool()
             self.diag["setup_pid"] = await self._pid_pool()
         else:
-            conn = await bound(asyncpg.connect(via_proxy, timeout=BOUND))
-            if conn[0] != "ok":
-                raise RuntimeError(f"tested connect failed: {conn}")
-            self.conn = conn[1]
-            warm = await bound(self.conn.execute("SELECT 1"))
-            if warm[0] != "ok":
-                raise RuntimeError(f"warm-up failed: {warm}")
+            await self._open_direct()
             self.diag["setup_pid"] = self.conn.get_server_pid()
         self.diag["setup_stats"] = self._stats()
+        # A failed baseline must never become a valid calibration.
+        await self._preflight()
+
+    async def _open_pool(self) -> None:
+        pool = must_ok(
+            "pool create",
+            await bound(asyncpg.create_pool(
+                self.dsn_proxy, min_size=1, max_size=1, timeout=BOUND
+            )),
+        )
+        self.pool = pool
+        must_ok("pool warm-up", await bound(self._pool_exec("SELECT 1")))
+
+    async def _open_direct(self) -> None:
+        conn = must_ok(
+            "tested connect",
+            await bound(asyncpg.connect(self.dsn_proxy, timeout=BOUND)),
+        )
+        self.conn = conn
+        must_ok("direct warm-up", await bound(conn.execute("SELECT 1")))
+
+    async def _preflight(self) -> None:
+        surv = await bound(self.survivor())
+        if surv[0] != "ok":
+            raise RuntimeError(f"survivor preflight raised: {surv!r}")
+        write = surv[1].get("write")
+        if not isinstance(write, tuple) or write[0] != "ok":
+            raise RuntimeError(f"survivor preflight write failed: {surv[1]!r}")
+        obs = await bound(self.observe())
+        if obs[0] != "ok":
+            raise RuntimeError(f"observer preflight failed: {obs!r}")
+        if obs[1].get("rows") != [["survivor", 7]]:
+            raise RuntimeError(f"survivor preflight not observed: {obs[1]!r}")
+        # Remove the preflight row again: seeding it would hide a later
+        # uncommitted survivor write from the independent observer.
+        acq = await bound(self._acquire())
+        if acq[0] != "ok":
+            raise RuntimeError(f"preflight cleanup acquire failed: {acq!r}")
+        conn = acq[1]
+        try:
+            deleted = await bound(
+                conn.execute(f"DELETE FROM {self.table} WHERE k = '{SURVIVOR_ROW}'")
+            )
+            must_ok("preflight cleanup delete", deleted)
+        finally:
+            must_ok("preflight cleanup release", await bound(self._release(conn)))
+        empty = await bound(self.observe())
+        if empty[0] != "ok" or empty[1].get("rows") != []:
+            raise RuntimeError(f"preflight cleanup not observed: {empty!r}")
+        self.diag["preflight"] = {"survivor": surv[1], "rows": obs[1]["rows"],
+                                  "cleanup_rows": empty[1]["rows"]}
+        self.events.clear()
 
     async def _pool_exec(self, sql: str):
         conn = await self.pool.acquire(timeout=BOUND)
@@ -108,10 +163,17 @@ class AsyncpgScenario(Scenario):
         finally:
             await self.pool.release(conn)
 
+    async def _upsert(self, conn, row: str, value: int):
+        return await conn.execute(
+            f"INSERT INTO {self.table} (k, v) VALUES ('{row}', {value}) "
+            "ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v"
+        )
+
     async def _pid_pool(self):
         try:
             conn = await self.pool.acquire(timeout=BOUND)
-        except BaseException:
+        except BaseException as exc:
+            self.diag["pid_pool_error"] = err_text(exc)
             return None
         try:
             return conn.get_server_pid()
@@ -128,6 +190,21 @@ class AsyncpgScenario(Scenario):
             "max": self.pool.get_max_size(),
         }
 
+    @staticmethod
+    def _safe_pid(conn):
+        """Post-cancel diagnostics must not turn a released handle into failure."""
+        try:
+            return conn.get_server_pid()
+        except BaseException as exc:  # InterfaceError: released back to the pool
+            return f"unavailable: {type(exc).__name__}: {exc}"
+
+    @staticmethod
+    def _safe_in_tx(conn):
+        try:
+            return conn.is_in_transaction()
+        except BaseException as exc:  # InterfaceError: released back to the pool
+            return f"unavailable: {type(exc).__name__}: {exc}"
+
     async def _acquire(self):
         if self.mode == "pool":
             return await self.pool.acquire(timeout=BOUND)
@@ -137,33 +214,137 @@ class AsyncpgScenario(Scenario):
         if self.mode == "pool" and conn is not None:
             await self.pool.release(conn)
 
-    async def _tx_write(self, row: str, value: int):
+    async def _server_sample(self, pid: int) -> dict:
+        """Independent server-side sample; *not* synchronous with client state."""
+        try:
+            row = await asyncio.wait_for(
+                self.observer.fetchrow(
+                    "SELECT pid, state, backend_xid::text, wait_event_type, "
+                    "wait_event, left(query, 160) AS query FROM pg_stat_activity "
+                    "WHERE pid = $1",
+                    pid,
+                ),
+                BOUND,
+            )
+        except asyncio.CancelledError:
+            raise
+        except BaseException as exc:
+            return {"error": err_text(exc)}
+        if row is None:
+            return {"pid": pid, "present": False}
+        return {
+            "pid": row["pid"], "state": row["state"],
+            "backend_xid": row["backend_xid"],
+            "wait_event_type": row["wait_event_type"],
+            "wait_event": row["wait_event"], "query": row["query"],
+        }
+
+    async def _tx_write(self, row: str, value: int, *, style: str | None = None):
+        """BEGIN / upsert(row, value) / COMMIT with every stage checked.
+
+        A failed acquire/BEGIN/INSERT stops before COMMIT and is returned as
+        ``OpResult(ok=False, stage=...)``.  Cancellation propagates after the
+        bounded release attempt; it is never encoded as a value.
+        """
+        style = style or self.target_style
         acq = await bound(self._acquire())
         if acq[0] != "ok":
-            return {"acquire": acq}
+            return op_failure("acquire", acq)
         conn = acq[1]
+        out: dict = {
+            "style": style,
+            "backend_pid": conn.get_server_pid(),
+            "in_tx_after_acquire": conn.is_in_transaction(),
+        }
+        add_event(self.events, "target_acquire", pid=out["backend_pid"],
+                  in_tx=out["in_tx_after_acquire"], style=style)
         self.diag["stages"] = stages = []
-        self.diag["target_pid"] = conn.get_server_pid()
+        self.diag["target_pid"] = out["backend_pid"]
+        failure: OpResult | None = None
+        release: tuple | None = None
         try:
-            await bound(conn.execute("BEGIN"))
-            stages.append("begin")
-            await bound(
-                conn.execute(
-                    f"INSERT INTO {self.table} (k, v) VALUES ('{row}', {value}) "
-                    "ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v"
+            if style == "cm":
+                try:
+                    async with conn.transaction():
+                        res = await bound(self._upsert(conn, row, value))
+                        out["insert"] = res
+                        add_event(self.events, "target_stage", stage="insert",
+                                  result=list(res))
+                        if res[0] == "ok":
+                            stages.append("insert")
+                        else:
+                            raise _StageFailure(op_failure("insert", res, out))
+                except _StageFailure as exc:
+                    failure = exc.result
+                    add_event(self.events, "target_stage_failed",
+                              stage=failure.stage)
+                except asyncio.CancelledError:
+                    self.diag["cm_cancel_status"] = self._safe_in_tx(conn)
+                    add_event(self.events, "target_cm_cancelled",
+                              in_tx=self.diag["cm_cancel_status"])
+                    raise
+                except BaseException as exc:
+                    failure = OpResult(False, "cm", out, err_text(exc))
+                    add_event(self.events, "target_cm_error", error=err_text(exc))
+                else:
+                    stages.append("commit")
+            else:
+                operations = (
+                    ("begin", lambda: conn.execute("BEGIN")),
+                    ("insert", lambda: self._upsert(conn, row, value)),
+                    ("commit", lambda: conn.execute("COMMIT")),
                 )
-            )
-            stages.append("insert")
-            await bound(conn.execute("COMMIT"))
-            stages.append("commit")
+                for stage, make in operations:
+                    res = await bound(make())
+                    out[stage] = res
+                    add_event(self.events, "target_stage", stage=stage,
+                              result=list(res))
+                    if res[0] == "ok":
+                        stages.append(stage)
+                        continue
+                    failure = op_failure(stage, res, out)
+                    add_event(self.events, "target_stage_failed", stage=stage,
+                              result=list(res))
+                    break  # never continue to COMMIT after a failed BEGIN/INSERT
+        except asyncio.CancelledError:
+            add_event(self.events, "target_cancelled_inside",
+                      in_tx=self._safe_in_tx(conn), stages=list(stages))
+            raise
         finally:
+            # Diagnostics only: a released handle is recorded, never raised.
+            pid = self._safe_pid(conn)
+            in_tx = self._safe_in_tx(conn)
             self.diag["after_target"] = {
-                "in_transaction": conn.is_in_transaction(),
-                "pid": conn.get_server_pid(),
+                "in_transaction": in_tx,
+                "pid": pid,
                 "stats": self._stats(),
             }
-            rel = await bound(self._release(conn))
-            self.diag["after_release"] = {"stats": self._stats(), "release": rel}
+            out["in_tx_before_release"] = in_tx
+            add_event(self.events, "target_before_release",
+                      pid=pid, in_tx=in_tx, stages=list(stages))
+            # Release is the first await in cleanup: a diagnostic must never
+            # run before it, or a second cancellation could skip the release
+            # and strand a pool checkout.
+            release = await bound(self._release(conn))
+            out["release"] = release
+            if self.sample_server and isinstance(pid, int):
+                sample = await bound(self._server_sample(pid))
+                out["server_after_release"] = sample
+                add_event(self.events, "server_after_release", sample=sample)
+            self.diag["after_release"] = {"stats": self._stats(),
+                                          "release": release}
+            add_event(self.events, "target_released", release=list(release),
+                      pid=pid, in_tx=self._safe_in_tx(conn),
+                      stats=self._stats())
+            if failure is None and release[0] != "ok":
+                failure = op_failure("release", release, out)
+        if failure is not None:
+            return failure
+        return OpResult(True, "commit", out)
+
+    async def _cm_write(self, row: str, value: int):
+        """Retry transaction through the documented transaction block."""
+        return await self._tx_write(row, value, style="cm")
 
     async def target(self):
         return await self._tx_write(TARGET_ROW, 1)
@@ -174,10 +355,63 @@ class AsyncpgScenario(Scenario):
     async def different(self):
         return await self._tx_write(B3_ROW, 3)
 
+    # ---- boundary / recovery diagnostics -----------------------------
+    async def recover_rollback(self) -> dict:
+        acq = await bound(self._acquire())
+        if acq[0] != "ok":
+            return {"acquire": acq}
+        conn = acq[1]
+        before = conn.is_in_transaction()
+        add_event(self.events, "recovery_acquire", pid=conn.get_server_pid(),
+                  in_tx=before)
+        # asyncpg has no Connection.rollback(); explicit SQL ROLLBACK is the
+        # public manual equivalent (reset() is the session-level alternative).
+        rb = await bound(conn.execute("ROLLBACK"))
+        after = conn.is_in_transaction()
+        add_event(self.events, "recovery_rollback", result=list(rb), in_tx=after)
+        rel = await bound(self._release(conn))
+        add_event(self.events, "recovery_release", result=list(rel))
+        return {"in_tx_before": before, "rollback": rb,
+                "in_tx_after": after, "release": rel}
+
+    async def recover_reset(self) -> dict:
+        acq = await bound(self._acquire())
+        if acq[0] != "ok":
+            return {"acquire": acq}
+        conn = acq[1]
+        before = conn.is_in_transaction()
+        add_event(self.events, "recovery_acquire", pid=conn.get_server_pid(),
+                  in_tx=before)
+        rs = await bound(conn.reset())
+        after = conn.is_in_transaction()
+        add_event(self.events, "recovery_reset", result=list(rs), in_tx=after)
+        rel = await bound(self._release(conn))
+        add_event(self.events, "recovery_release", result=list(rel))
+        return {"in_tx_before": before, "reset": rs,
+                "in_tx_after": after, "release": rel}
+
+    async def reconnect_handle(self) -> dict:
+        old_pid = self.diag.get("setup_pid")
+        if self.mode == "pool":
+            if self.pool is not None:
+                await close_quiet(self.pool.close())
+                self.pool = None
+            await self._open_pool()
+            new_pid = await self._pid_pool()
+        else:
+            if self.conn is not None:
+                old_pid = self.conn.get_server_pid()
+                await close_quiet(self.conn.close())
+                self.conn = None
+            await self._open_direct()
+            new_pid = self.conn.get_server_pid()
+        add_event(self.events, "reconnected", old_pid=old_pid, new_pid=new_pid)
+        return {"old_pid": old_pid, "new_pid": new_pid}
+
     async def survivor(self):
         acq = await bound(self._acquire())
         if acq[0] != "ok":
-            return {"acquire": acq, "in_tx": None, "write": None, "own": None, "release": None}
+            raise RuntimeError(f"survivor acquire failed: {acq!r}")
         conn = acq[1]
         in_tx = conn.is_in_transaction()
         self.diag["survivor_start"] = {
@@ -185,24 +419,42 @@ class AsyncpgScenario(Scenario):
             "pid": conn.get_server_pid(),
             "stats": self._stats(),
         }
-        write = await bound(
-            conn.execute(
-                f"INSERT INTO {self.table} (k, v) VALUES ('{SURVIVOR_ROW}', 7) "
-                "ON CONFLICT (k) DO UPDATE SET v = EXCLUDED.v"
-            )
-        )
+        add_event(self.events, "survivor_acquire", pid=conn.get_server_pid(),
+                  in_tx=in_tx, stats=self._stats())
+        if self.sample_server:
+            sample = await bound(self._server_sample(conn.get_server_pid()))
+            add_event(self.events, "server_after_survivor_acquire", sample=sample)
+        write = await bound(self._upsert(conn, SURVIVOR_ROW, 7))
+        add_event(self.events, "survivor_write", result=list(write),
+                  in_tx=conn.is_in_transaction())
+        if self.sample_server:
+            sample = await bound(self._server_sample(conn.get_server_pid()))
+            add_event(self.events, "server_after_survivor_write", sample=sample)
         own = None
         if write[0] != "timeout":
             own = await bound(
-                conn.fetchval(f"SELECT v FROM {self.table} WHERE k = '{SURVIVOR_ROW}'")
+                conn.fetchval(
+                    f"SELECT v FROM {self.table} WHERE k = '{SURVIVOR_ROW}'"
+                )
             )
         release = await bound(self._release(conn))
         self.diag["survivor_end"] = {"stats": self._stats()}
+        add_event(self.events, "survivor_release", result=list(release))
         return {"in_tx": in_tx, "write": write, "own": own, "release": release}
 
     async def observe(self):
-        rows = await self.observer.fetch(f"SELECT k, v FROM {self.table} ORDER BY k")
-        return {"rows": [[r["k"], r["v"]] for r in rows], "error": None}
+        try:
+            rows = await self.observer.fetch(
+                f"SELECT k, v FROM {self.table} ORDER BY k"
+            )
+        except asyncio.CancelledError:
+            raise
+        except BaseException as exc:
+            add_event(self.events, "observer_error", error=err_text(exc))
+            raise RuntimeError(f"observer read failed: {err_text(exc)}") from exc
+        data = [[r["k"], r["v"]] for r in rows]
+        add_event(self.events, "observer_read", rows=data)
+        return {"rows": data, "error": None}
 
     async def close(self) -> None:
         if self.pool is not None:
@@ -257,10 +509,64 @@ async def diag_run(factory) -> None:
         await close_quiet(sc.close())
 
 
+# ---------------------------------------------------------------------
+async def _contrast_once(factory, variant: str, k: int) -> None:
+    sc = factory()
+    sc.sample_server = True
+    try:
+        await asyncio.wait_for(sc.setup(), 12)
+        if variant == "cm_target":
+            sc.target_style = "cm"
+        tr = await _await_target(sc.target(), k, 12)
+        add_event(
+            sc.events, "cut_returned", outcome=tr.outcome, yields=tr.yields,
+            realized=tr.realized, seconds=round(tr.seconds, 6),
+        )
+        detail: dict = {
+            "case": "asyncpg",
+            "mode": sc.mode,
+            "variant": variant,
+            "k": k,
+            "target": {
+                "outcome": tr.outcome, "yields": tr.yields,
+                "realized": tr.realized, "error": tr.error,
+            },
+            "after_target": sc.diag.get("after_target"),
+            "after_release": sc.diag.get("after_release"),
+        }
+        if variant == "rollback":
+            detail["recovery"] = await sc.recover_rollback()
+        elif variant == "reset":
+            detail["recovery"] = await sc.recover_reset()
+        elif variant == "cm_retry":
+            detail["cm_retry"] = await sc._cm_write(B3_ROW, 3)
+            add_event(sc.events, "cm_retry_result", result=detail["cm_retry"])
+        elif variant == "reconnect":
+            detail["reconnect"] = await sc.reconnect_handle()
+        detail["survivor"] = await bound(sc.survivor(), 8)
+        detail["observer"] = await bound(sc.observe(), 8)
+        detail["events"] = sc.events
+        print("BOUNDARY " + json.dumps(sanitize(detail, sc.table),
+                                        default=str, sort_keys=True), flush=True)
+    finally:
+        await close_quiet(sc.close())
+
+
+async def contrast_run(factory, plans: list[int]) -> None:
+    for variant in ("manual", "rollback", "reset", "cm_retry", "cm_target",
+                    "reconnect"):
+        for k in plans:
+            await _contrast_once(factory, variant, k)
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     add_db_args(parser)
     parser.add_argument("--diag", action="store_true")
+    parser.add_argument("--contrast", action="store_true",
+                        help="boundary/recovery variants after a cut")
+    parser.add_argument("--plans", default=None,
+                        help="comma-separated plan indices for --contrast")
     args = parser.parse_args()
     print(
         f"case=asyncpg mode={args.mode} asyncpg={asyncpg.__version__} "
@@ -275,6 +581,11 @@ async def main() -> None:
         return
     if args.diag:
         await diag_run(factory)
+        return
+    if args.contrast:
+        plans = ([int(x) for x in args.plans.split(",") if x.strip()]
+                 if args.plans else [1, 2, 3, 4])
+        await contrast_run(factory, plans)
         return
 
     timeout = 12.0

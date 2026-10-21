@@ -1,0 +1,73 @@
+case=aiomysql mode=pool aiomysql=0.3.2 python=3.13.13 host=127.0.0.1 port=32849 db=dw round=0 delay=0.05 bound=2.0
+case=aiomysql level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=5.97
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+verdicts={'-': 12}
+SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=5.97
+case=aiomysql level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.53
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 176, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 179, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 182, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 185, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 188, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 191, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 194, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 198, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 201, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 203, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 205, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 207, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+verdicts={'-': 12}
+SUMMARY level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.53
+case=aiomysql level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.54
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 212, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 215, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 218, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 221, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 224, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 227, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 230, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 233, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 236, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 238, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 240, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs={'begin': ['ok', 0], 'cid': 242, 'commit': ['ok', 0], 'in_tx': 0, 'insert': ['ok', 1], 'release': ['ok', None]} ok 
+verdicts={'-': 12}
+SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.54
+case=aiomysql level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.85
+pre=[{'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, {'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}]
+post=[{'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}, {'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}]
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=Post obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=Post obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=Post obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+verdicts={'Pre': 6, 'Post': 6}
+SUMMARY level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.85
+=== FINAL ===
+mode=pool SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=5.97
+violations_by_plan=[]
+mode=pool SUMMARY level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.53
+violations_by_plan=[]
+mode=pool SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.54
+violations_by_plan=[]
+mode=pool SUMMARY level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.85
+violations_by_plan=[]
+exit=0

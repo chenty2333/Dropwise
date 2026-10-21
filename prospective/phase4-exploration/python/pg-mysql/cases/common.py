@@ -24,6 +24,7 @@ import itertools
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve()
@@ -40,6 +41,8 @@ REPO = _find_repo(HERE)
 RETRO = Path(os.environ.get("DROPWISE_RETRO", REPO / "research" / "python-retro"))
 if str(RETRO) not in sys.path:
     sys.path.insert(0, str(RETRO))
+
+from dropwise_py.engine import OpResult  # noqa: E402  (path inserted above)
 
 
 def _load_retro_proxy():
@@ -108,6 +111,31 @@ def sanitize(value, table: str | None = None):
 
 def err_text(exc: BaseException) -> str:
     return f"{type(exc).__name__}: {exc}"
+
+
+def op_failure(stage: str, value, out=None) -> OpResult:
+    """Structured failure for one adapter stage (B2/B3 sees it)."""
+    return OpResult(False, stage, out, f"{stage}: {value!r}")
+
+
+def must_ok(label: str, value):
+    """Setup/warm-up critical path: no silent baseline, always raise."""
+    if value[0] != "ok":
+        raise RuntimeError(f"{label} failed: {value!r}")
+    return value[1]
+
+
+def add_event(events: list, name: str, **fields) -> dict:
+    """Append one ordered, timed observation (not an atomic snapshot)."""
+    rec = {
+        "seq": len(events) + 1,
+        "t_mono": round(time.monotonic(), 6),
+        "t_wall": round(time.time(), 6),
+        "event": name,
+    }
+    rec.update(fields)
+    events.append(rec)
+    return rec
 
 
 def observation(survivor, observer, table: str):

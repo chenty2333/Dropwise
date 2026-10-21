@@ -1,0 +1,18 @@
+case=aiomysql mode=pool aiomysql=0.3.2 python=3.13.13 host=127.0.0.1 port=32849 db=dw round=0 delay=0.05 bound=2.0
+PROBE k=1 target=cancelled realized=True yields=1 err=None diag={'setup': {'size': 1, 'free': 1, 'max': 1}, 'stages': [], 'after_target': {'cid': 300, 'closed': True, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'after_release': {'stats': {'size': 0, 'free': 0, 'max': 1}, 'release': ('ok', None), 'pool_free': 0}, 'survivor_start': {'cid': 301, 'closed': False, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'survivor_end': {'stats': {'size': 1, 'free': 1, 'max': 1}, 'release': ('ok', None)}}
+        stages=[] after_target={'cid': 300, 'closed': True, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}
+        survivor=('ok', {'in_tx': 0, 'write': ('ok', 1), 'own': ('ok', [[7]]), 'release': ('ok', None)})
+        observer=('ok', {'rows': [['survivor', 7]], 'error': None}) seconds=0.36
+PROBE k=2 target=cancelled realized=True yields=2 err=None diag={'setup': {'size': 1, 'free': 1, 'max': 1}, 'stages': ['begin'], 'after_target': {'cid': 303, 'closed': True, 'txstatus': 1, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'after_release': {'stats': {'size': 0, 'free': 0, 'max': 1}, 'release': ('ok', None), 'pool_free': 0}, 'survivor_start': {'cid': 304, 'closed': False, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'survivor_end': {'stats': {'size': 1, 'free': 1, 'max': 1}, 'release': ('ok', None)}}
+        stages=['begin'] after_target={'cid': 303, 'closed': True, 'txstatus': 1, 'stats': {'size': 1, 'free': 0, 'max': 1}}
+        survivor=('ok', {'in_tx': 0, 'write': ('ok', 1), 'own': ('ok', [[7]]), 'release': ('ok', None)})
+        observer=('ok', {'rows': [['survivor', 7]], 'error': None}) seconds=0.46
+PROBE k=3 target=cancelled realized=True yields=3 err=None diag={'setup': {'size': 1, 'free': 1, 'max': 1}, 'stages': ['begin', 'insert'], 'after_target': {'cid': 306, 'closed': True, 'txstatus': 1, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'after_release': {'stats': {'size': 0, 'free': 0, 'max': 1}, 'release': ('ok', None), 'pool_free': 0}, 'survivor_start': {'cid': 307, 'closed': False, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'survivor_end': {'stats': {'size': 1, 'free': 1, 'max': 1}, 'release': ('ok', None)}}
+        stages=['begin', 'insert'] after_target={'cid': 306, 'closed': True, 'txstatus': 1, 'stats': {'size': 1, 'free': 0, 'max': 1}}
+        survivor=('ok', {'in_tx': 0, 'write': ('ok', 1), 'own': ('ok', [[7]]), 'release': ('ok', None)})
+        observer=('ok', {'rows': [['survivor', 7], ['target', 1]], 'error': None}) seconds=0.56
+PROBE k=4 target=cancelled realized=True yields=4 err=None diag={'setup': {'size': 1, 'free': 1, 'max': 1}, 'stages': ['begin', 'insert', 'commit'], 'after_target': {'cid': 309, 'closed': False, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'survivor_start': {'cid': 309, 'closed': False, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}, 'survivor_end': {'stats': {'size': 1, 'free': 1, 'max': 1}, 'release': ('ok', None)}}
+        stages=['begin', 'insert', 'commit'] after_target={'cid': 309, 'closed': False, 'txstatus': 0, 'stats': {'size': 1, 'free': 0, 'max': 1}}
+        survivor=('ok', {'in_tx': 0, 'write': ('ok', 1), 'own': ('ok', [[7]]), 'release': ('ok', None)})
+        observer=('ok', {'rows': [['survivor', 7], ['target', 1]], 'error': None}) seconds=0.51
+exit=0

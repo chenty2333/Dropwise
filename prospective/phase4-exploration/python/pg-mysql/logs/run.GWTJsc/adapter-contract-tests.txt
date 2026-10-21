@@ -1,0 +1,7 @@
+ok OpResult(ok=False) -> violation: {'ok': False, 'stage': 'insert', 'value': {'begin': ['ok', 0]}, 'error': 'err: boom'}
+ok raised RuntimeError -> violation: ERR RuntimeError: adapter raised
+ok raised TimeoutError -> violation: ERR TimeoutError: bounded operation timed out
+ok OpResult(timeout) -> violation: {'ok': False, 'stage': 'commit', 'value': None, 'error': 'timeout: 2.0s'}
+ok OpResult(ok=True) -> no violation: {'ok': True, 'stage': 'commit', 'value': {'begin': ['ok', 0]}, 'error': None}
+ALL ADAPTER-CONTRACT TESTS PASSED
+exit=0

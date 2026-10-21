@@ -35,7 +35,7 @@ from dropwise_py import (
     level_retry,
     print_report,
 )
-from dropwise_py.engine import _await_target
+from dropwise_py.engine import OpResult, _await_target
 
 
 class AiomysqlScenario(Scenario):
@@ -88,8 +88,12 @@ class AiomysqlScenario(Scenario):
         warm = await bound(self._acquire())
         if warm[0] != "ok":
             raise RuntimeError(f"warm-up acquire failed: {warm}")
-        await bound(self._exec_conn(warm[1], "SELECT 1"))
-        await bound(self._release(warm[1]))
+        warm_exec = await bound(self._exec_conn(warm[1], "SELECT 1"))
+        if warm_exec[0] != "ok":
+            raise RuntimeError(f"warm-up query failed: {warm_exec}")
+        warm_rel = await bound(self._release(warm[1]))
+        if warm_rel[0] != "ok":
+            raise RuntimeError(f"warm-up release failed: {warm_rel}")
         self.diag["setup"] = self._stats()
 
     def _stats(self):
@@ -130,35 +134,96 @@ class AiomysqlScenario(Scenario):
         except BaseException as exc:
             return f"ERR {type(exc).__name__}"
 
-    async def _tx_write(self, row: str, value: int):
+    def _cid(self, conn):
+        """Server-side connection id (diagnostic only, never judged)."""
+        try:
+            return int(conn.thread_id())
+        except BaseException:
+            try:
+                return int(conn.thread_id)
+            except BaseException:
+                return None
+
+    def _where(self, conn):
+        return {
+            "cid": self._cid(conn),
+            "closed": bool(conn.closed),
+            "txstatus": self._txflag(conn),
+            "stats": self._stats(),
+        }
+
+    async def _tx_write(self, row: str, value: int, *, retry: bool = False):
+        """BEGIN / REPLACE / COMMIT; stop at the first failed stage.
+
+        `retry=True` (B2/B3) returns a structured `OpResult`: a failed stage is
+        `ok=False` and COMMIT is never attempted after a failure.  The target
+        (`retry=False`) raises instead so an uncancelled failure cannot become
+        a calibratable "post" sample.
+        """
         acq = await bound(self._acquire())
         if acq[0] != "ok":
-            return {"acquire": acq}
+            if retry:
+                return OpResult(False, "acquire", value=acq, error=f"{acq[0]}: {acq[1]}")
+            raise RuntimeError(f"acquire failed: {acq!r}")
         conn = acq[1]
+        out = {
+            "cid": self._cid(conn),
+            "in_tx": self._txflag(conn),
+            "begin": None,
+            "insert": None,
+            "commit": None,
+        }
         stages = self.diag.setdefault("stages", [])
+        failed = None
         try:
-            await bound(self._exec_conn(conn, "BEGIN"))
-            stages.append("begin")
-            await bound(self._exec_conn(conn, f"REPLACE INTO {self.table} (k,v) VALUES ('{row}', {value})"))
-            stages.append("insert")
-            await bound(self._exec_conn(conn, "COMMIT"))
-            stages.append("commit")
+            ops = (
+                ("begin", self._exec_conn(conn, "BEGIN")),
+                (
+                    "insert",
+                    self._exec_conn(
+                        conn,
+                        f"REPLACE INTO {self.table} (k,v) VALUES ('{row}', {value})",
+                    ),
+                ),
+                ("commit", self._exec_conn(conn, "COMMIT")),
+            )
+            for name, coro in ops:
+                res = await bound(coro)
+                out[name] = res
+                if res[0] != "ok":
+                    failed = (name, res)
+                    break
+                stages.append(name)
         finally:
-            self.diag["after_target"] = {
-                "txstatus": self._txflag(conn),
-                "stats": self._stats(),
-            }
+            self.diag["after_target"] = self._where(conn)
             rel = await bound(self._release(conn))
-            self.diag["after_release"] = {"stats": self._stats(), "release": rel}
+            out["release"] = rel
+            self.diag["after_release"] = {
+                "stats": self._stats(),
+                "release": rel,
+                "pool_free": getattr(self.pool, "freesize", None),
+            }
+        if failed is not None:
+            name, res = failed
+            if retry:
+                return OpResult(False, name, value=out, error=f"{res[0]}: {res[1]}")
+            raise RuntimeError(f"{name} failed: {res!r}")
+        if out["release"][0] != "ok":
+            if retry:
+                return OpResult(
+                    False, "release", value=out, error=f"release: {out['release']!r}"
+                )
+            raise RuntimeError(f"release failed: {out['release']!r}")
+        return OpResult(True, "commit", value=out)
 
     async def target(self):
         return await self._tx_write("target", 1)
 
     async def same(self):
-        return await self._tx_write("target", 1)
+        return await self._tx_write("target", 1, retry=True)
 
     async def different(self):
-        return await self._tx_write("b3", 3)
+        return await self._tx_write("b3", 3, retry=True)
 
     async def survivor(self):
         acq = await bound(self._acquire())
@@ -166,7 +231,7 @@ class AiomysqlScenario(Scenario):
             return {"acquire": acq, "in_tx": None, "write": None, "own": None, "release": None}
         conn = acq[1]
         in_tx = self._txflag(conn)
-        self.diag["survivor_start"] = {"txstatus": in_tx, "stats": self._stats()}
+        self.diag["survivor_start"] = self._where(conn)
         write = await bound(
             self._exec_conn(conn, f"REPLACE INTO {self.table} (k,v) VALUES ('survivor', 7)")
         )
@@ -178,7 +243,7 @@ class AiomysqlScenario(Scenario):
             if own[0] == "ok":
                 own = ("ok", [list(r) for r in own[1]])
         release = await bound(self._release(conn))
-        self.diag["survivor_end"] = {"stats": self._stats()}
+        self.diag["survivor_end"] = {"stats": self._stats(), "release": release}
         return {"in_tx": in_tx, "write": write, "own": own, "release": release}
 
     async def observe(self):
@@ -188,15 +253,35 @@ class AiomysqlScenario(Scenario):
         return {"rows": [list(r) for r in rows], "error": None}
 
     async def close(self) -> None:
+        rec: dict = {}
         if self.pool is not None:
-            await close_quiet(self.pool.close())
-            await close_quiet(self.pool.wait_closed())
+            try:
+                self.pool.close()
+                rec["pool_close"] = "ok"
+            except BaseException as exc:
+                rec["pool_close"] = f"{type(exc).__name__}: {exc}"
+            rec["pool_wait_closed"] = await close_quiet(self.pool.wait_closed())
         if self.conn is not None:
-            await close_quiet(self.conn.close())
+            # aiomysql Connection.close() is synchronous (only ensure_closed()
+            # is a coroutine); awaiting it was a harness bug that recorded a
+            # false TypeError in earlier close diagnostics.
+            try:
+                self.conn.close()
+                rec["conn_close"] = "ok"
+            except BaseException as exc:
+                rec["conn_close"] = f"{type(exc).__name__}: {exc}"
         if self.observer is not None:
-            await close_quiet(self.observer.close())
+            try:
+                self.observer.close()
+                rec["observer_close"] = "ok"
+            except BaseException as exc:
+                rec["observer_close"] = f"{type(exc).__name__}: {exc}"
         if self.proxy is not None:
-            await close_quiet(self.proxy.close())
+            rec["proxy_close"] = await close_quiet(self.proxy.close())
+        self.diag["close"] = rec
+        bad = {k: v for k, v in rec.items() if v != "ok"}
+        if bad:
+            print(f"CLOSE_ERROR case=aiomysql mode={self.mode} {bad!r}", flush=True)
 
     async def judged(self) -> dict:
         surv = await bound(self.survivor())
@@ -231,7 +316,8 @@ async def probe_run(factory, ks) -> None:
             obs = await bound(sc.observe(), 8)
             print(
                 f"PROBE k={k} target={tr.outcome} realized={tr.realized} yields={tr.yields} "
-                f"err={tr.error!r}\n        stages={sc.diag.get('stages')!r} "
+                f"err={tr.error!r} diag={sc.diag!r}\n"
+                f"        stages={sc.diag.get('stages')!r} "
                 f"after_target={sc.diag.get('after_target')!r}\n"
                 f"        survivor={surv!r}\n        observer={obs!r} "
                 f"seconds={time.monotonic() - started:.2f}",

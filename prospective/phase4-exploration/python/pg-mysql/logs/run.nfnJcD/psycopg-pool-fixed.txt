@@ -1,0 +1,145 @@
+case=psycopg mode=pool psycopg=3.3.6 psycopg_pool=3.3.3 python=3.13.13 host=127.0.0.1 port=32858 db=dw round=0 delay=0.05 bound=2.0
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=36931 user=postgres database=dw) at 0x7f8308f0c640>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=40631 user=postgres database=dw) at 0x7f8308f1c290>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=38045 user=postgres database=dw) at 0x7f83092ba580>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=41345 user=postgres database=dw) at 0x7f83092ba580>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33949 user=postgres database=dw) at 0x7f83092ba140>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=44455 user=postgres database=dw) at 0x7f83092ba9c0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33239 user=postgres database=dw) at 0x7f83092baad0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=45199 user=postgres database=dw) at 0x7f83092b9e10>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=42103 user=postgres database=dw) at 0x7f83092b99d0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=37813 user=postgres database=dw) at 0x7f83092ba690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=46195 user=postgres database=dw) at 0x7f83092ba7a0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=38727 user=postgres database=dw) at 0x7f83092b9e10>
+case=psycopg level=B1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=23.75
+  plan=pending#1 rep=1 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y12/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y12/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y12/realized=True verdict=- obs=None ok 
+  plan=pending#5 rep=1 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#5 rep=2 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#5 rep=3 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#6 rep=1 target=cancelled/y12/realized=True verdict=- obs=None ok 
+  plan=pending#6 rep=2 target=cancelled/y12/realized=True verdict=- obs=None ok 
+  plan=pending#6 rep=3 target=cancelled/y12/realized=True verdict=- obs=None ok 
+verdicts={'-': 18}
+SUMMARY level=B1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=23.75
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=42863 user=postgres database=dw) at 0x7f83092ba690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=45715 user=postgres database=dw) at 0x7f83092b9d00>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33957 user=postgres database=dw) at 0x7f83092baad0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=42949 user=postgres database=dw) at 0x7f83092ba7a0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=40413 user=postgres database=dw) at 0x7f83092b9e10>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=46667 user=postgres database=dw) at 0x7f83092ba470>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33063 user=postgres database=dw) at 0x7f83092b99d0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=44155 user=postgres database=dw) at 0x7f83092ba690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=41739 user=postgres database=dw) at 0x7f83092b9d00>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=40081 user=postgres database=dw) at 0x7f83092baad0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=41953 user=postgres database=dw) at 0x7f83092ba7a0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33433 user=postgres database=dw) at 0x7f83092b9e10>
+case=psycopg level=B2 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=29.24
+  plan=pending#1 rep=1 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 157, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=2 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 160, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=3 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 163, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=1 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 166, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=2 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 170, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=3 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 173, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=1 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 176, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=2 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 179, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=3 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 182, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=1 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 185, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=2 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 188, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=3 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 191, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#5 rep=1 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 194, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#5 rep=2 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 197, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#5 rep=3 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 200, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#6 rep=1 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 203, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#6 rep=2 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 206, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#6 rep=3 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 209, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+verdicts={'-': 18}
+SUMMARY level=B2 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=29.24
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=36445 user=postgres database=dw) at 0x7f83092ba690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=41969 user=postgres database=dw) at 0x7f83092ba470>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=44845 user=postgres database=dw) at 0x7f83092b99d0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=36191 user=postgres database=dw) at 0x7f83092b9d00>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=42961 user=postgres database=dw) at 0x7f83092baad0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=40287 user=postgres database=dw) at 0x7f83092ba7a0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=45625 user=postgres database=dw) at 0x7f83092b9e10>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=46161 user=postgres database=dw) at 0x7f83092ba690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=38851 user=postgres database=dw) at 0x7f83092ba470>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=44783 user=postgres database=dw) at 0x7f83092b99d0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=38323 user=postgres database=dw) at 0x7f83092b9d00>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=39295 user=postgres database=dw) at 0x7f83092baad0>
+case=psycopg level=B3 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=29.23
+  plan=pending#1 rep=1 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 214, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=2 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 217, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=3 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 220, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=1 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 223, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=2 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 227, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=3 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 230, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=1 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 233, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=2 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 236, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=3 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 239, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=1 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 242, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=2 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 245, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=3 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 248, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#5 rep=1 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 251, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#5 rep=2 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 254, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#5 rep=3 target=cancelled/y11/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 257, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#6 rep=1 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 260, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#6 rep=2 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 263, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+  plan=pending#6 rep=3 target=cancelled/y12/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 267, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'status_after_acquire': 'IDLE', 'status_before_release': 'IDLE', 'style': 'manual'}, 'error': None} ok 
+verdicts={'-': 18}
+SUMMARY level=B3 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=29.23
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=39893 user=postgres database=dw) at 0x7f83092baad0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=45305 user=postgres database=dw) at 0x7f83092ba7a0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33107 user=postgres database=dw) at 0x7f83092b9e10>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=41773 user=postgres database=dw) at 0x7f83092ba690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=43479 user=postgres database=dw) at 0x7f83092ba470>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=45969 user=postgres database=dw) at 0x7f83092b99d0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=42745 user=postgres database=dw) at 0x7f83092b9d00>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=44803 user=postgres database=dw) at 0x7f83092baad0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33977 user=postgres database=dw) at 0x7f83092ba7a0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=34367 user=postgres database=dw) at 0x7f83092b9e10>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=37837 user=postgres database=dw) at 0x7f83092ba690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=34697 user=postgres database=dw) at 0x7f83092ba470>
+case=psycopg level=M1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=32.40
+pre=[{'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, {'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}]
+post=[{'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}, {'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}]
+  plan=pending#1 rep=1 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=2 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=3 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=1 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=2 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=3 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=1 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=2 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=3 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#4 rep=1 target=cancelled/y12/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#4 rep=2 target=cancelled/y12/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#4 rep=3 target=cancelled/y12/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#5 rep=1 target=cancelled/y11/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#5 rep=2 target=cancelled/y11/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#5 rep=3 target=cancelled/y11/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#6 rep=1 target=cancelled/y12/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#6 rep=2 target=cancelled/y12/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#6 rep=3 target=cancelled/y12/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+verdicts={'Pre': 12, 'Post': 6}
+SUMMARY level=M1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=32.40
+=== FINAL ===
+mode=pool SUMMARY level=B1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=23.75
+violations_by_plan=[]
+mode=pool SUMMARY level=B2 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=29.24
+violations_by_plan=[]
+mode=pool SUMMARY level=B3 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=29.23
+violations_by_plan=[]
+mode=pool SUMMARY level=M1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=32.40
+violations_by_plan=[]
+exit=0

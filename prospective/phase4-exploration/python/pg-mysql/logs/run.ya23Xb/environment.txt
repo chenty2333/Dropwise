@@ -1,0 +1,14 @@
+== round3b FIXED ADAPTER rerun ==
+2026-10-21T22:48:05+09:00
+Python 3.13.13
+aiomysql==0.3.2
+PyMySQL==1.2.3
+mysql-connector-python==26.7.0
+engine=5f6e52d engine_dirty=1
+mariadb:11.4 mariadb@sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873
+mysql:9.6 mysql@sha256:c5df04bee1a42b74a5841c6409e669cf62126cd0416f00c1cea8ab933b9361b9
+container=/dw-r3b-aio-my-507959 image=mariadb:11.4 id=sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873
+container=/dw-r3b-mc-my-507959 image=mysql:9.6 id=sha256:c5df04bee1a42b74a5841c6409e669cf62126cd0416f00c1cea8ab933b9361b9
+ports: dw-r3b-aio-my-507959=127.0.0.1:32849 dw-r3b-mc-my-507959=127.0.0.1:32850
+pending: DelayProxy 50ms/chunk; bound 2s; engine 12s
+adapter: OpResult + fail-loud stages; tests/test_adapter_contract.py

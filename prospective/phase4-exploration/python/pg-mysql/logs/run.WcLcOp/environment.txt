@@ -1,0 +1,6 @@
+== environment ==
+2026-10-21T23:08:11+09:00
+Python 3.13.13
+postgres:18-alpine postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+container=/dw-r3fix-ct-565832 image=postgres:18-alpine id=sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+port=32862 run=logs/run.WcLcOp

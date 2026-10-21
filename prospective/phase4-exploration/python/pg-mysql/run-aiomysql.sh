@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# aiomysql 0.3.2 direct unit on MariaDB 11.4. Pool mode is not part of this
-# report (timebox); add --mode pool to cases.aiomysql_case to extend it.
+# aiomysql 0.3.2 DIRECT unit on MariaDB 11.4.  Pool mode lives in
+# run-aiomysql-pool.sh (round 3b) and is reported in RESULTS-FRAGMENT-round3b.md.
 set -u
 cd "$(dirname "$0")"
 REPO=$(cd ../../../.. && pwd)

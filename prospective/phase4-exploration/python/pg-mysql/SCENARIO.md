@@ -71,3 +71,39 @@ after survivor/observer.
   wrap per-statement errors into return values, so B2/B3 can report "ok" while
   the retried transaction was semantically corrupted (psycopg direct shows
   this). B2/B3 values are in the logs but do not drive the verdict.
+
+## Round 3b addendum (2026-10-21, post-review)
+
+The two gaps above are now covered, and the adapter contract changed:
+
+* `cases/aiomysql_case.py` (direct **and** pool) and the new
+  `cases/mysqlconnector_case.py` return
+  `dropwise_py.engine.OpResult(ok=..., stage=..., value=..., error=...)` from
+  `same()`/`different()`, stop at the first failed stage (never COMMIT after a
+  failed BEGIN/insert), raise for an uncancelled target failure, check
+  setup/warm-up, and record close results. The old direct aiomysql B2/B3
+  numbers were an adapter false negative; see
+  `RESULTS-FRAGMENT-round3b.md` §3.1 for the old-vs-new table.
+* aiomysql pool (`create_pool(minsize=1, maxsize=1, autocommit=True)`) is now
+  run: `run-aiomysql-pool.sh`, `--mode pool`, canonical log
+  `logs/run.GWTJsc/aiomysql-pool.txt`.
+* mysql-connector-python async direct is now run:
+  `run-mysqlconnector-aio.sh`, `--mode direct`, canonical log
+  `logs/run.GWTJsc/mysqlconnector-direct.txt`; internal evidence in
+  `.../mysqlconnector-probe.txt`.
+* Contract categories (do not change `Expect` globally): (a) pool discards the
+  cancelled handle and reconnects = allowed self-heal; (b) direct handle
+  refuses reuse with an explicit `InterfaceError` and zero stale effect =
+  legitimate fail-fast / contract gap, mechanically counted by B2/B3 but not a
+  protocol violation; (c) an operation reports success/rows that do not
+  correspond to its own effect = protocol violation (mysql-connector here).
+* Canonical final logs are `logs/run.GWTJsc/`; `run.KqRbB4` (old direct) and
+  `run.Pio5vb` (pre-fix adapter) are retained but invalid for the corrected
+  aiomysql direct B2/B3 numbers. `run.ya23Xb` is an intermediate OpResult run
+  whose aiomysql close recording was fixed in `run.GWTJsc`.
+* No-service retry-contract regression:
+  `tests/test_adapter_contract.py` (OpResult false, raised error, timeout,
+  structured timeout, OpResult true).
+* Earlier statements in this file ("Pool mode was not run", "mysql-connector
+  ... not exercised", "B2/B3 ... wrap per-statement errors") describe the
+  pre-review adapter and are superseded by `RESULTS-FRAGMENT-round3b.md`.

@@ -1,0 +1,97 @@
+case=asyncpg mode=pool asyncpg=0.32.0 python=3.13.13 host=127.0.0.1 port=32860 db=dw round=0 delay=0.05 bound=2.0
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9f750>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9f650>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9f850>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9f850>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9f850>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fb50>
+case=asyncpg level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=23.43
+  plan=pending#1 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+verdicts={'-': 12}
+SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=23.43
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9f650>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fe50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fa50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9f650>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fe50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fa50>
+case=asyncpg level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=28.31
+  plan=pending#1 rep=1 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 610, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=2 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 613, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=3 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 616, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=1 target=cancelled/y3/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 619, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=2 target=cancelled/y3/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 622, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=3 target=cancelled/y3/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 626, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=1 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 629, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=2 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 632, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=3 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 635, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 638, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 640, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 642, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+verdicts={'-': 12}
+SUMMARY level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=28.31
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9e550>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fa50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9ee50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9e550>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fa50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9ee50>
+case=asyncpg level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=28.31
+  plan=pending#1 rep=1 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 646, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=2 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 650, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#1 rep=3 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 653, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=1 target=cancelled/y3/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 656, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=2 target=cancelled/y3/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 659, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#2 rep=3 target=cancelled/y3/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 662, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=1 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 665, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=2 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 668, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#3 rep=3 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 671, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 674, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 677, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs={'ok': True, 'stage': 'commit', 'value': {'backend_pid': 679, 'begin': ['ok', 'BEGIN'], 'commit': ['ok', 'COMMIT'], 'in_tx_after_acquire': False, 'in_tx_before_release': False, 'insert': ['ok', 'INSERT 0 1'], 'release': ['ok', None], 'style': 'manual'}, 'error': None} ok 
+verdicts={'-': 12}
+SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=28.31
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6c8c450>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9ee50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9e550>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9fa50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9ee50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f6af6d9e550>
+case=asyncpg level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=34.69
+pre=[{'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, {'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}]
+post=[{'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}, {'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}]
+  plan=pending#1 rep=1 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=2 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=3 target=cancelled/y2/realized=True verdict=Pre obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=1 target=cancelled/y3/realized=True verdict=Pre obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=2 target=cancelled/y3/realized=True verdict=Pre obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=3 target=cancelled/y3/realized=True verdict=Pre obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=1 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#3 rep=2 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#3 rep=3 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'in_tx': False, 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+verdicts={'Pre': 6, 'Post': 6}
+SUMMARY level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=34.69
+=== FINAL ===
+mode=pool SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=23.43
+violations_by_plan=[]
+mode=pool SUMMARY level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=28.31
+violations_by_plan=[]
+mode=pool SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=28.31
+violations_by_plan=[]
+mode=pool SUMMARY level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=34.69
+violations_by_plan=[]
+exit=0

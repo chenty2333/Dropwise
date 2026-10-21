@@ -1,0 +1,6 @@
+case=aiomysql mode=direct aiomysql=0.3.2 python=3.13.13 host=127.0.0.1 port=32849 db=dw round=0 delay=0.05 bound=2.0
+DIAG setup={'setup': None}
+DIAG pre obs={'survivor': ['ok', {'in_tx': 0, 'write': ['ok', 1], 'own': ['ok', [[7]]], 'release': ['ok', None]}], 'observer': ['ok', {'rows': [['survivor', 7]], 'error': None}]}
+DIAG post target=completed/3 diag={'setup': None, 'survivor_start': {'cid': 642, 'closed': False, 'txstatus': 0, 'stats': None}, 'survivor_end': {'stats': None, 'release': ('ok', None)}, 'stages': ['begin', 'insert', 'commit'], 'after_target': {'cid': 642, 'closed': False, 'txstatus': 0, 'stats': None}, 'after_release': {'stats': None, 'release': ('ok', None), 'pool_free': None}}
+DIAG post obs={'survivor': ['ok', {'in_tx': 0, 'write': ['ok', 1], 'own': ['ok', [[7]]], 'release': ['ok', None]}], 'observer': ['ok', {'rows': [['survivor', 7], ['target', 1]], 'error': None}]}
+DIAG pre==post False

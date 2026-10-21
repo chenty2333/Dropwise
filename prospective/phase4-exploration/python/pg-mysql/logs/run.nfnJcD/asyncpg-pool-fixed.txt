@@ -1,0 +1,80 @@
+case=asyncpg mode=pool asyncpg=0.32.0 python=3.13.13 host=127.0.0.1 port=32858 db=dw round=0 delay=0.05 bound=2.0
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f312691b750>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f8050>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f8d50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f8f50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f312691bb50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f312691ae50>
+case=asyncpg level=B1 yields=4 trials=12 violations=9 unknown=0 unrealized=0 seconds=23.48
+baseline_error: uncancelled target: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#1 rep=1 target=error/y2/realized=True verdict=- obs=None VIOLATION after pending#1: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#1 rep=2 target=error/y2/realized=True verdict=- obs=None VIOLATION after pending#1: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#1 rep=3 target=error/y2/realized=True verdict=- obs=None VIOLATION after pending#1: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#2 rep=1 target=error/y3/realized=True verdict=- obs=None VIOLATION after pending#2: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#2 rep=2 target=error/y3/realized=True verdict=- obs=None VIOLATION after pending#2: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#2 rep=3 target=error/y3/realized=True verdict=- obs=None VIOLATION after pending#2: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#3 rep=1 target=error/y4/realized=True verdict=- obs=None VIOLATION after pending#3: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#3 rep=2 target=error/y4/realized=True verdict=- obs=None VIOLATION after pending#3: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#3 rep=3 target=error/y4/realized=True verdict=- obs=None VIOLATION after pending#3: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+verdicts={'-': 12}
+SUMMARY level=B1 yields=4 trials=12 violations=9 unknown=0 unrealized=0 seconds=23.48
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267faf50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267fb550>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f312691b050>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267fb450>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f9550>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267fa950>
+case=asyncpg level=B2 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=28.32
+baseline_error: uncancelled target: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#1 rep=1 target=error/y2/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#1: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#1 rep=2 target=error/y2/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#1: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#1 rep=3 target=error/y2/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#1: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#2 rep=1 target=error/y3/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#2: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#2 rep=2 target=error/y3/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#2: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#2 rep=3 target=error/y3/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#2: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#3 rep=1 target=error/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#3: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#3 rep=2 target=error/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#3: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#3 rep=3 target=error/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#3: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#4: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#4: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#4: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+verdicts={'-': 12}
+SUMMARY level=B2 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=28.32
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f312691bd50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f8750>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f8d50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f8550>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f9e50>
+Resetting connection with an active transaction <asyncpg.connection.Connection object at 0x7f31267f9d50>
+case=asyncpg level=B3 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=28.33
+baseline_error: uncancelled target: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+  plan=pending#1 rep=1 target=error/y2/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#1: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#1 rep=2 target=error/y2/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#1: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#1 rep=3 target=error/y2/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#1: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#2 rep=1 target=error/y3/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#2: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#2 rep=2 target=error/y3/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#2: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#2 rep=3 target=error/y3/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#2: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#3 rep=1 target=error/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#3: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#3 rep=2 target=error/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#3: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#3 rep=3 target=error/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#3: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#4: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#4: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs='ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool' VIOLATION after pending#4: 'ERR InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool'
+verdicts={'-': 12}
+SUMMARY level=B3 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=28.33
+case=asyncpg level=M1 yields=4 trials=0 violations=0 unknown=0 unrealized=0 seconds=1.79
+baseline_error: uncancelled target: error InterfaceError: cannot call Connection.is_in_transaction(): connection has been released back to the pool
+SUMMARY level=M1 yields=4 trials=0 violations=0 unknown=0 unrealized=0 seconds=1.79
+=== FINAL ===
+mode=pool SUMMARY level=B1 yields=4 trials=12 violations=9 unknown=0 unrealized=0 seconds=23.48
+violations_by_plan=['pending#1', 'pending#1', 'pending#1', 'pending#2', 'pending#2', 'pending#2', 'pending#3', 'pending#3', 'pending#3']
+mode=pool SUMMARY level=B2 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=28.32
+violations_by_plan=['pending#1', 'pending#1', 'pending#1', 'pending#2', 'pending#2', 'pending#2', 'pending#3', 'pending#3', 'pending#3', 'pending#4', 'pending#4', 'pending#4']
+mode=pool SUMMARY level=B3 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=28.33
+violations_by_plan=['pending#1', 'pending#1', 'pending#1', 'pending#2', 'pending#2', 'pending#2', 'pending#3', 'pending#3', 'pending#3', 'pending#4', 'pending#4', 'pending#4']
+mode=pool SUMMARY level=M1 yields=4 trials=0 violations=0 unknown=0 unrealized=0 seconds=1.79
+violations_by_plan=[]
+exit=0

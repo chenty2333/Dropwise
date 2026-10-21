@@ -1,0 +1,25 @@
+== round3b aiomysql pool + mysql-connector-python aio ==
+2026-10-21T22:41:22+09:00
+Python 3.13.13
+aiomysql==0.3.2
+PyMySQL==1.2.3
+mysql-connector-python==26.7.0
+typing-extensions==4.16.0
+python 3.13.13 (main, May 10 2026, 19:26:54) [Clang 22.1.3 ]
+mariadb:11.4 mariadb@sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873
+mysql:9.6 mysql@sha256:c5df04bee1a42b74a5841c6409e669cf62126cd0416f00c1cea8ab933b9361b9
+container=/dw-r3b-aio-my-507959 image=mariadb:11.4 id=sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873
+container=/dw-r3b-mc-my-507959 image=mysql:9.6 id=sha256:c5df04bee1a42b74a5841c6409e669cf62126cd0416f00c1cea8ab933b9361b9
+127.0.0.1:32849
+127.0.0.1:32850
+
+== server versions / exact commands ==
+mariadb container dw-r3b-aio-my-507959: 11.4.13-MariaDB-ubu2404 port=127.0.0.1:32849
+mysql container dw-r3b-mc-my-507959: mysql: [Warning] Using a password on the command line interface can be insecure.
+9.6.0 port=127.0.0.1:32850
+aiomysql pool cmd: python -m cases.aiomysql_case --port 32849 --user root --password dw --dbname dw --mode pool --levels B1,B2,B3,M1 --reps 3
+aiomysql probe cmd: ... --mode pool --probe 1,2,3,4
+mysqlconnector cmd: python -m cases.mysqlconnector_case --port 32850 --user root --password dw --dbname dw --mode direct --levels B1,B2,B3,M1 --reps 3
+mysqlconnector probe cmd: ... --mode direct --probe 1,2,3,4
+pending: DelayProxy 50ms per server->client chunk; engine timeout 12s; per-op bound 2s
+python package mysql.connector: 26.7.0

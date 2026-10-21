@@ -1,0 +1,1 @@
+case=asyncpg mode=direct asyncpg=0.32.0 python=3.13.13 host=127.0.0.1 port=32858 db=dw round=0 delay=0.05 bound=2.0
