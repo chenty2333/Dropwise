@@ -549,3 +549,97 @@ kernel worktree, or existing log was modified.  Added files are this
 report, the two test sources, and the new log directory; generated build
 artifacts are under `mcast-delivery/build/`.  `RESULTS-round4.md` only
 received the append-only section 10 pointer.
+
+## 10. Patch closure (2026-10-22)
+
+This section supersedes the §7 wrapper bullet and the §8 patch-stat/upstream
+numbers; the earlier sections, logs and matrix are unchanged.  No commit,
+push, email, patch submission, issue or pull request was made.
+
+### 10.1 Final source and upstream check
+
+- `~/dropwise-linux-r4` is still at v7.3-rc2 `df2908090cda`, with only
+  `net/ipv4/igmp.c` modified.  The final diff is **28 insertions, 9
+  deletions**; the earlier 26/9 count did not include the corrected comments.
+  The worktree still carried the pre-3a087df helper comment saying that a
+  missing group is "corrected by the next IGMP query"; it now states that a
+  query does not recreate the group, matching §6.2.  This is the only
+  difference from the image used for §2.  The kernel was rebuilt
+  (`bzImage-fixed`, SHA-256 `b1e2f81f7f8d1860106d609a0d3028df2366df22e7a51e1e3008710c8d45814b`)
+  and all results below use the rebuilt image.
+- The exported patch applies with `git apply --check` to a clean v7.3-rc2
+  `igmp.c`, current mainline master `a804c5742bff` (2026-10-21), current
+  net-next and current net.  The patched hunks are the same in those three
+  current trees; other parts of `igmp.c` differ.  `git apply --reverse
+  --check` succeeds on the built worktree, and applying the patch to a clean
+  v7.3-rc2 file reproduces the worktree file byte for byte.
+- Current mainline, net-next and net still have `static void
+  ____ip_mc_inc_group(...)`, and `__ip_mc_join_group()` still publishes
+  `inet->mc_list` before calling it.  This is **source inspection of the
+  current trees, not a current-tree runtime boot**.  No maintainer
+  confirmation was obtained.  No equivalent fix was found in the fetched
+  sources or public web search; direct `lore.kernel.org` queries are still
+  blocked (HTTP 403 / Anubis bot check), so this is "not found", not proof of
+  absence.
+- `scripts/checkpatch.pl --strict --no-signoff` on the patch: 0 errors,
+  0 warnings, 0 checks, 73 lines checked.  The patch deliberately has no
+  author or `Signed-off-by`; the sender must add their own sign-off.
+
+### 10.2 New scenarios and results
+
+Three scenarios were added to the existing harness; the original seven are
+unchanged.  They run in fresh forked children, as before.
+
+- `ssm_positive`: normal `IP_ADD_SOURCE_MEMBERSHIP` for source 127.0.0.1,
+  then delivery from 127.0.0.1 (must arrive) and from 127.0.0.2 (must be
+  filtered by the INCLUDE list).
+- `ssm_two_sockets`: two sockets join the same source-filtered group, so the
+  second join takes the existing-group `users++` branch; both must receive,
+  and closing the first must leave the second's delivery intact.
+- `ifup_wrapper`: `unshare(CLONE_NEWNET)`, configure the new `lo`, then bring
+  it down/up with fail-nth armed at N=1..24.  This covers the legacy void
+  wrapper path (`ip_mc_up()` -> `ip_mc_inc_group()` -> `__ip_mc_inc_group()`)
+  that §7 listed as not injected.
+
+Key results (full logs in `logs/20261022-r4-mcast-closure/`):
+
+| kernel | scenario | result |
+|---|---|---|
+| all three | `normal` | join 0, users 1, 4/4 delivered |
+| v6.19 / v7.3 stock | `n2` | join **0**, no device group, 0/4 delivered |
+| v7.3 fixed | `n2` | join **-ENOBUFS**, no socket/device state, 0/4; rejoin 0 and 2/2 |
+| v6.19 / v7.3 stock | `n2_cross` | second socket 2/2 before close; **0/2 after closing the half-joined socket** |
+| v7.3 fixed | `n2_cross` | second socket 2/2 before and **2/2 after** the close |
+| all three | `ssm_positive` | join 0, users 1, allowed source 2/2, filtered source 0/2 |
+| all three | `ssm_two_sockets` | users 1 -> 2; both 1/1; close first -> users 1; second still 1/1 |
+| all three | `ifup_wrapper` | baseline all-hosts users 1; at N=14 the up returns 0, `up=1`, `readback=0`, all-hosts absent (`WRAPPER_MISS`); a later down/up repairs it to users 1 |
+
+All three boots completed (`done=1`), all ten scenarios ended with status 0,
+and no `NET_FAIL`, `HARNESS_ERROR`, `CONTROL_FAIL` or `SCENARIO_ERROR` was
+logged.  The 0/2 and 0/4 lines are expected findings for the filtered source
+and the injected failure, not harness failures.
+
+The N=14 wrapper hit is the same on all three kernels.  It is identified by
+the observed effect (successful up, no all-hosts group, fail-nth consumed),
+not by a kernel stack trace; the only group-creation allocation on that path
+is the `kzalloc_obj()` in `____ip_mc_inc_group()`.  The wrapper has no error
+channel, so this patch leaves that best-effort behaviour unchanged: the
+all-hosts group can be absent until a later successful up.  This closes the
+§7 injection gap but is not a claim that the wrapper failure is harmless.
+
+### 10.3 Remaining limits
+
+- Only `lo`; no veth/NIC/hardware multicast filter and no IGMP packet
+  capture.  The all-hosts test uses a private netns and `lo`, not a second
+  device.
+- fail-nth only; no real allocation-pressure trigger.
+- `ip_mc_add_src()` failure on the existing-group `users++` path is still
+  ignored (pre-existing, out of scope); `ssm_two_sockets` covers the normal
+  success path only.
+- No weak-memory litmus test; the ordering argument is the RCU
+  release/acquire pair plus RTNL serialization, not a memory-model result.
+- The patch applies to current net-next/net but was built and booted on
+  v7.3-rc2 only.
+
+Sending notes, maintainers, subject and the required sign-off are in
+[`patches/0002-ipv4-igmp-report-interface-group-allocation-failure.SENDING.md`](patches/0002-ipv4-igmp-report-interface-group-allocation-failure.SENDING.md).

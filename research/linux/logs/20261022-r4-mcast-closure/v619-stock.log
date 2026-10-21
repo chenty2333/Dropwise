@@ -1,0 +1,254 @@
+KERNEL sysname=Linux release=6.19.0 version=#2 SMP PREEMPT_DYNAMIC Mon Oct 19 12:49:41 JST 2026
+CMDLINE console=ttyS0 panic=-1 oops=panic quiet loglevel=4 mcast.label=v619-stock
+NET lo_ifindex=1 lo_up=1 addr=127.0.0.1 route_localnet=1
+ROUTE table=main snapshot=Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT                                                       |
+SCENARIO_BEGIN name=normal mono_us=445469 real_us=1792601106010009
+SCENARIO normal begin
+UNICAST_SEND tag=normal_pre ret=12 errno=0 dst=127.0.0.1:45678
+UNICAST_RECV tag=normal_pre got=1 src=127.0.0.1:33256 bytes=12
+STATE tag=normal_join ret=0 errno=0 injected=0 readback=-1 msf=0 msf_errno=0 igmp_users=1
+IGMP tag=normal_join present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+UNICAST_SEND tag=normal_post ret=13 errno=0 dst=127.0.0.1:45678
+UNICAST_RECV tag=normal_post got=1 src=127.0.0.1:33256 bytes=13
+MCAST_SEND tag=normal_joined seq=0 ret=17 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=normal_joined seq=0 src=127.0.0.1:33256 bytes=17
+MCAST_SEND tag=normal_joined seq=1 ret=17 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=normal_joined seq=1 src=127.0.0.1:33256 bytes=17
+MCAST_SEND tag=normal_joined seq=2 ret=17 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=normal_joined seq=2 src=127.0.0.1:33256 bytes=17
+MCAST_SEND tag=normal_joined seq=3 ret=17 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=normal_joined seq=3 src=127.0.0.1:33256 bytes=17
+DELIVERY tag=normal_joined multicast_sent=4 multicast_recv=4 expected=4
+SCENARIO normal end
+SCENARIO_END name=normal status=0 mono_us=647095 real_us=1792601106211635 igmp_users=-1
+SCENARIO_BEGIN name=n1 mono_us=647135 real_us=1792601106211676
+SCENARIO n1 begin
+ARM tag=n1 n=1
+STATE tag=n1 ret=-1 errno=105 injected=1 readback=0 msf=-1 msf_errno=99 igmp_users=-1 msf_means=no_socket_membership
+IGMP tag=n1 present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+UNICAST_SEND tag=n1 ret=4 errno=0 dst=127.0.0.1:45678
+UNICAST_RECV tag=n1 got=1 src=127.0.0.1:40486 bytes=4
+MCAST_SEND tag=n1_no_join seq=0 ret=14 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n1_no_join seq=0 got=0
+MCAST_SEND tag=n1_no_join seq=1 ret=14 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n1_no_join seq=1 got=0
+DELIVERY tag=n1_no_join multicast_sent=2 multicast_recv=0 expected=2
+DELIVERY_MISS tag=n1_no_join recv=0 expected=2
+REJOIN tag=n1 ret=0 errno=0
+IGMP tag=n1_rejoin present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+MCAST_SEND tag=n1_rejoined seq=0 ret=15 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n1_rejoined seq=0 src=127.0.0.1:40486 bytes=15
+MCAST_SEND tag=n1_rejoined seq=1 ret=15 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n1_rejoined seq=1 src=127.0.0.1:40486 bytes=15
+DELIVERY tag=n1_rejoined multicast_sent=2 multicast_recv=2 expected=2
+SCENARIO n1 end
+SCENARIO_END name=n1 status=0 mono_us=1461661 real_us=1792601107026202 igmp_users=-1
+SCENARIO_BEGIN name=n2 mono_us=1461699 real_us=1792601107026239
+SCENARIO n2 begin
+ARM tag=n2 n=2
+STATE tag=n2 ret=0 errno=0 injected=1 readback=0 msf=0 msf_errno=0 igmp_users=-1
+IGMP tag=n2 present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+UNICAST_SEND tag=n2 ret=4 errno=0 dst=127.0.0.1:45678
+UNICAST_RECV tag=n2 got=1 src=127.0.0.1:55185 bytes=4
+MCAST_SEND tag=n2_after_inject seq=0 ret=19 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n2_after_inject seq=0 got=0
+MCAST_SEND tag=n2_after_inject seq=1 ret=19 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n2_after_inject seq=1 got=0
+MCAST_SEND tag=n2_after_inject seq=2 ret=19 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n2_after_inject seq=2 got=0
+MCAST_SEND tag=n2_after_inject seq=3 ret=19 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=n2_after_inject seq=3 got=0
+DELIVERY tag=n2_after_inject multicast_sent=4 multicast_recv=0 expected=4
+DELIVERY_MISS tag=n2_after_inject recv=0 expected=4
+DUPJOIN tag=n2 ret=-1 errno=98
+IGMP tag=n2_dupjoin present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+IGMP tag=n2_after_1s present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+SCENARIO n2 end
+SCENARIO_END name=n2 status=0 mono_us=3877065 real_us=1792601109441606 igmp_users=-1
+SCENARIO_BEGIN name=n2_cross mono_us=3877140 real_us=1792601109441681
+SCENARIO n2_cross begin
+ARM tag=n2_cross n=2
+STATE tag=n2_cross ret=0 errno=0 injected=1 readback=0 msf=0 msf_errno=0 igmp_users=-1
+IGMP tag=n2_cross_pre_second present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+SECOND_JOIN tag=n2_cross ret=0 errno=0
+IGMP tag=n2_cross_second_joined present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+MCAST_SEND tag=n2_cross_before_close seq=0 ret=25 errno=0 dst=239.1.2.3:45679
+MCAST_RECV tag=n2_cross_before_close seq=0 src=127.0.0.1:46079 bytes=25
+MCAST_SEND tag=n2_cross_before_close seq=1 ret=25 errno=0 dst=239.1.2.3:45679
+MCAST_RECV tag=n2_cross_before_close seq=1 src=127.0.0.1:46079 bytes=25
+DELIVERY tag=n2_cross_before_close multicast_sent=2 multicast_recv=2 expected=2
+MSF tag=n2_cross_fd2_after_close_first rc=0 errno=0
+IGMP tag=n2_cross_after_close_first present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+MCAST_SEND tag=n2_cross_after_close seq=0 ret=24 errno=0 dst=239.1.2.3:45679
+MCAST_RECV tag=n2_cross_after_close seq=0 got=0
+MCAST_SEND tag=n2_cross_after_close seq=1 ret=24 errno=0 dst=239.1.2.3:45679
+MCAST_RECV tag=n2_cross_after_close seq=1 got=0
+DELIVERY tag=n2_cross_after_close multicast_sent=2 multicast_recv=0 expected=2
+DELIVERY_MISS tag=n2_cross_after_close recv=0 expected=2
+IGMP tag=n2_cross_cleanup present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+SCENARIO n2_cross end
+SCENARIO_END name=n2_cross status=0 mono_us=5095521 real_us=1792601110660062 igmp_users=-1
+SCENARIO_BEGIN name=ssm_n2 mono_us=5095587 real_us=1792601110660128
+SCENARIO ssm_n2 begin
+ARM tag=ssm_n2 n=2
+STATE tag=ssm_n2 ret=0 errno=0 injected=1 readback=0 msf=0 msf_errno=0 igmp_users=-1
+IGMP tag=ssm_n2 present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+UNICAST_SEND tag=ssm_n2 ret=8 errno=0 dst=127.0.0.1:45678
+UNICAST_RECV tag=ssm_n2 got=1 src=127.0.0.1:41228 bytes=8
+MCAST_SEND tag=ssm_n2_after_inject seq=0 ret=23 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=ssm_n2_after_inject seq=0 got=0
+MCAST_SEND tag=ssm_n2_after_inject seq=1 ret=23 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=ssm_n2_after_inject seq=1 got=0
+DELIVERY tag=ssm_n2_after_inject multicast_sent=2 multicast_recv=0 expected=2
+DELIVERY_MISS tag=ssm_n2_after_inject recv=0 expected=2
+SCENARIO ssm_n2 end
+SCENARIO_END name=ssm_n2 status=0 mono_us=5905943 real_us=1792601111470483 igmp_users=-1
+SCENARIO_BEGIN name=invalid mono_us=5905987 real_us=1792601111470528
+SCENARIO invalid begin
+STATE tag=invalid_group ret=-1 errno=22 injected=0 readback=-1 msf=-1 msf_errno=99 igmp_users=-1 msf_means=no_socket_membership
+IGMP tag=invalid_group present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+STATE tag=invalid_ifindex ret=-1 errno=19 injected=0 readback=-1 msf=-1 msf_errno=99 igmp_users=-1 msf_means=no_socket_membership
+IGMP tag=invalid_ifindex present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+SCENARIO invalid end
+SCENARIO_END name=invalid status=0 mono_us=6107013 real_us=1792601111671554 igmp_users=-1
+SCENARIO_BEGIN name=two_sockets mono_us=6107062 real_us=1792601111671603
+SCENARIO two_sockets begin
+JOIN_A ret=0 errno=0
+IGMP tag=two_sockets_a present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+JOIN_B ret=0 errno=0
+IGMP tag=two_sockets_ab present=1 users=2 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     2 0:00000000		0|				010000E0     1 0:00000000		0|
+DUPJOIN_A ret=-1 errno=98
+IGMP tag=two_sockets_dup present=1 users=2 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     2 0:00000000		0|				010000E0     1 0:00000000		0|
+MCAST_SEND tag=two_sockets_a seq=0 ret=17 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=two_sockets_a seq=0 src=127.0.0.1:59613 bytes=17
+DELIVERY tag=two_sockets_a multicast_sent=1 multicast_recv=1 expected=1
+MCAST_SEND tag=two_sockets_b seq=0 ret=17 errno=0 dst=239.1.2.3:45679
+MCAST_RECV tag=two_sockets_b seq=0 src=127.0.0.1:59613 bytes=17
+DELIVERY tag=two_sockets_b multicast_sent=1 multicast_recv=1 expected=1
+MSF tag=two_sockets_a_after_close_b rc=0 errno=0
+IGMP tag=two_sockets_after_close_b present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+MCAST_SEND tag=two_sockets_after_close_b seq=0 ret=29 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=two_sockets_after_close_b seq=0 src=127.0.0.1:59613 bytes=29
+DELIVERY tag=two_sockets_after_close_b multicast_sent=1 multicast_recv=1 expected=1
+IGMP tag=two_sockets_cleanup present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+SCENARIO two_sockets end
+SCENARIO_END name=two_sockets status=0 mono_us=6726136 real_us=1792601112290676 igmp_users=-1
+SCENARIO_BEGIN name=ssm_positive mono_us=6726222 real_us=1792601112290763
+SCENARIO ssm_positive begin
+STATE tag=ssm_positive_join ret=0 errno=0 injected=0 readback=-1 msf=0 msf_errno=0 igmp_users=1
+IGMP tag=ssm_positive_join present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+UNICAST_SEND tag=ssm_positive ret=14 errno=0 dst=127.0.0.1:45678
+UNICAST_RECV tag=ssm_positive got=1 src=127.0.0.1:37938 bytes=14
+MCAST_SEND tag=ssm_positive_allowed seq=0 ret=24 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=ssm_positive_allowed seq=0 src=127.0.0.1:37938 bytes=24
+MCAST_SEND tag=ssm_positive_allowed seq=1 ret=24 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=ssm_positive_allowed seq=1 src=127.0.0.1:37938 bytes=24
+DELIVERY tag=ssm_positive_allowed multicast_sent=2 multicast_recv=2 expected=2
+MCAST_SEND tag=ssm_positive_denied seq=0 ret=23 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=ssm_positive_denied seq=0 got=0
+MCAST_SEND tag=ssm_positive_denied seq=1 ret=23 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=ssm_positive_denied seq=1 got=0
+DELIVERY tag=ssm_positive_denied multicast_sent=2 multicast_recv=0 expected=2
+DELIVERY_MISS tag=ssm_positive_denied recv=0 expected=2
+SCENARIO ssm_positive end
+SCENARIO_END name=ssm_positive status=0 mono_us=7535779 real_us=1792601113100319 igmp_users=-1
+SCENARIO_BEGIN name=ssm_two_sockets mono_us=7535861 real_us=1792601113100402
+SCENARIO ssm_two_sockets begin
+JOIN_A tag=ssm_two ret=0 errno=0
+IGMP tag=ssm_two_a present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+JOIN_B tag=ssm_two ret=0 errno=0
+IGMP tag=ssm_two_ab present=1 users=2 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     2 0:00000000		0|				010000E0     1 0:00000000		0|
+MCAST_SEND tag=ssm_two_a seq=0 ret=13 errno=0 dst=239.1.2.3:45678
+MCAST_RECV tag=ssm_two_a seq=0 src=127.0.0.1:57991 bytes=13
+DELIVERY tag=ssm_two_a multicast_sent=1 multicast_recv=1 expected=1
+MCAST_SEND tag=ssm_two_b seq=0 ret=13 errno=0 dst=239.1.2.3:45679
+MCAST_RECV tag=ssm_two_b seq=0 src=127.0.0.1:57991 bytes=13
+DELIVERY tag=ssm_two_b multicast_sent=1 multicast_recv=1 expected=1
+IGMP tag=ssm_two_after_close_a present=1 users=1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     2      V3|				030201EF     1 0:00000000		0|				010000E0     1 0:00000000		0|
+MCAST_SEND tag=ssm_two_b_after_close_a seq=0 ret=27 errno=0 dst=239.1.2.3:45679
+MCAST_RECV tag=ssm_two_b_after_close_a seq=0 src=127.0.0.1:57991 bytes=27
+DELIVERY tag=ssm_two_b_after_close_a multicast_sent=1 multicast_recv=1 expected=1
+IGMP tag=ssm_two_cleanup present=0 users=-1 snapshot=Idx	Device    : Count Querier	Group    Users Timer	Reporter|1	lo        :     1      V3|				010000E0     1 0:00000000		0|
+SCENARIO ssm_two_sockets end
+SCENARIO_END name=ssm_two_sockets status=0 mono_us=8150760 real_us=1792601113715300 igmp_users=-1
+SCENARIO_BEGIN name=ifup_wrapper mono_us=8150803 real_us=1792601113715344
+SCENARIO ifup_wrapper begin
+NET lo_ifindex=1 lo_up=1 addr=127.0.0.1 route_localnet=1
+ALLHOSTS tag=ifup_baseline present=1 users=1
+ALLHOSTS tag=ifup_down n=1 present=0 users=-1
+WRAPPER_PROBE n=1 ret=-1 errno=23 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=1 present=1 users=1
+ALLHOSTS tag=ifup_down n=2 present=0 users=-1
+WRAPPER_PROBE n=2 ret=-1 errno=23 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=2 present=1 users=1
+ALLHOSTS tag=ifup_down n=3 present=0 users=-1
+WRAPPER_PROBE n=3 ret=-1 errno=12 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=3 present=1 users=1
+ALLHOSTS tag=ifup_down n=4 present=0 users=-1
+WRAPPER_PROBE n=4 ret=-1 errno=12 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=4 present=1 users=1
+ALLHOSTS tag=ifup_down n=5 present=0 users=-1
+WRAPPER_PROBE n=5 ret=-1 errno=12 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=5 present=1 users=1
+ALLHOSTS tag=ifup_down n=6 present=0 users=-1
+WRAPPER_PROBE n=6 ret=-1 errno=12 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=6 present=1 users=1
+ALLHOSTS tag=ifup_down n=7 present=0 users=-1
+WRAPPER_PROBE n=7 ret=-1 errno=12 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=7 present=1 users=1
+ALLHOSTS tag=ifup_down n=8 present=0 users=-1
+WRAPPER_PROBE n=8 ret=-1 errno=12 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=8 present=1 users=1
+ALLHOSTS tag=ifup_down n=9 present=0 users=-1
+WRAPPER_PROBE n=9 ret=-1 errno=12 readback=0 up=0 present=0 users=-1
+ALLHOSTS tag=ifup_repaired n=9 present=1 users=1
+ALLHOSTS tag=ifup_down n=10 present=0 users=-1
+WRAPPER_PROBE n=10 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=10 present=1 users=1
+ALLHOSTS tag=ifup_down n=11 present=0 users=-1
+WRAPPER_PROBE n=11 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=11 present=1 users=1
+ALLHOSTS tag=ifup_down n=12 present=0 users=-1
+WRAPPER_PROBE n=12 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=12 present=1 users=1
+ALLHOSTS tag=ifup_down n=13 present=0 users=-1
+WRAPPER_PROBE n=13 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=13 present=1 users=1
+ALLHOSTS tag=ifup_down n=14 present=0 users=-1
+WRAPPER_PROBE n=14 ret=0 errno=0 readback=0 up=1 present=0 users=-1
+WRAPPER_MISS n=14 what=all_hosts_after_up
+ALLHOSTS tag=ifup_repaired n=14 present=1 users=1
+ALLHOSTS tag=ifup_down n=15 present=0 users=-1
+WRAPPER_PROBE n=15 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=15 present=1 users=1
+ALLHOSTS tag=ifup_down n=16 present=0 users=-1
+WRAPPER_PROBE n=16 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=16 present=1 users=1
+ALLHOSTS tag=ifup_down n=17 present=0 users=-1
+WRAPPER_PROBE n=17 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=17 present=1 users=1
+ALLHOSTS tag=ifup_down n=18 present=0 users=-1
+WRAPPER_PROBE n=18 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=18 present=1 users=1
+ALLHOSTS tag=ifup_down n=19 present=0 users=-1
+WRAPPER_PROBE n=19 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=19 present=1 users=1
+ALLHOSTS tag=ifup_down n=20 present=0 users=-1
+WRAPPER_PROBE n=20 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=20 present=1 users=1
+ALLHOSTS tag=ifup_down n=21 present=0 users=-1
+WRAPPER_PROBE n=21 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=21 present=1 users=1
+ALLHOSTS tag=ifup_down n=22 present=0 users=-1
+WRAPPER_PROBE n=22 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=22 present=1 users=1
+ALLHOSTS tag=ifup_down n=23 present=0 users=-1
+WRAPPER_PROBE n=23 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=23 present=1 users=1
+ALLHOSTS tag=ifup_down n=24 present=0 users=-1
+WRAPPER_PROBE n=24 ret=0 errno=0 readback=0 up=1 present=1 users=1
+ALLHOSTS tag=ifup_repaired n=24 present=1 users=1
+SCENARIO ifup_wrapper end
+SCENARIO_END name=ifup_wrapper status=0 mono_us=8386331 real_us=1792601113950871 igmp_users=-1
+MCAST_DONE
+[    8.393161] reboot: Power down

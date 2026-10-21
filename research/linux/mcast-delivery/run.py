@@ -74,7 +74,9 @@ def valid_run(text):
     if re.search(r"^(?:NET_FAIL|MOUNT_FAIL|KNOB_FAIL|HARNESS_ERROR|CONTROL_FAIL|SCENARIO_ERROR)\b", text, re.M):
         return False
     ended = re.findall(r"^SCENARIO_END name=(\S+) status=(\d+)\b", text, re.M)
-    expected = {"normal", "n1", "n2", "n2_cross", "ssm_n2", "invalid", "two_sockets"}
+    expected = {"normal", "n1", "n2", "n2_cross", "ssm_n2", "invalid",
+                "two_sockets", "ssm_positive", "ssm_two_sockets",
+                "ifup_wrapper"}
     return (len(ended) == len(expected) and {name for name, _ in ended} == expected
             and all(status == "0" for _, status in ended))
 
@@ -145,7 +147,8 @@ def summarize(outdir):
         label = path.stem
         for raw in path.read_text(errors="replace").splitlines():
             if raw.startswith(("DELIVERY ", "SCENARIO_END ", "STATE ",
-                               "KERNEL ", "NET ", "MCAST_DONE")):
+                               "KERNEL ", "NET ", "ALLHOSTS ", "WRAPPER_",
+                               "JOIN_A ", "JOIN_B ", "MCAST_DONE")):
                 print(f"{label}: {raw}")
 
 

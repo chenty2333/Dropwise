@@ -9,7 +9,9 @@ spec.loader.exec_module(runner)
 class CompletionTests(unittest.TestCase):
     def good(self):
         return "\n".join(f"SCENARIO_END name={name} status=0" for name in
-            ["normal", "n1", "n2", "n2_cross", "ssm_n2", "invalid", "two_sockets"]) + "\nMCAST_DONE\n"
+            ["normal", "n1", "n2", "n2_cross", "ssm_n2", "invalid",
+             "two_sockets", "ssm_positive", "ssm_two_sockets",
+             "ifup_wrapper"]) + "\nMCAST_DONE\n"
     def test_complete_findings_are_usable(self):
         self.assertTrue(runner.valid_run(self.good() + "DELIVERY_MISS tag=n2 recv=0 expected=4\n"))
     def test_setup_failure_is_not_success(self):

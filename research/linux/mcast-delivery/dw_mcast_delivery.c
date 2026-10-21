@@ -26,6 +26,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <poll.h>
+#include <sched.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -239,6 +240,46 @@ static int net_setup(void)
 	return lo_ifindex > 0 ? 0 : -1;
 }
 
+static int lo_is_up(void)
+{
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	struct ifreq ifr;
+	int r;
+
+	if (fd < 0)
+		return -1;
+	memset(&ifr, 0, sizeof(ifr));
+	snprintf(ifr.ifr_name, IFNAMSIZ, "lo");
+	r = ioctl(fd, SIOCGIFFLAGS, &ifr);
+	close(fd);
+	if (r < 0)
+		return -1;
+	return (ifr.ifr_flags & IFF_UP) != 0;
+}
+
+static int lo_set_up(int up)
+{
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	struct ifreq ifr;
+	int r;
+
+	if (fd < 0)
+		return -1;
+	memset(&ifr, 0, sizeof(ifr));
+	snprintf(ifr.ifr_name, IFNAMSIZ, "lo");
+	if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
+		close(fd);
+		return -1;
+	}
+	if (up)
+		ifr.ifr_flags |= IFF_UP;
+	else
+		ifr.ifr_flags &= ~IFF_UP;
+	r = ioctl(fd, SIOCSIFFLAGS, &ifr);
+	close(fd);
+	return r;
+}
+
 /* ------------------------------------------------------------------ */
 /* socket helpers                                                      */
 
@@ -286,6 +327,39 @@ static int make_sender(void)
 	return fd;
 }
 
+static int make_sender_bound(const char *src)
+{
+	int fd;
+	struct ip_mreqn m;
+	struct sockaddr_in a;
+	unsigned char loop = 1, ttl = 1;
+
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd < 0)
+		return -1;
+	memset(&a, 0, sizeof(a));
+	a.sin_family = AF_INET;
+	a.sin_port = 0;
+	if (inet_pton(AF_INET, src, &a.sin_addr) != 1 ||
+	    bind(fd, (struct sockaddr *)&a, sizeof(a)) < 0) {
+		out("NET_FAIL op=bind_sender src=%s errno=%d\n", src, errno);
+		close(fd);
+		return -1;
+	}
+	memset(&m, 0, sizeof(m));
+	inet_pton(AF_INET, src, &m.imr_address);
+	m.imr_ifindex = lo_ifindex;
+	if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &m, sizeof(m)) < 0)
+		out("NET_FAIL op=IP_MULTICAST_IF src=%s errno=%d\n", src, errno);
+	if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop,
+		       sizeof(loop)) < 0)
+		out("NET_FAIL op=IP_MULTICAST_LOOP errno=%d\n", errno);
+	if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
+		       sizeof(ttl)) < 0)
+		out("NET_FAIL op=IP_MULTICAST_TTL errno=%d\n", errno);
+	return fd;
+}
+
 static long do_join(int fd, int ifindex, int *err)
 {
 	struct ip_mreqn m;
@@ -315,20 +389,25 @@ static long do_join_bad_group(int fd, int *err)
 	return r;
 }
 
-static long do_join_source(int fd, int *err)
+static long do_join_source_addr(int fd, const char *src, int *err)
 {
 	struct ip_mreq_source m;
 	long r;
 
 	memset(&m, 0, sizeof(m));
 	inet_pton(AF_INET, MC_GROUP, &m.imr_multiaddr);
-	inet_pton(AF_INET, "127.0.0.1", &m.imr_sourceaddr);
+	inet_pton(AF_INET, src, &m.imr_sourceaddr);
 	inet_pton(AF_INET, "127.0.0.1", &m.imr_interface);
 	errno = 0;
 	r = setsockopt(fd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, &m,
 		       sizeof(m));
 	*err = errno;
 	return r;
+}
+
+static long do_join_source(int fd, int *err)
+{
+	return do_join_source_addr(fd, "127.0.0.1", err);
 }
 
 static int msf_probe(int fd, int *err)
@@ -366,7 +445,7 @@ static void route_snapshot(void)
 	out("ROUTE table=main snapshot=%s\n", buf);
 }
 
-static int igmp_users(void)
+static int igmp_users_hex(const char *hex)
 {
 	static char buf[16384];
 	char *p;
@@ -375,12 +454,22 @@ static int igmp_users(void)
 	n = read_file("/proc/net/igmp", buf, sizeof(buf));
 	if (n <= 0)
 		return -1;
-	p = strstr(buf, MC_HEX);
+	p = strstr(buf, hex);
 	if (!p)
 		return -1;
-	if (sscanf(p + strlen(MC_HEX), "%d", &u) != 1)
+	if (sscanf(p + strlen(hex), "%d", &u) != 1)
 		return -1;
 	return u;
+}
+
+static int igmp_users(void)
+{
+	return igmp_users_hex(MC_HEX);
+}
+
+static int all_hosts_users(void)
+{
+	return igmp_users_hex("010000E0");
 }
 
 static void igmp_snapshot(const char *tag)
@@ -786,6 +875,149 @@ static void sc_two_sockets(void)
 	out("SCENARIO two_sockets end\n");
 }
 
+/*
+ * Positive SSM control.  IP_ADD_SOURCE_MEMBERSHIP installs an INCLUDE filter
+ * for 127.0.0.1 on the socket and an aggregated source entry on the device
+ * group.  The patched join creates the device group before publishing the
+ * socket-side iml, so this checks that the normal SSM path still delivers for
+ * the allowed source and drops a datagram from a source that is not in the
+ * filter.
+ */
+static void sc_ssm_positive(void)
+{
+	int fd = make_receiver(MC_PORT);
+	int s = make_sender_bound("127.0.0.1");
+	int s2 = make_sender_bound("127.0.0.2");
+	long ret;
+	int err = 0;
+
+	out("SCENARIO ssm_positive begin\n");
+	if (fd < 0 || s < 0 || s2 < 0)
+		return;
+	ret = do_join_source_addr(fd, "127.0.0.1", &err);
+	state_fd("ssm_positive_join", fd, ret, err, 0, -1);
+	igmp_snapshot("ssm_positive_join");
+	unicast_control(fd, s, MC_PORT, "ssm_positive");
+	mcast_delivery(fd, s, MC_PORT, 2, "ssm_positive_allowed");
+	/* 127.0.0.2 is not in the INCLUDE list: this must not be delivered. */
+	mcast_delivery(fd, s2, MC_PORT, 2, "ssm_positive_denied");
+	close(s2);
+	close(s);
+	close(fd);
+	out("SCENARIO ssm_positive end\n");
+}
+
+/*
+ * Existing-group branch with source filters.  The second socket joins a group
+ * that the first socket already created, so ____ip_mc_inc_group() takes the
+ * users++ path, and then ip_mc_source() installs the second socket's filter.
+ * Closing the first socket must leave the group and the second socket's
+ * delivery intact.
+ */
+static void sc_ssm_two_sockets(void)
+{
+	int a = make_receiver(MC_PORT);
+	int b = make_receiver(MC_PORT2);
+	int s = make_sender_bound("127.0.0.1");
+	int e = 0;
+	long r;
+
+	out("SCENARIO ssm_two_sockets begin\n");
+	if (a < 0 || b < 0 || s < 0)
+		return;
+	r = do_join_source_addr(a, "127.0.0.1", &e);
+	out("JOIN_A tag=ssm_two ret=%ld errno=%d\n", r, e);
+	igmp_snapshot("ssm_two_a");
+	r = do_join_source_addr(b, "127.0.0.1", &e);
+	out("JOIN_B tag=ssm_two ret=%ld errno=%d\n", r, e);
+	igmp_snapshot("ssm_two_ab");
+	mcast_delivery(a, s, MC_PORT, 1, "ssm_two_a");
+	mcast_delivery(b, s, MC_PORT2, 1, "ssm_two_b");
+	close(a);
+	usleep(200000);
+	igmp_snapshot("ssm_two_after_close_a");
+	mcast_delivery(b, s, MC_PORT2, 1, "ssm_two_b_after_close_a");
+	close(b);
+	close(s);
+	usleep(200000);
+	igmp_snapshot("ssm_two_cleanup");
+	out("SCENARIO ssm_two_sockets end\n");
+}
+
+/*
+ * Legacy void wrapper coverage.  ip_mc_up() adds IGMP_ALL_HOSTS through
+ * ip_mc_inc_group() -> __ip_mc_inc_group(), which cannot report an allocation
+ * failure.  Bring a private-netns lo down and up with fail-nth armed at each
+ * N; when the all-hosts kzalloc is the injected site, the interface comes up
+ * with no 010000E0 entry and no error.  A later up without injection must
+ * repair it.  This path is deliberately unchanged by the join fix; the test
+ * documents the wrapper's best-effort limit.
+ */
+static void sc_ifup_wrapper(void)
+{
+	unsigned int n;
+	int base;
+
+	out("SCENARIO ifup_wrapper begin\n");
+	if (unshare(CLONE_NEWNET) < 0) {
+		out("HARNESS_ERROR reason=unshare errno=%d\n", errno);
+		return;
+	}
+	if (net_setup() < 0) {
+		out("HARNESS_ERROR reason=net_setup_netns\n");
+		return;
+	}
+	if (open_fail_nth() < 0)
+		return;
+	base = all_hosts_users();
+	out("ALLHOSTS tag=ifup_baseline present=%d users=%d\n",
+	    base >= 0, base);
+
+	for (n = 1; n <= 24; n++) {
+		long ret, rb;
+		int err = 0, present, up;
+
+		if (lo_set_up(0) < 0) {
+			out("HARNESS_ERROR reason=lo_down n=%u errno=%d\n", n,
+			    errno);
+			return;
+		}
+		present = all_hosts_users();
+		out("ALLHOSTS tag=ifup_down n=%u present=%d users=%d\n", n,
+		    present >= 0, present);
+		if (fn_set(n) < 0) {
+			out("HARNESS_ERROR reason=fn_set n=%u\n", n);
+			return;
+		}
+		errno = 0;
+		ret = lo_set_up(1);
+		err = errno;
+		rb = fn_get();
+		present = all_hosts_users();
+		up = lo_is_up();
+		out("WRAPPER_PROBE n=%u ret=%ld errno=%d readback=%ld up=%d "
+		    "present=%d users=%d\n", n, ret, err, rb, up, present >= 0,
+		    present);
+		if (ret == 0 && up == 1 && rb == 0 && present < 0)
+			out("WRAPPER_MISS n=%u what=all_hosts_after_up\n", n);
+		(void)fn_set(0);
+		if (up != 1 && lo_set_up(1) < 0)
+			out("HARNESS_ERROR reason=lo_repair_up n=%u errno=%d\n",
+			    n, errno);
+		if (lo_set_up(0) < 0 || lo_set_up(1) < 0) {
+			out("HARNESS_ERROR reason=lo_repair_cycle n=%u "
+			    "errno=%d\n", n, errno);
+			return;
+		}
+		present = all_hosts_users();
+		out("ALLHOSTS tag=ifup_repaired n=%u present=%d users=%d\n", n,
+		    present >= 0, present);
+		if (rb != 0)
+			break;
+	}
+	out("SCENARIO ifup_wrapper end\n");
+}
+
 /* ------------------------------------------------------------------ */
 
 struct scenario {
@@ -801,6 +1033,9 @@ static const struct scenario scenarios[] = {
 	{ "ssm_n2", sc_ssm_n2 },
 	{ "invalid", sc_invalid },
 	{ "two_sockets", sc_two_sockets },
+	{ "ssm_positive", sc_ssm_positive },
+	{ "ssm_two_sockets", sc_ssm_two_sockets },
+	{ "ifup_wrapper", sc_ifup_wrapper },
 };
 
 static void run_scenario(const struct scenario *sc)
