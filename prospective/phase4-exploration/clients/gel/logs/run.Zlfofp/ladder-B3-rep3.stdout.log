@@ -1,0 +1,30 @@
+=== GEL LADDER REPETITION 3 LEVEL B3 START (run gel-577201-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms client=gel-tokio/0.11.0 max_concurrency=1 target=transaction
+B3-TARGET run=3 baseline completed
+B3-RESULT run=3 read=Ok([(0, "seed")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:50754/685/4140,127.0.0.1:50756/921/4573]
+B3-RESULT run=3 read=Ok([(0, "seed")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:48494/685/4248,127.0.0.1:48498/921/4573]
+B3-RESULT run=3 read=Ok([(0, "seed")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:38252/934/4631,127.0.0.1:38266/921/4573]
+B3-RESULT run=3 read=Ok([(0, "seed")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:55526/934/4631,127.0.0.1:55536/921/4573]
+B3-RESULT run=3 read=Ok([(0, "seed")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:38000/1276/4631,127.0.0.1:38002/921/4573]
+B3-RESULT run=3 read=Ok([(0, "seed")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:43220/1276/4773,127.0.0.1:43228/921/4573]
+B3-RESULT run=3 read=Ok([(0, "seed")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:60556/1458/4773,127.0.0.1:60568/921/4573]
+B3-RESULT run=3 read=Ok([(1, "target")]) proxy_connections=2
+GEL-SNAPSHOT run=3 stage=after_read proxy_connections=2 conn=[127.0.0.1:35342/1458/4882,127.0.0.1:35350/921/4575]
+LADDER B3 READ_ROW [gel]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+GEL-LADDER B3 rep=3 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B3 rep=3 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+=== GEL LADDER REPETITION 3 LEVEL B3 END ===

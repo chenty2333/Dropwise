@@ -1,0 +1,52 @@
+date_utc=2026-10-21T14:19:09Z
+repo=/home/ava/Desktop/Dropwise
+git_head=a4af527f956d5348b671dc8a5c1387080fdf1b00
+container=dw-gel-ladder-574347
+image=geldata/gel:7
+image_id=sha256:b7270b0973da6950d01ae0d578c6d38cd8d87fabdd6c4b75a09b74291ad6f3a8
+repo_digest=geldata/gel@sha256:b7270b0973da6950d01ae0d578c6d38cd8d87fabdd6c4b75a09b74291ad6f3a8
+server_version_log=starting Gel server 7.1+08db576,
+server_version_query="7.1+08db576"
+port=127.0.0.1:32864
+bootstrap=GEL_SERVER_SECURITY=insecure_dev_mode
+auth=user admin, branch main, TlsSecurity::Insecure
+client=gel-tokio 0.11.0 (Client pool; max_concurrency(1) => at most one connection at a time, not a persistent direct handle)
+client_crates:
+  gel-tokio v0.11.0
+  ├── anyhow v1.0.104
+  ├── arc-swap v1.9.3
+  ├── async-trait v0.1.92 (proc-macro)
+  ├── base16ct v0.2.0
+  ├── base64 v0.22.1
+  ├── bytes v1.12.1
+  ├── crc16 v0.4.0
+  ├── dirs v6.0.0
+  ├── futures-util v0.3.34
+  ├── gel-auth v0.1.7
+  ├── gel-derive v0.7.4 (proc-macro)
+  ├── gel-dsn v0.2.16
+  ├── gel-errors v0.5.4
+  ├── gel-protocol v0.9.2
+  ├── gel-stream v0.4.5
+  ├── log v0.4.34
+  ├── rand v0.9.5
+  ├── rustls-pemfile v2.2.0
+  ├── serde v1.0.229
+  ├── serde_json v1.0.154
+  ├── sha1 v0.10.7
+  ├── tokio v1.54.0
+  └── url v2.5.8
+lock_pins:
+  name = "derive_more"	version = "2.0.1"
+  name = "dropwise"	version = "0.1.0"
+  name = "gel-stream"	version = "0.4.5"
+  name = "gel-tokio"	version = "0.11.0"
+  name = "tokio"	version = "1.54.0"
+build_profile=debug
+proxy=dropwise::net::Proxy reply_delay=50ms
+config=max_runs=64 races=Immediate,AfterWake max_cancellations=1 scenario_timeout=20s settle=tokio0/real0/watchdog10s workers=1
+target=Client::transaction(update DwGel v=1,marker=target select (v,marker))
+survivor=Client::transaction(update DwGel v=7,marker=survivor)
+observer=independent Client direct to server
+cargo 1.98.0 (797e8a9bc 2026-08-05)
+rustc 1.98.0 (88d9e12ae 2026-08-18)

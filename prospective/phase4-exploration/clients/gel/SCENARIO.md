@@ -52,3 +52,11 @@ No B1/B2/B3/M1 counts, no calibration table, no generated cases, no recovery
 contrast, no reuse diagnostic beyond `max_concurrency=1`, no observer-visible
 pre/post baseline, no 3-repetition ladder, no transaction rollback assertion,
 no source inspection. Coverage is one cancellation point × 3 reps.
+
+---
+
+**Status update (append-only, 2026-10-21):** the intended ladder has now been
+run; see `RESULTS-FRAGMENT-LADDER.md` and `logs/run.Zlfofp/`. The probe section
+above is retained as historical context. The tested mode is the single
+connection pool (`max_concurrency(1)`); no true direct handle exists in
+gel-tokio 0.11.0.

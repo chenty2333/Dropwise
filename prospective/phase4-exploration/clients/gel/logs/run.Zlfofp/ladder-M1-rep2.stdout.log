@@ -1,0 +1,65 @@
+=== GEL LADDER REPETITION 2 LEVEL M1 START (run gel-576448-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms client=gel-tokio/0.11.0 max_concurrency=1 target=transaction
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:42088/1434/4858]
+M1-TARGET run=2 cancelled=false
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:42088/2402/5602]
+GEL-OBS run=2 before=Ok([(1, "target")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=1
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:34840/468/4116]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:34840/685/4140,127.0.0.1:34848/1436/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:57546/468/4116]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:57546/1436/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=1
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:46440/468/4116]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:46440/1436/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=1
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:47762/1434/4858]
+M1-TARGET run=2 cancelled=false
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:47762/2402/5602]
+GEL-OBS run=2 before=Ok([(1, "target")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=1
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:57228/1434/4858]
+M1-TARGET run=2 cancelled=false
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:57228/2402/5602]
+GEL-OBS run=2 before=Ok([(1, "target")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=1
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:49576/661/4224]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:49576/685/4248,127.0.0.1:49584/1436/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:36106/910/4224]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:36106/934/4607,127.0.0.1:36112/1436/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:39272/910/4607]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:39272/934/4631,127.0.0.1:39286/1436/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:58236/1253/4607]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:58236/1277/4631,127.0.0.1:58240/1437/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:35466/1253/4749]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:35466/1277/4773,127.0.0.1:35480/1437/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:54126/1435/4749]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:54126/1459/4773,127.0.0.1:54134/1437/4860]
+GEL-OBS run=2 before=Ok([(0, "seed")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+GEL-SNAPSHOT run=2 stage=after_target proxy_connections=1 conn=[127.0.0.1:59818/1435/4858]
+M1-TARGET run=2 cancelled=true
+GEL-SNAPSHOT run=2 stage=after_survivor_write proxy_connections=2 conn=[127.0.0.1:59818/1459/4882,127.0.0.1:59830/1437/4860]
+GEL-OBS run=2 before=Ok([(1, "target")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=2
+LADDER M1 TX_UPDATE [gel]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=7 post=1 mixed=0 neither=0 unknown=0
+GEL-LADDER M1 rep=2 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL M1 rep=2 plan=#0@1:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@1:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@2:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@2:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@3:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@3:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@4:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@4:AfterWake cancelled=1 realized=true verdict=Some(Post)
+=== GEL LADDER REPETITION 2 LEVEL M1 END ===

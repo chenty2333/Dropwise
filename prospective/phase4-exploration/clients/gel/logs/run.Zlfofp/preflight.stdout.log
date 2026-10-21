@@ -1,0 +1,4 @@
+GEL-SNAPSHOT run=0 stage=preflight_setup proxy_connections=1 conn=[127.0.0.1:55644/468/4116]
+GEL-SNAPSHOT run=0 stage=preflight_after proxy_connections=1 conn=[127.0.0.1:55644/2340/5776]
+GEL-PREFLIGHT server=127.0.0.1:32864 target=(1, "target") observer=[(1, "target")] own=[(1, "target")] second=[(1, "target")] proxy_connections=1
+GEL-PREFLIGHT-OK observer_effect=v:0->1 same_client=reused proxy_connections=1

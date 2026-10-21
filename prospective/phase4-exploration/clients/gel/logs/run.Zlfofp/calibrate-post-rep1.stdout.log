@@ -1,0 +1,7 @@
+GEL-SNAPSHOT run=1 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:56526/2402/5602]
+GEL-OBS run=1 before=Ok([(1, "target")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=1
+GEL-CAL side=post rep=1 sample=0 obs=Obs { before: Ok([(1, "target")]), write: Ok((7, "survivor")), own: Ok([(7, "survivor")]), visible: Ok([(7, "survivor")]) }
+GEL-SNAPSHOT run=1 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:60402/2402/5602]
+GEL-OBS run=1 before=Ok([(1, "target")]) write=Ok((7, "survivor")) own=Ok([(7, "survivor")]) visible=Ok([(7, "survivor")]) proxy_connections=1
+GEL-CAL side=post rep=1 sample=1 obs=Obs { before: Ok([(1, "target")]), write: Ok((7, "survivor")), own: Ok([(7, "survivor")]), visible: Ok([(7, "survivor")]) }
+GEL-CAL-OK side=post rep=1 identical=true samples=2

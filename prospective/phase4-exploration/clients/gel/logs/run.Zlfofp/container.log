@@ -1,0 +1,278 @@
+================================================================
+                          WARNING                               
+                          -------                               
+                                                                
+GEL_SERVER_DEFAULT_AUTH_METHOD is set to 'Trust'.  This will    
+allow unauthenticated access to this Gel instance for all who   
+have access to the database port! This might include other      
+containers or processes on the same host and, if port 5656
+is bound to an accessible interface on the host, other machines 
+on the network.                                                 
+                                                                
+Use only for DEVELOPMENT and TESTING in a known environment     
+without sensitive data.  Otherwise, it is strongly recommended  
+to use password authentication via the GEL_SERVER_PASSWORD      
+or GEL_SERVER_PASSWORD_HASH environment variables.              
+================================================================
+Bootstrapping Gel instance on the local volume...
+INFO 60 - 2026-10-21T14:18:55.356 edb.server: starting Gel server 7.1+08db576, built on 2025-12-05T18:14Z from revision e0ef1b92d (2025-12-03T01:06Z) for x86_64-unknown-linux-gnu
+INFO 60 - 2026-10-21T14:18:55.356 edb.server: instance name: '_unknown'
+INFO 60 - 2026-10-21T14:18:55.387 edb.server: Using 315 max backend connections based on total memory.
+INFO 60 - 2026-10-21T14:18:55.397 edb.pgcluster: Initializing database cluster in /var/lib/gel/data
+INFO 94 - 2026-10-21T14:18:56.476 postgres: starting PostgreSQL 17.4 on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit
+INFO 94 - 2026-10-21T14:18:56.477 postgres: listening on Unix socket "/tmp/tmp.A618EBXOHL/.s.PGSQL.5432"
+INFO 94 - 2026-10-21T14:18:56.480 postgres: database system was shut down at 2026-10-21 14:18:55 UTC
+INFO 94 - 2026-10-21T14:18:56.484 postgres: database system is ready to accept connections
+INFO 60 - 2026-10-21T14:18:56.534 edb.server: postgres cluster is running
+INFO 60 - 2026-10-21T14:18:56.565 edb.server: Creating template database...
+INFO 60 - 2026-10-21T14:18:56.788 edb.server: Creating the necessary PostgreSQL extensions...
+INFO 60 - 2026-10-21T14:18:56.794 edb.server: Initializing the standard library...
+INFO 60 - 2026-10-21T14:18:57.951 edb.server: Finalizing database setup...
+INFO 60 - 2026-10-21T14:19:00.739 edb.server: Creating database: __edgedbsys__
+INFO 60 - 2026-10-21T14:19:00.850 edb.server: Creating database: main
+INFO 60 - 2026-10-21T14:19:00.967 edb.server: Restarting server to reload configuration...
+INFO 94 - 2026-10-21T14:19:00.973 postgres: received fast shutdown request
+INFO 94 - 2026-10-21T14:19:00.973 postgres: aborting any active transactions
+INFO 94 - 2026-10-21T14:19:00.974 postgres: background worker "logical replication launcher" (PID 101) exited with exit code 1
+INFO 94 - 2026-10-21T14:19:00.976 postgres: shutting down
+INFO 94 - 2026-10-21T14:19:00.977 postgres: checkpoint starting: shutdown immediate
+INFO 94 - 2026-10-21T14:19:04.129 postgres: checkpoint complete: wrote 12430 buffers (75.9%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.253 s, sync=2.896 s, total=3.153 s; sync files=4619, longest=0.014 s, average=0.001 s; distance=81671 kB, estimate=81671 kB; lsn=0/64A6168, redo lsn=0/64A6168
+INFO 94 - 2026-10-21T14:19:04.148 postgres: database system is shut down
+INFO 109 - 2026-10-21T14:19:04.237 postgres: starting PostgreSQL 17.4 on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit
+INFO 109 - 2026-10-21T14:19:04.239 postgres: listening on Unix socket "/tmp/tmp.A618EBXOHL/.s.PGSQL.5432"
+INFO 109 - 2026-10-21T14:19:04.241 postgres: database system was shut down at 2026-10-21 14:19:04 UTC
+INFO 109 - 2026-10-21T14:19:04.244 postgres: database system is ready to accept connections
+INFO 60 - 2026-10-21T14:19:04.309 edb.server: loading instance data
+INFO 60 - 2026-10-21T14:19:04.372 edb.server: loading system config
+INFO 60 _unknown 2026-10-21T14:19:04.440 edb.server: introspecting extensions for database '__edgedbsys__'
+INFO 60 _unknown 2026-10-21T14:19:04.440 edb.server: introspecting extensions for database 'main'
+INFO 60 _unknown 2026-10-21T14:19:04.450 edb.server: Connection established to backend database: __edgedbsys__
+INFO 60 _unknown 2026-10-21T14:19:04.455 edb.server: Connection established to backend database: main
+INFO 60 - 2026-10-21T14:19:04.457 edb.server: generating self-signed TLS certificate in "/var/lib/gel/data/edbtlscert.pem"
+INFO 60 - 2026-10-21T14:19:04.588 edb.server: generating JOSE key pair in "/var/lib/gel/data/edbjwskeys.pem"
+INFO 60 - 2026-10-21T14:19:04.588 edb.server: loading TLS certificates
+INFO 60 - 2026-10-21T14:19:05.276 edb.server: started 1 compiler worker process
+INFO 60 - 2026-10-21T14:19:05.279 edb.server: Serving on 127.0.0.1:43985
+INFO 60 - 2026-10-21T14:19:05.279 edb.server: Serving admin on /tmp/tmp.A618EBXOHL/.s.GEL.admin.43985
+INFO 60 _unknown 2026-10-21T14:19:05.291 edb.server: Connection established to backend database: main
+INFO 60 _unknown 2026-10-21T14:19:05.291 edb.server: introspecting database 'main'
+INFO 60 _unknown 2026-10-21T14:19:05.452 edb.server: Backend connections to database __edgedbsys__: 1 were discarded in at least the last 1.0 seconds.
+INFO 60 _unknown 2026-10-21T14:19:05.456 edb.server: Backend connections to database main: 1 were discarded in at least the last 1.0 seconds.
+================================================================
+                             NOTICE                             
+                             ------                             
+                                                                
+A self-signed TLS certificate has been generated and placed in  
+'/var/lib/gel/data/edbtlscert.pem' in this container.                           
+                                                                
+If you have the Gel CLI installed on the host system, you can   
+persist the authentication credentials and the certificate by   
+running:                                                        
+                                                                
+  gel -P <published-port> instance link --trust-tls-cert my_instance
+                                                                
+You can then connect to the instance by running:                
+                                                                
+  gel -I my_instance                                            
+                                                                
+If you wish to use the generated certificate manually, it is    
+printed below.  Please remember to include the BEGIN and END    
+CERTIFICATE lines.                                              
+                                                                
+-----BEGIN CERTIFICATE-----
+MIICzDCCAbSgAwIBAgIQIvo1aQzyRfaKi1pOLGfGJzANBgkqhkiG9w0BAQsFADAV
+MRMwEQYDVQQDDApHZWwgU2VydmVyMB4XDTI2MTAyMDE0MTkwNFoXDTQ1MTIyMDE0
+MTkwNFowFTETMBEGA1UEAwwKR2VsIFNlcnZlcjCCASIwDQYJKoZIhvcNAQEBBQAD
+ggEPADCCAQoCggEBAKEtVFzCw3EpujFTjXlK4XsuHno3kHawZ/7lupbPoUmiwCnF
+0bTb3gb0SK/0mZvT3TAfjr8nMLNI4hc7m9v387UgzuhnP/wAPOCQyWexQWLjUYvi
+dEjEsNT9FKhFm+a2W8vgRB+Spp64CbxcVIVsUCbZeV/YE/VFW9rc1N4F4rAlmQGq
+024dlcBb116uxBISjbiYSGyhqbAcUbR0pxGivO6C5OZF4yVL98j7h/xAji2nnVc/
+wdaLzVfWcrJm8fq3wFqK3nPpyBZu2ikBNuIMdWtpz/5qpKwTVMq0TJv3g1br6QED
+bWE43YEuMx0a6yLV1yz3Xr0JymcvT6m4m8CHQKMCAwEAAaMYMBYwFAYDVR0RBA0w
+C4IJMTI3LjAuMC4xMA0GCSqGSIb3DQEBCwUAA4IBAQBaq8nF93dvEpQEfmdj0iwf
+bELICBpFS5OSNZna6egpOUsXuoSJBE6Fy5nxPEotfLqYLPAATy/taYcw4Z6ytVL1
+nHxmKeiSTeu7gmI3zn1biSJgbFyW4KjN2w/uVPvZVwITQFNkNO87OmtV/dC6f4EE
+EZZFIcYDWgrh338P4h0BPwfu75eIlV3OD5/9H9ECBmN10GZYvj/++C/mfvgtS2jC
+DHIksltf83TlqjCSYE8g3hg02MgflHKrMf7f8UaVwpfroUZawo/v0j9JiQ3McawD
+i5tGX23FR6RN6D57g0FkernLpnI+xPSoCazLbgOqYfVaBeRnej7Asm8Na74OHJoI
+-----END CERTIFICATE-----
+                                                                
+                                                                
+================================================================
+initiating graceful shutdown of the bootstrap server instance
+INFO 60 - 2026-10-21T14:19:05.912 edb.server: Received signal: 15.
+INFO 60 - 2026-10-21T14:19:05.912 edb.server: Shutting down.
+INFO 109 - 2026-10-21T14:19:05.999 postgres: received fast shutdown request
+INFO 109 - 2026-10-21T14:19:06.000 postgres: aborting any active transactions
+INFO 109 - 2026-10-21T14:19:06.000 postgres: terminating connection due to administrator command
+INFO 109 - 2026-10-21T14:19:06.000 postgres: terminating connection due to administrator command
+INFO 109 - 2026-10-21T14:19:06.001 postgres: background worker "logical replication launcher" (PID 116) exited with exit code 1
+INFO 109 - 2026-10-21T14:19:06.006 postgres: shutting down
+INFO 109 - 2026-10-21T14:19:06.006 postgres: checkpoint starting: shutdown immediate
+INFO 109 - 2026-10-21T14:19:06.054 postgres: checkpoint complete: wrote 173 buffers (1.1%); 0 WAL file(s) added, 1 removed, 4 recycled; write=0.004 s, sync=0.034 s, total=0.049 s; sync files=70, longest=0.001 s, average=0.001 s; distance=765 kB, estimate=765 kB; lsn=0/6565588, redo lsn=0/6565588
+INFO 109 - 2026-10-21T14:19:06.067 postgres: database system is shut down
+ERROR 60 - 2026-10-21T14:19:06.200 edb.server: HttpClient 140242880139952 was not closed
+INFO 1 - 2026-10-21T14:19:07.614 edb.server: starting Gel server 7.1+08db576, built on 2025-12-05T18:14Z from revision e0ef1b92d (2025-12-03T01:06Z) for x86_64-unknown-linux-gnu
+INFO 1 - 2026-10-21T14:19:07.614 edb.server: instance name: '_unknown'
+INFO 1 - 2026-10-21T14:19:07.640 edb.server: Using 315 max backend connections based on total memory.
+INFO 184 - 2026-10-21T14:19:07.710 postgres: starting PostgreSQL 17.4 on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit
+INFO 184 - 2026-10-21T14:19:07.711 postgres: listening on Unix socket "/run/gel/.s.PGSQL.5432"
+INFO 184 - 2026-10-21T14:19:07.714 postgres: database system was shut down at 2026-10-21 14:19:06 UTC
+INFO 184 - 2026-10-21T14:19:07.717 postgres: database system is ready to accept connections
+INFO 1 - 2026-10-21T14:19:07.766 edb.server: postgres cluster is running
+INFO 1 - 2026-10-21T14:19:07.950 edb.server: loading instance data
+INFO 1 - 2026-10-21T14:19:08.005 edb.server: loading system config
+INFO 1 _unknown 2026-10-21T14:19:08.070 edb.server: introspecting extensions for database '__edgedbsys__'
+INFO 1 _unknown 2026-10-21T14:19:08.070 edb.server: introspecting extensions for database 'main'
+INFO 1 _unknown 2026-10-21T14:19:08.080 edb.server: Connection established to backend database: __edgedbsys__
+INFO 1 _unknown 2026-10-21T14:19:08.085 edb.server: Connection established to backend database: main
+INFO 1 - 2026-10-21T14:19:08.087 edb.server: loading TLS certificates
+INFO 1 _unknown 2026-10-21T14:19:09.082 edb.server: Backend connections to database __edgedbsys__: 1 were discarded in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:09.089 edb.server: Backend connections to database main: 1 were discarded in at least the last 1.0 seconds.
+INFO 1 - 2026-10-21T14:19:09.249 edb.server: started 16 compiler worker processes
+INFO 1 - 2026-10-21T14:19:09.253 edb.server: Serving on {0.0.0.0, ::}:5656
+INFO 1 - 2026-10-21T14:19:09.253 edb.server: Serving admin on /run/gel/.s.GEL.admin.5656
+INFO 1 _unknown 2026-10-21T14:19:09.265 edb.server: Connection established to backend database: main
+INFO 1 _unknown 2026-10-21T14:19:09.265 edb.server: introspecting database 'main'
+INFO 1 _unknown 2026-10-21T14:19:10.492 edb.server: Backend connections to database main: 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:15.049 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:19:15.049 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:15.424 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:15.847 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:16.060 edb.server: Backend connections to database main: 3 were established, 2 were discarded in at least the last 1.0 seconds.
+ERROR 184 - 2026-10-21T14:19:16.273 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:19:16.273 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:19:16.273 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:19:16.273 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 184 - 2026-10-21T14:19:16.749 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:17.229 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:17.271 edb.server: Backend connections to database main: 3 were discarded, 3 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:19.385 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:19:19.387 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:20.138 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:20.398 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:20.949 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:19:21.755 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:19:21.755 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:19:21.755 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:19:21.755 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:19:21.948 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:22.568 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:23.567 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:26.202 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:19:26.202 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:26.842 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:27.214 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:27.527 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:19:28.215 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:19:28.215 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:19:28.215 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:19:28.215 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:19:28.527 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:28.954 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:29.953 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:35.782 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:19:35.782 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:36.637 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:36.796 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:37.546 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:19:38.452 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:19:38.452 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:19:38.452 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:19:38.545 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:39.411 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:40.410 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:45.634 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:19:45.634 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:46.004 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:46.426 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:46.647 edb.server: Backend connections to database main: 3 were established, 2 were discarded in at least the last 1.0 seconds.
+ERROR 184 - 2026-10-21T14:19:46.851 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:19:46.851 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:19:46.851 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:19:46.851 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 184 - 2026-10-21T14:19:47.326 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:47.850 edb.server: Backend connections to database main: 3 were discarded, 3 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:49.941 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:19:49.943 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:50.693 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:50.954 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:51.495 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:19:52.294 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:19:52.294 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:19:52.294 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:19:52.294 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:19:52.493 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:53.149 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:54.147 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:19:56.775 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:19:56.777 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:19:57.411 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:19:57.785 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:58.103 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:19:58.790 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:19:58.790 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:19:58.790 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:19:58.790 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:19:59.103 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:19:59.531 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:00.528 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:20:06.359 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:20:06.360 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:20:07.212 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:07.372 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:08.118 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:20:09.027 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:20:09.027 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:20:09.027 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:20:09.027 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:20:09.119 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:09.986 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:10.987 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:20:16.258 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:20:16.258 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:20:16.629 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:20:17.053 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:17.269 edb.server: Backend connections to database main: 3 were established, 2 were discarded in at least the last 1.0 seconds.
+ERROR 184 - 2026-10-21T14:20:17.477 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:20:17.477 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:20:17.477 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:20:17.477 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 184 - 2026-10-21T14:20:17.951 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:18.476 edb.server: Backend connections to database main: 3 were discarded, 3 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:20:20.570 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:20:20.571 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:20:21.317 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:21.582 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:22.116 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:20:22.917 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:20:22.917 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:20:22.917 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:20:22.917 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:20:23.115 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:23.776 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:24.774 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:20:27.401 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:20:27.401 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:20:28.042 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:28.411 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:28.730 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:20:29.419 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:20:29.419 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:20:29.419 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:20:29.419 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:20:29.729 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:30.159 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:31.157 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 1 _unknown 2026-10-21T14:20:36.975 edb.server: Connection discarded to backend database: main
+INFO 184 - 2026-10-21T14:20:36.976 postgres: unexpected EOF on client connection with an open transaction
+INFO 184 - 2026-10-21T14:20:37.834 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:37.987 edb.server: Backend connections to database main: 2 were established, 1 were discarded in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:38.746 postgres: unexpected EOF on client connection with an open transaction
+ERROR 184 - 2026-10-21T14:20:39.658 postgres: canceling statement due to user request
+INFO 184 - 2026-10-21T14:20:39.658 postgres: SQL function "__qh_35a84fb48a31dc80b3e0c7f34fa561d7" during startup
+INFO 184 - 2026-10-21T14:20:39.658 postgres: -- {"query": "with\n    u := \n        (update\n            DwGel\n        filter\n            (.k = <str>$0)\n        set {\n            v := <int64>$1,\n            marker := <str>$2\n        })\nselect\n    (u.v, u.marker)", "type": 1, "extras": "{\"cc\": {\"allow_bare_ddl\": \"AlwaysAllow\", \"allow_dml_in_functions\": false, \"allow_user_specified_id\": false, \"apply_access_policies\": true, \"default_transaction_access_mode\": \"ReadWrite\", \"default_transaction_isolation\": \"Serializable\", \"force_database_error\": \"false\", \"query_cache_mode\": \"Default\", \"simple_scoping\": null, \"store_migration_sdl\": \"NeverStore\", \"warn_old_scoping\": null}, \"pv\": [3, 0], \"of\": \"BINARY\", \"e1\": false, \"il\": 0, \"ii\": false, \"in\": false, \"io\": false, \"dn\": \"default\"}", "id": "144bbe6d-a112-c71e-b652-d68c382539b8"}
+INFO 184 - 2026-10-21T14:20:39.658 postgres: 	SELECT result FROM  ROWS FROM (edgedb_v7_2f266bec72.__qh_35a84fb48a31dc80b3e0c7f34fa561d7(($1)::text, ($2)::int8, ($3)::text) AS (result record, sentinel bool))
+INFO 1 _unknown 2026-10-21T14:20:39.746 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.
+INFO 184 - 2026-10-21T14:20:40.618 postgres: unexpected EOF on client connection with an open transaction
+INFO 1 _unknown 2026-10-21T14:20:41.618 edb.server: Backend connections to database main: 2 were discarded, 2 were established in at least the last 1.0 seconds.

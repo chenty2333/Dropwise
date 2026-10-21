@@ -79,3 +79,14 @@ one arm of M1-like evidence, not the level comparison.
 Everything except the single 10 ms transaction cut: no B1/B2/B3/M1, no
 calibration, no generator, no recovery contrast, no multi-worker, no pool
 exhaustion, no rollback assertion, no source read, no upstream search.
+
+---
+
+**Superseded for ladder purposes (append-only, 2026-10-21):** the probe above is
+retained as history, but the four-level result is now in
+`RESULTS-FRAGMENT-LADDER.md` (`logs/run.Zlfofp/`): 96 cut trials (24 per level)
+over 3 repetitions, 0 violations / 0 unknown / 0 unrealized, M1 verdicts
+Pre 21 / Post 3. The single Post case is the commit-after-cancel boundary
+(`#0@4:AfterWake`); it is allowed by `Expect::Atomic` and is not a stale or
+wrong effect. The old probe's `(0,"seed")` / `(7,"survivor")` observation is
+consistent with the ladder but is not itself a B1/B2/B3/M1 result.

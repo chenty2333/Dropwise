@@ -1,0 +1,108 @@
+GEL-LADDER B1 rep=1 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B1 rep=1 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=1 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=1 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=1 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=1 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=1 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=1 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=1 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER B2 rep=1 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B2 rep=1 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=1 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=1 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=1 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=1 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=1 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=1 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=1 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER B3 rep=1 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B3 rep=1 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=1 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=1 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=1 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=1 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=1 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=1 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=1 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER M1 rep=1 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL M1 rep=1 plan=#0@1:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=1 plan=#0@1:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=1 plan=#0@2:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=1 plan=#0@2:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=1 plan=#0@3:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=1 plan=#0@3:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=1 plan=#0@4:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=1 plan=#0@4:AfterWake cancelled=1 realized=true verdict=Some(Post)
+GEL-LADDER B1 rep=2 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B1 rep=2 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=2 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=2 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=2 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=2 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=2 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=2 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=2 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER B2 rep=2 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B2 rep=2 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=2 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=2 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=2 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=2 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=2 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=2 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=2 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER B3 rep=2 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B3 rep=2 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=2 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=2 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=2 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=2 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=2 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=2 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=2 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER M1 rep=2 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL M1 rep=2 plan=#0@1:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@1:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@2:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@2:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@3:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@3:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@4:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=2 plan=#0@4:AfterWake cancelled=1 realized=true verdict=Some(Post)
+GEL-LADDER B1 rep=3 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B1 rep=3 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER B2 rep=3 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B2 rep=3 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=3 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=3 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=3 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=3 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=3 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=3 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B2 rep=3 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER B3 rep=3 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B3 rep=3 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B3 rep=3 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+GEL-LADDER M1 rep=3 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL M1 rep=3 plan=#0@1:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=3 plan=#0@1:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=3 plan=#0@2:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=3 plan=#0@2:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=3 plan=#0@3:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=3 plan=#0@3:AfterWake cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=3 plan=#0@4:Immediate cancelled=1 realized=true verdict=Some(Pre)
+GEL-TRIAL M1 rep=3 plan=#0@4:AfterWake cancelled=1 realized=true verdict=Some(Post)

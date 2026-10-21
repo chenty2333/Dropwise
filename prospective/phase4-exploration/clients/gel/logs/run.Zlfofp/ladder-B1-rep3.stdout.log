@@ -1,0 +1,40 @@
+=== GEL LADDER REPETITION 3 LEVEL B1 START (run gel-576891-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms client=gel-tokio/0.11.0 max_concurrency=1 target=transaction
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:53018/468/4116]
+B1-TARGET run=3 result=Ok(())
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:53018/1434/4858]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:57780/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:57780/468/4116]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:47812/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:47812/661/4224]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:36258/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:36258/910/4224]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:59486/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:59486/910/4607]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:52950/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:52950/1252/4607]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:37498/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:37498/1252/4749]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:55342/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:55342/1252/4749]
+GEL-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:33186/468/4116]
+B1-TARGET run=3 result=cancelled
+GEL-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:33186/1434/4858]
+LADDER B1 TX_UPDATE [gel]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+GEL-LADDER B1 rep=3 plans=8 trials=8 violations=0 unknown=0 unrealized=0 unsettled=0 realized_cancellations=8 baseline_errors=0 baseline_targets=1 exhaustive=true
+GEL-TRIAL B1 rep=3 plan=#0@1:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@1:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@2:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@2:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@3:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@3:AfterWake cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@4:Immediate cancelled=1 realized=true verdict=None
+GEL-TRIAL B1 rep=3 plan=#0@4:AfterWake cancelled=1 realized=true verdict=None
+=== GEL LADDER REPETITION 3 LEVEL B1 END ===
