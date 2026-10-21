@@ -24,8 +24,10 @@ worktree `~/dropwise-linux-r4` (no other tree touched, no commit).
   `IP_ADD_MEMBERSHIP` returns 0 while the interface never got the group
   (`____ip_mc_inc_group()` kzalloc failure is discarded because the
   function returns `void`).  Socket-side membership exists, device-side
-  group does not: no IGMP report, no delivery, `/proc/net/igmp` empty.
-  5/5 boots at N=2.  Fixed by a 26-line patch; fixed kernel 0/5
+  group does not: no delivery; the target group is absent from
+  `/proc/net/igmp` while the all-hosts `010000E0` entry remains (the
+  earlier “/proc/net/igmp empty” wording was wrong; corrected in
+  `RESULTS-round4-multicast.md`).  5/5 boots at N=2.  Fixed by a 26-line patch; fixed kernel 0/5
   violations, same-tree regression otherwise identical.
 * Three **contract-external** partial/destructive effects on error, kept
   as concrete counterexamples but not bugs and not fixed:
@@ -259,6 +261,8 @@ minimal initramfs (not this harness) on both v6.19 and v7.3-rc2 —
 n=1: `ret=-1 errno=105`, no group; n=2: `ret=0 errno=0`, no group;
 n=3: `ret=0`, group present.  The v7.3-rc2 code has the same
 `kzalloc_obj(*im, gfp)` / silent return (`net/ipv4/igmp.c:1601` there).
+The “no IGMP report” part is a code-path inference, not a packet capture:
+no IGMP traffic was captured in the guest.
 
 ### 4.3 Contract and classification
 
@@ -294,13 +298,25 @@ New detached worktree `~/dropwise-linux-r4` (v7.3-rc2
   fails.
 * `__ip_mc_join_group()` calls it **before** `iml->next_rcu =
   inet->mc_list; rcu_assign_pointer(...)`, and on error does
-  `sock_kfree_s(sk, iml, sizeof(*iml))` and returns the error.  The
-  whole path is under RTNL, so no other thread can observe the
-  half-built membership.
+  `sock_kfree_s(sk, iml, sizeof(*iml))` and returns the error.  The path
+  is under RTNL, which serializes writers; RTNL does **not** serialize
+  RCU readers.  The failed `iml` is unpublished (`sflist == NULL`), so
+  the fix publishes the device group before the socket-side `iml`, and
+  no half-built membership is published.  A weak-memory visibility test
+  was not run.
 * The exported `void __ip_mc_inc_group()` / `ip_mc_inc_group()` wrappers
-  keep their void API (interface-up/init callers cannot fail; a missing
-  group there is corrected by the next IGMP query) and carry an explicit
-  comment.
+  keep their void API (interface-up/init callers cannot fail) and carry
+  an explicit comment.  **The earlier claim that a missing group “is
+  corrected by the next IGMP query” is false**: `igmp_heard_query()` and
+  `ip_mc_up()` iterate only existing device-side groups and never scan
+  `inet->mc_list`; a duplicate join does not repair it either.  Only a
+  later successful join (observed) or a re-up (possible for all-hosts,
+  not tested) creates the group.  This is a correction, not a property
+  of the patch.
+* A new cross-socket consequence was measured: on stock, closing the
+  socket whose join failed can remove another socket's device group
+  (`IP_MSFILTER` still reports membership); the fixed kernel keeps the
+  other socket's group and delivery.
 
 The fix is deliberately minimal: it changes only the join path's
 ordering and error propagation; other callers' semantics are unchanged.
@@ -526,8 +542,10 @@ observations that would have caught a violation.
 
 ## 10. Audit/delivery addendum (2026-10-21, V4-1)
 
-Append-only pointer to a separate audit file; no existing section, log or
-artifact above was modified.  V4-1 (`ip_add_membership`) was re-tested with
+Pointer to a separate audit file.  The audit also corrected three claims in
+this report (the `/proc/net/igmp` wording, the RTNL observation scope, and the
+“next IGMP query repairs” sentence); those corrections are inline above, and no
+campaign log or harness result was modified.  V4-1 (`ip_add_membership`) was re-tested with
 real UDP delivery in an isolated guest on v6.19 stock, v7.3-rc2 stock and the
 fixed v7.3-rc2 kernel.  Normal join delivered 4/4 datagrams; stock N=2
 returned 0 with no device group and delivered 0/4; fixed N=2 returned
