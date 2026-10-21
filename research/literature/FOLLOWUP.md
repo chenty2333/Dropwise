@@ -1,16 +1,62 @@
 # 调研之后：两份调研的交叉验证与落地情况
 
-> 更新于 2026-10-18。[REPORT.md](REPORT.md) 是本仓库五份笔记的综合报告。同一天，Codex 会话独立做了一轮文献调研，本文补记它的结论，并逐条说明两份调研的建议后来做了哪些、效果如何。实验细节见 [prospective/RESCAN.md](../../prospective/RESCAN.md) 和 README 中的 interruption 实验条目。
+> 更新于 2026-10-21。开头是当前概览；旧讨论和标注日期的表保留当时语境，不再逐条回写。实验细节仍以各阶段 RESULTS 为准。[REPORT.md](REPORT.md) 是本仓库五份笔记的综合报告。
 
-## 一句话结论
+## 当前主线（2026-10-21）
 
-两份调研都认为，杠杆在“取消之后怎么判、观察谁”，而不在“在哪里取消”。实际产出也确实来自这里：
+取消测试不能停在“目标 future 被 drop”这一刻。要接着看四件事：
 
-- **Codex 的“幸存者”视角**：检查被打断的工作之外、继续使用同一共享对象的参与者。
-- **本报告的“允许集合”判定**：用基线校准出“操作没发生”和“操作完成”两种可接受状态。
-- **一份目标清单**：优先取消建立会话状态的往返、库内部的超时等。
+1. 被取消的操作实际留下了什么——它可能合法地部分完成，也可能已经在远端生效；
+2. 留下的资源被谁、以什么方式继续使用——池的验证/回收，还是同一持有者的下一次调用；
+3. 后继拿到的返回值是否属于这次请求，实际效果是否正确——`Ok` 可能带着旧值、空结果、中间态回复或假成功；
+4. 恢复动作恢复了哪一层——业务操作可用，不等于 API 元数据、协议关联和共享状态都恢复；未恢复的部分有没有传给做复用决定的一方。
 
-三者组合起来，在之前判为“零发现”的同一批库上，找到了一个已知上游缺陷（sqlx#4393，事后复现），以及 bb8 和两个 memcached 连接池中此前没有报告过的问题。报告中排名靠后的工程项（CancelSan、静止判定、futurelock 等）还没有做，效果未知。
+这条主线把两类结果放在一起：目标选择决定“在哪里停”，后继与观察设计决定“停之后看什么”。2026-10-18 之后的主要产出来自后者；2026-10-21 的 phase4 exploration 又补了前者：在我们测过的样本里，checkout/验证、会话切换、SMTP DATA 中间态这些边界比普通请求的取消点更容易暴露问题。
+
+## 案例与当前状态
+
+| 案例 | 已经看到什么 | 证据/状态 |
+|---|---|---|
+| sqlx Postgres `Pool::begin` | BEGIN 往返中取消后连接留在事务内，后继自动提交写入对独立连接不可见。T3 的回显查询漏掉，换观察才看到。 | 上游 #4393 已修复；[RESCAN](../../prospective/RESCAN.md) §3 |
+| sqlx MySQL `begin` | 同一模式；后继写入落进一个未提交的事务，后继看不到。 | 已提交 #4467 / PR #4468；RESCAN §6.1 |
+| bb8 `is_valid` | 验证中途被丢弃，连接以 `Present` 回池；残留 `PONG` 被下一次验证读成自己的回复。 | 已提交 #324 / PR #325；RESCAN §4 |
+| bb8/BOLT pooled | checkout 的 `is_valid`→RESET 被取消，旧连接回 idle；下一次 RESET 把旧 `SUCCESS` 当验证通过，业务 RUN 报 Ready 状态错误。修复版 0/60；原版最终复核 22/60（第二轮 23/60）。 | 探索性；[phase4-exploration](../../prospective/phase4-exploration/RESULTS.md) §4、§9；bb8 #324 的适配器证据 |
+| bb8-memcached / deadpool-memcached | 静默返回别的 key 的值；或持续报错但写入已生效。 | bb8-memcached #16 已提交；deadpool 未上报；RESCAN §4.2、§5.2 |
+| lettre `send` | DATA 阶段取消后池位卡死；修复用 `sending` 标记连接不可复用。 | #1170 / PR #1171；RESCAN §6.2 |
+| diesel-async | 池不读 mysql_async 的 `disconnected`；下一查询读到旧结果。 | #304 / PR #305；RESCAN §7 |
+| mysql_async direct `Conn` | 直接句柄的查询取消后，下一条查询返回 12345（应为 67890）；池路径因 recycler 检查 `disconnected` 而干净。 | #412 / PR #413；[phase3/RESULTS-db](../../prospective/phase3/RESULTS-db.md) |
+| MongoDB MG1 | 事务第一条命令取消后事务留在服务端；同参数重试 `WriteConflict`；不同对象 M1 没看到。 | 契约外；phase3 `AMENDMENTS.md` #16 |
+| neo4rs 0.8.0 | recycle 的 RESET 接受残留 `SUCCESS`；后继同池读丢自己的行。 | 已知 neo4rs#295/#298，修复只在 main；[neo4rs/RESULTS](../../prospective/neo4rs/RESULTS.md) |
+| async-smtp | 取消后复用返回 `Ok(354)` 但消息已投递；`#0@3` 的 6/24 执行无投递、2 s 超时；第三封不自愈，新连接恢复。 | 探索性；issue #73；phase4-exploration §2 |
+| async-imap | 取消 SELECT 后 APPEND 读到陈旧 untagged 数据；retry SELECT 恢复操作，但 `flags`/`permanent_flags` 仍脏。 | 探索性；PR #150；phase4-exploration §3、§9 |
+| BOLT direct | 切点后复用失败；显式 `reset()` 可恢复操作，但公开文档没有写 drop 后的义务。 | 未文档化契约缺口，不是确认新 bug；phase4-exploration §4.6 |
+| io_uring / Notify | 立即观察在修复版也报 fd 增加；加 settle 后才区分暂态与泄漏。Notify 需要额外取消时机。 | 机制对照，不是新 bug；[mechanisms](../mechanisms/RESULTS.md) |
+
+“已提交”只说明链接创建成功，不代表维护者确认或已发布。phase4-exploration 是不冻结的首次接触，不并入正式 Phase 4；表中的计划执行数不是独立 bug 数。这些是案例级证据，不是检出率或覆盖率估计：phase3 的 8 个目标只确认 1 个问题，phase4 exploration 只覆盖 3 个客户端家族。
+
+## 方法落地状态
+
+| 方法元素 | 当前状态 | 入口/证据 |
+|---|---|---|
+| 允许集合 + 二次校准 | **已进入公共 API**：`explore_observed`、`Expect`、`Verdict`（pre/post/mixed/neither/unknown）；每侧两次采样，不一致记 Unknown | `src/explore.rs`；`docs/using-dropwise.md`；RESCAN §3 |
+| 幸存者 + 独立观察者 | **实验方法**：没有自动 oracle，观察值由场景写；已在 sqlx、bb8、mysql_async、mongodb、SMTP、IMAP 等使用 | `docs/choosing-targets.md`；`docs/writing-scenarios.md` §2.5 |
+| 同对象 + 载荷标记 | **方法**：对象身份决定冲突落在哪，标记决定旧回复是否被认出来；归一化目前是场景侧代码 | `neo4rs` 的 `normalize()`；phase3 MG1；phase4-exploration §2 |
+| 直接句柄 | **形状已支持**：`ctx.target` 只丢弃目标 future，句柄留在场景里；没有单独的“直接模式”API | `examples/direct_handle.rs`；`docs/writing-scenarios.md` §10 |
+| 可调度 gap | **已进入公共 API**：`Ctx::gap` + `Config::gap_choices`（单 cut）；`ProxyOptions::reply_delay` 在 `net` feature 下 | `src/explore.rs`；`docs/using-dropwise.md` |
+| 重复取消同一站点 | **已进入公共 API**：`Config::repeat_at_site` | `src/explore.rs`；README “Repeated cancellation” |
+| 计划重放 | **已进入公共 API**：`Trial::replay_plan`、`replay_observed`；真实 I/O 下是重试，不是确定性重放 | `src/explore.rs`；README “Plan replay” |
+| 清理时机 | **部分**：`Settle`、`after_settle`、watchdog；没有通用静止判定 | `src/explore.rs`；mechanisms RESULTS |
+| 动态值归一化 | **场景方法**：没有自动规范化 API | `neo4rs` 的 `normalize()`；`support::unique` |
+| 后继生成、观察字段/关联提示、中间效果采样与模板 | **未实现**，作为后续自动化方向 | 本文“后续自动化方向”；`docs/writing-scenarios.md` §2.5 |
+
+## 后续自动化方向
+
+这些是从上述方法自然引出的方向，不是现有功能。下面按“已有实现 / 已有实验支持的方法 / 待验证的自动化设想”标注，不预先承诺零人工知识、固定标注行数、完备覆盖或检出率。
+
+1. **后继操作与参数组合生成（待验证）。** 从目标操作的参数、返回结构和协议阶段，提示同对象/异对象、同操作/异操作、原地重试/显式恢复后继续的组合。当前是人工按 `docs/writing-scenarios.md` §2.5 B 选；没有生成器。
+2. **观察字段与身份关系候选提示（待验证）。** 从返回结构、协议消息、日志字段中提示“这个值可能属于哪个请求/对象”“哪个字段能区分 pre/post”。当前靠人读代码和协议文档；`Trial` 保留计划、观察值和判定等信息，但不推断字段关系。
+3. **动态值规范化（已有场景侧做法，未自动化）。** neo4rs 的 `normalize()` 是手写规则：剥掉本次运行的前缀，再比较。可以把它做成模板，但必须保留“这次/上次”的关联；不能因为动态值跨运行变化就直接删除。
+4. **中间效果采样与允许结果模板（待验证）。** 在操作进行中采样前缀、子集或资源状态，并给出可比较的允许结果模板。当前的 `Proxy::residue`、独立观察者、`after_settle` 只是零件；没有“采样点 + 允许模板”的通用机制。
 
 ## Codex 调研的要点
 
@@ -36,28 +82,30 @@ Codex 覆盖了 1980 年代到 2026 年的异常安全、任务取消、并发�
 
 Kill-safe 的“幸存者”视角是本报告五份笔记都没有覆盖的，事后看也是收益最大的一条。
 
-## REPORT.md 低垂果实清单：落地情况
+## REPORT.md 清单：当前落地状态
 
-编号对应 REPORT.md 的排序表。“实验代码”指 `prospective/support/allowed.rs` 等实验内实现，没有进入 Dropwise 公共 API。
+编号对应 [REPORT.md](REPORT.md) 的排序表。“公共 API”指当前根 crate 导出的接口；“实验方法”指在场景/实验代码中验证过、但没有独立 API 的做法。本表 2026-10-21 更新。
 
 | # | 建议 | 状态 | 证据与效果 |
 |---|---|---|---|
-| 1 | {pre, post} 允许集合 | **已做（实验代码）** | 用“第一次 poll 前丢弃”作 pre 校准。R3.5 在修复版 sqlx 上，有 6 个计划会被“等于基线”误报，用允许集合判为 0；R3.6 的 6 个真实半完成态仍然报出 |
-| 2 | 结果与效果一致性 | 部分 | R1.2 统计到“报告已取消但对端收到”18/18；没有做成通用检查 |
+| 1 | {pre, post} 允许集合 | **已进入公共 API** | `explore_observed` + `Expect` + `Verdict`；pre 用“第一次 poll 前丢弃”校准，多 cut 有 mixed，每侧两次采样。R3.5 在修复版 sqlx 上，有 6 个计划会被“等于基线”误报，用允许集合判为 0；R3.6 的 6 个真实半完成态仍然报出 |
+| 2 | 结果与效果一致性 | **部分** | `Expect::Undone` 能声明“结果必须交到调用方”，但还没有自动比较“返回值 vs 独立效果”的 oracle。R1.2 的“报告已取消但对端收到”18/18、SMTP 的 `Ok(354)` 都说明需要这层检查 |
 | 3 | 孤儿任务计数 | 做了对照，未纳入 | 能抓到不带 `Obligation` 的遗留任务，但延迟清理会误报，“一个退出、一个泄漏”会漏报；只适合作为提示信号 |
-| 4 | 窗口敏感性自检（T 与 2T） | 做了对照 | 反例表明 T 与 2T 结果相同不代表稳定；应当用明确的完成信号 |
+| 4 | 窗口敏感性自检（T 与 2T） | 做了对照，结论是否定 | 反例表明 T 与 2T 结果相同不代表稳定；应当用明确的完成信号 |
 | 5 | 静止判定 `Settle::Quiescent` | 未做 | — |
-| 6 | 基线确定性自检 | **已做** | 每侧校准跑两次，不一致即记 Unknown |
-| 7 | Pending 制造器 | 临时实现 | 用小缓冲 duplex、Stutter 传输、慢服务端、回复闸门等手段各自实现；没有做成通用 helper |
+| 6 | 基线确定性自检 | **已进入公共 API** | 每侧校准跑两次，不一致即记 Unknown；校准失败进 `calibration_errors`，不算违反 |
+| 7 | Pending 制造器 | 临时实现 | 用小缓冲 duplex、Stutter 传输、慢服务端、回复闸门、`ProxyOptions::reply_delay` 等手段各自实现；没有做成通用 helper |
 | 8 | 内置模型扩展 | 未做 | bb8 + oneshot 的交接实验 12 个计划全部干净，与“收益上限有限”的判断一致 |
-| 9 | 新的 plan 维度 | 部分 | 新增并验证了“库内部超时”这一取消来源（bb8 `connection_timeout`、deadpool `recycle_timeout`），bb8 的问题正是由它触发 |
-| 10 | 取消后重试差分 | **已做** | R1.1 抓到 tungstenite send 重复投递；commit_reply 抓到重复提交 |
-| 11–14 | 报告、现实性标签、分层采样、等价归并 | 未做 | — |
+| 9 | 新的 plan 维度 | **部分进入 API** | `Race::AfterWake`、`Config::repeat_at_site`、`Ctx::gap`/`Config::gap_choices`、`replay` 已实现；“库内部超时”仍是场景侧来源（bb8 `connection_timeout`、deadpool `recycle_timeout`），abort/runtime shutdown 等未做成维度 |
+| 10 | 取消后重试差分 | **实验方法已用** | R1.1 抓到 tungstenite send 重复投递；commit_reply 抓到重复提交。没有独立 API |
+| 11–14 | 报告、现实性标签、分层采样、等价归并 | 未做 | 报告已有 site、plan label 和 replay，但没有现实性标签、概率采样或效果归并 |
 | 15 | `cargo dropwise test`（CancelSan） | 未做 | 在运行脚本中手动用过 `[patch.crates-io]` 替换 sqlx-postgres 和 bb8，机制可行。遇到过一次同名同版本 path 包冲突，靠改版本号绕开 |
 | 16 | futurelock 检测 | 未做 | — |
 | 17 | coop 叶子层注入 | 未做 | — |
 
-## 实际发现
+## 实际发现（截至 2026-10-19）
+
+> 下表保留 2026-10-19 的原记录；2026-10-21 的 phase4 exploration 结果见开头“案例与当前状态”，不并入本表。
 
 | 发现 | 性质 | 状态 |
 |---|---|---|
@@ -69,11 +117,17 @@ Kill-safe 的“幸存者”视角是本报告五份笔记都没有覆盖的，�
 | lettre 0.11.23 池化 `send` 在 DATA 阶段被取消后，池位持续卡死 | 新问题；连接池是默认 feature | 已提交 [lettre/lettre#1170](https://github.com/lettre/lettre/issues/1170)、修复 PR [#1171](https://github.com/lettre/lettre/pull/1171) |
 | tungstenite send 被取消后仍会送达 | 契约外行为（Sink 侧没有承诺） | 不需要上报 |
 
-## 调整后的优先级
+## 当前优先级（2026-10-21）
 
-1. **继续用“目标清单 + 幸存者 + 允许集合”这套组合扫更多库。** 成本低，已经证明能出结果。优先选在单条字节流上一问一答、并且带池化或复用的客户端。
-2. **把允许集合校准和幸存者模板收进 Dropwise API**，目前它们还是实验代码。只有确定 API 形态之后，CancelSan 这类零配置接入才有意义。
-3. 静止判定、futurelock、CancelSan 保留在 REPORT.md 的清单中，等前两项稳定后再评估。
+1. **继续用“目标清单 + 后继 + 允许集合”扫更多库。** 优先选 checkout/验证、会话建立、SMTP DATA/IMAP APPEND 这类多步交换；直接句柄单独记录责任边界，不混进池化统计。
+2. **把已经稳定的方法做成模板或工具，而不是再改判定引擎。** 允许集合、二次校准、gap、重复取消和 replay 已进入公共 API；剩余主要是后继组合选择、三类观察字段、立即复用与完成信号后清理的时序、身份/关联、动态值规范化、中间效果模板。不要预先承诺零人工知识、固定标注行数、完备覆盖或检出率。
+3. **静止判定、futurelock、CancelSan 继续推迟。** 它们仍缺实现和外部接入证据；先让场景生成和观察提示变得可复用，再评估这些 M 级投入。
+
+---
+
+## 历史记录（2026-10-18 至 10-19）
+
+> 以下保留当时的讨论、判断和“未做/仍缺”的描述，用于理解当时的决策；当前状态以开头概览为准，旧文不回写。
 
 ## Gemini 的建议与评估（2026-10-18）
 

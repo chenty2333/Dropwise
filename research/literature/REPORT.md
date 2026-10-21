@@ -1,8 +1,10 @@
 # 借三十年测试先例，补齐 Dropwise 的判定短板
 
 > 后续：与 Codex 调研的交叉验证、各项建议的落地情况和实际发现，见 [FOLLOWUP.md](FOLLOWUP.md)。
+>
+> **状态注（2026-10-21）：** 本文是 2026-10-18 的调研报告，不是当前 API 清单。写作时下列建议都还没有落地；后来允许集合/二次校准、gap、重复取消和 replay 已进入公共 API，实际接口是 `explore_observed` + `Expect`，不是本文表格中的草案名 `ctx.observe`。当前状态一律以 [FOLLOWUP.md](FOLLOWUP.md) 为准。
 
-Dropwise 最值得投入的低垂果实，不在“在哪里取消”，而在“取消之后怎么判、什么时候判”。在“在哪里取消”这一侧，Dropwise 按第 k 个 Pending 枚举取消点，已经和 Abrahams 2000 年的异常注入计数器、SQLite 的 OOM 循环、Linux `fail-nth`、CHESS 的 iterative context bounding 是同一套做法。这些工具各自配套的自动判定（oracle）和观察时机，却一直没被搬到 Rust future 的 drop 上。来自不同社区、互相不知道对方的三个部件，可以直接拼成一个基本不用手写不变式的默认 oracle。第一个是由 baseline 派生的允许集合：settle 后的状态必须属于 {操作前, 操作后}，来源是 C++ StrongCheck、SQLite“完成或完全回滚”、Witcher、Jepsen 的 `:info`。第二个是用静止判定代替固定 settle 窗口：Go `testing/synctest`、Trio、OCaml Eio、Cats Effect、TigerBeetle VOPR 各自独立收敛到这个做法。第三个是相对 baseline 的孤儿任务计数：goleak 在 Uber 的单元测试中找出 857 个既有泄漏。这三样在 Tokio 里都有现成原语（baseline 运行、paused time 的 auto-advance、`RuntimeMetrics::num_alive_tasks`），笔记估计各需 S–M 工作量。它们分别对准当前已知的三个弱点：条件要在读过修复之后才写得出来、立即观察在已修复代码上误报，以及只有恰好持有 `Obligation` 的泄漏才能被看到。第二梯队是让更多现有测试“有 Pending 可切、能零改动接入”，包括 Pending 制造器、确定性自检与覆盖断言、`cargo [patch]` 式的 CancelSan，以及 NonDex 式 baseline-first 差分。第三梯队是新的 plan 维度和省成本的手段。需要先说清楚：以下所有建议都**没有在 Dropwise 上实现或验证**。所谓“证据强”，只表示该机制在原领域有量化成果，不表示它对 Rust 取消一定有效。另外两点会影响优先级：Tokio 文档化的 cancel-unsafe API 做成模型库，收益上限有限，真正没人覆盖的是 futures combinator；futurelock 是一个与 drop 取消正交、生态里还没有工具的新 bug 类。
+Dropwise 最值得投入的低垂果实，不在“在哪里取消”，而在“取消之后怎么判、什么时候判”。在“在哪里取消”这一侧，Dropwise 按第 k 个 Pending 枚举取消点，已经和 Abrahams 2000 年的异常注入计数器、SQLite 的 OOM 循环、Linux `fail-nth`、CHESS 的 iterative context bounding 是同一套做法。这些工具各自配套的自动判定（oracle）和观察时机，却一直没被搬到 Rust future 的 drop 上。来自不同社区、互相不知道对方的三个部件，可以直接拼成一个基本不用手写不变式的默认 oracle。第一个是由 baseline 派生的允许集合：settle 后的状态必须属于 {操作前, 操作后}，来源是 C++ StrongCheck、SQLite“完成或完全回滚”、Witcher、Jepsen 的 `:info`。第二个是用静止判定代替固定 settle 窗口：Go `testing/synctest`、Trio、OCaml Eio、Cats Effect、TigerBeetle VOPR 各自独立收敛到这个做法。第三个是相对 baseline 的孤儿任务计数：goleak 在 Uber 的单元测试中找出 857 个既有泄漏。这三样在 Tokio 里都有现成原语（baseline 运行、paused time 的 auto-advance、`RuntimeMetrics::num_alive_tasks`），笔记估计各需 S–M 工作量。它们分别对准当前已知的三个弱点：条件要在读过修复之后才写得出来、立即观察在已修复代码上误报，以及只有恰好持有 `Obligation` 的泄漏才能被看到。第二梯队是让更多现有测试“有 Pending 可切、能零改动接入”，包括 Pending 制造器、确定性自检与覆盖断言、`cargo [patch]` 式的 CancelSan，以及 NonDex 式 baseline-first 差分。第三梯队是新的 plan 维度和省成本的手段。需要先说清楚：本文写作时，以下所有建议都**没有在 Dropwise 上实现或验证**；其中允许集合/二次校准、gap、重复取消和 replay 后来已进入公共 API（见 FOLLOWUP.md），其余仍按原评估。所谓“证据强”，只表示该机制在原领域有量化成果，不表示它对 Rust 取消一定有效。另外两点会影响优先级：Tokio 文档化的 cancel-unsafe API 做成模型库，收益上限有限，真正没人覆盖的是 futures combinator；futurelock 是一个与 drop 取消正交、生态里还没有工具的新 bug 类。
 
 > 阅读约定：带 `([来源](URL))` 的句子是研究笔记中有一手或二手来源的事实。标“（推断）”的是笔记或本报告的推导，没有经过实验。工作量按 S ≈ 1–3 天、M ≈ 1–3 周、L ≈ 月级统一换算（五份笔记原先的刻度不一致，见“证据边界”一节）。
 
@@ -22,7 +24,7 @@ Dropwise 最值得投入的低垂果实，不在“在哪里取消”，而在�
 
 ## 按投入产出排序的低垂果实清单
 
-下表综合五份笔记的排序，按“对已知弱点的杠杆 / 工作量”重新排。表中弱点编号如下。**W1**：用户要手写不变式，且条件是读过修复后才写的。**W2**：固定 settle 窗口和立即观察带来的误报。**W3**：现有测试没有在站点上产生 Pending（G0 只有 4 个 eligible）。**W4**：combinator 和自定义 wrapper 站点覆盖不到。**W5**：采用摩擦，包括旧构建环境（G0 中有 6 个 unknown）。**W6**：plan 数量和运行成本。**W7**：多时序探索什么时候必要、什么时候算够，目前缺少依据。**W8**：静态候选需要动态确认（16 个候选，0 个确认）。“证据”一列描述原领域先例的强度，**所有条目在 Dropwise 上都未验证**。
+下表综合五份笔记的排序，按“对已知弱点的杠杆 / 工作量”重新排。表中弱点编号如下。**W1**：用户要手写不变式，且条件是读过修复后才写的。**W2**：固定 settle 窗口和立即观察带来的误报。**W3**：现有测试没有在站点上产生 Pending（G0 只有 4 个 eligible）。**W4**：combinator 和自定义 wrapper 站点覆盖不到。**W5**：采用摩擦，包括旧构建环境（G0 中有 6 个 unknown）。**W6**：plan 数量和运行成本。**W7**：多时序探索什么时候必要、什么时候算够，目前缺少依据。**W8**：静态候选需要动态确认（16 个候选，0 个确认）。“证据”一列描述原领域先例的强度。**本表是 2026-10-18 的排序；条目在 Dropwise 上的落地状态以 FOLLOWUP.md 为准，不能按本表的草案 API 名理解当前实现。**
 
 | # | 做什么（落到 Dropwise） | 借自 | 主要修复 | 工作量 | 证据 |
 |---|---|---|---|---|---|

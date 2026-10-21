@@ -7,7 +7,11 @@ cancellation, is every responsibility already taken, every effect already
 committed, and every piece of work still running handled in a way *this calling
 context* allows? For example, a received message must be delivered, requeued or
 explicitly abandoned; a connection may be closed after an interrupted request
-but not reused as if it were at a message boundary.
+but not reused as if it were at a message boundary. The next use can happen on
+the same handle: when the caller keeps a connection across operations, the
+next library call is also a reuse boundary. The library may recover or reject
+reuse itself; any caller-required drain, reset, reconnect or discard must be
+part of the documented contract.
 
 ## Start here
 
@@ -240,15 +244,27 @@ public release; the owner must choose a license first. Everything else needed to
 build and consume the package independently is present.
 
 The research halves are separate crates and documents, and are **not** part of
-that command:
+that command. For the current synthesis of what the experiments changed, read
+[FOLLOWUP.md](research/literature/FOLLOWUP.md) and
+[THEORY.md](research/theory/THEORY.md); the stage results remain the evidence.
 
 - `repro/` — paired reproductions against upstream releases, each with its own
   `Cargo.toml` and pinned versions (one case needs a Redis in Docker). Run with
   `repro/run_all.sh`.
 - `prospective/` — pre-registered experiments on third-party crates
-  (`t1`-`t3`, `phase2`). Use `prospective/run.sh t1-tungstenite` or
-  `prospective/run.sh t2-bb8`; T3 and Phase 2 have their own runners:
-  `prospective/t3-sqlx/run.sh` and `prospective/phase2/run.sh`.
+  (`t1`-`t3`, `phase2`), plus the Phase 3 target batch and the neo4rs dynamic
+  validation. Use `prospective/run.sh t1-tungstenite` or
+  `prospective/run.sh t2-bb8`; T3, Phase 2 and Phase 3 have their own runners:
+  `prospective/t3-sqlx/run.sh`, `prospective/phase2/run.sh` and
+  `prospective/phase3/run-db.sh` / `run-http.sh`.
+- [Neo4j/Bolt validation](prospective/neo4rs/RESULTS.md) — the pair-scan
+  suspect is confirmed dynamically: a cancelled exchange leaves a `SUCCESS`
+  that `recycle` accepts as its RESET reply, and the next reader silently loses
+  its own row. The fix is only on upstream `main`; this is not a new report.
+- [Phase 4 first-contact exploration](prospective/phase4-exploration/RESULTS.md)
+  — unfrozen, 2026-10-21; async-smtp, async-imap and bolt-client (pooled and
+  direct). Results are exploratory and are not part of the formal Phase 4
+  protocol.
 - `survey/`, `research/` — the bug survey (`survey/survey.py`, codebook) and
   the feasibility probes.
 - [Known-mechanism comparison](research/mechanisms/RESULTS.md) — independent first-Pending

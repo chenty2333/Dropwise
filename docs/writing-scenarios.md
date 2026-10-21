@@ -1,9 +1,14 @@
 # 写场景指南：给 AI 执行者的操作手册
 
-> 状态：**phase 4 草稿，尚未冻结**（2026-10-19）。本文件只写方法，不含任何实验结果。
-> 适用对象：为 phase 4 的单个目标写 B1/B2/B3/M1 场景的 AI 执行者。目标名单和实验方案见
-> `prospective/phase4/PLAN.md`、`prospective/phase4/targets.md`。
+> 状态：**Phase 4 专属规则仍是草稿，尚未冻结**（2026-10-19）；§2.5 的通用方法在 2026-10-21
+> 整理时补充。本文件以方法为主，实验数字只作来源，引用处给出路径。
+> 适用对象：为 phase 4 的单个目标写 B1/B2/B3/M1 场景的 AI 执行者；§2.5 也适用于其他阶段的
+> 场景设计。目标名单和实验方案见 `prospective/phase4/PLAN.md`、`prospective/phase4/targets.md`。
 > 每条规则后面的括号注明它来自哪次实验；第 9 节有汇总表，第 10–11 节规定直接句柄和 Python 的不同写法。
+>
+> **读法：** §2.5 是通用设计选择；§3–§9 是当前 Phase 4 的正式协议（B1/B2/B3/M1、同骨架、每项
+> 3 轮等），§10–§11 是直接句柄和 Python 的写法。两者冲突时，正式实验以 §3–§9 为准。通用方法
+> 不暗中修改实验协议，也不把探索性结果混进正式 Phase 4。
 
 ## 0. 先理解你要回答的问题
 
@@ -91,6 +96,145 @@ fn config() -> Config {
 `scenario_timeout = 20 s`、`Settle { tokio_time: 0 }` 是 `neo4rs` 的完整取值，phase 4 沿用。
 来源：phase 3 `PLAN.md` §3；`neo4rs/RESULTS.md` §2.2。
 
+## 2.5 四项设计选择（通用方法）
+
+这一节回答“场景怎么写才能看到问题”，不改变 §3 的 Phase 4 协议。四项可以单独使用，也可以组合；
+不需要每个场景都跑满所有组合。更完整的动机见 `research/theory/THEORY.md` §2、§4。
+
+### A. 分开观察目标进度、后继正确性和资源状态
+
+**解决什么问题：** 被取消的操作可能合法地部分完成；后继可能拿到自己的结果，也可能拿到旧结果；
+资源可能已经恢复、暂时不可用，或者仍然带着未完成状态。把三者压成一个“通过/失败”，就看不出
+是哪一类问题，也容易把合法的部分进度误报成违规。
+
+**怎么使用：**
+
+- **目标进度：** 用 pre/post 两条基线判断被取消操作“没发生/完成”；多 cut 时还有 mixed。用
+  `Expect::{Atomic, Completed, Undone}` 声明调用上下文允许哪一侧。`Expect` 是声明，不是推断。
+- **后继正确性：** 让后继返回具体值，而不是 `is_ok()`；另设独立观察者确认实际效果。
+- **资源状态：** 单独记录连接、事务、协议位置、未读字节、锁、邮箱元数据、任务数等。不要用后继
+  `Ok` 代替资源状态，也不要用资源“还在”代替后继拿到了自己的结果。
+- 至少给这三类各一个字段；如果某一类不在观察范围，在报告里写明覆盖不到什么。
+
+| 判断 | 现有支持 | 边界 |
+|---|---|---|
+| 目标进度 | `explore_observed` + `Expect` + `Verdict`；每侧两次采样；多 cut 有 `Mixed` | 只支持 pre/post/mixed。任意前缀、子集、恢复等价不是现成的 `Expect` 取值 |
+| 后继正确性 | 场景返回值 + 独立观察者；观察值实现 `PartialEq` | 没有自动 oracle；具体值、错误文本、超时都要自己写 |
+| 资源状态 | `Obligation`、场景不变式、`after_settle`、`Settle`；可选的 `net::Proxy::residue` | 没有通用静止判定；`residue` 只适用部分本地 TCP 协议 |
+
+**前缀和子集怎么办：** 如果契约允许前缀（`write_all`）或子集（一次操作有多个可独立生效的效果），
+不要用 `Expect::Atomic` 硬套。在场景不变式中显式检查允许条件，例如实际内容是否为输入前缀；
+需要延后检查时可使用 `after_settle`。仅把观察值写成“已写入的字节数 + 内容”，仍然会按
+pre/post 端点相等比较，不会自动接受合法中间态。这是场景表达，不是 `Expect` 的新取值；未来可以把常见模板
+收进 API，但当前不能假设它已经存在。
+
+**已有例子：**
+
+- `R3.5`/`R3.6` 用允许集合区分“事务在提交前被取消”和“两条自动提交写入只完成一条”；只和
+  “正常完成”比较会把 6 个干净回滚误报成失败（`prospective/RESCAN.md` §3）。
+- mysql_async MY2 的后继 `Ok` 是真的 `Ok`，但值是上一次查询的 12345；目标进度、后继正确性和
+  资源状态必须分开看（`prospective/phase3/RESULTS-db.md`）。
+- SMTP 的 `Ok(354)` 是“消息已投递、返回值错”；IMAP 的 retry SELECT 是“操作序列恢复、元数据
+  不干净”。两者都说明只看一个 `Ok` 不够（`prospective/phase4-exploration/RESULTS.md` §2、§3）。
+
+**适用条件：** 被取消操作可能合法部分完成，或者需要区分“有效果但返回值错”与“有效果且返回值对”
+时，必须分开；如果只关心后继有没有拿到自己的结果，可以省略目标进度，但要在报告里说明。
+
+### B. 系统化选择后继
+
+**解决什么问题：** 同一个根因在不同后继下可见性不同。只做“同参数重试”，会漏掉错位回复；只做
+“换一个操作”，会漏掉同一对象上的锁或事务冲突；只碰“自己的”对象，会漏掉被取消操作碰过的那个
+对象上的问题。
+
+**怎么使用：** 先选对象身份，再选操作，再决定是否显式恢复。
+
+| 组合 | 回答的问题 | 已有例子 | 注意 |
+|---|---|---|---|
+| 同对象 + 同操作/参数（原地重试） | 旧状态是否阻止重试，或是否重复生效 | MongoDB MG1 B2 撞上未回滚事务的 `WriteConflict`；sqlx `Pool::begin` 重试 | 可能只看到冲突，不一定看到静默旧值 |
+| 同对象 + 不同操作/参数 | 后继是否拿到自己的结果（响应关联） | neo4rs N2 的 `Ok([])`；mysql_async MY2 的 `Ok(12345)`；SMTP 的 `Ok(354)` | 只看 `Ok` 会漏；要具体值和独立观察者 |
+| 不同对象 + 同操作/参数 | 资源/池/共享状态是否被污染；对象特定冲突不挡路时还能不能看见 | MongoDB MG1 的 M1 写了另一个文档，没看到同文档冲突 | 可能故意避开冲突，不能反推“同对象安全” |
+| 显式恢复后继续（同对象或不同对象） | 恢复动作修好了哪一层，剩下什么 | IMAP retry SELECT 后可 APPEND/SEARCH/FETCH，但 flags 仍脏；BOLT direct 的 `reset()` 可恢复操作；bb8 丢弃连接后重建 | 恢复后可用不等于元数据、协议关联、共享状态都对 |
+
+**对象身份和载荷标记分开。** 对象身份回答“冲突/残留落在哪个 key、行、连接、邮箱”；载荷标记回答
+“这个返回值是不是这次请求的”。同一对象 + 可区分标记可同时检查对象关联与结果归属；没有标记时，bb8 的 `PONG`/`PONG` 或
+SMTP 的 `354` 这类相同/中间回复会把错位藏起来。标记可以是载荷字段、消息 id、IMAP tag、请求号；同对象探针不要通过改变实体 key 来区分请求；
+动态部分要先规范化再比较（见 D）。
+
+**不要写成单一阶梯。** 这四类组合不是逐级增强：B2 能抓到 MG1，M1 抓不到；M1 能抓到 mysql_async
+MY2，B2/B3 抓不到；IMAP 的 retry 恢复了操作但没恢复元数据。按要回答的问题选组合，并在报告里
+说明没跑哪些组合、为什么。
+
+**适用条件：** 有池/句柄复用、有会话状态、或者协议回复可能错位时，可优先考虑“同对象 + 可区分载荷”及一个对照；具体按操作能力和实验问题选择。不要为了显得完整而跑满矩阵。
+
+### C. 分开立即复用和最终清理
+
+**解决什么问题：** 取消后马上复用，看的是残留状态对下一位的影响；资源最终有没有被释放/回收，
+是另一个问题。只立即观察，会把暂态当成泄漏；用长 sleep 等清理，会把“还没到”当成“没发生”。
+
+**怎么使用：**
+
+- **立即复用：** 取消后不等待，直接让后继使用同一对象（`Gap::Now` 或场景默认）。观察旧回复、
+  锁、池状态、错误返回。这一层回答“下一位现在能不能正确使用”。
+- **最终清理：** 等待覆盖相关清理工作的完成信号（如任务 join、服务端确认或明确的回收完成通知）
+  后再观察资源。`after_settle` 只是等待窗口结束后的检查回调，本身不是完成信号。`Settle::tokio_time` / `real_time` 是观察窗口，不是完成证明；`unsettled` 和
+  watchdog 要把结论降级。
+- 需要探索“回复先到/后到”时，用 `Ctx::gap` + `Config::gap_choices`（单 cut），并记录实际赋值；
+  不要用固定 sleep 代替可调度维度。
+- 有限等待的结果按实际观察范围写：在窗口内没看到，不等于永远没有；不需要为此展开一大段
+  不可能性讨论。
+
+**已有例子：**
+
+- io_uring 的立即观察在修复版上也看到 fd 增加，加 100 ms settle 后才区分暂态与持续泄漏；这是
+  “观察点过早”的误报，不是修复版的新 bug（`research/mechanisms/RESULTS.md`）。
+- Notify 的 lost-wakeup 需要额外取消时机才能稳定看到；这是“立即/单一计划”覆盖不足的例子。
+- neo4rs 在取消后等 100 ms 再取 `residue`；lettre 的 50 ms 复用间隔被改成 `ctx.gap`，用来探索
+  回复先到/后到（`prospective/RESCAN.md` §6.6）。
+- phase4 exploration 用零 settle + 显式重连/超时，把“复用瞬间”和“清理是否完成”分开记录
+  （`prospective/phase4-exploration/RESULTS.md` §1、§2）。
+
+**适用条件：** 只要结论涉及“泄漏/恢复”，就必须有完成信号或明确标注观察窗口；只涉及“复用瞬间
+是否错位”，立即观察就够。不要把“等得更久”当作证明。
+
+### D. 保留身份与关联
+
+**解决什么问题：** 只看返回值，无法判断这个值属于哪个请求、哪个对象、哪次操作；跨运行变化的
+动态 id 被删掉后，又可能把“这次的结果”和“上次的结果”混在一起。
+
+**怎么使用：**
+
+- 观察值里同时保留：对象身份（key/row/mailbox/connection）、操作身份（请求号/tag/消息 id）、
+  载荷标记（唯一值）。
+- 动态 id 不要因为跨运行变化就删除；先做符号归一化（剥掉运行前缀、映射成稳定 token）再比较。
+  归一化只去掉运行间噪声，不破坏“这次/上次”的关联。
+- 如果协议没有 correlation id，用唯一载荷、主题、文档字段代替；不要让两个请求的回包长得一样。
+- 报告里写清哪个字段对应哪个请求/效果；不要把“值相等”直接当成“属于这次请求”。
+
+**已有例子：**
+
+- neo4rs 每次运行用唯一 tag，比较前用 `normalize()` 剥掉本次运行的前缀；既让 pre/post 可比，
+  又保留“上一条 RECORD 是不是自己的”这个判断（`prospective/neo4rs/RESULTS.md` §2.2）。
+- SMTP 每封信带唯一主题/message-id，IMAP 用 tag；bb8 的验证回复恰好也是 `PONG`，相同回复把
+  错位藏了起来（`prospective/RESCAN.md` §4）。
+- SQLx 用唯一写入 + 独立连接确认，避免只看同一条连接的回显（`prospective/RESCAN.md` §3）。
+
+**现有支持：** `dropwise::support::unique(prefix)` 可生成进程内唯一值；归一化目前是场景侧代码
+（例如 neo4rs 的 `normalize()`），不是核心 API。符号归一化、关联候选提取是后续自动化方向，
+不是现有实现。
+
+**适用条件：** 有 correlation id、多消息响应、池化复用、跨运行唯一标记时必做；单请求单回复且
+返回值唯一时可以简化，但仍要保留对象身份。
+
+### 四项怎么组合
+
+一个最小顺序：选目标（§3.1 和本目录的 `choosing-targets.md`）→ 选后继组合（B）→ 选立即复用还是
+完成信号后清理（C）→ 给三类观察各写字段并保留身份（A、D）→ 声明 `Expect`。Phase 4 的 M1 默认
+把幸存者放在同一对象上做有副作用的操作，B2/B3 是另外两个对照；这不是唯一组合，也不要求每个
+目标都跑完 B 表的所有行。
+
+这四项目前是人工设计规则，不是自动生成算法；后继组合生成、观察字段/关联提示、动态值规范化、
+中间效果模板的现状和边界见 `../research/literature/FOLLOWUP.md` 的“后续自动化方向”。
+
 ## 3. 七条硬规则
 
 ### 3.1 幸存者必须碰被取消操作碰过的同一个对象
@@ -162,6 +306,10 @@ phase 3 的 mongodb `maxPoolSize=1`、clickhouse-arrow `max_size(1)`、mysql_asy
 - `neo4rs` N2：8 个计划里有 2 个，B2/B3 返回 **`Ok([])`**——查询本应返回两行，一行都
   没有。`Ok([])` 仍是 `Ok`，所以低层级按规则通过；M1 的 `own` 要求看到具体的行，才报
   违反。来源：`neo4rs/RESULTS.md` §3.3、§7。
+- 更一般地，`Ok` 也可能是中间态回复：async-smtp 取消后第二次 `send` 返回 `Ok(354)`，消息
+  却已经投递；只判 `Ok` 会把“返回值错、效果已发生”当成成功。这是 phase4 exploration 的
+  探索性结果，不并入正式 Phase 4，但说明具体返回码和独立效果要一起看。来源：
+  `prospective/phase4-exploration/RESULTS.md` §2。
 
 **写法：**
 
@@ -192,7 +340,7 @@ Dropwise 可能把它判成 `Post`（分类时先看 post）并给一条退化�
 **什么时候不能接受：** 如果你的结论需要“被取消的操作确实没有生效/确实回滚了”，或者
 `Expect::Completed`/`Expect::Undone` 要求某一侧，那么 pre == post 说明观察值没有覆盖这个
 问题，必须加一个能区分 pre/post 的观察字段（通常是独立观察者看服务端状态），否则只能
-报告“无法判定”，不能报告“通过”。
+报告“无法判定”，不能报告“通过”。如果契约允许前缀或子集，先按 §2.5 A 显式检查允许条件；不要用 `Expect::Atomic` 把合法的部分进度判成 Neither。
 
 **实例：**
 
@@ -234,11 +382,11 @@ Dropwise 可能把它判成 `Post`（分类时先看 post）并给一条退化�
 | 服务端延迟 | SQL `SLEEP`、服务端脚本 sleep、代理之外的延迟 | 数据库/服务端支持延迟原语（MySQL、PostgreSQL 等） | 很多协议没有 `SLEEP`；不要在检测阶段改服务端实现 |
 | 大负载 | 16 MiB 请求体、8 MiB 正文、256 KiB 响应体填充 | 让“写请求体/读响应体”出现 `Pending`；HTTP 的 L2 形状 | 只对调用方 future 真的负责写的客户端有效；hyper/reqwest/isahc 的写发生在内部任务/线程里，调用方看不到写侧边界（phase 3 HTTP `RESULTS-http.md` §1.3、§9） |
 | 慢的进程内假服务器 | 服务器在回复头/正文前 sleep；每条回复加 10–40 ms | 协议简单、公开规范明确；HTTP、SMTP 等 | 假服务器必须按协议顺序回复；不能改变协议语义；要记录它是不是真实服务器的模型 |
-| `Proxy::reply_delay` | `Proxy::start_with(upstream, ProxyOptions { reply_delay: 50 ms })`，扣住每个 server→client chunk | 服务端没有延迟原语；会话状态操作（`START TRANSACTION`、`USE`、Bolt RESET/RUN） | **真实时间**，只适合 `Flavor::MultiThread`；`Flavor::CurrentThread` 下 Tokio 时间暂停，sleep 不前进。扣住期间回复在代理里，`residue()` 看不到（RESCAN 6.8） |
+| `ProxyOptions::reply_delay` | `Proxy::start_with(upstream, ProxyOptions { reply_delay: 50 ms })`，扣住每个 server→client chunk | 服务端没有延迟原语；会话状态操作（`START TRANSACTION`、`USE`、Bolt RESET/RUN） | **真实时间**，只适合 `Flavor::MultiThread`；`Flavor::CurrentThread` 下 Tokio 时间暂停，sleep 不前进。扣住期间回复在代理里，`residue()` 看不到（RESCAN 6.8） |
 | `Proxy` 残留探针 | M1-residue 在取消后等 100–200 ms 再读 `Proxy::residue()` | 残留检查（非 phase 4 Q3）；代理能覆盖的本地 TCP 目标 | 残留本身不计入确认问题；只把用户可见结果算数。phase 3 的等待是 100 ms（db，AMENDMENTS #5）或 200 ms（HTTP，AMENDMENTS #11），`neo4rs` 是 100 ms |
 
 **选择顺序：** 有服务端 `SLEEP` 就优先用它（代码少、语义清楚，RESCAN 6.8 的对照说明
-proxy 在已有 `SLEEP` 的场景里只是更贵的替代品）；没有就用 `Proxy::reply_delay`；写侧
+proxy 在已有 `SLEEP` 的场景里只是更贵的替代品）；没有就用 `ProxyOptions::reply_delay`；写侧
 `Pending` 用大负载；协议简单且可以控制回复顺序时用慢的假服务器。来源：RESCAN 6.8、
 phase 3 `AMENDMENTS.md` #3/#9/#10。
 
@@ -490,12 +638,18 @@ phase 4 Q3 是**两个 AI 的一致率**，主分母为有有效违反且双评�
 | 规则 | 来源实验 | 具体位置 |
 |---|---|---|
 | 幸存者碰同一个 key/行/文档 | phase 3 mongodb MG1 | `prospective/phase3/RESULTS.md` “从 MG1 学到的”；`RESULTS-db.md` MG1 |
+| 三类观察分开：目标进度/后继正确性/资源状态 | phase 3、RESCAN、phase4 exploration | `docs/choosing-targets.md`；`prospective/RESCAN.md` §3；`phase4-exploration/RESULTS.md` §2、§3 |
+| 后继组合：同/异对象 × 同/异操作 × 原地重试/显式恢复 | phase 3 MG1、`neo4rs`、phase4 exploration | `phase3/RESULTS.md`；`neo4rs/RESULTS.md` §3、§7；`phase4-exploration/RESULTS.md` §4 |
+| 对象身份与载荷标记分开 | `neo4rs` N2、SMTP、MG1 | `neo4rs/RESULTS.md` §2.2；`phase4-exploration/RESULTS.md` §2；`phase3/RESULTS-db.md` |
+| 立即复用与完成信号后清理分开 | mechanisms、RESCAN 6.6 | `research/mechanisms/RESULTS.md`；`RESCAN.md` §6.6 |
+| 动态值先归一化，不直接删 | `neo4rs` | `neo4rs/RESULTS.md` §2.2（`normalize()`） |
+| 直接句柄没有池的关口，责任要单独写 | phase 3 mysql_async MY2、phase4 exploration BOLT direct | `phase3/RESULTS-db.md`；`phase4-exploration/RESULTS.md` §4.6 |
 | 池大小 1 | phase 3 数据库目标、`neo4rs` | `neo4rs/RESULTS.md` §2.1；`RESULTS-db.md` |
 | 观察者不经过被测池/代理 | phase 3 HTTP、mongodb、clickhouse、`neo4rs` | `RESULTS-http.md` §1.4；`RESULTS-db.md`；`neo4rs/RESULTS.md` §2.2 |
 | 低层级只判 `Ok` 会漏 `Ok([])`/旧值 | phase 3 mysql MY2、`neo4rs` N2 | `RESULTS-db.md` MY2；`neo4rs/RESULTS.md` §3.3、§7 |
 | pre == post 是退化观察 | `neo4rs` N1/N2、phase 3 HTTP | `neo4rs/RESULTS.md` §3.1、§9；`RESULTS-http.md` §1.5 |
 | 服务端 SLEEP 优先 | RESCAN 6.7/6.8 | `prospective/RESCAN.md` §6.7、§6.8 |
-| `Proxy::reply_delay` 只适合 MultiThread | phase 3 数据库修订、RESCAN 6.8 | `phase3/AMENDMENTS.md` #3；`RESCAN.md` §6.8 |
+| `ProxyOptions::reply_delay` 只适合 MultiThread | phase 3 数据库修订、RESCAN 6.8 | `phase3/AMENDMENTS.md` #3；`RESCAN.md` §6.8 |
 | 一个目标一种 Pending 手段 | phase 3 数据库 | `phase3/AMENDMENTS.md` #3；`PLAN.md` §3 |
 | 四个层级同骨架 | phase 3、RESCAN 6.7、`neo4rs` | `phase3/PLAN.md` §3；`RESCAN.md` §6.7；`neo4rs/RESULTS.md` §2.2 |
 | 先跑 reuse 诊断 | phase 3 HTTP | `phase3/AMENDMENTS.md` #12；`RESULTS-http.md` §6 |
@@ -522,6 +676,10 @@ phase 4 Q3 是**两个 AI 的一致率**，主分母为有有效违反且双评�
 - **不重置边界。** 目标与幸存者之间不得 close/reconnect、重新登录、RESET、回池再借，
   也不能把整个连接丢掉后新建。公开契约要求的恢复动作若要测试，属于另一配置对照，不能
   悄悄加入检测路径。库自行关闭/标坏同一对象时记录真实错误，不伪装成调用方重连后的阴性。
+- **恢复动作单独分组。** 如果确实要测 reset/reconnect/retry SELECT，把它作为显式恢复配置，
+  记录恢复了哪一层（操作可用、元数据、协议关联、共享状态）。BOLT direct 的 `reset()` 在
+  小样本里恢复了操作，但公开文档没有说明 drop future 后的义务；这只能证明“调用方有工具”，
+  不能证明库已经把责任写清（`prospective/phase4-exploration/RESULTS.md` §4.6）。
 - B1 只取消目标并结束；B2 在该句柄同参数重试；B3 在该句柄换同类请求；M1 在该句柄
   碰同一对象并做有副作用操作，独立观察者绕过这个句柄查实际效果。保持四层 setup/目标/挂起
   手段相同，不把另一个池的“成功请求”充当幸存者。
