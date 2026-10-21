@@ -15,3 +15,22 @@
 ## 本阶段定位
 
 `research/phase3/detector/` 是小型、语法驱动的筛查器，输出“值得核查的同一 async scope”而非缺陷结论；Q1/Q2 的召回、精确率与不可评估/未知数见 [`phase3/RESULTS.md`](phase3/RESULTS.md)。Q3 用 Dropwise 将高可信候选落实到指定执行取消边界，并区分模型与真实目标源码执行；本阶段 16 个模型结果不作目标应用缺陷证据，Neon 隔离源码结果也未达到预注册的修复前父提交比较门槛。
+
+## 跨域责任与在线门控
+
+2026-10-22 补充。以下按原论文或官方文档的相关章节核对，服务于 [进度见证研究提案](theory/PROGRESS-GUARDS.md)，不改变上面的第三阶段评估范围。
+
+| 工作 | 可复用的机制 | 要研究的差异，而非已经证明的新颖性 |
+|---|---|---|
+| Flatt、Findler，PLDI 2004，[Kill-Safe Synchronization Abstractions](https://users.cs.utah.edu/plt/publications/pldi04-ff.pdf) | 让可被终止的任务使用不被其终止破坏的同步抽象；管理线程和放弃通知帮助维护共享状态。 | 后继安全和责任移交已有先例。我们的候选问题是带外部协议／内核效果的资源交接，不将模型差异直接当作贡献。 |
+| Weimer、Necula，OOPSLA 2004，[Finding and Preventing Run-Time Error Handling Mistakes](https://people.eecs.berkeley.edu/~necula/Papers/rte_oopsla04.pdf)，§7 | 用一等补偿栈动态记录责任，支持提前执行、显式解除；补偿抛异常时记录并继续其他补偿。 | 不应声称前人假定清理不会失败。可研究异步责任转交、恢复完成条件及恢复期间的复用权限。 |
+| Filipović、O’Hearn、Rinetzky、Yang，TCS 2010，[Abstraction for Concurrent Objects](https://flint.cs.yale.edu/cs428/doc/abscobj.pdf) | 将并发对象正确性与客户端可观察行为的精化联系起来。 | survivor 可作为区分上下文；有限场景不是对所有客户端的精化证明，pre/post 也不是通用规范。 |
+| Fowler、Lindley、Morris、Decova，POPL 2019，[Exceptional Asynchronous Session Types: Session Types without Tiers](https://www.pure.ed.ac.uk/ws/portalfiles/portal/77051141/exceptional_asynchronous_session_types_final.pdf) | 将异步会话类型与异常处理结合，用显式取消及传播维护协议行为，并在 Links 中实现。 | 可借鉴端点取消与责任传播；论文不是“静态类型必须退化成运行时监控”的结论。单侧兼容既有服务的门控需另行验证。 |
+| Yang、Sar、Engler，OSDI 2006，[EXPLODE](https://www.usenix.org/legacy/event/osdi06/tech/full_papers/yang_junfeng/yang_junfeng.pdf) | 通过受控探索和检查器查找真实存储系统错误，包含故障／恢复后的状态检查。 | 可复用故障后继续观察的测试结构；取消保留哪些易失状态、如何恢复须由自己的故障模型定义。 |
+| Porter 等，SOSP 2009，[TxOS](https://www.cs.unc.edu/~porter/txos/) | 为一组系统调用提供隔离执行和原子发布。 | 门控只保护声明的交接条件，不提供整组系统调用事务。不能以未经核实的“未被主线采用原因”来论证自己的优势。 |
+| Saha、Lozi、Thomas、Lawall、Muller，DSN 2013，[Hector](https://jean-pierre.lozi.org/documents/dsn13.pdf) | 利用函数自身错误处理代码识别资源释放遗漏。 | 可借鉴阶段／释放关系的局部推断；动态验证补充失败对象销毁对其他存活对象的影响，不宣称静态方法不能处理生命周期。 |
+| Pakki、Lu，CCS 2020，[Exaggerated Error Handling Hurts! An In-Depth Study and Context-Aware Detection](https://www-users.cse.umn.edu/~kjlu/papers/eecatch.pdf) | 工具 **EeCatch** 根据上下文判断错误处理是否过于严重。 | 可借鉴“防护不能比原错误造成更大伤害”的评估视角；不是 ErrDoc，也不是专门的共享引用清理验证器。 |
+| [Linux Runtime Verification](https://docs.kernel.org/trace/rv/runtime-verification.html) | 根据规范监控事件轨迹，并提供 reactor；不局限于离线告警。 | 优先复用自动机／事件组织。候选增量在于从取消反例提取哪些规则、保护哪项交接，而不是首次在线执行规则。 |
+| [SQLx Transaction](https://docs.rs/sqlx/0.9.0/sqlx/struct.Transaction.html)、[Pool acquire](https://docs.rs/sqlx/0.9.0/sqlx/struct.Pool.html#method.acquire) 与项目已有守卫补丁 | 已有事务 Drop 回滚、acquire 取消后淘汰连接等处理。 | 必须作为成熟基线，不能把主流库概括为“只在 I/O Error 时丢弃”。比较阶段覆盖、误拒绝、恢复成本和接入成本。 |
+
+这些工作支持把进度、责任和交接一起研究，但不支持“加几个 bit 即零开销”“有限测试证明零误报”或“已有在线规则必然需要离线综合”。提案中的可证伪实验用于区分这些可能性。

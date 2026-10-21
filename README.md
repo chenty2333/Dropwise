@@ -248,6 +248,11 @@ that command. For the current synthesis of what the experiments changed, read
 [FOLLOWUP.md](research/literature/FOLLOWUP.md) and
 [THEORY.md](research/theory/THEORY.md); the stage results remain the evidence.
 
+The proposed next direction,
+[progress witnesses and online reuse guards](research/theory/PROGRESS-GUARDS.md),
+connects offline counterexamples to narrow runtime enforcement; it is a research
+proposal, not an implemented feature.
+
 - `repro/` — paired reproductions against upstream releases, each with its own
   `Cargo.toml` and pinned versions (one case needs a Redis in Docker). Run with
   `repro/run_all.sh`.
