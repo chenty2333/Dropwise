@@ -819,7 +819,7 @@ M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok
 | psycopg 3.3.6 direct | B1/B2/B3 0/18；M1 12/18（6 Post、12 Neither）；B2/B3 的值里已有 `status_after_acquire=INTRANS`，但 level 只看逃逸错误 | **direct-handle 静默泄漏**；B2/B3 语义盲，M1 才是判据 |
 | psycopg pool | B1/B2/B3/M1 全 0/18；release rollback INTRANS→IDLE | **clean/self-heal 正例** |
 | asyncpg 0.32.0 direct | 新 B1-B3 0/9、M1 **9/9**；k1 `in_tx=False` + observer []、k2/k3 `in_tx=True` + [] | direct-handle 族；B2/B3 语义盲，M1 判据 |
-| asyncpg pool | 新 B1/B2/B3/M1 全 0/12；M1 Pre 6/Post 6；contrast 有 1 次 acquire timeout | 本阶梯 clean；不写成普遍保证 |
+| asyncpg pool | 新 B1/B2/B3/M1 全 0/12；M1 Pre 6/Post 6；最终对照 clean（早先 run 有 1 次 timeout） | 本阶梯 clean；不写成普遍保证 |
 | redis-py 8.1.0（pool/direct × tx/set） | 120 trials，全 0；M1 Pre/Post 合法；DISCARD/UNWATCH/reconnect 对照 10/10 | 阴性；本场景 clean |
 | pymongo 4.19.0 | 4 units，144 trials，全 0；M1 Pre/Post 合法；cancel 后 socket discarded/reconnect | 阴性；self-heal 正例 |
 | neo4j 6.4.1 | 4 units，144 trials，全 0；M1 Pre/Post；连接归还并复用 | 阴性；self-heal 正例 |
@@ -992,7 +992,7 @@ silent（契约缺口）；修复对照成立；但 upstream 未确认，所以�
 - 因此可以写“共性指导了搜索方向和观测清单”，不能写“我们准确预测了
   下一个 bug”。
 
-### 12.9 asyncpg/psycopg 重跑与责任边界对照（有效 run `run.1HLY38`）
+### 12.9 asyncpg/psycopg 重跑与责任边界对照（阶梯 `run.1HLY38`；对照 `run.WcLcOp`）
 
 **有效阶梯（修复 `OpResult`/诊断后）：**
 
@@ -1009,9 +1009,14 @@ silent（契约缺口）；修复对照成立；但 upstream 未确认，所以�
   “`BEGIN` 还在队列里”的强样本。B2/B3 0 是因为 `same()` 确实成功（不是
   旧 `_tx_write` 返回 `None` 的假阴性）；B2/B3 的 value 里可见状态，但
   level 只看逃逸错误，语义盲。
-- asyncpg pool 0/12：M1 Pre/Post 合法；但 contrast 里有一次
-  `survivor acquire failed: timeout 2.0s`，所以“pool clean”只适用于
-  本阶梯/本场景，不写成普遍保证。
+- asyncpg pool 0/12：M1 Pre/Post 合法；最终 `run.WcLcOp` 对照各变体均
+  clean。早先 `run.1HLY38` 的一次 `survivor acquire failed: timeout 2.0s`
+  保留为未解释的时序噪声，不能据此说 pool 有 stale 值；也不把 pool clean
+  写成普遍保证。
+- psycopg pool 的 `cm_target` k=1 有一次 target error：`putconn()` 发现
+  cancelled transaction block 留下不可用连接，`returns_bad=1` 丢弃并重连
+  （新 pid），survivor/observer 正常。这是 **pool 自修复正例**，不是 target
+  违规。
 - psycopg direct 12/18；B1-B3 0 也是语义盲：B2/B3 的值里已有
   `status_after_acquire=INTRANS`，`same()` 却成功。pool 0/18，release
   rollback INTRANS→IDLE。
@@ -1030,13 +1035,17 @@ silent（契约缺口）；修复对照成立；但 upstream 未确认，所以�
 - **`reset()`**：asyncpg 的 `reset()` 在 k1（`in_tx` 字段 False、BEGIN
   还在队列）**没有清掉**：`in_tx_after=True`、observer `[]`；k2/k3 能清。
   所以“有 reset API”不等于“reset 覆盖所有 cut 点”，必须按状态采样点
-  分开报。
+  分开报。**显式 SQL `ROLLBACK` 在 k1 也能恢复**（会 flush/终止 queued
+  BEGIN），不要把 reset 失败写成“无法恢复”。
 - **官方 transaction context manager**：psycopg `cm_target` plans #1/#2
-  仍是 `INTRANS` + observer `[]`，`cm_retry` plans #1–#4 也是；asyncpg
-  `cm_retry` 的 k2/k3 仍是 `in_tx=True`（k3 observer 有 target+survivor，
-  但字段 stale）。**context manager 不是 cancellation 后的
-  自动恢复保证**；这与“用官方推荐写法就安全”的直觉相反，必须写成契约
-  缺口/调用方仍需检查。
+  仍是 `INTRANS` + observer `[]`；更严重的是 `cm_retry` plans #1–#4 返回
+  **`OpResult(ok=True)` 但只提交了 savepoint**，observer `[]`，即官方块
+  在已经 `INTRANS` 的句柄上**静默地只保存点提交**。asyncpg `cm_retry`
+  k2/k3 返回**显式** `InterfaceError: cannot use Connection.transaction()
+  in a manually started transaction`（fail-fast，不是静默）；k1 的
+  `cm_retry` Ok 且 b3 可见；但 `cm_target` k1 仍 observer `[]`（丢写）。
+  **context manager 不是 cancellation 后的自动恢复保证**；这与“用官方
+  推荐写法就安全”的直觉相反，必须按“静默丢写” vs “显式拒绝”分开。
 - **close+reconnect**：psycopg/asyncpg 都恢复（psycopg 新 backend pid；
   asyncpg 新连接），observer 只有 survivor；这是最后的安全退路。
 - **时序**：`BOUNDARY` 记录 target acquire → BEGIN → cancel →
