@@ -1,0 +1,2 @@
+SKY-SNAPSHOT variant=direct run=9004 stage=setup proxy_connections=1 pool=n/a
+SKY-RECOVERY variant=direct cancelled=true observer_before_reconnect=Ok(1) fresh_read=Ok(1) fresh_write=Ok(()) fresh_readback=Ok(7) observer_after=Ok(7)

@@ -1,0 +1,108 @@
+ManageConnection in bb8 - Rust
+                    Docs.rs
+                bb8-0.9.1
+                        bb8 0.9.1
+                             Docs.rs crate page
+                            MIT
+                                 01 September 2026
+Links
+                                         Repository
+                                     crates.io
+                                     Source
+Owners
+                                         djc
+Dependencies
+                futures-util ^0.3.2
+                    normal
+                parking_lot ^0.12
+                    normal
+                        optional
+                tokio ^1.0
+                    normal
+                tokio ^1.0
+                    dev
+                portable-atomic ^1
+                    normal
+Versions
+                                        100%
+                                        of the crate is documented
+                    Platform
+            x86_64-unknown-linux-gnu
+                    Feature flags
+                        docs.rs
+ About docs.rs
+ Badges
+ Builds
+ Metadata
+ Shorthand URLs
+ Download
+ Rustdoc JSON
+ Build queue
+ Privacy policy
+                        Rust
+Rust website
+The Book
+Standard Library API Reference
+Rust by Example
+The Cargo Guide
+Clippy Documentation
+Skip to main content
+ManageConnection
+bb80.9.1
+ManageConnection
+Required Associated Types
+Connection
+Error
+Required Methods
+connect
+has_broken
+is_valid
+Dyn Compatibility
+Implementors
+In crate bb8
+bb8
+Trait ManageConnection Copy item pathSource 
+pub trait ManageConnection:
+    Sized
+    + Send
+    + Sync
+    + 'static {
+    type Connection: Send + 'static;
+    type Error: Debug + Send + 'static;
+    // Required methods
+    fn connect(
+        &self,
+    ) -> impl Future<Output = Result<Self::Connection, Self::Error>> + Send;
+    fn is_valid(
+        &self,
+        conn: &mut Self::Connection,
+    ) -> impl Future<Output = Result<(), Self::Error>> + Send;
+    fn has_broken(&self, conn: &mut Self::Connection) -> bool;
+}Expand description
+A trait which provides connection-specific functionality.
+Required Associated Types§
+Source
+type Connection: Send + 'static
+The connection type this manager deals with.
+Source
+type Error: Debug + Send + 'static
+The error type returned by Connections.
+Required Methods§
+Source
+fn connect(
+    &self,
+) -> impl Future<Output = Result<Self::Connection, Self::Error>> + Send
+Attempts to create a new connection.
+Source
+fn is_valid(
+    &self,
+    conn: &mut Self::Connection,
+) -> impl Future<Output = Result<(), Self::Error>> + Send
+Determines if the connection is still connected to the database.
+Source
+fn has_broken(&self, conn: &mut Self::Connection) -> bool
+Synchronously determine if the connection is no longer usable, if possible.
+Dyn Compatibility§
+This trait is not dyn compatible.
+In older versions of Rust, dyn compatibility was called "object safety".
+Implementors§

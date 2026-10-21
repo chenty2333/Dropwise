@@ -1,0 +1,17 @@
+date=2026-10-21T22:57:26+09:00
+repo=/home/ava/Desktop/Dropwise
+container=dw-r3-skydeep-552116
+image=skytable/skytable:v0.8.4
+image_id=sha256:823e1a390a55ddcc5579e27af58cf6f92d92a7735c5fd4fc3551673b22d08f41
+repo_digest=skytable/skytable@sha256:823e1a390a55ddcc5579e27af58cf6f92d92a7735c5fd4fc3551673b22d08f41
+port=127.0.0.1:32859
+skytable_client=0.8.12 bb8=0.9.1
+original_bin=sha256:1879e494703ff01ebd5b8a4ab61b1658ff626610d9692d5e5f1db280e924ba0e
+deep_bin=sha256:495ba6e2257bdd2a323a18ce4b04936c96d53b0b4ad3787c72fba02b9a061106
+fixed_bin=sha256:60c54c110be37e5fc8801ac4dc39b8b328c8c266730c834cff3c29b11aa30bc9
+fixed_skytable_sha=sha256:4250d306fe6c3271e558876be5a5d021d15ccc44ae0c7939398caa140c08d018
+patch_files=fix/skytable-0.8.12/src/io/aio.rs,fix/skytable-0.8.12/src/pool.rs
+server_password_source=docker logs 'Generated Password'
+proxy=dropwise::net::Proxy reply_delay=50ms (scenario); logging proxy 50ms (wire)
+config=max_runs=64 races=Immediate,AfterWake max_cancellations=1 scenario_timeout=20s settle=0/0 workers=1
+env_log=RUST_LOG=debug for deep/wire (skytable/bb8/dropwise emit no log records; no request id in protocol)

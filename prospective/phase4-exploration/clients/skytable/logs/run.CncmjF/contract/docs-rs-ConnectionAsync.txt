@@ -1,0 +1,209 @@
+ConnectionAsync in skytable::aio - Rust
+                    Docs.rs
+                skytable-0.8.12
+                        skytable 0.8.12
+                             Docs.rs crate page
+                            Apache-2.0
+                                 17 September 2026
+Links
+                                         Repository
+                                     crates.io
+                                     Source
+Owners
+                                         ohsayan
+Dependencies
+                bb8 ^0.9
+                    normal
+                itoa ^1
+                    normal
+                native-tls ^0.2
+                    normal
+                r2d2 ^0.8
+                    normal
+                sky-derive ^0.2
+                    normal
+                tokio ^1
+                    normal
+                tokio-native-tls ^0.3
+                    normal
+Versions
+                                        100%
+                                        of the crate is documented
+                    Platform
+            x86_64-unknown-linux-gnu
+                    Feature flags
+                        docs.rs
+ About docs.rs
+ Badges
+ Builds
+ Metadata
+ Shorthand URLs
+ Download
+ Rustdoc JSON
+ Build queue
+ Privacy policy
+                        Rust
+Rust website
+The Book
+Standard Library API Reference
+Rust by Example
+The Cargo Guide
+Clippy Documentation
+Skip to main content
+ConnectionAsync
+skytable0.8.12
+ConnectionAsync
+Methods from Deref<Target=TcpConnection<TcpStream>>
+execute_pipeline
+query
+query_parse
+reset_buffer
+Trait Implementations
+Debug
+Deref
+DerefMut
+Auto Trait Implementations
+!Freeze
+RefUnwindSafe
+Send
+Sync
+Unpin
+UnsafeUnpin
+UnwindSafe
+Blanket Implementations
+Any
+Borrow<T>
+BorrowMut<T>
+From<T>
+Into<U>
+Receiver
+TryFrom<U>
+TryInto<U>
+In skytable::aio
+skytable::aio
+Struct ConnectionAsync Copy item pathSource 
+pub struct ConnectionAsync(/* private fields */);Expand description
+An async skyhash/TCP connection
+Specification
+Protocol version: Skyhash/2.0
+Query mode: QTDEX-1A/BQL-S1
+Authentication plugin: pwd
+Methods from Deref<Target = TcpConnection<TcpStream>>§
+Source
+pub async fn execute_pipeline(
+    &mut self,
+    pipeline: &Pipeline,
+) -> ClientResult<Vec<Response>>
+Execute a pipeline. The server returns the queries in the order they were sent (unless otherwise set).
+Source
+pub async fn query(&mut self, q: &Query) -> ClientResult<Response>
+Run a query and return a raw Response
+Source
+pub async fn query_parse<T: FromResponse>(
+    &mut self,
+    q: &Query,
+) -> ClientResult<T>
+Run and parse a query into the indicated type. The type must implement FromResponse
+Source
+pub fn reset_buffer(&mut self)
+Call this if the internally allocated buffer is growing too large and impacting your performance. However, normally
+you will not need to call this
+Trait Implementations§
+Source§
+impl Debug for ConnectionAsync
+Source§
+fn fmt(&self, f: &mut Formatter<'_>) -> Result
+Formats the value using the given formatter. Read more
+Source§
+impl Deref for ConnectionAsync
+Source§
+type Target = TcpConnection<TcpStream>
+The resulting type after dereferencing.
+Source§
+fn deref(&self) -> &Self::Target
+Dereferences the value.
+Source§
+impl DerefMut for ConnectionAsync
+Source§
+fn deref_mut(&mut self) -> &mut Self::Target
+Mutably dereferences the value.
+Auto Trait Implementations§
+§
+impl !Freeze for ConnectionAsync
+§
+impl RefUnwindSafe for ConnectionAsync
+§
+impl Send for ConnectionAsync
+§
+impl Sync for ConnectionAsync
+§
+impl Unpin for ConnectionAsync
+§
+impl UnsafeUnpin for ConnectionAsync
+§
+impl UnwindSafe for ConnectionAsync
+Blanket Implementations§
+Source§
+impl<T> Any for T
+where
+    T: 'static + ?Sized,
+Source§
+fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+impl<T> Borrow<T> for T
+where
+    T: ?Sized,
+Source§
+fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+impl<T> BorrowMut<T> for T
+where
+    T: ?Sized,
+Source§
+fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+impl<T> From<T> for T
+Source§
+fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+impl<T, U> Into<U> for T
+where
+    U: From<T>,
+Source§
+fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+impl<P, T> Receiver for P
+where
+    P: Deref<Target = T> + ?Sized,
+    T: ?Sized,
+Source§
+type Target = T
+🔬This is a nightly-only experimental API. (arbitrary_self_types)
+The target type on which the method may be called.
+Source§
+impl<T, U> TryFrom<U> for T
+where
+    U: Into<T>,
+Source§
+type Error = !
+The type returned in the event of a conversion error.
+Source§
+fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+impl<T, U> TryInto<U> for T
+where
+    U: TryFrom<T>,
+Source§
+type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.

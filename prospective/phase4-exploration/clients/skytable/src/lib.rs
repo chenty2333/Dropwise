@@ -260,6 +260,19 @@ impl Env {
         );
     }
 
+    /// Instrumentation only: bytes already buffered in the tested client socket
+    /// (not in the proxy) at `label`, plus the per-connection breakdown.
+    /// `Proxy::residue` reads `/proc`/`FIONREAD` and never consumes bytes.
+    pub fn residue(&self, label: &str) {
+        println!(
+            "SKY-RESIDUE variant={} run={} stage={label} entries={:?} max={:?}",
+            self.variant.name(),
+            self.run,
+            self.proxy.residue(),
+            self.proxy.max_residue(),
+        );
+    }
+
     /// One BlueQL read on the observer's own direct connection.
     pub async fn observer_read(&mut self) -> Result<u64, String> {
         self.observer_read_key(OBSERVER_KEY).await
@@ -357,6 +370,7 @@ pub async fn cut(ctx: &Ctx, env: &mut Env) -> Result<bool, String> {
         env.run
     );
     env.snapshot("after_target");
+    env.residue("after_target");
     Ok(cancelled)
 }
 
@@ -376,6 +390,7 @@ pub async fn observed_after_cut(env: &mut Env) -> Result<Obs, String> {
     let before = bounded(BOUND, "observer read before survivor", env.observer_read()).await;
     let write = bounded(BOUND, "survivor write", env.write(SURVIVOR_V)).await;
     env.snapshot("after_survivor_write");
+    env.residue("after_survivor_write");
     let own = bounded(BOUND, "survivor read", env.read()).await;
     let visible = bounded(BOUND, "observer read after survivor", env.observer_read()).await;
     let obs = Obs { before, write, own, visible };

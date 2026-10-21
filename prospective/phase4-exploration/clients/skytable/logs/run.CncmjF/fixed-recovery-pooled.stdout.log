@@ -1,0 +1,2 @@
+SKY-SNAPSHOT variant=pooled run=9004 stage=setup proxy_connections=1 pool=State { connections: 1, idle_connections: 1, statistics: Statistics { get_started: 1, get_direct: 0, get_waited: 1, get_timed_out: 0, get_wait_time: 304.829ms, connections_created: 1, connections_closed_broken: 0, connections_closed_invalid: 0, connections_closed_max_lifetime: 0, connections_closed_idle_timeout: 0 } }
+SKY-RECOVERY variant=pooled cancelled=true observer_before_reconnect=Ok(0) fresh_read=Ok(0) fresh_write=Ok(()) fresh_readback=Ok(7) observer_after=Ok(7)

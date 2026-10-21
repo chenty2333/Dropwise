@@ -1,0 +1,31 @@
+WIRE conn=0 phase=accept t=0.221
+WIRE conn=0 dir=c2s phase=read t=0.273 len=31 hex=480000000000340a31360a726f6f7461643638333336372d363639382d3462
+WIRE conn=0 dir=c2s phase=write t=0.308 len=31
+WIRE conn=0 dir=s2c phase=read t=208.555 len=4 hex=48000000
+WIRE conn=0 dir=s2c phase=write t=259.788 len=4
+WIRE conn=0 dir=c2s phase=read t=259.908 len=27 hex=5332330a32300a73797363746c207265706f727420737461747573
+WIRE conn=0 dir=c2s phase=write t=259.959 len=27
+WIRE conn=0 dir=s2c phase=read t=260.173 len=1 hex=12
+WIRE conn=0 dir=s2c phase=write t=311.401 len=1
+WIRE-BEGIN mode=wire rep=1 cut_ms=10 delay_ms=50 space=dw_deep_552537_0
+WIRE conn=0 dir=c2s phase=read t=311.460 len=63 hex=5335390a34390a7570646174652064775f646565705f3535323533375f302e6b76207365742076203d203f207768657265206964203d203f02310a06310a6b
+WIRE conn=0 dir=c2s phase=write t=311.478 len=63
+WIRE conn=0 dir=s2c phase=read t=311.865 len=1 hex=12
+WIRE-CUT mode=wire rep=1 cancelled=true completed=None t=322.989
+WIRE-OBS mode=wire stage=before value=Ok(1) t=323.091
+WIRE conn=0 dir=c2s phase=read t=323.105 len=63 hex=5335390a34390a7570646174652064775f646565705f3535323533375f302e6b76207365742076203d203f207768657265206964203d203f02370a06310a6b
+WIRE conn=0 dir=c2s phase=write t=323.120 len=63
+WIRE conn=0 dir=s2c phase=write t=363.534 len=1
+WIRE conn=0 dir=s2c phase=read t=363.595 len=1 hex=12
+WIRE-SURVIVOR mode=wire op=write value=Ok(()) t=363.623
+WIRE conn=0 dir=c2s phase=read t=363.686 len=57 hex=5335330a34360a73656c65637420762066726f6d2064775f646565705f3535323533375f302e6b76207768657265206964203d203f06310a6b
+WIRE conn=0 dir=c2s phase=write t=363.715 len=57
+WIRE conn=0 dir=s2c phase=write t=415.014 len=1
+WIRE conn=0 dir=s2c phase=read t=415.048 len=6 hex=11310a05370a
+WIRE-SURVIVOR mode=wire op=own value=Err("row not found (empty response)") t=415.074
+WIRE conn=0 dir=c2s phase=read t=415.102 len=57 hex=5335330a34360a73656c65637420762066726f6d2064775f646565705f3535323533375f302e6b76207768657265206964203d203f06310a6b
+WIRE conn=0 dir=c2s phase=write t=415.118 len=57
+WIRE conn=0 dir=s2c phase=write t=465.735 len=6
+WIRE conn=0 dir=s2c phase=read t=465.760 len=6 hex=11310a05370a
+WIRE-SURVIVOR mode=wire op=own2 value=Ok(7) t=465.838
+WIRE-END mode=wire rep=1 before=Ok(1) write=Ok(()) own=Err("row not found (empty response)") own2=Ok(7) visible=Ok(7) t=465.994

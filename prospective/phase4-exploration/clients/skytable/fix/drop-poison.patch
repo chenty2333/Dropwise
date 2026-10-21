@@ -1,0 +1,129 @@
+Dependency-copy patch for skytable 0.8.12 (experimental, round-3 deep pass).
+Layer: client connection state, not Dropwise core.
+Apply from the copied crate root with: (cd fix/skytable-0.8.12 && patch -p1 < ../drop-poison.patch).
+
+--- a/src/io/aio.rs
++++ b/src/io/aio.rs
+@@ -126,6 +126,26 @@
+ pub struct TcpConnection<C: AsyncWriteExt + AsyncReadExt + Unpin> {
+     con: C,
+     buf: Vec<u8>,
++    /// Set when a `query` future was dropped before it consumed the whole
++    /// reply. The stream position is then unknown; every later operation on
++    /// this connection fails instead of reading another request's reply.
++    poisoned: bool,
++}
++
++/// Sets `poisoned` on drop unless the query completed. This covers cancellation
++/// at any await point (including a partial write) and I/O/protocol errors, after
++/// which the next byte boundary is unknown.
++struct PoisonOnDrop<'a> {
++    poisoned: &'a mut bool,
++    armed: bool,
++}
++
++impl Drop for PoisonOnDrop<'_> {
++    fn drop(&mut self) {
++        if self.armed {
++            *self.poisoned = true;
++        }
++    }
+ }
+ 
+ impl<C: AsyncWriteExt + AsyncReadExt + Unpin> TcpConnection<C> {
+@@ -133,8 +153,21 @@
+         Self {
+             con,
+             buf: Vec::with_capacity(crate::BUFSIZE),
++            poisoned: false,
+         }
+     }
++    /// Whether a previous `query` future was dropped (or failed) before the
++    /// reply was fully consumed. A poisoned connection must not be reused:
++    /// drop it (and reconnect) or ask the pool to discard it.
++    pub fn is_poisoned(&self) -> bool {
++        self.poisoned
++    }
++    fn poisoned_error() -> Error {
++        Error::IoError(std::io::Error::new(
++            std::io::ErrorKind::ConnectionAborted,
++            "skytable: query future dropped before its reply; connection poisoned",
++        ))
++    }
+     async fn _handshake(mut self, cfg: &Config) -> ClientResult<Self> {
+         let handshake = ClientHandshake::new(cfg);
+         self.con.write_all(handshake.inner()).await?;
+@@ -181,26 +214,43 @@
+     }
+     /// Run a query and return a raw [`Response`]
+     pub async fn query(&mut self, q: &Query) -> ClientResult<Response> {
+-        self.buf.clear();
+-        q.write_packet(&mut self.buf).unwrap();
+-        self.con.write_all(&self.buf).await?;
+-        self.buf.clear();
++        if self.poisoned {
++            return Err(Self::poisoned_error());
++        }
++        // Split the borrow so the guard can watch `poisoned` while the body
++        // uses the socket and the response buffer.
++        let Self {
++            con,
++            buf,
++            poisoned,
++        } = self;
++        let mut guard = PoisonOnDrop {
++            poisoned,
++            armed: true,
++        };
++        buf.clear();
++        q.write_packet(buf).unwrap();
++        con.write_all(buf).await?;
++        buf.clear();
+         let mut state = RState::default();
+         let mut cursor = 0;
+         let mut expected = Decoder::MIN_READBACK;
+         loop {
+-            let mut buf = [0u8; crate::BUFSIZE];
+-            let n = self.con.read(&mut buf).await?;
++            let mut chunk = [0u8; crate::BUFSIZE];
++            let n = con.read(&mut chunk).await?;
+             if n == 0 {
+                 return Err(Error::IoError(std::io::ErrorKind::ConnectionReset.into()));
+             }
+             if n < expected {
+                 continue;
+             }
+-            self.buf.extend_from_slice(&buf[..n]);
+-            let (_state, _position) = Decoder::new(&self.buf, cursor).validate_response(state);
++            buf.extend_from_slice(&chunk[..n]);
++            let (_state, _position) = Decoder::new(buf, cursor).validate_response(state);
+             match _state {
+-                DecodeState::Completed(resp) => return Ok(resp),
++                DecodeState::Completed(resp) => {
++                    guard.armed = false;
++                    return Ok(resp);
++                }
+                 DecodeState::ChangeState(_state) => {
+                     expected = 1;
+                     state = _state;
+--- a/src/pool.rs
++++ b/src/pool.rs
+@@ -115,10 +115,16 @@
+         self.config.connect_async().await
+     }
+     async fn is_valid(&self, conn: &mut Self::Connection) -> Result<(), Self::Error> {
++        if conn.is_poisoned() {
++            return Err(Error::IoError(std::io::Error::new(
++                std::io::ErrorKind::ConnectionAborted,
++                "skytable: connection poisoned by a cancelled query",
++            )));
++        }
+         conn.query_parse::<()>(&query!(QUERY_SYSCTL_STATUS)).await
+     }
+-    fn has_broken(&self, _: &mut Self::Connection) -> bool {
+-        false
++    fn has_broken(&self, conn: &mut Self::Connection) -> bool {
++        conn.is_poisoned()
+     }
+ }
+ 

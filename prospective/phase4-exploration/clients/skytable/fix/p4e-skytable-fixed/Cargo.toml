@@ -1,0 +1,18 @@
+[package]
+name = "p4e-skytable-fixed"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Dependency-copy patch for the round-3 skytable finding. Only this project
+# applies it; the original `p4e-skytable` package keeps using crates.io.
+[dependencies]
+p4e-skytable = { path = "../.." }
+dropwise = { path = "../../../../../..", features = ["net"] }
+skytable = "=0.8.12"
+bb8 = "=0.9.1"
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "time", "io-util"] }
+serde = { version = "1", features = ["derive"] }
+
+[patch.crates-io]
+skytable = { path = "../skytable-0.8.12" }

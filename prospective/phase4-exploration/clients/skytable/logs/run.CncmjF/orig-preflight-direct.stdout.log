@@ -1,0 +1,27 @@
+SKY-PREFLIGHT variant=direct server=127.0.0.1:32859 proxy_reply_delay_ms=50
+SKY-SNAPSHOT variant=direct run=9001 stage=setup proxy_connections=1 pool=n/a
+SKY-SNAPSHOT variant=direct run=9001 stage=uncancelled proxy_connections=1 pool=n/a
+SKY-PREFLIGHT-NORMAL variant=direct after_target_observer=1 survivor_write=Ok(()) own=Ok(7) visible=Ok(7)
+SKY-SNAPSHOT variant=direct run=9002 stage=setup proxy_connections=1 pool=n/a
+SKY-REUSE variant=direct steps=[value=2 write=Ok(()) read=Ok(2) proxy_connections=1 pool=n/a | value=3 write=Ok(()) read=Ok(3) proxy_connections=1 pool=n/a | value=4 write=Ok(()) read=Ok(4) proxy_connections=1 pool=n/a]
+SKY-SNAPSHOT variant=direct run=0 stage=setup proxy_connections=1 pool=n/a
+SKY-SNAPSHOT variant=direct run=0 stage=after_survivor_write proxy_connections=1 pool=n/a
+SKY-RESIDUE variant=direct run=0 stage=after_survivor_write entries=Ok([ConnectionResidue { client: 127.0.0.1:37160, bytes: 0 }]) max=Ok(0)
+SKY-OBS variant=direct run=0 before=Ok(0) write=Ok(()) own=Ok(7) visible=Ok(7)
+SKY-SNAPSHOT variant=direct run=1 stage=setup proxy_connections=1 pool=n/a
+SKY-SNAPSHOT variant=direct run=1 stage=after_survivor_write proxy_connections=1 pool=n/a
+SKY-RESIDUE variant=direct run=1 stage=after_survivor_write entries=Ok([ConnectionResidue { client: 127.0.0.1:44318, bytes: 0 }]) max=Ok(0)
+SKY-OBS variant=direct run=1 before=Ok(1) write=Ok(()) own=Ok(7) visible=Ok(7)
+SKY-SNAPSHOT variant=direct run=2 stage=setup proxy_connections=1 pool=n/a
+SKY-SNAPSHOT variant=direct run=2 stage=after_survivor_write proxy_connections=1 pool=n/a
+SKY-RESIDUE variant=direct run=2 stage=after_survivor_write entries=Ok([ConnectionResidue { client: 127.0.0.1:50936, bytes: 0 }]) max=Ok(0)
+SKY-OBS variant=direct run=2 before=Ok(0) write=Ok(()) own=Ok(7) visible=Ok(7)
+SKY-SNAPSHOT variant=direct run=3 stage=setup proxy_connections=1 pool=n/a
+SKY-SNAPSHOT variant=direct run=3 stage=after_survivor_write proxy_connections=1 pool=n/a
+SKY-RESIDUE variant=direct run=3 stage=after_survivor_write entries=Ok([ConnectionResidue { client: 127.0.0.1:49986, bytes: 0 }]) max=Ok(0)
+SKY-OBS variant=direct run=3 before=Ok(1) write=Ok(()) own=Ok(7) visible=Ok(7)
+SKY-CAL-PRE variant=direct obs=[Obs { before: Ok(0), write: Ok(()), own: Ok(7), visible: Ok(7) }, Obs { before: Ok(0), write: Ok(()), own: Ok(7), visible: Ok(7) }]
+SKY-CAL-POST variant=direct obs=[Obs { before: Ok(1), write: Ok(()), own: Ok(7), visible: Ok(7) }, Obs { before: Ok(1), write: Ok(()), own: Ok(7), visible: Ok(7) }]
+SKY-CAL variant=direct pre_equal=true post_equal=true pre_post_equal=false
+SKY-SNAPSHOT variant=direct run=9003 stage=setup proxy_connections=1 pool=n/a
+SKY-OBSERVER-EFFECT variant=direct before=0 after=1 distinguishes=true

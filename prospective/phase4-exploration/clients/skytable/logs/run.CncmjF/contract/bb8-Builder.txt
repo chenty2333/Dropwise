@@ -1,0 +1,283 @@
+Builder in bb8 - Rust
+                    Docs.rs
+                bb8-0.9.1
+                        bb8 0.9.1
+                             Docs.rs crate page
+                            MIT
+                                 01 September 2026
+Links
+                                         Repository
+                                     crates.io
+                                     Source
+Owners
+                                         djc
+Dependencies
+                futures-util ^0.3.2
+                    normal
+                parking_lot ^0.12
+                    normal
+                        optional
+                tokio ^1.0
+                    normal
+                tokio ^1.0
+                    dev
+                portable-atomic ^1
+                    normal
+Versions
+                                        100%
+                                        of the crate is documented
+                    Platform
+            x86_64-unknown-linux-gnu
+                    Feature flags
+                        docs.rs
+ About docs.rs
+ Badges
+ Builds
+ Metadata
+ Shorthand URLs
+ Download
+ Rustdoc JSON
+ Build queue
+ Privacy policy
+                        Rust
+Rust website
+The Book
+Standard Library API Reference
+Rust by Example
+The Cargo Guide
+Clippy Documentation
+Skip to main content
+Builder
+bb80.9.1
+Builder
+Associated Functions
+new
+Methods
+build
+build_unchecked
+connection_customizer
+connection_timeout
+error_sink
+idle_timeout
+max_lifetime
+max_size
+min_idle
+queue_strategy
+reaper_rate
+retry_connection
+test_on_check_out
+Trait Implementations
+Debug
+Default
+Auto Trait Implementations
+!RefUnwindSafe
+!UnwindSafe
+Freeze
+Send
+Sync
+Unpin
+UnsafeUnpin
+Blanket Implementations
+Any
+Borrow<T>
+BorrowMut<T>
+From<T>
+Into<U>
+TryFrom<U>
+TryInto<U>
+In crate bb8
+bb8
+Struct Builder Copy item pathSource 
+pub struct Builder<M: ManageConnection> { /* private fields */ }Expand description
+A builder for a connection pool.
+Implementations§
+Source§
+impl<M: ManageConnection> Builder<M>
+Source
+pub fn new() -> Self
+Constructs a new Builder.
+Parameters are initialized with their default values.
+Source
+pub fn max_size(self, max_size: u32) -> Self
+Sets the maximum number of connections managed by the pool.
+Defaults to 10.
+§Panics
+Will panic if max_size is 0.
+Source
+pub fn min_idle(self, min_idle: impl Into<Option<u32>>) -> Self
+Sets the minimum idle connection count maintained by the pool.
+If set, the pool will try to maintain at least this many idle
+connections at all times, while respecting the value of max_size.
+Defaults to None.
+Source
+pub fn test_on_check_out(self, test_on_check_out: bool) -> Self
+If true, the health of a connection will be verified through a call to
+ManageConnection::is_valid before it is provided to a pool user.
+Defaults to true.
+Source
+pub fn max_lifetime(self, max_lifetime: impl Into<Option<Duration>>) -> Self
+Sets the maximum lifetime of connections in the pool.
+If set, connections will be closed at the next reaping after surviving
+past this duration.
+If a connection reaches its maximum lifetime while checked out it will be
+closed when it is returned to the pool.
+Defaults to 30 minutes.
+§Panics
+Will panic if max_lifetime is 0.
+Source
+pub fn idle_timeout(self, idle_timeout: impl Into<Option<Duration>>) -> Self
+Sets the idle timeout used by the pool.
+If set, idle connections in excess of min_idle will be closed at the
+next reaping after remaining idle past this duration.
+Defaults to 10 minutes.
+§Panics
+Will panic if idle_timeout is 0.
+Source
+pub fn connection_timeout(self, connection_timeout: Duration) -> Self
+Sets the connection timeout used by the pool.
+Futures returned by Pool::get will wait this long before giving up and
+resolving with an error.
+Defaults to 30 seconds.
+§Panics
+Will panic if connection_timeout is 0.
+Source
+pub fn retry_connection(self, retry: bool) -> Self
+Instructs the pool to automatically retry connection creation if it fails, until the connection_timeout has expired.
+Useful for transient connectivity errors like temporary DNS resolution failure
+or intermittent network failures. Some applications however are smart enough to
+know that the server is down and retries won’t help (and could actually hurt recovery).
+In that case, it’s better to disable retries here and let the pool error out.
+Defaults to enabled.
+Source
+pub fn error_sink(self, error_sink: Box<dyn ErrorSink<M::Error>>) -> Self
+Set the sink for errors that are not associated with any particular operation
+on the pool. This can be used to log and monitor failures.
+Defaults to NopErrorSink.
+Source
+pub fn reaper_rate(self, reaper_rate: Duration) -> Self
+Used by tests
+Source
+pub fn queue_strategy(self, queue_strategy: QueueStrategy) -> Self
+Sets the queue strategy to be used by the pool
+Defaults to Fifo.
+Source
+pub fn connection_customizer(
+    self,
+    connection_customizer: Box<dyn CustomizeConnection<M::Connection, M::Error>>,
+) -> Self
+Set the connection customizer to customize newly checked out connections
+Source
+pub async fn build(self, manager: M) -> Result<Pool<M>, M::Error>
+Consumes the builder, returning a new, initialized Pool.
+The Pool will not be returned until it has established its configured
+minimum number of connections, or it times out.
+Source
+pub fn build_unchecked(self, manager: M) -> Pool<M>
+Consumes the builder, returning a new, initialized Pool.
+Unlike build, this does not wait for any connections to be established
+before returning.
+Trait Implementations§
+Source§
+impl<M: Debug + ManageConnection> Debug for Builder<M>
+where
+    M::Error: Debug,
+    M::Connection: Debug,
+Source§
+fn fmt(&self, f: &mut Formatter<'_>) -> Result
+Formats the value using the given formatter. Read more
+Source§
+impl<M: ManageConnection> Default for Builder<M>
+Source§
+fn default() -> Self
+Returns the “default value” for a type. Read more
+Auto Trait Implementations§
+§
+impl<M> !RefUnwindSafe for Builder<M>
+§
+impl<M> !UnwindSafe for Builder<M>
+§
+impl<M> Freeze for Builder<M>
+where
+    Box<dyn ErrorSink<<M as ManageConnection>::Error>>: Freeze,
+    Option<Box<dyn CustomizeConnection<<M as ManageConnection>::Connection, <M as ManageConnection>::Error>>>: Freeze,
+    PhantomData<M>: Freeze,
+§
+impl<M> Send for Builder<M>
+where
+    Box<dyn ErrorSink<<M as ManageConnection>::Error>>: Send,
+    Option<Box<dyn CustomizeConnection<<M as ManageConnection>::Connection, <M as ManageConnection>::Error>>>: Send,
+    PhantomData<M>: Send,
+§
+impl<M> Sync for Builder<M>
+where
+    Box<dyn ErrorSink<<M as ManageConnection>::Error>>: Sync,
+    Option<Box<dyn CustomizeConnection<<M as ManageConnection>::Connection, <M as ManageConnection>::Error>>>: Sync,
+    PhantomData<M>: Sync,
+§
+impl<M> Unpin for Builder<M>
+where
+    Box<dyn ErrorSink<<M as ManageConnection>::Error>>: Unpin,
+    Option<Box<dyn CustomizeConnection<<M as ManageConnection>::Connection, <M as ManageConnection>::Error>>>: Unpin,
+    PhantomData<M>: Unpin,
+§
+impl<M> UnsafeUnpin for Builder<M>
+where
+    Box<dyn ErrorSink<<M as ManageConnection>::Error>>: UnsafeUnpin,
+    Option<Box<dyn CustomizeConnection<<M as ManageConnection>::Connection, <M as ManageConnection>::Error>>>: UnsafeUnpin,
+    PhantomData<M>: UnsafeUnpin,
+Blanket Implementations§
+Source§
+impl<T> Any for T
+where
+    T: 'static + ?Sized,
+Source§
+fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+impl<T> Borrow<T> for T
+where
+    T: ?Sized,
+Source§
+fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+impl<T> BorrowMut<T> for T
+where
+    T: ?Sized,
+Source§
+fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+impl<T> From<T> for T
+Source§
+fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+impl<T, U> Into<U> for T
+where
+    U: From<T>,
+Source§
+fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+impl<T, U> TryFrom<U> for T
+where
+    U: Into<T>,
+Source§
+type Error = !
+The type returned in the event of a conversion error.
+Source§
+fn try_from(value: U) -> Result<T, <T as TryFrom<U>>::Error>
+Performs the conversion.
+Source§
+impl<T, U> TryInto<U> for T
+where
+    U: TryFrom<T>,
+Source§
+type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.

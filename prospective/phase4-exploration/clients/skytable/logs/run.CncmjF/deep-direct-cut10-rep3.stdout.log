@@ -1,0 +1,9 @@
+DEEP-BEGIN mode=direct rep=3 cut_ms=10 delay_ms=50 space=dw_deep_552619_0
+DEEP-REQ mode=direct stage=target t=0.025 packet=[53, 35, 39, 0a, 34, 39, 0a, 75, 70, 64, 61, 74, 65, 20, 64, 77, 5f, 64, 65, 65, 70, 5f, 35, 35, 32, 36, 31, 39, 5f, 30, 2e, 6b, 76, 20, 73, 65, 74, 20, 76, 20, 3d, 20, 3f, 20, 77, 68, 65, 72, 65, 20, 69, 64, 20, 3d, 20, 3f, 02, 31, 0a, 06, 31, 0a, 6b]
+DEEP-CUT mode=direct rep=3 cancelled=true completed=None t=11.348
+DEEP-RESIDUE mode=direct stage=cut entries=Ok([ConnectionResidue { client: 127.0.0.1:53946, bytes: 0 }]) max=Ok(0)
+DEEP-OBS mode=direct stage=before value=Ok(1) t=11.580 residue=Ok([ConnectionResidue { client: 127.0.0.1:53946, bytes: 0 }])
+DEEP-SURVIVOR mode=direct op=write value=Ok(()) start=11.609 end=51.864 residue=Ok([ConnectionResidue { client: 127.0.0.1:53946, bytes: 0 }])
+DEEP-SURVIVOR mode=direct op=own value=Err("row not found (empty response)") residue=Ok([ConnectionResidue { client: 127.0.0.1:53946, bytes: 0 }])
+DEEP-SURVIVOR mode=direct op=own2 value=Ok(7) residue=Ok([ConnectionResidue { client: 127.0.0.1:53946, bytes: 0 }])
+DEEP-END mode=direct rep=3 before=Ok(1) write=Ok(()) own=Err("row not found (empty response)") own2=Ok(7) visible=Ok(7) t=154.164

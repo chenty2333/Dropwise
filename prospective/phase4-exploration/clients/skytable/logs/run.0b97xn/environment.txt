@@ -1,0 +1,7 @@
+date=2026-10-21T23:00:54+09:00
+container=dw-r3-skycut70-559483
+image=skytable/skytable:v0.8.4
+image_id=sha256:823e1a390a55ddcc5579e27af58cf6f92d92a7735c5fd4fc3551673b22d08f41
+port=127.0.0.1:32861
+skytable_client=0.8.12 bb8=0.9.1
+purpose=pooled cut after validation, during update reply; cut_ms=70 reply_delay_ms=50

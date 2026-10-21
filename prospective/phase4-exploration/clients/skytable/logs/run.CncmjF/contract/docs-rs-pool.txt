@@ -1,0 +1,86 @@
+skytable::pool - Rust
+                    Docs.rs
+                skytable-0.8.12
+                        skytable 0.8.12
+                             Docs.rs crate page
+                            Apache-2.0
+                                 17 September 2026
+Links
+                                         Repository
+                                     crates.io
+                                     Source
+Owners
+                                         ohsayan
+Dependencies
+                bb8 ^0.9
+                    normal
+                itoa ^1
+                    normal
+                native-tls ^0.2
+                    normal
+                r2d2 ^0.8
+                    normal
+                sky-derive ^0.2
+                    normal
+                tokio ^1
+                    normal
+                tokio-native-tls ^0.3
+                    normal
+Versions
+                                        100%
+                                        of the crate is documented
+                    Platform
+            x86_64-unknown-linux-gnu
+                    Feature flags
+                        docs.rs
+ About docs.rs
+ Badges
+ Builds
+ Metadata
+ Shorthand URLs
+ Download
+ Rustdoc JSON
+ Build queue
+ Privacy policy
+                        Rust
+Rust website
+The Book
+Standard Library API Reference
+Rust by Example
+The Cargo Guide
+Clippy Documentation
+Skip to main content
+Module pool
+skytable0.8.12
+Module pool
+Sections
+Connection pooling
+Examples
+Module Items
+Structs
+Functions
+In crate skytable
+skytable
+Module pool Copy item pathSource Expand description
+§Connection pooling
+This module provides ways to create connection pools. For async connections we use bb8 while for sync
+connections we used r2d2.
+§Examples
+§Creating an async pool
+use skytable::{pool, Config};
+const POOL_SIZE: u32 = 32; // we'll have atmost 32 connections in the pool
+async fn pool() {
+    let pool = pool::get_async(POOL_SIZE, Config::new_default("username", "password")).await.unwrap();
+    let mut db = pool.get().await.unwrap();
+}
+§Creating a async pool
+use skytable::{pool, Config};
+const POOL_SIZE: u32 = 32; // we'll have atmost 32 connections in the pool
+fn pool() {
+    let pool = pool::get(POOL_SIZE, Config::new_default("username", "password")).unwrap();
+    let mut db = pool.get().unwrap();
+}
+To create a pool of TLS connections you can use the get_tls and get_tls_async methods, passing a PEM certificate
+as a string.
+Structs§ConnectionMgrTcpA connection manager for Skyhash/TCP connectionsConnectionMgrTlsA connection manager for Skyhash/TLS connections
+Functions§getReturns a TCP (skyhash/TCP) connection pool using r2d2’s default settings and the given maximum pool sizeget_asyncReturns an async TCP (skyhash/TCP) connection pool using bb8’s default settings and the given maximum pool sizeget_tlsReturns a TLS (skyhash/TLS) connection pool using r2d2’s default settings and the given maximum pool sizeget_tls_asyncReturns an async TLS (skyhash/TCP) connection pool using bb8’s default settings and the given maximum pool size

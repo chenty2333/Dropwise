@@ -1,0 +1,30 @@
+# Contract keyword scan (case-insensitive) over the fetched public docs
+# Files: docs-rs-TcpConnection.txt docs-rs-pool.txt docs-rs-ConnectionAsync.txt skytable-protocol-specification.txt
+## contract/bb8-Builder.txt
+59:connection_timeout
+61:idle_timeout
+128:pub fn idle_timeout(self, idle_timeout: impl Into<Option<Duration>>) -> Self
+129:Sets the idle timeout used by the pool.
+134:Will panic if idle_timeout is 0.
+136:pub fn connection_timeout(self, connection_timeout: Duration) -> Self
+137:Sets the connection timeout used by the pool.
+142:Will panic if connection_timeout is 0.
+145:Instructs the pool to automatically retry connection creation if it fails, until the connection_timeout has expired.
+## contract/bb8-ManageConnection.txt
+(no matches)
+## contract/docs-rs-ConnectionAsync.txt
+60:reset_buffer
+108:pub fn reset_buffer(&mut self)
+## contract/docs-rs-pool.txt
+(no matches)
+## contract/docs-rs-TcpConnection.txt
+60:reset_buffer
+103:pub fn reset_buffer(&mut self)
+## contract/scan.txt
+(no matches)
+## contract/skytable-protocol-specification.txt
+(no matches)
+
+# skytable 0.8.12 crate public API (source copy): only reset_buffer exposes reset, and it shrinks a buffer
+/home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/skytable-0.8.12/src/io/aio.rs:219:    pub fn reset_buffer(&mut self) {
+/home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/skytable-0.8.12/src/io/sync.rs:209:    pub fn reset_buffer(&mut self) {

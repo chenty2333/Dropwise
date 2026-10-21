@@ -1,0 +1,14 @@
+Generated Password: ad683367-6698-4b
+
+███████ ██   ██ ██    ██ ████████  █████  ██████  ██      ███████
+██      ██  ██   ██  ██     ██    ██   ██ ██   ██ ██      ██
+███████ █████     ████      ██    ███████ ██████  ██      █████
+     ██ ██  ██     ██       ██    ██   ██ ██   ██ ██      ██
+███████ ██   ██    ██       ██    ██   ██ ██████  ███████ ███████
+
+Skytable v0.8.4 | https://github.com/skytable/skytable
+
+[2026-10-21T13:57:25Z INFO  skyd::engine] starting storage engine
+[2026-10-21T13:57:25Z INFO  skyd::engine::storage] initializing databases
+[2026-10-21T13:57:25Z INFO  skyd::engine] storage engine ready. initializing system
+[2026-10-21T13:57:25Z INFO  skyd::engine] listening on tcp@0.0.0.0:2003

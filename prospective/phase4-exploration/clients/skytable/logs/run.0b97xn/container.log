@@ -1,0 +1,14 @@
+Generated Password: 2898e6bc-21e0-4d
+
+███████ ██   ██ ██    ██ ████████  █████  ██████  ██      ███████
+██      ██  ██   ██  ██     ██    ██   ██ ██   ██ ██      ██
+███████ █████     ████      ██    ███████ ██████  ██      █████
+     ██ ██  ██     ██       ██    ██   ██ ██   ██ ██      ██
+███████ ██   ██    ██       ██    ██   ██ ██████  ███████ ███████
+
+Skytable v0.8.4 | https://github.com/skytable/skytable
+
+[2026-10-21T14:00:53Z INFO  skyd::engine] starting storage engine
+[2026-10-21T14:00:53Z INFO  skyd::engine::storage] initializing databases
+[2026-10-21T14:00:53Z INFO  skyd::engine] storage engine ready. initializing system
+[2026-10-21T14:00:53Z INFO  skyd::engine] listening on tcp@0.0.0.0:2003

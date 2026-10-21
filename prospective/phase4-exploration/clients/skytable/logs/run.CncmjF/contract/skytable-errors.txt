@@ -1,0 +1,104 @@
+
+Error Index | Skytable
+Skip to main content
+Skytable // Docs
+0.8.4
+Next
+0.8.4
+0.8.3
+0.8.2
+0.8.1
+0.8.0
+0.7.5
+0.7.4
+All versions
+HomepageGitHub
+Search
+Home
+Installation
+Using the REPL
+Client drivers
+Architecture
+BlueQL
+Overview
+DDL
+DML
+DCL
+Querying
+System Administration
+Resources
+Protocol
+Skyhash 2: Overview
+Specification
+Error Index
+Benchmarking
+Deployment
+Limits
+Protocol
+Error IndexVersion: 0.8.4
+On this page
+Error Index
+This document provides an exhaustive listing of all the error codes that can be returned by the server. Do note that the handshake errors are only returned in the connection stage and are not the same as the query errors which occcur at the exchange stage.
+Handshake errors​
+These errors occur before the connection is sucessfully established.
+CodeMeaningLikely explanation
+0Illegal packetClient library bug because it sent an incorrect handshake packet to the server
+1Incompatible handshake versionServer does not support handshake version used by client
+2Incompatible protocol versionServer does not support protocol version used by client
+3Incompatible exchange modeServer does not support the chosen data exchange mode
+4Incompatible query modeServer does not support the chosen query mode
+5Invalid authentication dataEither an incorrect username or password (or both) or the client library generated an illegal authentication header
+Query errors​
+These errors can occur when running a query.
+CategoryCodeMeaningLikely explanation
+System
+0Server errorAn error ocurred on the server side. Most likely a problem with I/O on the host
+1OOMThe server is out of memory
+2Unknown errorAn unknown error occurred and the server did not provide any information on why
+3Authentication errorReturned when a DCL query tries to do something invalid
+4Transaction errorA transactional operation failed. Reasons could include an I/O error, too many retries, long running threshold timeout
+5Permission deniedThe query tried to do something that isn't allowed for the user
+6Illegal client packetThe client sent a malformed query
+BlueQL
+25Invalid inputReturned when a literal (or parameter) is incorrectly encoded. This indicates a bug with the client library
+26Unexpected byteIllegal character in the query
+27Unexpected end of statementExpected more tokens for the statement
+28Invalid syntaxInvalid syntax used in the query
+29Invalid collection syntaxA collection was not correctly formatted
+30Invalid type definitionInvalid DDL type definition
+31Expected entity nameAn entity name was expected (such as a model name) but was not found
+32Expected statementA statement was expected but was not found
+33Unknown statementAttempted to execute unrecognized statement
+Database
+100DDL object not foundThe referenced DDL object (space or model or any other DDL object) was not found
+101Unknown fieldAn unknown model field was referenced
+102Invalid DDL propertiesInvalid DDL properties were used
+103DDL object already existsTrying to create a duplicate DDL object returns this error
+104DDL object not emptyA manipulation that requires the DDL object to be empty, was run on a nonempty DDL object
+105DDL Illegal field declarationThe field declaration was not correct. Either because the type was invalid or because invalid properties were set.
+106DDL illegal model definitionThe model definition is incorrect
+107DDL illegal alter model statementThe alter model statement (or any other related statement) is invalid (for example, trying to remove a primary key column)
+108DML duplicate constraint violationA row with the primary key already exists
+109DML data validation errorInput data validation failed
+110DML unindexed columnThe column which was referenced as an index is not indexed
+111DML row not foundThe referenced row was not found
+112DML needs lockThe operation needs a global lock
+Previous
+Specification
+Next
+Benchmarking
+Handshake errors
+Query errors
+Links
+Homepage
+Docs
+Security Advisories
+Releases
+Community
+Gitter
+Discord
+Twitter
+Sources
+Core database
+Documentation
+Copyright © 2026 The Skytable Authors. All rights reserved.
