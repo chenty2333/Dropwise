@@ -34,6 +34,11 @@ cargo test
 ./scripts/with-postgres.sh bash -c './target/debug/pg_probe "$PG_PORT"'
 ```
 
+B0/B1/B2 are local strategy models, not runs of the upstream client crate.
+The rule lab uses measured byte state and declared authority only; configured
+reply delay/loss is never an online input. Missing or unrealized cuts stop its
+policy evaluation. The learned trees are evaluated offline, not deployed.
+
 Both scripts start disposable loopback containers and remove them on exit.
 The labs never touch a non-loopback address.
 

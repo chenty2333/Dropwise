@@ -7,6 +7,8 @@ use std::io::Write;
 #[derive(Clone, Debug, Default)]
 pub struct TrialRecord {
     pub scenario: String,
+    pub mode: String,
+    pub valid_cut: bool,
     pub baseline: String,
     pub trial: usize,
     pub contract: String,
@@ -44,8 +46,10 @@ impl TrialRecord {
 
     pub fn json(&self) -> String {
         format!(
-            "{{\"scenario\":{},\"baseline\":{},\"trial\":{},\"contract\":{},\"cut_write\":{},\"cut_read\":{},\"write_state\":{},\"read_state\":{},\"suspect\":{},\"plan\":{},\"recovery\":{},\"recovered\":{},\"reconnects\":{},\"conns\":{},\"drains_ok\":{},\"drains_failed\":{},\"successor\":{},\"expected\":{},\"got\":{},\"latency_us\":{},\"note\":{}}}",
+            "{{\"scenario\":{},\"mode\":{},\"valid_cut\":{},\"baseline\":{},\"trial\":{},\"contract\":{},\"cut_write\":{},\"cut_read\":{},\"write_state\":{},\"read_state\":{},\"suspect\":{},\"plan\":{},\"recovery\":{},\"recovered\":{},\"reconnects\":{},\"conns\":{},\"drains_ok\":{},\"drains_failed\":{},\"successor\":{},\"expected\":{},\"got\":{},\"latency_us\":{},\"note\":{}}}",
             json_str(&self.scenario),
+            json_str(&self.mode),
+            self.valid_cut,
             json_str(&self.baseline),
             self.trial,
             json_str(&self.contract),

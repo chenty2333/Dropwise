@@ -51,6 +51,7 @@ impl Action {
 #[derive(Clone, Debug)]
 pub struct ActionResult {
     pub action: Action,
+    pub observed: Option<std::collections::BTreeMap<String, String>>,
     pub safe: bool,
     pub latency_us: u64,
     pub reconnects: i64,
@@ -65,22 +66,25 @@ pub async fn apply(action: Action, raw: &mut RawSky, timeout: Duration) -> Strin
         Action::Drain => match raw.drain_one(timeout).await {
             Ok(()) => String::new(),
             Err(e) => {
-                let _ = raw.reconnect().await;
-                format!("drain failed ({e}); reconnected")
+                format!("drain failed ({e}); reconnect={:?}", raw.reconnect().await)
             }
         },
         Action::DrainSlow => match raw.drain_one(timeout).await {
             Ok(()) => String::new(),
             Err(e) => {
-                let _ = raw.reconnect().await;
-                format!("slow drain failed ({e}); reconnected")
+                format!(
+                    "slow drain failed ({e}); reconnect={:?}",
+                    raw.reconnect().await
+                )
             }
         },
         Action::FinishDrain => match raw.finish_write_drain(timeout).await {
             Ok(()) => String::new(),
             Err(e) => {
-                let _ = raw.reconnect().await;
-                format!("finish+drain failed ({e}); reconnected")
+                format!(
+                    "finish+drain failed ({e}); reconnect={:?}",
+                    raw.reconnect().await
+                )
             }
         },
         Action::Retire => match raw.reconnect().await {
@@ -96,6 +100,12 @@ pub struct Run {
     pub proxy: Option<crate::lab::proxy::DelayProxy>,
 }
 
+pub struct Injection {
+    pub natural: Option<(crate::lab::proxy::ProxyMode, Duration)>,
+    pub cut: Option<CutPoint>,
+    pub write_chunk: Option<usize>,
+}
+
 /// Connect, prime through a separate direct connection, then reproduce the
 /// injected state on the tested connection.
 pub async fn prepare(
@@ -103,12 +113,15 @@ pub async fn prepare(
     space: &str,
     server: std::net::SocketAddr,
     pass: &str,
-    natural: Option<(crate::lab::proxy::ProxyMode, Duration)>,
-    cut: Option<CutPoint>,
-    write_chunk: Option<usize>,
+    injection: Injection,
     cut_sql: &str,
     cut_params: &[u8],
 ) -> Result<Run, String> {
+    let Injection {
+        natural,
+        cut,
+        write_chunk,
+    } = injection;
     let proxy = match natural {
         None => None,
         Some((mode, _)) => Some(
@@ -117,7 +130,10 @@ pub async fn prepare(
                 .map_err(|e| format!("proxy: {e}"))?,
         ),
     };
-    let port = proxy.as_ref().map(|p| p.addr.port()).unwrap_or(server.port());
+    let port = proxy
+        .as_ref()
+        .map(|p| p.addr.port())
+        .unwrap_or(server.port());
     let cfg = SkyConfig::loopback(port, "root", pass);
     let mut raw = RawSky::connect(trial as u64, cfg, ReuseRule::Immediate)
         .await
@@ -164,8 +180,10 @@ pub async fn prepare(
             raw.last_cut
         );
     }
-    if let Some(Ok(_)) = cut_res {
-        return Err("cut did not fire: the operation completed before the fault".into());
+    match cut_res {
+        None | Some(Err(crate::proto::sky::SkyError::Cut(_))) => {}
+        Some(Ok(_)) => return Err("cut did not fire: operation completed".into()),
+        Some(Err(e)) => return Err(format!("unexpected failure, not a realized cut: {e}")),
     }
     Ok(Run { raw, proxy })
 }
@@ -186,13 +204,11 @@ pub async fn successor(
         crate::proto::sky::encode_param_str(&format!("{space}_a{trial}")),
     );
     match tokio::time::timeout(timeout, raw.query(&s, &p)).await {
-        Ok(Ok(crate::proto::sky::Reply::Row(vals))) => {
-            match vals.get(1).and_then(|v| v.as_u64()) {
-                Some(111) => ("ok".into(), 111),
-                Some(v) => ("stale".into(), v as i64),
-                None => ("error".into(), -1),
-            }
-        }
+        Ok(Ok(crate::proto::sky::Reply::Row(vals))) => match vals.get(1).and_then(|v| v.as_u64()) {
+            Some(111) => ("ok".into(), 111),
+            Some(v) => ("stale".into(), v as i64),
+            None => ("error".into(), -1),
+        },
         Ok(Ok(crate::proto::sky::Reply::Empty)) => ("empty".into(), -1),
         Ok(Ok(crate::proto::sky::Reply::Error(c))) => (format!("error({c})"), -(c as i64)),
         Ok(Ok(crate::proto::sky::Reply::Rows(_))) => ("error".into(), -5),

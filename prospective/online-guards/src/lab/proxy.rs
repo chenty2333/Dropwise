@@ -171,11 +171,10 @@ async fn accept_loop(
                                                     continue;
                                                 }
                                             }
-                                            if let ProxyMode::Delay(d) = mode {
-                                                if !d.is_zero() {
+                                            if let ProxyMode::Delay(d) = mode
+                                                && !d.is_zero() {
                                                     tokio::time::sleep(d).await;
                                                 }
-                                            }
                                             if std::env::var_os("OG_PROXY_DEBUG").is_some() {
                                                 eprintln!(
                                                     "proxy write conn={index} len={} k={k}",

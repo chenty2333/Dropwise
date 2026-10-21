@@ -21,7 +21,8 @@ completion after reuse, rather than letting it settle a new duty.
 
 ## Phases
 
-- `Ready`: no in-flight duty and no standing obligation.
+- `Ready`: no in-flight exchange; a standing obligation may still require
+  cleanup before the qualification is `Clean`.
 - `Busy`: exactly one armed ticket; a second `begin` is refused.
 - `Suspect`: an armed ticket was abandoned (cancelled, I/O failure, or
   protocol failure).  The object may not be used.  The `Suspect` report
@@ -80,7 +81,9 @@ A timeout, an unparsed byte, or a missing observation is `Unresolved` or
   it is not a durable transaction log.
 - The pool retires on a failed recovery, counts every failed attempt, and
   creates a replacement connection only through ordinary acquire.  Shutdown
-  drains the queue (retiring queued sessions) and joins the worker.
+  drains the queue itself and waits up to its grace budget for the worker;
+  `forced` reports an expired wait, not a successful join. Worker publication
+  checks closure under the same state lock as admission.
 
 ## Protocol plans
 
@@ -100,7 +103,8 @@ A timeout, an unparsed byte, or a missing observation is `Unresolved` or
 
 The patched stock client (`prospective/phase4-exploration/clients/skytable/fix`)
 uses one `poisoned` boolean armed before the first write and cleared only on a
-complete reply.  That is the B1 baseline here: it prevents reuse, but cannot
+complete reply. The B1 baseline here models that strategy in `RawSky`; it
+does not execute the patched upstream crate: it prevents reuse, but cannot
 distinguish "nothing was written" from "a reply is pending", so it reconnects
 in both cases (measured below).
 

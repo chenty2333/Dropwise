@@ -3,7 +3,7 @@
 //! One cut/cancel is injected into an operation, then four clients are asked
 //! to serve a successor on the same resource:
 //!
-//! * B0 stock: keep the stream and read whatever arrives;
+//! * B0 raw strategy model (not the upstream client): keep the stream and read whatever arrives;
 //! * B1 poison-retire: one boolean, reconnect before the next use;
 //! * B2 drain-only: try to consume one pending reply, reconnect on failure;
 //! * B3 guarded: ledger + exclusive recovery + quarantine + epoch witness.
@@ -112,7 +112,10 @@ fn specs() -> Vec<Spec> {
             name: "S6_late_reply_caught",
             cut: None,
             write_chunk: None,
-            natural: Some((ProxyMode::Delay(Duration::from_millis(20)), Duration::from_millis(2))),
+            natural: Some((
+                ProxyMode::Delay(Duration::from_millis(20)),
+                Duration::from_millis(2),
+            )),
             contract: EffectContract::MustNotApply,
             cut_op: CutOp::SelectCut,
             compare_finish: false,
@@ -121,7 +124,10 @@ fn specs() -> Vec<Spec> {
             name: "S7_late_reply_beyond_first_timeout",
             cut: None,
             write_chunk: None,
-            natural: Some((ProxyMode::Delay(Duration::from_millis(300)), Duration::from_millis(2))),
+            natural: Some((
+                ProxyMode::Delay(Duration::from_millis(300)),
+                Duration::from_millis(2),
+            )),
             contract: EffectContract::MustNotApply,
             cut_op: CutOp::SelectCut,
             compare_finish: false,
@@ -183,9 +189,15 @@ async fn prime_pool(
     trial: usize,
 ) -> Result<(), String> {
     let (s, p) = insert_sql(space, &key(space, trial, 'a'), EXPECTED);
-    lease.query_with(&s, &p).await.map_err(|e| format!("prime a: {e}"))?;
+    lease
+        .query_with(&s, &p)
+        .await
+        .map_err(|e| format!("prime a: {e}"))?;
     let (s, p) = insert_sql(space, &key(space, trial, 'b'), CUT_VALUE);
-    lease.query_with(&s, &p).await.map_err(|e| format!("prime b: {e}"))?;
+    lease
+        .query_with(&s, &p)
+        .await
+        .map_err(|e| format!("prime b: {e}"))?;
     Ok(())
 }
 
@@ -228,6 +240,12 @@ async fn run_raw(
 ) -> TrialRecord {
     let mut rec = TrialRecord {
         scenario: spec.name.into(),
+        mode: if spec.natural.is_some() {
+            "proxy_timer"
+        } else {
+            "scripted_cut"
+        }
+        .into(),
         baseline: baseline.into(),
         trial,
         contract: format!("{:?}", spec.contract),
@@ -246,7 +264,10 @@ async fn run_raw(
             }
         },
     };
-    let port = proxy.as_ref().map(|p| p.addr.port()).unwrap_or(server.port());
+    let port = proxy
+        .as_ref()
+        .map(|p| p.addr.port())
+        .unwrap_or(server.port());
     let cfg = SkyConfig::loopback(port, "root", pass);
     let mut raw = match RawSky::connect(trial as u64, cfg, rule).await {
         Ok(r) => r,
@@ -302,10 +323,30 @@ async fn run_raw(
         rec.write_state = snap.write_state.into();
         rec.read_state = snap.read_state.into();
     } else {
-        rec.write_state = "natural".into();
-        rec.read_state = "natural".into();
+        let (written, total, read) = raw.io_state();
+        rec.cut_write = written as i64;
+        rec.cut_read = read as i64;
+        rec.write_state = if written == 0 {
+            "none"
+        } else if written == total {
+            "complete"
+        } else {
+            "partial"
+        }
+        .into();
+        rec.read_state = if read == 0 { "none" } else { "partial" }.into();
     }
     rec.suspect = raw.poisoned;
+    rec.valid_cut = match (&cut_res, spec.natural) {
+        (None, Some(_)) => rec.write_state == "complete" && rec.read_state == "none",
+        (Some(Err(online_guards::proto::sky::SkyError::Cut(_))), None) => true,
+        _ => false,
+    };
+    if !rec.valid_cut {
+        rec.successor = "skipped".into();
+        rec.note = "unrealized cut or unexpected operation failure".into();
+        return rec;
+    }
     rec.note = match cut_res {
         None => "cancelled while future pending".into(),
         Some(Ok(_)) => "cut operation completed before the fault".into(),
@@ -350,7 +391,11 @@ async fn run_raw(
     rec.latency_us = reuse_started.elapsed().as_micros() as u64;
     if spec.cut_op as u8 == CutOp::InsertSide as u8 {
         let c = side_check_raw(&mut raw, space, trial).await;
-        rec.note = format!("{}; side_effect={}", rec.note, side_effect(&mut Some(c.unwrap_or(-1))));
+        rec.note = format!(
+            "{}; side_effect={}",
+            rec.note,
+            side_effect(&mut Some(c.unwrap_or(-1)))
+        );
     }
     drop(proxy);
     rec
@@ -367,6 +412,12 @@ async fn run_pool(
 ) -> TrialRecord {
     let mut rec = TrialRecord {
         scenario: spec.name.into(),
+        mode: if spec.natural.is_some() {
+            "proxy_timer"
+        } else {
+            "scripted_cut"
+        }
+        .into(),
         baseline: baseline.into(),
         trial,
         contract: format!("{:?}", spec.contract),
@@ -385,7 +436,10 @@ async fn run_pool(
             }
         },
     };
-    let port = proxy.as_ref().map(|p| p.addr.port()).unwrap_or(server.port());
+    let port = proxy
+        .as_ref()
+        .map(|p| p.addr.port())
+        .unwrap_or(server.port());
     let cfg = SkyConfig::loopback(port, "root", pass);
     let mgr = SkyManager::new(cfg, spec.contract);
     let policy = ByteStatePolicy {
@@ -428,13 +482,13 @@ async fn run_pool(
             return rec;
         }
     };
-    if spec.natural.is_none() {
-        if let Err(e) = prime_pool(&mut lease, space, trial).await {
-            rec.successor = "error".into();
-            rec.note = e;
-            let _ = pool.shutdown(Duration::from_millis(50)).await;
-            return rec;
-        }
+    if spec.natural.is_none()
+        && let Err(e) = prime_pool(&mut lease, space, trial).await
+    {
+        rec.successor = "error".into();
+        rec.note = e;
+        let _ = pool.shutdown(Duration::from_millis(50)).await;
+        return rec;
     }
     lease.write_chunk = spec.write_chunk;
     if spec.natural.is_none() {
@@ -465,6 +519,16 @@ async fn run_pool(
     } else {
         rec.write_state = "clean".into();
         rec.read_state = "clean".into();
+    }
+    rec.valid_cut = match (&cut_res, spec.natural) {
+        (None, Some(_)) => rec.write_state == "complete" && rec.read_state == "none",
+        (Some(Err(online_guards::proto::sky::SkyError::Cut(_))), None) => true,
+        _ => false,
+    };
+    if !rec.valid_cut {
+        rec.successor = "skipped".into();
+        rec.note = "unrealized cut or unexpected operation failure".into();
+        return rec;
     }
     rec.note = match cut_res {
         None => "cancelled while future pending".into(),
@@ -505,7 +569,11 @@ async fn run_pool(
     rec.got = got;
     if spec.cut_op as u8 == CutOp::InsertSide as u8 {
         let c = side_check_pool(&mut lease, space, trial).await;
-        rec.note = format!("{}; side_effect={}", rec.note, side_effect(&mut Some(c.unwrap_or(-1))));
+        rec.note = format!(
+            "{}; side_effect={}",
+            rec.note,
+            side_effect(&mut Some(c.unwrap_or(-1)))
+        );
     }
     drop(lease);
     finish_pool(&pool, &mut rec, reuse_started);
@@ -513,11 +581,7 @@ async fn run_pool(
     rec
 }
 
-fn finish_pool(
-    pool: &Pool<SkyConn, SkyManager>,
-    rec: &mut TrialRecord,
-    started: Instant,
-) {
+fn finish_pool(pool: &Pool<SkyConn, SkyManager>, rec: &mut TrialRecord, started: Instant) {
     let s = pool.snapshot();
     rec.latency_us = started.elapsed().as_micros() as u64;
     rec.plan = s.last_plan.into();
@@ -536,12 +600,21 @@ fn finish_pool(
     rec.reconnects = s.connects.saturating_sub(1) as i64;
     rec.conns = s.connects as i64;
     if s.retired_suspect > 0 || s.retired_cleanup > 0 || s.retired_forced > 0 {
-        rec.note = format!("{}; retired={}", rec.note, s.retired_suspect + s.retired_cleanup + s.retired_forced);
+        rec.note = format!(
+            "{}; retired={}",
+            rec.note,
+            s.retired_suspect + s.retired_cleanup + s.retired_forced
+        );
     }
 }
 
-fn print_summary(records: &[TrialRecord], aggs: &std::collections::BTreeMap<(String, String), Aggregate>) {
-    println!("\n| scenario | baseline | n | unsafe | ok | err | timeout | recovered | reconnects | p50 us | p95 us |");
+fn print_summary(
+    records: &[TrialRecord],
+    aggs: &std::collections::BTreeMap<(String, String), Aggregate>,
+) {
+    println!(
+        "\n| scenario | baseline | n | unsafe | ok | err | timeout | recovered | reconnects | p50 us | p95 us |"
+    );
     println!("|---|---|---|---|---|---|---|---|---|---|---|");
     for ((scenario, baseline), a) in aggs {
         println!(
@@ -596,12 +669,13 @@ async fn main() {
     eprintln!("setup complete; space={space}");
     let mut records = Vec::new();
     for spec in specs() {
-        if let Ok(only) = std::env::var("SKY_ONLY") {
-            if !spec.name.contains(&only) {
-                continue;
-            }
+        if let Ok(only) = std::env::var("SKY_ONLY")
+            && !spec.name.contains(&only)
+        {
+            continue;
         }
-        let mut baselines: Vec<&'static str> = vec!["B0_stock", "B1_poison", "B2_drain", "B3_guard"];
+        let mut baselines: Vec<&'static str> =
+            vec!["B0_raw_reuse", "B1_raw_retire", "B2_raw_drain", "B3_guard"];
         if spec.compare_finish {
             baselines.push("B3f_finish");
         }
@@ -612,25 +686,39 @@ async fn main() {
             for b in &baselines {
                 eprintln!("--> {} {} trial {}", spec.name, b, trial);
                 let rec = match *b {
-                    "B0_stock" => {
+                    "B0_raw_reuse" => {
                         run_raw(&spec, trial, &space, server, &pass, ReuseRule::Immediate, b).await
                     }
-                    "B1_poison" => {
-                        run_raw(&spec, trial, &space, server, &pass, ReuseRule::PoisonRetire, b).await
+                    "B1_raw_retire" => {
+                        run_raw(
+                            &spec,
+                            trial,
+                            &space,
+                            server,
+                            &pass,
+                            ReuseRule::PoisonRetire,
+                            b,
+                        )
+                        .await
                     }
-                    "B2_drain" => {
+                    "B2_raw_drain" => {
                         run_raw(&spec, trial, &space, server, &pass, ReuseRule::DrainOnly, b).await
                     }
-                    "B3_guard" => {
-                        run_pool(&spec, trial, &space, server, &pass, false, b).await
-                    }
+                    "B3_guard" => run_pool(&spec, trial, &space, server, &pass, false, b).await,
                     "B3f_finish" => run_pool(&spec, trial, &space, server, &pass, true, b).await,
                     _ => unreachable!(),
                 };
                 eprintln!(
                     "{} {} t{} succ={} got={} plan={} rec={} reconn={} lat={}us",
-                    rec.scenario, rec.baseline, rec.trial, rec.successor, rec.got,
-                    rec.plan, rec.recovery, rec.reconnects, rec.latency_us
+                    rec.scenario,
+                    rec.baseline,
+                    rec.trial,
+                    rec.successor,
+                    rec.got,
+                    rec.plan,
+                    rec.recovery,
+                    rec.reconnects,
+                    rec.latency_us
                 );
                 records.push(rec);
             }
@@ -640,6 +728,11 @@ async fn main() {
         let _ = std::fs::create_dir_all(parent);
     }
     write_jsonl(&out, &records).expect("write jsonl");
+    assert!(!records.is_empty(), "no trials selected");
+    assert!(
+        records.iter().all(|r| r.valid_cut),
+        "invalid/unrealized trials: inspect records; no aggregate claim"
+    );
     let aggs = aggregate(&records);
     print_summary(&records, &aggs);
     println!("\nwrote {} records to {out}", records.len());

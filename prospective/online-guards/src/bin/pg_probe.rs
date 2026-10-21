@@ -4,10 +4,9 @@
 //!
 //! Usage: pg_probe <port> [user] [database]
 
-use online_guards::guard::Cause;
-use online_guards::policy::{Plan, RecoveryPolicy};
-use online_guards::pool::{Manager, Pool, PoolConfig};
 use online_guards::guard::{RecoveryLimits, Suspect};
+use online_guards::policy::{Plan, RecoveryPolicy};
+use online_guards::pool::{Pool, PoolConfig};
 use online_guards::proto::pg::{CutPoint, PgConfig, PgConn, PgError, PgManager, PgStatus};
 use online_guards::recovery::{RecoveryAttempt, RecoveryContext};
 use online_guards::{EffectContract, GuardedSession};
@@ -54,7 +53,7 @@ impl RawPg {
                     self.inbuf[3],
                     self.inbuf[4],
                 ]) as usize;
-                if self.inbuf.len() >= len + 1 {
+                if self.inbuf.len() > len {
                     let ty = self.inbuf[0];
                     let payload = self.inbuf[5..len + 1].to_vec();
                     self.inbuf.drain(..len + 1);
@@ -125,14 +124,19 @@ async fn count(cfg: &PgConfig, key: &str) -> i64 {
     let mut c = PgConn::connect(cfg).await.expect("admin connect");
     let sql = format!("select count(*) from og_probe where k = '{key}'");
     c.query(&sql)
-    .await
-    .ok()
-    .and_then(|r| r.rows.first().and_then(|r| r.first().cloned().flatten()))
-    .and_then(|s| s.parse().ok())
-    .unwrap_or(-1)
+        .await
+        .ok()
+        .and_then(|r| r.rows.first().and_then(|r| r.first().cloned().flatten()))
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(-1)
 }
 
-fn ctx_for(conn: &PgConn, guard: &online_guards::guard::Guard, permit: &online_guards::guard::RecoveryPermit<'_>, plan: &'static str) -> RecoveryContext {
+fn ctx_for(
+    conn: &PgConn,
+    guard: &online_guards::guard::Guard,
+    permit: &online_guards::guard::RecoveryPermit<'_>,
+    plan: &'static str,
+) -> RecoveryContext {
     let _ = conn;
     RecoveryContext {
         obj: guard.obj(),
@@ -205,7 +209,10 @@ async fn main() {
     let db = std::env::args().nth(3).unwrap_or_else(|| "postgres".into());
     let cfg = PgConfig::loopback(port, &user, &db);
     let mut admin = PgConn::connect(&cfg).await.expect("admin");
-    admin.query("drop table if exists og_probe").await.expect("drop");
+    admin
+        .query("drop table if exists og_probe")
+        .await
+        .expect("drop");
     admin
         .query("create table og_probe(k text primary key, v int)")
         .await
@@ -216,7 +223,9 @@ async fn main() {
     {
         let mut raw = RawPg::connect(&cfg).await.expect("raw connect");
         raw.send("begin").await.unwrap();
-        raw.send("insert into og_probe values ('naive', 1)").await.unwrap();
+        raw.send("insert into og_probe values ('naive', 1)")
+            .await
+            .unwrap();
         let (tag, status) = raw.read_exchange().await.unwrap();
         println!("naive after INSERT request: tag={tag:?} status={status}");
         // The client believes the INSERT's reply is its own; it never reads the
@@ -262,7 +271,10 @@ async fn main() {
         );
         c.clear_cut();
         c.guard().clear_standing("open_transaction");
-        let r = c.query("insert into og_probe values ('guard', 2)").await.expect("insert");
+        let r = c
+            .query("insert into og_probe values ('guard', 2)")
+            .await
+            .expect("insert");
         println!(
             "guard autocommit insert: command={:?} status={}",
             r.command,
@@ -292,26 +304,40 @@ async fn main() {
             .query("insert into og_probe values ('standing', 3)")
             .await
             .expect("insert");
-        println!("after cleanup insert: status={} rows={}", r.status.code(), count(&cfg, "standing").await);
+        println!(
+            "after cleanup insert: status={} rows={}",
+            r.status.code(),
+            count(&cfg, "standing").await
+        );
     }
 
     // ---- 4. mid-reply SELECT cut ------------------------------------------
     {
         let mut c = PgConn::connect(&cfg).await.expect("connect");
-        c.query("insert into og_probe values ('mid', 4)").await.expect("prime");
+        c.query("insert into og_probe values ('mid', 4)")
+            .await
+            .expect("prime");
         c.cut = Some(CutPoint {
             after_write_bytes: None,
             after_read_bytes: Some(1),
         });
         let e = c.query("select * from og_probe order by k").await;
-        println!("guard select cut: {:?} phase={:?}", e.as_ref().err().map(|e| e.to_string()), c.guard().phase());
+        println!(
+            "guard select cut: {:?} phase={:?}",
+            e.as_ref().err().map(|e| e.to_string()),
+            c.guard().phase()
+        );
         let attempt = recover_manual(&mut c, "drain_reset").await;
         println!("guard select recovery: {}", attempt);
         c.clear_cut();
-        let r = c.query("select count(*) from og_probe").await.expect("count");
+        let r = c
+            .query("select count(*) from og_probe")
+            .await
+            .expect("count");
         println!(
             "successor after select recovery: rows={:?} status={}",
-            r.rows, r.status.code()
+            r.rows,
+            r.status.code()
         );
         let _ = c.query("begin").await;
         let _ = c.query("rollback").await;
@@ -319,7 +345,8 @@ async fn main() {
 
     // ---- 5. partial BEGIN: retire vs finish -------------------------------
     for finish in [false, true] {
-        let mut c = PgConn::connect(&cfg).await
+        let mut c = PgConn::connect(&cfg)
+            .await
             .expect("connect")
             .with_contract(if finish {
                 EffectContract::AtomicEffectMayApply
@@ -332,7 +359,11 @@ async fn main() {
             after_read_bytes: None,
         });
         let e = c.query("begin").await;
-        let plan = if finish { "finish_drain_reset" } else { "drain_reset" };
+        let plan = if finish {
+            "finish_drain_reset"
+        } else {
+            "drain_reset"
+        };
         let attempt = recover_manual(&mut c, plan).await;
         println!(
             "partial begin finish={finish}: err={:?} recovery={} status={} phase={:?}",
@@ -345,7 +376,9 @@ async fn main() {
 
     // ---- 5b. a rollback plan must not acknowledge a pending COMMIT --------
     {
-        let mut c = PgConn::connect(&cfg).await.expect("pending rollback connect");
+        let mut c = PgConn::connect(&cfg)
+            .await
+            .expect("pending rollback connect");
         c.query("BEGIN").await.expect("pending begin");
         println!(
             "\npending rollback: before cut status={:?} standing={:?}",
@@ -386,7 +419,12 @@ async fn main() {
             c.guard().phase()
         );
         assert!(r.starts_with("Recovered"), "drain_reset must recover");
-        let q = c.query("insert into og_probe(k, v) values ('pd', 7) on conflict (k) do update set v = 7").await.expect("successor after pending drain");
+        let q = c
+            .query(
+                "insert into og_probe(k, v) values ('pd', 7) on conflict (k) do update set v = 7",
+            )
+            .await
+            .expect("successor after pending drain");
         println!(
             "pending drain_reset successor: command={:?} status={:?}",
             q.command, q.status
@@ -399,7 +437,7 @@ async fn main() {
         let pool = Pool::new(
             PgManager::new(cfg.clone(), EffectContract::MustNotApply),
             PoolConfig {
-                name: "pg-lab".into(),
+                name: "pg-lab",
                 max_size: 1,
                 recovery_capacity: 1,
                 validate_on_checkout: false,
@@ -416,13 +454,19 @@ async fn main() {
                 after_read_bytes: Some(0),
             });
             let e = lease.query("begin").await;
-            println!("pool lease begin cut: {:?}", e.as_ref().err().map(|e| e.to_string()));
+            println!(
+                "pool lease begin cut: {:?}",
+                e.as_ref().err().map(|e| e.to_string())
+            );
         }
         tokio::time::sleep(Duration::from_millis(400)).await;
         let snap = pool.snapshot();
         println!(
             "pool after cut: recovery_enqueued={} succeeded={} failed={} retired_suspect={}",
-            snap.recovery_enqueued, snap.recovery_succeeded, snap.recovery_failed, snap.retired_suspect
+            snap.recovery_enqueued,
+            snap.recovery_succeeded,
+            snap.recovery_failed,
+            snap.retired_suspect
         );
         {
             let mut lease = pool.acquire().await.expect("reacquire");
@@ -430,7 +474,11 @@ async fn main() {
                 .query("insert into og_probe values ('pool', 5)")
                 .await
                 .expect("pool insert");
-            println!("pool successor insert: status={} command={:?}", r.status.code(), r.command);
+            println!(
+                "pool successor insert: status={} command={:?}",
+                r.status.code(),
+                r.command
+            );
         }
         println!("pool row present: {}", count(&cfg, "pool").await);
         pool.shutdown(Duration::from_secs(1)).await;
@@ -443,7 +491,9 @@ async fn main() {
         let r = c.query("discard all").await.expect("discard");
         println!(
             "discard inside tx: error={:?} status={}",
-            r.error.as_ref().map(|e| (e.code.clone(), e.message.clone())),
+            r.error
+                .as_ref()
+                .map(|e| (e.code.clone(), e.message.clone())),
             r.status.code()
         );
         let _ = c.query("rollback").await;

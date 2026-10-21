@@ -156,7 +156,7 @@ impl PoolSnapshot {
     /// Total connections replaced because of a cancellation or cleanup, i.e. the
     /// availability cost that the conservative baseline always pays.
     pub fn evictions(&self) -> u64 {
-        self.retired_cleanup + self.retired_suspect + self.retired_forced + self.queue_full
+        self.retired_cleanup + self.retired_suspect + self.retired_forced
     }
 }
 
@@ -200,8 +200,14 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
         session.close();
         match kind {
             RetireKind::Clean => self.counters.retired_clean.fetch_add(1, Ordering::Relaxed),
-            RetireKind::Cleanup => self.counters.retired_cleanup.fetch_add(1, Ordering::Relaxed),
-            RetireKind::Suspect => self.counters.retired_suspect.fetch_add(1, Ordering::Relaxed),
+            RetireKind::Cleanup => self
+                .counters
+                .retired_cleanup
+                .fetch_add(1, Ordering::Relaxed),
+            RetireKind::Suspect => self
+                .counters
+                .retired_suspect
+                .fetch_add(1, Ordering::Relaxed),
             RetireKind::Forced => self.counters.retired_forced.fetch_add(1, Ordering::Relaxed),
         };
     }
@@ -247,9 +253,7 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
         }
         match guard.qualification() {
             Qualification::Clean => {
-                self.counters
-                    .returned_clean
-                    .fetch_add(1, Ordering::Relaxed);
+                self.counters.returned_clean.fetch_add(1, Ordering::Relaxed);
                 // Check and push under the same lock: shutdown sets `closed`
                 // before it drains the idle list, so either this push happens
                 // before that drain (and is retired) or it is refused here.
@@ -314,28 +318,30 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
 
     fn enqueue_recovery(self: &Arc<Self>, session: S) {
         let mut holder = Some(session);
-        let queued = {
+        let (queued, cause) = {
             let mut st = self.state.lock().unwrap();
             if self.closed() {
                 // Do not strand a session in a queue that shutdown has already
                 // drained; the caller retires it below.
-                false
+                (false, Cause::Shutdown)
             } else if st.recovery.len() < self.cfg.recovery_capacity {
                 st.recovery.push_back(holder.take().unwrap());
-                true
+                (true, Cause::QueueFull) // cause unused for an accepted job
             } else {
-                false
+                (false, Cause::QueueFull)
             }
         };
         if !queued {
             let mut session = holder.take().unwrap();
-            self.counters.queue_full.fetch_add(1, Ordering::Relaxed);
+            if cause == Cause::QueueFull {
+                self.counters.queue_full.fetch_add(1, Ordering::Relaxed);
+            }
             let fresh = session.guard().qualification();
             let kind = match fresh {
                 Qualification::Suspect { .. } => RetireKind::Suspect,
                 _ => RetireKind::Cleanup,
             };
-            self.retire_and_count(&mut session, Cause::QueueFull, kind);
+            self.retire_and_count(&mut session, cause, kind);
             self.release_slot();
             return;
         }
@@ -349,7 +355,7 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
     fn ensure_worker(self: &Arc<Self>) {
         let spawn = {
             let mut st = self.state.lock().unwrap();
-            if st.worker_started {
+            if st.worker_started || self.closed() {
                 false
             } else {
                 st.worker_started = true;
@@ -473,7 +479,13 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
                                     .counters
                                     .validation_failures
                                     .fetch_add(1, Ordering::Relaxed);
-                                // Hold::drop closes and frees the slot.
+                                let mut session = hold.take();
+                                self.inner.retire_and_count(
+                                    &mut session,
+                                    Cause::Protocol,
+                                    RetireKind::Clean,
+                                );
+                                self.inner.release_slot();
                                 continue;
                             }
                         }
@@ -491,8 +503,14 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
                     Qualification::Busy { .. }
                     | Qualification::Recovering { .. }
                     | Qualification::Retired { .. } => {
-                        // A leased or retired session in the idle list is an
-                        // owner bug; drop it rather than use it.
+                        // An invalid idle session is not acquire cancellation.
+                        let mut session = hold.take();
+                        self.inner.retire_and_count(
+                            &mut session,
+                            Cause::Protocol,
+                            RetireKind::Forced,
+                        );
+                        self.inner.release_slot();
                         continue;
                     }
                 }
@@ -531,10 +549,7 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
                 };
                 match outcome {
                     Ok(session) => {
-                        self.inner
-                            .counters
-                            .connects
-                            .fetch_add(1, Ordering::Relaxed);
+                        self.inner.counters.connects.fetch_add(1, Ordering::Relaxed);
                         let mut res = res;
                         res.disarm();
                         return self.inner.make_lease(session);
@@ -576,26 +591,28 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
             .counters
             .shutdowns
             .fetch_add(1, Ordering::Relaxed);
-        self.inner.closed.store(true, Ordering::Release);
+        let drained_before = self
+            .inner
+            .counters
+            .recovery_drained_on_shutdown
+            .load(Ordering::Relaxed);
+        // Admission closes under the same lock used by enqueue/worker publish.
+        // Drain here as well as in the worker: enqueue may have completed before
+        // shutdown while ensure_worker has not run yet.
+        let idle = {
+            let mut st = self.inner.state.lock().unwrap();
+            self.inner.closed.store(true, Ordering::Release);
+            std::mem::take(&mut st.idle)
+        };
         let _ = self.inner.shutdown_tx.send(true);
         self.inner.idle_notify.notify_waiters();
-
-        let mut retired_idle = 0;
-        loop {
-            let session = {
-                let mut st = self.inner.state.lock().unwrap();
-                st.idle.pop_front()
-            };
-            match session {
-                Some(mut s) => {
-                    self.inner
-                        .retire_and_count(&mut s, Cause::Shutdown, RetireKind::Clean);
-                    retired_idle += 1;
-                    self.inner.release_slot();
-                }
-                None => break,
-            }
+        let retired_idle = idle.len();
+        for mut session in idle {
+            self.inner
+                .retire_and_count(&mut session, Cause::Shutdown, RetireKind::Clean);
+            self.inner.release_slot();
         }
+        drain_queue(&self.inner);
         self.inner.worker_notify.notify_waiters();
 
         let deadline = Instant::now() + grace;
@@ -612,11 +629,9 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
                 forced = true;
                 break;
             }
-            let _ = tokio::time::timeout(
-                Duration::from_millis(10),
-                self.inner.worker_idle.notified(),
-            )
-            .await;
+            let _ =
+                tokio::time::timeout(Duration::from_millis(10), self.inner.worker_idle.notified())
+                    .await;
         }
         let (drained, outstanding_leases) = {
             let st = self.inner.state.lock().unwrap();
@@ -630,7 +645,7 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
         };
         ShutdownReport {
             retired_idle,
-            drained_queue: drained as usize,
+            drained_queue: drained.saturating_sub(drained_before) as usize,
             outstanding_leases,
             forced,
         }
@@ -856,17 +871,7 @@ async fn worker_loop<S: GuardedSession, M: Manager<S>>(inner: Arc<Inner<S, M>>) 
         match job {
             Some(session) => {
                 let end = handle_job(&inner, session).await;
-                match end {
-                    JobEnd::Idle(session) => {
-                        inner.state.lock().unwrap().idle.push_back(session);
-                        inner.idle_notify.notify_one();
-                    }
-                    JobEnd::Requeue(session) => {
-                        inner.state.lock().unwrap().recovery.push_back(session);
-                        inner.worker_notify.notify_one();
-                    }
-                    JobEnd::Done => {}
-                }
+                publish_job(&inner, end);
                 {
                     let mut st = inner.state.lock().unwrap();
                     st.recovering = st.recovering.saturating_sub(1);
@@ -887,6 +892,34 @@ async fn worker_loop<S: GuardedSession, M: Manager<S>>(inner: Arc<Inner<S, M>>) 
                 }
             }
         }
+    }
+}
+
+fn publish_job<S: GuardedSession, M: Manager<S>>(inner: &Arc<Inner<S, M>>, end: JobEnd<S>) {
+    let (mut session, requeue) = match end {
+        JobEnd::Idle(s) => (s, false),
+        JobEnd::Requeue(s) => (s, true),
+        JobEnd::Done => return,
+    };
+    let mut st = inner.state.lock().unwrap();
+    if inner.closed() {
+        drop(st);
+        inner.retire_and_count(
+            &mut session,
+            Cause::Shutdown,
+            if requeue {
+                RetireKind::Suspect
+            } else {
+                RetireKind::Clean
+            },
+        );
+        inner.release_slot();
+    } else if requeue {
+        st.recovery.push_back(session);
+        inner.worker_notify.notify_one();
+    } else {
+        st.idle.push_back(session);
+        inner.idle_notify.notify_one();
     }
 }
 
@@ -974,9 +1007,15 @@ async fn handle_job<S: GuardedSession, M: Manager<S>>(
         }
         Plan::Run(_) => {
             let mut shutdown = inner.shutdown_rx.clone();
-            let outcome = tokio::select! {
-                a = inner.mgr.recover(&mut session, &ctx) => Some(a),
-                _ = shutdown.changed() => None,
+            let outcome = if inner.closed() {
+                None
+            } else {
+                tokio::select! {
+                    a = tokio::time::timeout(remaining, inner.mgr.recover(&mut session, &ctx)) => {
+                        Some(a.unwrap_or(RecoveryAttempt::Unresolved(Cause::Timeout)))
+                    },
+                    _ = shutdown.changed() => None,
+                }
             };
             match outcome {
                 None => {
@@ -1214,7 +1253,12 @@ mod tests {
             _session: &mut FakeSession,
             ctx: &RecoveryContext,
         ) -> RecoveryAttempt {
-            let next = self.script.lock().unwrap().pop_front().unwrap_or(Scripted::Fail);
+            let next = self
+                .script
+                .lock()
+                .unwrap()
+                .pop_front()
+                .unwrap_or(Scripted::Fail);
             match next {
                 Scripted::Recover => RecoveryAttempt::recovered(ctx, "fake.recovered"),
                 Scripted::Fail => RecoveryAttempt::Failed(Cause::Other("fake.fail")),
@@ -1305,6 +1349,7 @@ mod tests {
         assert_ne!(lease.obj(), first);
         assert_eq!(m.validations.load(Ordering::Relaxed), 1);
         assert_eq!(pool.snapshot().validation_failures, 1);
+        assert_eq!(pool.snapshot().acquire_cancelled, 0);
         assert_eq!(m.connects.load(Ordering::Relaxed), 2);
     }
 
@@ -1433,7 +1478,10 @@ mod tests {
         }
         let report = pool.shutdown(Duration::from_millis(200)).await;
         let s = pool.snapshot();
-        assert!(!report.forced, "shutdown should observe the cancel, not time out");
+        assert!(
+            !report.forced,
+            "shutdown should observe the cancel, not time out"
+        );
         assert_eq!(s.recovery_cancelled, 1);
         assert_eq!(s.retired_suspect, 1);
         assert_eq!(s.idle, 0);
@@ -1479,9 +1527,11 @@ mod tests {
         m.connect_hang.store(true, Ordering::Release);
         let pool = Pool::new(m.clone(), cfg());
         let mut acquire = Box::pin(pool.acquire());
-        assert!(tokio::time::timeout(Duration::from_millis(20), &mut acquire)
-            .await
-            .is_err());
+        assert!(
+            tokio::time::timeout(Duration::from_millis(20), &mut acquire)
+                .await
+                .is_err()
+        );
         drop(acquire);
         assert_eq!(pool.snapshot().total_slots, 0);
         // A later acquisition can use the capacity.
@@ -1537,5 +1587,96 @@ mod tests {
         let lease = pool.acquire().await.unwrap();
         assert!(lease.guard().epoch() != old_epoch);
         assert!(pool.snapshot().recovery_succeeded >= 1);
+    }
+
+    #[tokio::test]
+    async fn shutdown_between_enqueue_and_worker_start_drains_without_runtime_progress() {
+        let pool = Pool::new(FakeMgr::new(vec![]), cfg());
+        {
+            let mut st = pool.inner.state.lock().unwrap();
+            let session = FakeSession::new();
+            session.make_suspect();
+            st.total = 1;
+            st.recovery.push_back(session);
+        } // exactly the enqueue/ensure_worker gap
+        let report = pool.shutdown(Duration::ZERO).await;
+        assert!(!report.forced);
+        assert_eq!(report.drained_queue, 1);
+        pool.inner.ensure_worker();
+        assert!(!pool.inner.state.lock().unwrap().worker_started);
+        assert_eq!(pool.snapshot().total_slots, 0);
+        assert_eq!(pool.shutdown(Duration::ZERO).await.drained_queue, 0);
+    }
+
+    #[tokio::test]
+    async fn worker_cannot_publish_after_shutdown_drains_idle() {
+        for requeue in [false, true] {
+            let pool = Pool::new(FakeMgr::new(vec![]), cfg());
+            let session = FakeSession::new();
+            let guard = session.guard.clone();
+            pool.inner.state.lock().unwrap().total = 1;
+            pool.shutdown(Duration::ZERO).await;
+            publish_job(
+                &pool.inner,
+                if requeue {
+                    JobEnd::Requeue(session)
+                } else {
+                    JobEnd::Idle(session)
+                },
+            );
+            assert!(matches!(
+                guard.qualification(),
+                Qualification::Retired { .. }
+            ));
+            let snap = pool.snapshot();
+            assert_eq!(
+                (snap.idle, snap.recovery_queue, snap.total_slots),
+                (0, 0, 0)
+            );
+            assert_eq!(snap.queue_full, 0);
+        }
+    }
+
+    #[tokio::test]
+    async fn shutdown_refusal_is_not_queue_full_and_overflow_is_one_eviction() {
+        let mut config = cfg();
+        config.recovery_capacity = 1;
+        let pool = Pool::new(FakeMgr::new(vec![]), config);
+        let queued = pool.acquire().await.unwrap();
+        let lease = pool.acquire().await.unwrap();
+        queued.make_suspect();
+        lease.make_suspect();
+        drop(queued);
+        drop(lease);
+        assert_eq!(pool.snapshot().queue_full, 1);
+        assert_eq!(pool.snapshot().evictions(), 1);
+        pool.shutdown(Duration::ZERO).await;
+        let session = FakeSession::new();
+        session.make_suspect();
+        pool.inner.state.lock().unwrap().total = 1;
+        pool.inner.enqueue_recovery(session);
+        assert_eq!(pool.snapshot().queue_full, 1);
+        assert_eq!(pool.snapshot().total_slots, 0);
+    }
+
+    #[tokio::test]
+    async fn pool_enforces_deadline_even_when_adapter_never_returns() {
+        let mut config = cfg();
+        config.limits.deadline = Duration::from_millis(10);
+        config.limits.max_attempts = 1;
+        let pool = Pool::new(FakeMgr::new(vec![Scripted::Hang]), config);
+        let lease = pool.acquire().await.unwrap();
+        lease.make_suspect();
+        drop(lease);
+        tokio::time::timeout(Duration::from_secs(1), async {
+            while pool.snapshot().total_slots != 0 {
+                tokio::time::sleep(Duration::from_millis(1)).await;
+            }
+        })
+        .await
+        .expect("pool deadline must retire a hanging recovery");
+        assert_eq!(pool.snapshot().recovery_unresolved, 1);
+        assert_eq!(pool.snapshot().retired_suspect, 1);
+        pool.shutdown(Duration::from_millis(100)).await;
     }
 }

@@ -2,9 +2,7 @@
 //! abandoned operation, and what it must prove before the object is reusable.
 
 use crate::features::Features;
-use crate::guard::{
-    Cause, Epoch, ObjId, RecoveryLimits, RecoveryWitness,
-};
+use crate::guard::{Cause, Epoch, ObjId, RecoveryLimits, RecoveryWitness};
 
 /// What is known about the *effect* of the abandoned operation, as declared by
 /// the API whose operation was abandoned.  This is not a property of the wire

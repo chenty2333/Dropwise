@@ -38,6 +38,16 @@ pooled shapes, per-run reset, the `Expect` contract, report signals and plan
 replay. You do not need the research trees to use the crate. The crate supports
 Rust 1.88 and later.
 
+## Current research workstreams
+
+- [Offline discovery, round 5](prospective/offline-discovery/ROUND5-RESULTS.md):
+  synchronous interruption, cross-checkout state, and field-level observation
+  contracts. The synchronous repair remains a bounded research prototype.
+- [Online guards](research/online/RESULTS.md): runnable quarantine/recovery
+  mechanisms and real-server experiments with locally implemented strategy
+  baselines. The rule study uses observed state, not configured delay/loss;
+  it does not yet establish general synthesis or an upstream performance win.
+
 ## Usage
 
 `cargo run --example quickstart` is the same shape as below, runnable, with the

@@ -6,9 +6,7 @@
 //! lab so adapter behaviour can be debugged without pool scheduling.
 
 use online_guards::features::Features;
-use online_guards::proto::sky::{
-    Reply, SkyConfig, SkyConn, encode_param_str, encode_param_uint,
-};
+use online_guards::proto::sky::{Reply, SkyConfig, SkyConn, encode_param_str, encode_param_uint};
 use online_guards::recovery::{EffectContract, RecoveryAttempt, RecoveryContext};
 use std::time::{Duration, Instant};
 
@@ -97,7 +95,10 @@ async fn main() {
 
     println!("== setup ==");
     let mut c = SkyConn::connect(&cfg).await.expect("connect");
-    println!("create space: {:?}", c.query(&format!("create space {space}")).await);
+    println!(
+        "create space: {:?}",
+        c.query(&format!("create space {space}")).await
+    );
     println!(
         "create model: {:?}",
         c.query(&format!("create model {space}.kv(id: string, v: uint64)"))
@@ -118,9 +119,15 @@ async fn main() {
     params.extend(encode_param_uint(1));
     println!("query: {:?}", c.query_with(&sql, &params).await);
     report(&c);
-    println!("guard refuses successor: {:?}", successor(&mut c, &space, "k0").await);
+    println!(
+        "guard refuses successor: {:?}",
+        successor(&mut c, &space, "k0").await
+    );
     println!("drain: {:?}", recover(&mut c, "drain").await);
-    println!("retire after failure: qualification={:?}", c.guard().qualification());
+    println!(
+        "retire after failure: qualification={:?}",
+        c.guard().qualification()
+    );
     drop(c);
 
     println!("\n== scenario: cut mid-write, drain (must fail) ==");
@@ -134,7 +141,10 @@ async fn main() {
     params.extend(encode_param_uint(2));
     println!("query: {:?}", c.query_with(&sql, &params).await);
     report(&c);
-    println!("drain (must fail: partial write): {:?}", recover(&mut c, "drain").await);
+    println!(
+        "drain (must fail: partial write): {:?}",
+        recover(&mut c, "drain").await
+    );
     drop(c);
 
     println!("\n== scenario: cut mid-write, finish write then drain ==");
@@ -151,8 +161,14 @@ async fn main() {
     params.extend(encode_param_uint(9));
     println!("query: {:?}", c.query_with(&sql, &params).await);
     report(&c);
-    println!("finish_write_drain: {:?}", recover(&mut c, "finish_write_drain").await);
-    println!("successor sees value: {:?}", successor(&mut c, &space, "cut1b").await);
+    println!(
+        "finish_write_drain: {:?}",
+        recover(&mut c, "finish_write_drain").await
+    );
+    println!(
+        "successor sees value: {:?}",
+        successor(&mut c, &space, "cut1b").await
+    );
     drop(c);
 
     println!("\n== scenario: cut after full write, before any read ==");
@@ -166,8 +182,14 @@ async fn main() {
     println!("query: {:?}", c.query_with(&sql, &params).await);
     report(&c);
     println!("drain: {:?}", recover(&mut c, "drain").await);
-    println!("successor sees value: {:?}", successor(&mut c, &space, "cut2").await);
-    println!("next insert: {:?}", insert(&mut c, &space, "after2", 4).await);
+    println!(
+        "successor sees value: {:?}",
+        successor(&mut c, &space, "cut2").await
+    );
+    println!(
+        "next insert: {:?}",
+        insert(&mut c, &space, "after2", 4).await
+    );
     drop(c);
 
     println!("\n== scenario: cut mid-reply ==");
@@ -181,7 +203,10 @@ async fn main() {
     println!("query: {:?}", c.query_with(&sql, &params).await);
     report(&c);
     println!("drain: {:?}", recover(&mut c, "drain").await);
-    println!("successor sees value: {:?}", successor(&mut c, &space, "cut3").await);
+    println!(
+        "successor sees value: {:?}",
+        successor(&mut c, &space, "cut3").await
+    );
     drop(c);
 
     println!("\n== scenario: reply arrived in one read, cut before parse ==");
@@ -198,7 +223,10 @@ async fn main() {
     println!("snapshot = {:?}", c.cut_snapshot());
     report(&c);
     println!("drain: {:?}", recover(&mut c, "drain").await);
-    println!("successor sees value: {:?}", successor(&mut c, &space, "cut4").await);
+    println!(
+        "successor sees value: {:?}",
+        successor(&mut c, &space, "cut4").await
+    );
     drop(c);
 
     println!("\n== scenario: natural select-cancel (no scripted cut) ==");
@@ -237,4 +265,3 @@ fn report(c: &SkyConn) {
         c.cut_snapshot()
     );
 }
-

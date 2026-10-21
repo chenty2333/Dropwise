@@ -99,10 +99,7 @@ impl PgStatus {
         }
     }
     pub fn open(self) -> bool {
-        matches!(
-            self,
-            PgStatus::InTransaction | PgStatus::FailedTransaction
-        )
+        matches!(self, PgStatus::InTransaction | PgStatus::FailedTransaction)
     }
 }
 
@@ -173,10 +170,6 @@ pub struct PgConn {
 }
 
 fn put_i32(v: &mut Vec<u8>, n: i32) {
-    v.extend_from_slice(&n.to_be_bytes());
-}
-
-fn put_i16(v: &mut Vec<u8>, n: i16) {
     v.extend_from_slice(&n.to_be_bytes());
 }
 
@@ -434,12 +427,12 @@ impl PgConn {
                 }
                 return Ok(());
             }
-            if let Some(cut) = self.cut {
-                if cut.after_write_bytes == Some(self.io.out_off) {
-                    self.cut = None;
-                    let snap = self.snapshot("write");
-                    return Err(PgError::Cut(snap));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_write_bytes == Some(self.io.out_off)
+            {
+                self.cut = None;
+                let snap = self.snapshot("write");
+                return Err(PgError::Cut(snap));
             }
             let end = match self.write_chunk {
                 Some(chunk) => (self.io.out_off + chunk).min(self.io.out.len()),
@@ -470,18 +463,18 @@ impl PgConn {
                     },
                 );
             }
-            if let Some(at) = self.cut.and_then(|c| c.after_write_bytes) {
-                if self.io.out_off >= at {
-                    self.cut = None;
-                    let snap = self.snapshot("write");
-                    return Err(PgError::Cut(snap));
-                }
+            if let Some(at) = self.cut.and_then(|c| c.after_write_bytes)
+                && self.io.out_off >= at
+            {
+                self.cut = None;
+                let snap = self.snapshot("write");
+                return Err(PgError::Cut(snap));
             }
         }
     }
 
     fn snapshot(&mut self, fired_after: &'static str) -> CutSnapshot {
-        let snap = CutSnapshot {
+        CutSnapshot {
             write_bytes: self.io.out_off,
             write_state: if self.io.out_off == 0 {
                 "none"
@@ -497,8 +490,7 @@ impl PgConn {
                 "partial"
             },
             fired_after,
-        };
-        snap
+        }
     }
 
     /// Execute one simple query.  A server ErrorResponse is a complete
@@ -583,18 +575,18 @@ impl PgConn {
     ) -> Result<PgReply, PgError> {
         let mut reply = PgReply::default();
         loop {
-            if let Some(cut) = self.cut {
-                if let Some(at) = cut.after_read_bytes {
-                    let fire = if at == 0 {
-                        self.io.inbuf.is_empty()
-                    } else {
-                        self.io.inbuf.len() >= at
-                    };
-                    if fire {
-                        self.cut = None;
-                        let snap = self.snapshot("read");
-                        return Err(PgError::Cut(snap));
-                    }
+            if let Some(cut) = self.cut
+                && let Some(at) = cut.after_read_bytes
+            {
+                let fire = if at == 0 {
+                    self.io.inbuf.is_empty()
+                } else {
+                    self.io.inbuf.len() >= at
+                };
+                if fire {
+                    self.cut = None;
+                    let snap = self.snapshot("read");
+                    return Err(PgError::Cut(snap));
                 }
             }
             let (ty, payload) = self.read_frame().await?;
@@ -603,7 +595,9 @@ impl PgConn {
                 t.tag("read", "partial");
             }
             match ty {
-                b'T' => reply.columns = parse_row_description(&payload).map_err(PgError::Protocol)?,
+                b'T' => {
+                    reply.columns = parse_row_description(&payload).map_err(PgError::Protocol)?
+                }
                 b'D' => reply
                     .rows
                     .push(parse_data_row(&payload).map_err(PgError::Protocol)?),
@@ -623,9 +617,7 @@ impl PgConn {
                         // make the object unsafe.
                         self.pending = false;
                         self.status = PgStatus::Unknown;
-                        return Err(PgError::Protocol(
-                            "unknown_ready_status".to_string(),
-                        ));
+                        return Err(PgError::Protocol("unknown_ready_status".to_string()));
                     }
                     if let Some(t) = ticket.as_deref_mut() {
                         t.tag("read", "complete");
@@ -666,7 +658,7 @@ impl PgConn {
                 Ok(Ok(_)) => {}
                 Ok(Err(PgError::Closed)) => return Err(RecoveryAttempt::Failed(Cause::Io)),
                 Ok(Err(PgError::Protocol(_))) => {
-                    return Err(RecoveryAttempt::Failed(Cause::Protocol))
+                    return Err(RecoveryAttempt::Failed(Cause::Protocol));
                 }
                 Ok(Err(_)) => return Err(RecoveryAttempt::Failed(Cause::Io)),
                 Err(_) => return Err(RecoveryAttempt::Unresolved(Cause::Timeout)),
@@ -717,7 +709,9 @@ impl PgConn {
             }
         }
         if self.status != PgStatus::Idle {
-            return Err(RecoveryAttempt::Failed(Cause::Other("not_idle_after_reset")));
+            return Err(RecoveryAttempt::Failed(Cause::Other(
+                "not_idle_after_reset",
+            )));
         }
         self.guard.clear_standing("open_transaction");
         self.recovered_ready = true;
@@ -759,9 +753,7 @@ impl PgConn {
                     ));
                 }
                 if self.io.out_off < self.io.out.len() {
-                    return RecoveryAttempt::Failed(Cause::Other(
-                        "partial_write_unrecoverable",
-                    ));
+                    return RecoveryAttempt::Failed(Cause::Other("partial_write_unrecoverable"));
                 }
                 if self.status == PgStatus::Unknown {
                     return RecoveryAttempt::Failed(Cause::Other("unknown_status"));
@@ -895,7 +887,9 @@ impl Manager<PgConn> for PgManager {
         "postgres-simple"
     }
     async fn connect(&self) -> std::io::Result<PgConn> {
-        Ok(PgConn::connect(&self.cfg).await?.with_contract(self.contract))
+        Ok(PgConn::connect(&self.cfg)
+            .await?
+            .with_contract(self.contract))
     }
     async fn validate(&self, session: &mut PgConn) -> ValidateOutcome {
         session.validate().await
@@ -914,7 +908,11 @@ fn io_of(e: PgError) -> std::io::Error {
 }
 
 /// Observation features exposed to the policy.
-pub fn pg_features(status: PgStatus, write: &'static str, read: &'static str) -> crate::features::Features {
+pub fn pg_features(
+    status: PgStatus,
+    write: &'static str,
+    read: &'static str,
+) -> crate::features::Features {
     let mut f = crate::features::Features::new();
     f.tag("write", write);
     f.tag("read", read);

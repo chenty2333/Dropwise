@@ -27,7 +27,7 @@
 use crate::features::Features;
 use std::fmt;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicU8, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 static NEXT_OBJECT: AtomicU64 = AtomicU64::new(1);
@@ -306,7 +306,10 @@ impl fmt::Display for Refusal {
         match self {
             Refusal::Busy { op } => write!(f, "busy with operation #{op}"),
             Refusal::Suspect { cause, op } => {
-                write!(f, "suspect ({cause}) since operation #{op}; recovery required")
+                write!(
+                    f,
+                    "suspect ({cause}) since operation #{op}; recovery required"
+                )
             }
             Refusal::Recovering { attempts } => {
                 write!(f, "exclusive recovery in progress (attempt {attempts})")
@@ -325,14 +328,24 @@ pub enum Qualification {
     Clean,
     /// No open duty, but cleanup is required (open transaction, buffered
     /// async message).  The object is not dirty; it needs a protocol cleanup.
-    NeedsCleanup { standing: &'static str },
+    NeedsCleanup {
+        standing: &'static str,
+    },
     /// A previous operation has an unknown outcome.
-    Suspect { cause: Cause },
+    Suspect {
+        cause: Cause,
+    },
     /// Out of flight and safe as far as the ledger knows; use the protocol
     /// validator for a health check if desired.
-    Busy { op: u64 },
-    Recovering { attempts: u32 },
-    Retired { cause: Cause },
+    Busy {
+        op: u64,
+    },
+    Recovering {
+        attempts: u32,
+    },
+    Retired {
+        cause: Cause,
+    },
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
@@ -356,7 +369,6 @@ pub struct GuardStats {
 #[derive(Debug)]
 struct RetireInfo {
     cause: Cause,
-    at: Instant,
 }
 
 /// The ledger for one responsibility unit.
@@ -528,9 +540,7 @@ impl Guard {
         match refusal {
             Refusal::Busy { .. } => self.refused_busy.fetch_add(1, Ordering::Relaxed),
             Refusal::Suspect { .. } => self.refused_suspect.fetch_add(1, Ordering::Relaxed),
-            Refusal::Recovering { .. } => {
-                self.refused_recovering.fetch_add(1, Ordering::Relaxed)
-            }
+            Refusal::Recovering { .. } => self.refused_recovering.fetch_add(1, Ordering::Relaxed),
             Refusal::Retired { .. } => self.refused_retired.fetch_add(1, Ordering::Relaxed),
             Refusal::Closed => 0,
         };
@@ -675,10 +685,7 @@ impl Guard {
     pub fn retire(&self, cause: Cause) {
         let prev = self.phase.swap(Phase::Retired as u8, Ordering::AcqRel);
         if prev != Phase::Retired as u8 {
-            *self.retired.lock().unwrap() = Some(RetireInfo {
-                cause,
-                at: Instant::now(),
-            });
+            *self.retired.lock().unwrap() = Some(RetireInfo { cause });
             self.retired_count.fetch_add(1, Ordering::Relaxed);
         }
     }
@@ -1019,9 +1026,7 @@ impl<'g> RecoveryPermit<'g> {
     /// The protocol says the object cannot be made reusable.
     pub fn failed(mut self, cause: Cause) {
         self.finished = true;
-        self.guard
-            .recoveries_failed
-            .fetch_add(1, Ordering::Relaxed);
+        self.guard.recoveries_failed.fetch_add(1, Ordering::Relaxed);
         self.guard.retire(cause);
     }
 
@@ -1110,7 +1115,11 @@ impl fmt::Display for RecoveryError {
                 witness.0, witness.1, current.0, current.1
             ),
             RecoveryError::NotRecovering { phase } => {
-                write!(f, "object is {} but recovery expected recovering", phase.name())
+                write!(
+                    f,
+                    "object is {} but recovery expected recovering",
+                    phase.name()
+                )
             }
         }
     }
@@ -1140,7 +1149,7 @@ impl Default for RecoveryLimits {
 mod tests {
     use super::*;
     use std::sync::Arc;
-    
+
     #[test]
     fn unarmed_drop_leaves_the_object_ready_and_mints_a_generation() {
         let g = Guard::new();
@@ -1273,7 +1282,9 @@ mod tests {
         assert!(!g.reusable());
         assert!(matches!(
             g.qualification(),
-            Qualification::NeedsCleanup { standing: "transaction" }
+            Qualification::NeedsCleanup {
+                standing: "transaction"
+            }
         ));
         // A new statement inside the transaction is allowed.
         let mut t = g.begin().unwrap();
@@ -1283,7 +1294,10 @@ mod tests {
         assert!(!g.reusable());
         // Cleanup owns the object exclusively.
         let permit = g.claim_recovery().unwrap();
-        assert!(matches!(permit.kind(), RecoveryKind::Cleanup("transaction")));
+        assert!(matches!(
+            permit.kind(),
+            RecoveryKind::Cleanup("transaction")
+        ));
         let epoch = g.epoch();
         permit
             .recovered(RecoveryWitness::new(g.obj(), epoch, "rollback", "rfq:I"))

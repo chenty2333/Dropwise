@@ -36,6 +36,4 @@ pub use policy::{Plan, RecoveryPolicy, RuleTable};
 pub use pool::{
     GuardedSession, Lease, Manager, Pool, PoolConfig, PoolSnapshot, ShutdownReport, ValidateOutcome,
 };
-pub use recovery::{
-    EffectContract, PoolError, RecoveryAttempt, RecoveryContext,
-};
+pub use recovery::{EffectContract, PoolError, RecoveryAttempt, RecoveryContext};

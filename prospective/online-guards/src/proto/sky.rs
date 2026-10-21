@@ -24,9 +24,7 @@
 use crate::features::Features;
 use crate::guard::{Cause, Discharge, DischargeKind, Guard, Qualification, Ticket};
 use crate::pool::{GuardedSession, Manager, ValidateOutcome};
-use crate::recovery::{
-    EffectContract, RecoveryAttempt, RecoveryContext,
-};
+use crate::recovery::{EffectContract, RecoveryAttempt, RecoveryContext};
 use std::fmt;
 use std::sync::Arc;
 use std::time::Duration;
@@ -259,7 +257,7 @@ impl<'a> Cursor<'a> {
                     return Err(SkyError::Protocol("empty scalar".into()));
                 }
                 match code {
-                    0x02 | 0x03 | 0x04 | 0x05 => {
+                    0x02..=0x05 => {
                         let v: u64 = text
                             .parse()
                             .map_err(|_| SkyError::Protocol("bad uint".into()))?;
@@ -280,13 +278,21 @@ impl<'a> Cursor<'a> {
                 }
             }
             0x0c => {
-                let Some(len) = self.lfs()? else { return Ok(None) };
-                let Some(raw) = self.take(len) else { return Ok(None) };
+                let Some(len) = self.lfs()? else {
+                    return Ok(None);
+                };
+                let Some(raw) = self.take(len) else {
+                    return Ok(None);
+                };
                 SkyValue::Bin(raw.to_vec())
             }
             0x0d => {
-                let Some(len) = self.lfs()? else { return Ok(None) };
-                let Some(raw) = self.take(len) else { return Ok(None) };
+                let Some(len) = self.lfs()? else {
+                    return Ok(None);
+                };
+                let Some(raw) = self.take(len) else {
+                    return Ok(None);
+                };
                 SkyValue::Str(
                     std::str::from_utf8(raw)
                         .map_err(|_| SkyError::Protocol("non-utf8 string".into()))?
@@ -294,10 +300,14 @@ impl<'a> Cursor<'a> {
                 )
             }
             0x0e => {
-                let Some(count) = self.lfs()? else { return Ok(None) };
+                let Some(count) = self.lfs()? else {
+                    return Ok(None);
+                };
                 let mut items = Vec::with_capacity(count.min(64));
                 for _ in 0..count {
-                    let Some(c) = self.byte() else { return Ok(None) };
+                    let Some(c) = self.byte() else {
+                        return Ok(None);
+                    };
                     let Some(v) = self.value(c, depth + 1)? else {
                         return Ok(None);
                     };
@@ -314,7 +324,9 @@ impl<'a> Cursor<'a> {
     fn values(&mut self, count: usize, depth: usize) -> Result<Option<Vec<SkyValue>>, SkyError> {
         let mut out = Vec::with_capacity(count.min(64));
         for _ in 0..count {
-            let Some(code) = self.byte() else { return Ok(None) };
+            let Some(code) = self.byte() else {
+                return Ok(None);
+            };
             let Some(v) = self.value(code, depth + 1)? else {
                 return Ok(None);
             };
@@ -324,14 +336,20 @@ impl<'a> Cursor<'a> {
     }
 
     fn reply(&mut self) -> Result<Option<Reply>, SkyError> {
-        let Some(code) = self.byte() else { return Ok(None) };
+        let Some(code) = self.byte() else {
+            return Ok(None);
+        };
         Ok(Some(match code {
             0x10 => {
-                let Some(raw) = self.take(2) else { return Ok(None) };
+                let Some(raw) = self.take(2) else {
+                    return Ok(None);
+                };
                 Reply::Error(u16::from_le_bytes([raw[0], raw[1]]))
             }
             0x11 => {
-                let Some(count) = self.lfs()? else { return Ok(None) };
+                let Some(count) = self.lfs()? else {
+                    return Ok(None);
+                };
                 let Some(items) = self.values(count, 0)? else {
                     return Ok(None);
                 };
@@ -339,8 +357,12 @@ impl<'a> Cursor<'a> {
             }
             0x12 => Reply::Empty,
             0x13 => {
-                let Some(streams) = self.lfs()? else { return Ok(None) };
-                let Some(size) = self.lfs()? else { return Ok(None) };
+                let Some(streams) = self.lfs()? else {
+                    return Ok(None);
+                };
+                let Some(size) = self.lfs()? else {
+                    return Ok(None);
+                };
                 let mut rows = Vec::with_capacity(streams.min(64));
                 for _ in 0..streams {
                     let Some(row) = self.values(size, 0)? else {
@@ -352,7 +374,9 @@ impl<'a> Cursor<'a> {
             }
             0x0f => return Err(SkyError::Protocol("reserved response code 0x0f".into())),
             other => {
-                let Some(v) = self.value(other, 0)? else { return Ok(None) };
+                let Some(v) = self.value(other, 0)? else {
+                    return Ok(None);
+                };
                 Reply::Value(v)
             }
         }))
@@ -561,10 +585,10 @@ impl SkyConn {
                 ticket.tag("write", "complete");
                 return Ok(());
             }
-            if let Some(cut) = self.cut {
-                if cut.after_write_bytes == Some(self.io.out_off) {
-                    return Err(self.fire_cut("write", ticket));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_write_bytes == Some(self.io.out_off)
+            {
+                return Err(self.fire_cut("write", ticket));
             }
             let (_, state) = {
                 let io = &mut self.io;
@@ -593,12 +617,11 @@ impl SkyConn {
                 ticket.tag("write", state);
                 (io.out_off, state)
             };
-            if let Some(cut) = self.cut {
-                if let Some(at) = cut.after_write_bytes {
-                    if self.io.out_off >= at {
-                        return Err(self.fire_cut("write", ticket));
-                    }
-                }
+            if let Some(cut) = self.cut
+                && let Some(at) = cut.after_write_bytes
+                && self.io.out_off >= at
+            {
+                return Err(self.fire_cut("write", ticket));
             }
             let _ = state;
         }
@@ -637,10 +660,10 @@ impl SkyConn {
         loop {
             // A zero-byte read cut abandons before reading the reply, even if
             // the reply is already buffered.
-            if let Some(cut) = self.cut {
-                if cut.after_read_bytes == Some(0) {
-                    return Err(self.fire_cut("read", ticket));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_read_bytes == Some(0)
+            {
+                return Err(self.fire_cut("read", ticket));
             }
             if let Some((reply, used)) = parse_reply(&self.io.inbuf)? {
                 self.io.inbuf.drain(..used);
@@ -648,10 +671,10 @@ impl SkyConn {
                 ticket.set("read_bytes", used);
                 return Ok(reply);
             }
-            if let Some(cut) = self.cut {
-                if cut.after_read_bytes == Some(self.io.inbuf.len()) {
-                    return Err(self.fire_cut("read", ticket));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_read_bytes == Some(self.io.inbuf.len())
+            {
+                return Err(self.fire_cut("read", ticket));
             }
             let n = {
                 let io = &mut self.io;
@@ -671,14 +694,17 @@ impl SkyConn {
             ticket.tag("read", "partial");
             if std::env::var_os("OG_SKY_DEBUG").is_some() {
                 let m = self.io.inbuf.len().min(8);
-                eprintln!("sky read n={n} len={} head={:02x?}", self.io.inbuf.len(), &self.io.inbuf[..m]);
+                eprintln!(
+                    "sky read n={n} len={} head={:02x?}",
+                    self.io.inbuf.len(),
+                    &self.io.inbuf[..m]
+                );
             }
-            if let Some(cut) = self.cut {
-                if cut.after_read_bytes.is_some()
-                    && self.io.inbuf.len() >= cut.after_read_bytes.unwrap_or(usize::MAX)
-                {
-                    return Err(self.fire_cut("read", ticket));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_read_bytes.is_some()
+                && self.io.inbuf.len() >= cut.after_read_bytes.unwrap_or(usize::MAX)
+            {
+                return Err(self.fire_cut("read", ticket));
             }
             let _ = n;
         }
@@ -792,9 +818,7 @@ impl SkyConn {
                 Ok(Some((_reply, used))) => {
                     self.io.inbuf.drain(..used);
                     if !self.io.inbuf.is_empty() {
-                        return RecoveryAttempt::Failed(Cause::Other(
-                            "extra_bytes_after_reply",
-                        ));
+                        return RecoveryAttempt::Failed(Cause::Other("extra_bytes_after_reply"));
                     }
                     // Record the progress before yielding: if the recovery
                     // future dies before minting the witness, the next attempt
@@ -814,12 +838,13 @@ impl SkyConn {
                     return RecoveryAttempt::Failed(Cause::Io);
                 };
                 let mut tmp = [0u8; 512];
-                tokio::time::timeout(timeout, stream.read(&mut tmp)).await.map(|r| {
-                    r.map(|n| {
-                        io.inbuf.extend_from_slice(&tmp[..n]);
-                        n
+                tokio::time::timeout(timeout, stream.read(&mut tmp))
+                    .await
+                    .map(|r| {
+                        r.inspect(|&n| {
+                            io.inbuf.extend_from_slice(&tmp[..n]);
+                        })
                     })
-                })
             };
             match read {
                 Ok(Ok(0)) => return RecoveryAttempt::Failed(Cause::Io),
@@ -876,7 +901,9 @@ impl Manager<SkyConn> for SkyManager {
     }
 
     async fn connect(&self) -> std::io::Result<SkyConn> {
-        Ok(SkyConn::connect(&self.cfg).await?.with_contract(self.contract))
+        Ok(SkyConn::connect(&self.cfg)
+            .await?
+            .with_contract(self.contract))
     }
 
     async fn validate(&self, session: &mut SkyConn) -> ValidateOutcome {
@@ -908,10 +935,7 @@ pub fn sky_features(
             "partial"
         },
     );
-    f.tag(
-        "read",
-        if read_bytes == 0 { "none" } else { "partial" },
-    );
+    f.tag("read", if read_bytes == 0 { "none" } else { "partial" });
     f.set("write_bytes", write_bytes);
     f.set("read_bytes", read_bytes);
     for (k, v) in extra {
@@ -936,10 +960,9 @@ mod tests {
         assert_eq!(
             encode_query("insert into probe4.kv(?, ?)", &params),
             vec![
-                0x53, 0x33, 0x37, 0x0a, 0x32, 0x37, 0x0a, b'i', b'n', b's', b'e', b'r', b't',
-                b' ', b'i', b'n', b't', b'o', b' ', b'p', b'r', b'o', b'b', b'e', b'4', b'.',
-                b'k', b'v', b'(', b'?', b',', b' ', b'?', b')', 0x06, 0x31, 0x0a, b'k', 0x02,
-                0x30, 0x0a
+                0x53, 0x33, 0x37, 0x0a, 0x32, 0x37, 0x0a, b'i', b'n', b's', b'e', b'r', b't', b' ',
+                b'i', b'n', b't', b'o', b' ', b'p', b'r', b'o', b'b', b'e', b'4', b'.', b'k', b'v',
+                b'(', b'?', b',', b' ', b'?', b')', 0x06, 0x31, 0x0a, b'k', 0x02, 0x30, 0x0a
             ]
         );
     }
@@ -951,16 +974,11 @@ mod tests {
             parse_reply(&[0x10, 0x19, 0x00]).unwrap(),
             Some((Reply::Error(25), 3))
         );
-        let row = [
-            0x11, 0x32, 0x0a, 0x0d, 0x31, 0x0a, b'k', 0x05, 0x31, 0x0a,
-        ];
+        let row = [0x11, 0x32, 0x0a, 0x0d, 0x31, 0x0a, b'k', 0x05, 0x31, 0x0a];
         assert_eq!(
             parse_reply(&row).unwrap(),
             Some((
-                Reply::Row(vec![
-                    SkyValue::Str("k".into()),
-                    SkyValue::Uint(1)
-                ]),
+                Reply::Row(vec![SkyValue::Str("k".into()), SkyValue::Uint(1)]),
                 row.len()
             ))
         );
@@ -973,9 +991,7 @@ mod tests {
 
     #[test]
     fn partial_frames_need_more_bytes_and_do_not_advance_external_state() {
-        let full = [
-            0x11, 0x32, 0x0a, 0x0d, 0x31, 0x0a, b'k', 0x05, 0x32, 0x0a,
-        ];
+        let full = [0x11, 0x32, 0x0a, 0x0d, 0x31, 0x0a, b'k', 0x05, 0x32, 0x0a];
         for cut in 0..full.len() - 1 {
             assert_eq!(parse_reply(&full[..cut]).unwrap(), None, "cut {cut}");
         }
@@ -990,10 +1006,7 @@ mod tests {
 
     #[test]
     fn unknown_type_codes_and_bad_lengths_are_protocol_errors() {
-        assert!(matches!(
-            parse_reply(&[0x0f]),
-            Err(SkyError::Protocol(_))
-        ));
+        assert!(matches!(parse_reply(&[0x0f]), Err(SkyError::Protocol(_))));
         assert!(matches!(
             parse_reply(&[0x11, b'x', 0x0a]),
             Err(SkyError::Protocol(_))

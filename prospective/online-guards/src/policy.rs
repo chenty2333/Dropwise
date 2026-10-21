@@ -96,7 +96,7 @@ impl RecoveryPolicy for RuleTable {
             s.push_str(r.note);
         }
         s.push_str("] fallback=");
-            match self.fallback {
+        match self.fallback {
             Plan::Run(p) => s.push_str(p),
             Plan::Retire => s.push_str("retire"),
         }

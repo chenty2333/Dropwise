@@ -6,6 +6,41 @@ claims.  Raw records: `research/online/data/`.  Scripted cuts, natural
 cancellation (proxy-delayed/lost replies), and real-target runs are labelled
 separately; a zero observation is not a completeness proof.
 
+## Review and integration (2026-10-22)
+
+The coordinator corrected the synchronous-repair publication window in the
+other workstream and independently reviewed this implementation. Here, pool
+shutdown now closes admission and worker publication under the state lock;
+shutdown itself drains queued sessions even if a worker has not started. The
+pool enforces the recovery deadline even for an adapter that never returns.
+Queue overflow is not double-counted as an eviction, shutdown refusal is not
+queue overflow, validation rejection is not acquire cancellation, and shutdown
+reports queue drains for that call rather than the pool's lifetime.
+
+The rule study no longer consumes injected delay/loss labels or planned byte
+states. It reads byte state from the interrupted client before executing an
+action, checks the intended cut was reached, and rejects missing/inconsistent
+observations. The experiment checks effect authority before completing a write.
+Sky trials record `mode` and `valid_cut`; invalid cuts prevent aggregate claims.
+
+All B0/B1/B2 clients below are **local strategy models using RawSky**, not the
+upstream Skytable crate or its actual patch. The peer is a real Skytable server.
+The PostgreSQL probe likewise uses the local adapter/naive client, not psycopg
+or asyncpg. These experiments establish mechanism behaviour, not superiority
+over upstream client implementations.
+
+Integration validation: 41 Rust tests passed (38 library + 3 rule-input tests).
+The independent PostgreSQL probe completed; 330 Skytable trials all reached
+valid cuts, and guarded/retire/drain strategies returned the correct successor
+in every trial. The immediate-reuse model still returned stale replies in
+S1/S2/S6/S7, errors in S3/S4 and timeouts in S8. The corrected 135-action rule
+study completed without observation gaps. In the final 3-second, 8-worker load
+rerun, raw drain reached 78,634 ops/s and guard+pool 70,971 ops/s, both with zero
+stale replies/errors/reconnects; guard recovery completed 4,256 attempts. This
+is a single local strategy comparison, not an upstream-client benchmark.
+The large tables below retain the original measured run for historical context;
+they are not relabelled as new measurements.
+
 ## 1. Skytable 0.8.4
 
 Workload per trial: prime `a=111` and `b=222`; perform one operation whose
@@ -19,10 +54,10 @@ the first connection.
 
 Baselines:
 
-- **B0 stock** — immediate reuse; no protection.
-- **B1 poison** — the stock fix's boolean poison + `PoisonOnDrop`: reconnect
+- **B0 raw reuse** — local model of immediate reuse; no protection.
+- **B1 raw retire** — local model of boolean poison/retire: reconnect
   on any suspect object.
-- **B2 drain** — consume one reply frame (120 ms), reconnect if the drain
+- **B2 raw drain** — consume one reply frame (120 ms), reconnect if the drain
   fails; no guard.
 - **B3 guard** — this work: byte-observation policy + quarantine + recovery
   worker; `discard_local` when nothing was written, `drain` when a reply is
@@ -32,46 +67,46 @@ Baselines:
 
 | scenario | baseline | n | unsafe | ok | err | timeout | recovered | reconnects | p50 us | p95 us |
 |---|---|---|---|---|---|---|---|---|---|---|
-| S1_cut_before_read | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 139 | 521 |
-| S1_cut_before_read | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 190280 | 199696 |
-| S1_cut_before_read | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 458 | 933 |
+| S1_cut_before_read | B0_raw_reuse | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 139 | 521 |
+| S1_cut_before_read | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 190280 | 199696 |
+| S1_cut_before_read | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 458 | 933 |
 | S1_cut_before_read | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 672 | 1078 |
-| S2_cut_mid_reply | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 21 | 37 |
-| S2_cut_mid_reply | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 189692 | 199658 |
-| S2_cut_mid_reply | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 292 | 487 |
+| S2_cut_mid_reply | B0_raw_reuse | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 21 | 37 |
+| S2_cut_mid_reply | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 189692 | 199658 |
+| S2_cut_mid_reply | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 292 | 487 |
 | S2_cut_mid_reply | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 483 | 936 |
-| S3_partial_insert | B0_stock | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 41020 | 42461 |
-| S3_partial_insert | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186112 | 186876 |
-| S3_partial_insert | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 307906 | 320433 |
+| S3_partial_insert | B0_raw_reuse | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 41020 | 42461 |
+| S3_partial_insert | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186112 | 186876 |
+| S3_partial_insert | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 307906 | 320433 |
 | S3_partial_insert | B3_guard | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186407 | 195993 |
 | S3_partial_insert | B3f_finish | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 123619 | 124501 |
-| S4_insert_before_read | B0_stock | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 258 | 440 |
-| S4_insert_before_read | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 185472 | 187289 |
-| S4_insert_before_read | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 675 | 1069 |
+| S4_insert_before_read | B0_raw_reuse | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 258 | 440 |
+| S4_insert_before_read | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 185472 | 187289 |
+| S4_insert_before_read | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 675 | 1069 |
 | S4_insert_before_read | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 918 | 1579 |
-| S5_nothing_written | B0_stock | 10 | 0 | 10 | 0 | 0 | 0 | 0 | 393 | 507 |
-| S5_nothing_written | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186068 | 188850 |
-| S5_nothing_written | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 306912 | 310471 |
+| S5_nothing_written | B0_raw_reuse | 10 | 0 | 10 | 0 | 0 | 0 | 0 | 393 | 507 |
+| S5_nothing_written | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186068 | 188850 |
+| S5_nothing_written | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 306912 | 310471 |
 | S5_nothing_written | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 688 | 1118 |
-| S6_late_reply_caught | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 18065 | 18671 |
-| S6_late_reply_caught | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 208526 | 216472 |
-| S6_late_reply_caught | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 41005 | 41451 |
+| S6_late_reply_caught | B0_raw_reuse | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 18065 | 18671 |
+| S6_late_reply_caught | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 208526 | 216472 |
+| S6_late_reply_caught | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 41005 | 41451 |
 | S6_late_reply_caught | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 41065 | 42487 |
-| S7_late_reply_beyond_first_timeout | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 299177 | 299565 |
-| S7_late_reply_beyond_first_timeout | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 487932 | 501087 |
-| S7_late_reply_beyond_first_timeout | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 610824 | 627829 |
+| S7_late_reply_beyond_first_timeout | B0_raw_reuse | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 299177 | 299565 |
+| S7_late_reply_beyond_first_timeout | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 487932 | 501087 |
+| S7_late_reply_beyond_first_timeout | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 610824 | 627829 |
 | S7_late_reply_beyond_first_timeout | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 601376 | 603051 |
-| S8_reply_lost | B0_stock | 10 | 0 | 0 | 0 | 10 | 0 | 0 | 801471 | 802190 |
-| S8_reply_lost | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 187036 | 196991 |
-| S8_reply_lost | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 307696 | 308511 |
+| S8_reply_lost | B0_raw_reuse | 10 | 0 | 0 | 0 | 10 | 0 | 0 | 801471 | 802190 |
+| S8_reply_lost | B1_raw_retire | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 187036 | 196991 |
+| S8_reply_lost | B2_raw_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 307696 | 308511 |
 | S8_reply_lost | B3_guard | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 1516139 | 1519263 |
 
 Reading the table:
 
 - B0 confirms the hazard is real on the wire: 10/10 successors received the
   abandoned `b=222` reply in S1/S2/S6/S7; S3/S4 produced server errors
-  (`-6`/`-108`), and S8 timed out.  It is never safe, even though its p50 is
-  the lowest.
+  (`-6`/`-108`), and S8 timed out.  Immediate reuse fails these interrupted-stream cases, although S5 is a
+  legitimate no-write control and succeeds.
 - B1 is safe everywhere but reconnects in every scenario, including S5 where
   the byte count says nothing left the process.  That is the measured false
   eviction: ~188 ms per event, 10/10 trials.
@@ -167,76 +202,49 @@ required byte-level state to avoid reconnecting when nothing was written.
 The guard's *state machine* is shared; the *recovery plan* is protocol
 specific.
 
-## 4. Rule study (offline action labels)
+## 4. Rule study: observed inputs, not fault-oracle inputs
 
-The action lab runs every (state, action) three times against the real server.
-A state is a byte-level snapshot after a fault: `write`/`read`
-(none/partial/complete), a delay bucket, the effect contract, and the
-operation.  An action is `reuse`, `drain` (120 ms), `drain_slow` (1.2 s),
-`finish_drain` (complete the exact request, then drain), or `retire`
-(reconnect).  Safety is the successor select returning 111; cost is the
-median action latency plus 150 ms per reconnect in the penalised variant; a
-false eviction is a reconnect when some safe action needed none.
+The original `data/rule-lab.log` and `data/rule-table-split-error.txt` are
+historical runs of a flawed experiment: features included configured
+`delay=20ms/300ms/lost` and hard-coded intended byte states. They are **not**
+evidence that these facts can be observed online. Their tables and categorical
+"overfitting" story are superseded by this section.
 
-The nine states include three **holdout** states (complete-mid-reply, insert-
-complete, and a 100 ms delay) that are never in the training set.  S5
-("nothing written") is a counterexample probe: it is in the `mid`/`full`
-training sets, not in `sparse`.
+The corrected executable runs each of 9 states × 5 actions × 3 repetitions
+against a real server (135 action trials). Features are actual `write`/`read`
+state captured before recovery, plus declared `contract` and `op`. No delay,
+loss, scenario name, action result, or future completion is an input. Missing
+observations, unrealized cuts, unexpected operation errors and inconsistent
+states across actions stop the experiment rather than becoming labels.
+Completing a request is screened against its effect authority before execution.
 
-| training set | rules (penalty 0) | holdout cost | unsafe | false evictions | probe S5 |
-|---|---|---|---|---|---|
-| sparse (S1,S3) | 2 | 199,524 us | 0 | 0 | retire, 189 ms, **1 false eviction** |
-| mid (+S5) | 3 | 199,524 us | 0 | 0 | reuse, 284 us, 0 |
-| full (+S6,S7,S8) | 6 | 288,613 us | 0 | **1** (S9) | reuse, 284 us, 0 |
-| retire_all | 1 | 667,244 us | 0 | 3 | retire |
-| drain_only | 1 | 199,524 us | 0 | 0 | drain, 308 ms, **1 false eviction** |
-| handwritten | 4 | 200,399 us | 0 | 0 | reuse, 0 |
+The existing sparse/mid/full training sets and three holdout states remain
+unchanged. Holdout is only a same-protocol scenario split, not an independent
+library or deployment. Each policy is evaluated against the measured action
+table; learned trees are not installed in the production path of the guard.
+Safety here means correct successor association and the declared completion
+authority, not a complete application specification.
 
-Learned trees:
+Removing the oracle exposes a real information limit: delayed and permanently
+lost replies can have identical decision-time observations. Per-state cheapest
+actions can disagree even when the feature vector is identical. A static
+classifier therefore cannot reproduce all those cost-optimal labels. A recovery
+policy may acquire information by bounded waiting; that is an action, not a
+fact available before acting.
 
-```
-sparse:  write=complete -> drain | write=partial -> finish_drain
-mid:     write=complete -> drain | write=none -> reuse | write=partial -> finish_drain
-full:    delay=20ms -> finish_drain | delay=300ms -> retire | delay=lost -> retire
-         delay=none & write=complete -> drain
-         delay=none & write=none -> reuse
-         delay=none & write=partial -> finish_drain
-```
+The integration rerun still shows the S5 counterexample teaching the no-write
+reuse rule. It does **not** establish superiority to a simple drain or hand-written
+policy. The full training set selected retirement for complete writes in this
+run and unnecessarily reconnected on all three holdouts. More samples did not
+repair the missing information. Costs and exact leaves are timing-sensitive;
+this small experiment is an action-label feasibility study, not general rule
+synthesis or feature discovery.
 
-At penalty 150 ms the full tree changes only the 300 ms leaf (`drain_slow`);
-its holdout cost rises to 438,613 us because the penalty makes the S9
-retirement expensive.
-
-What this shows:
-
-- The byte state is the observation that removes the two availability errors
-  the stock and drain-only policies cannot see: `write=none` makes reuse safe
-  (S5, 284 us vs 189 ms), and `write=complete` with a consumed frame makes a
-  drain safe (S1/S2/S4/S6).
-- Adding the S5 counterexample to the offline set **adds a rule** and removes
-  a measured false eviction; the rule is not invented from the protocol, it is
-  selected by the counterexample and the cost model.  This is the concrete
-  independent contribution of offline exploration: it tells the online guard
-  which byte/status facts are worth recording and which action they select.
-- The full tree **overfits categorical delay values**: a 100 ms holdout that
-  was not in the table falls through to `Retire`, paying 189 ms and one
-  reconnect, while a simple `drain` (and the hand-written deadline ladder)
-  handles it at ~200 us.  More offline states did not help the holdout here;
-  the learned rules were worse than `drain_only`.
-- The 20 ms leaf selected `finish_drain`, which is safe in that state because
-  the request is already complete (there is nothing left to write) and the
-  cost is a near-tie (40.8 ms vs 39.7 ms for `drain`).  The tree does not know
-  that finishing is only authorised by the effect contract; it would be wrong
-  to read this leaf as a general rule.
-- The holdout does not contain S5, so `drain_only` looks perfect there and
-  fails the probe.  Reporting only the holdout would hide that; the probe is
-  included for exactly that reason.
-
-The conclusion is deliberately narrow: offline action labels can select and
-justify the online observations and rules under a stated cost model, and a
-counterexample changes the rule; they do not by themselves synthesise a
-policy that generalises across unseen delays, and the learner's categorical
-split is weaker than a hand-written deadline ladder on that axis.
+Reproduce with `cargo build --bins` then
+`./scripts/with-skytable.sh bash -c './target/debug/rule_lab "$SKY_PORT"'`
+from `prospective/online-guards`. Regression tests require identical features
+for 20 ms, 100 ms, 300 ms and lost-reply cases with the same observed byte state,
+and distinguish actual partial writes from planned complete-write cuts.
 
 
 ## 5. Load and tail latency
@@ -249,9 +257,9 @@ operations per worker.
 
 | mode | ops | ops/s | stale | err | faults | reconnects | p50 | p95 | p99 | max |
 |---|---|---|---|---|---|---|---|---|---|---|
-| b0 stock | 416,231 | 138,630 | 1,171 | 8,311 | 8,319 | 0 | 51 us | 104 us | 141 us | 1.5 ms |
-| b1 poison | 5,250 | 1,647 | 0 | 0 | 105 | 105 | 56 us | 327 us | 207 ms | 227 ms |
-| b2 drain | 232,359 | 77,440 | 0 | 0 | 4,644 | 0 | 91 us | 151 us | 184 us | 1.0 ms |
+| b0 raw reuse | 416,231 | 138,630 | 1,171 | 8,311 | 8,319 | 0 | 51 us | 104 us | 141 us | 1.5 ms |
+| b1 raw retire | 5,250 | 1,647 | 0 | 0 | 105 | 105 | 56 us | 327 us | 207 ms | 227 ms |
+| b2 raw drain | 232,359 | 77,440 | 0 | 0 | 4,644 | 0 | 91 us | 151 us | 184 us | 1.0 ms |
 | b3 guard | 205,519 | 68,485 | 0 | 0 | 4,107 | 0 | 102 us | 179 us | 235 us | 225 ms |
 
 B3's pool snapshot: `connects=8 retired_suspect=0 recovery_ok=4107
@@ -263,7 +271,7 @@ failed=0 unresolved=0 queue_full=0`.
   reconnect; the p99 is 207 ms and the run completes only 5,250 operations.
 - B2 and B3 both keep zero reconnects under this fault schedule; B3 costs
   about 12% throughput relative to B2 (68,485 vs 77,440 ops/s) for the guard,
-  quarantine, and recovery worker, and is 42x B1.
+  quarantine, and recovery worker, in these local strategy implementations. This does not measure upstream-library speedups.
 - B3's p99 (235 us) is close to B2's (184 us), but its max is 225 ms: when
   several sessions become suspect at once, the single recovery worker
   serialises attempts and a successor can wait for the queue.  The tail is
@@ -272,8 +280,7 @@ failed=0 unresolved=0 queue_full=0`.
   fix that is not implemented here.
 - These are scripted faults at a high rate on loopback, not a production
   capacity claim.  The reconnect cost (~190 ms) is this host's
-  authentication cost; on a WAN/TLS link the B1 collapse would be worse and
-  B3's zero-reconnect path more valuable.
+  authentication cost; WAN/TLS behaviour has not been measured and cannot be inferred from this ratio.
 
 
 ## 6. Hypotheses that did not survive
@@ -296,10 +303,10 @@ failed=0 unresolved=0 queue_full=0`.
 - *"Positional replies can be matched after reuse."*  False: B0 returns 222
   for a successor that asked for 111; in PostgreSQL the shift moves a whole
   transaction, not just a value.
-- *"Offline labels alone produce the online rules."*  Partly false: byte
-  state separates discard/drain/finish/retire, but delayed vs lost needs a
-  delay observation, and the choice between waiting and reconnecting depends
-  on a reconnect-cost input that is not in the state.
+- *"Offline labels alone produce cost-optimal online rules."* False in this
+  experiment: identical observed states can require different cost-optimal
+  actions. The configured delay/loss is not an available online observation.
+  Declared authority, bounded waiting and an explicit cost model remain needed.
 
 ## 7. Adversarial review and fixes
 
@@ -346,8 +353,8 @@ Fixed and exercised:
 - **Pool acquire/return vs shutdown.**  `make_lease` re-checks `closed` while
   holding the state lock, `put_back` checks and pushes under the same lock,
   and `enqueue_recovery` refuses after `closed`; the tested paths no longer
-  hand out or strand a session after shutdown.  A narrow queue/worker-start
-  interleaving in `shutdown` remains possible and is listed below.
+  hand out a dirty session. Integration additionally closes worker publication
+  and queue/worker-start interleavings with deterministic regression tests.
 - **Effect authority used the connection's current contract.**  Recovery now
   uses the contract recorded in the abandoned operation's report
   (`RecoveryContext.contract`), so `with_contract` on a live connection cannot
@@ -356,7 +363,7 @@ Fixed and exercised:
   requires `MayApply`, because there is nothing left to finish.
 - **PG cut snapshots were never stored**; the probe can now observe them.
 
-Disclosed, not fixed:
+Remaining measurement qualifications:
 
 - The `unsafe` column counts only stale/empty successors.  B0's S3/S4
   successors received server errors (contaminated stream) and are shown in
@@ -367,19 +374,15 @@ Disclosed, not fixed:
   reconnect attempts.  The two are not identical quantities.
 - B3's measured latency includes the side-effect check for S3/S4 (an extra
   query); it is a small overestimate, not material at ~190 ms.
-- S6-S8 are proxy-injected cancellations.  The scenario name and this report
-  say so; the JSONL records do not carry a mode field, and the 2 ms cancel
-  timer can fire before the write completes (the intended state is asserted,
-  not re-observed from the cut snapshot in the rule lab).
+- S6-S8 are proxy-injected cancellations. Historical JSONL lacks a mode field;
+  current records include it and the observed byte state. The 2 ms timer can
+  fire before the intended state; current runs reject such trials explicitly.
 - `last_plan` is written before execution, so the plan column is the selected
   plan, not a claim that it succeeded; `recovery` and `reconnects` carry the
   outcome.
-- Shutdown: an enqueue that lands between the queue drain and the worker
-  shutdown can still be refused/retired but not served; the narrow race is
-  noted rather than claimed impossible.
-- Counter/report definitions (`evictions`, `ShutdownReport.drained_queue`,
-  `Hold::drop`) still have the review's edge cases; the tables above use the
-  explicit fields, not those composite counters.
+- Shutdown and counter defects listed in the original review are repaired in
+  the integration changes described above; tests exercise the exact handoff
+  boundaries. This is not a formal concurrency proof.
 
 ## 8. Limits
 
@@ -398,5 +401,5 @@ Disclosed, not fixed:
   behaviour, not a general synthesis method.
 - The review was static and found defects that the original probes did not
   exercise; the fixes above are covered by unit tests and the PG probe.  The
-  Sky and load tables were re-run on the fixed code; the rule-lab table was
-  collected with the raw baselines and is unaffected by the guard/pool fixes.
+  Sky/load and PostgreSQL probes were independently re-run during integration;
+  the rule study required a separate methodological correction (§4).

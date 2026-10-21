@@ -70,7 +70,10 @@ impl RawSky {
 
     async fn handshake(&mut self) -> std::io::Result<()> {
         let Some(stream) = self.stream.as_mut() else {
-            return Err(std::io::Error::new(std::io::ErrorKind::NotConnected, "closed"));
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotConnected,
+                "closed",
+            ));
         };
         let mut hs = Vec::new();
         hs.extend_from_slice(&[b'H', 0, 0, 0, 0, 0]);
@@ -162,10 +165,10 @@ impl RawSky {
             if self.out_off >= self.out.len() {
                 break;
             }
-            if let Some(cut) = self.cut {
-                if cut.after_write_bytes == Some(self.out_off) {
-                    return Err(self.fire_cut("write"));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_write_bytes == Some(self.out_off)
+            {
+                return Err(self.fire_cut("write"));
             }
             let (stream, out, off) = {
                 let Some(stream) = self.stream.as_mut() else {
@@ -182,47 +185,48 @@ impl RawSky {
                 return Err(SkyError::Closed);
             }
             *off += n;
-            if let Some(cut) = self.cut {
-                if let Some(at) = cut.after_write_bytes {
-                    if *off >= at {
-                        return Err(self.fire_cut("write"));
-                    }
-                }
+            if let Some(cut) = self.cut
+                && let Some(at) = cut.after_write_bytes
+                && *off >= at
+            {
+                return Err(self.fire_cut("write"));
             }
         }
         loop {
             // A cut at zero read bytes means "abandon before reading any of
             // the reply"; it must win over a reply that was already buffered.
-            if let Some(cut) = self.cut {
-                if cut.after_read_bytes == Some(0) {
-                    return Err(self.fire_cut("read"));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_read_bytes == Some(0)
+            {
+                return Err(self.fire_cut("read"));
             }
             if let Some((reply, used)) = parse_reply(&self.inbuf)? {
                 self.inbuf.drain(..used);
                 self.poisoned = false;
                 return Ok(reply);
             }
-            if let Some(cut) = self.cut {
-                if cut.after_read_bytes == Some(self.inbuf.len()) {
-                    return Err(self.fire_cut("read"));
-                }
+            if let Some(cut) = self.cut
+                && cut.after_read_bytes == Some(self.inbuf.len())
+            {
+                return Err(self.fire_cut("read"));
             }
             let n = {
                 let Some(stream) = self.stream.as_mut() else {
                     return Err(SkyError::Closed);
                 };
-                stream.read_buf(&mut self.inbuf).await.map_err(SkyError::Io)?
+                stream
+                    .read_buf(&mut self.inbuf)
+                    .await
+                    .map_err(SkyError::Io)?
             };
             if n == 0 {
                 return Err(SkyError::Closed);
             }
-            if let Some(cut) = self.cut {
-                if let Some(at) = cut.after_read_bytes {
-                    if self.inbuf.len() >= at {
-                        return Err(self.fire_cut("read"));
-                    }
-                }
+            if let Some(cut) = self.cut
+                && let Some(at) = cut.after_read_bytes
+                && self.inbuf.len() >= at
+            {
+                return Err(self.fire_cut("read"));
             }
         }
     }
@@ -238,7 +242,11 @@ impl RawSky {
                 "partial"
             },
             read_bytes: self.inbuf.len(),
-            read_state: if self.inbuf.is_empty() { "none" } else { "partial" },
+            read_state: if self.inbuf.is_empty() {
+                "none"
+            } else {
+                "partial"
+            },
             fired_after,
         };
         self.last_cut = Some(snapshot.clone());
@@ -266,7 +274,7 @@ impl RawSky {
                     return Err(SkyError::Io(std::io::Error::new(
                         std::io::ErrorKind::TimedOut,
                         "finish write timeout",
-                    )))
+                    )));
                 }
             }
         }
@@ -298,10 +306,12 @@ impl RawSky {
                 Ok(Ok(0)) => return Err(SkyError::Closed),
                 Ok(Ok(_)) => {}
                 Ok(Err(e)) => return Err(SkyError::Io(e)),
-                Err(_) => return Err(SkyError::Io(std::io::Error::new(
-                    std::io::ErrorKind::TimedOut,
-                    "drain timeout",
-                ))),
+                Err(_) => {
+                    return Err(SkyError::Io(std::io::Error::new(
+                        std::io::ErrorKind::TimedOut,
+                        "drain timeout",
+                    )));
+                }
             }
         }
     }

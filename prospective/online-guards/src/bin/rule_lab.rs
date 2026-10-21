@@ -8,7 +8,7 @@
 //! replies.  The learned tables are evaluated on held-out states, including
 //! states with a different reply delay.
 
-use online_guards::lab::actions::{Action, ActionResult, apply, prepare, successor};
+use online_guards::lab::actions::{Action, ActionResult, Injection, apply, prepare, successor};
 use online_guards::lab::proxy::ProxyMode;
 use online_guards::proto::sky::CutPoint;
 use std::collections::BTreeMap;
@@ -27,11 +27,7 @@ struct StateSpec {
     cut_op: char,
     write: &'static str,
     read: &'static str,
-    wbucket: &'static str,
-    rbucket: &'static str,
-    delay: &'static str,
     op: &'static str,
-    train_sparse: bool,
     holdout: bool,
 }
 
@@ -58,11 +54,7 @@ fn states() -> Vec<StateSpec> {
             cut_op: 's',
             write: "complete",
             read: "none",
-            wbucket: "17_64",
-            rbucket: "0",
-            delay: "none",
             op: "select",
-            train_sparse: true,
             holdout: false,
         },
         StateSpec {
@@ -74,11 +66,7 @@ fn states() -> Vec<StateSpec> {
             cut_op: 's',
             write: "complete",
             read: "partial",
-            wbucket: "17_64",
-            rbucket: "9_32",
-            delay: "none",
             op: "select",
-            train_sparse: false,
             holdout: true,
         },
         StateSpec {
@@ -93,11 +81,7 @@ fn states() -> Vec<StateSpec> {
             cut_op: 'i',
             write: "partial",
             read: "none",
-            wbucket: "1_16",
-            rbucket: "0",
-            delay: "none",
             op: "insert",
-            train_sparse: true,
             holdout: false,
         },
         StateSpec {
@@ -109,11 +93,7 @@ fn states() -> Vec<StateSpec> {
             cut_op: 'i',
             write: "complete",
             read: "none",
-            wbucket: "17_64",
-            rbucket: "0",
-            delay: "none",
             op: "insert",
-            train_sparse: false,
             holdout: true,
         },
         StateSpec {
@@ -125,43 +105,37 @@ fn states() -> Vec<StateSpec> {
             cut_op: 's',
             write: "none",
             read: "none",
-            wbucket: "0",
-            rbucket: "0",
-            delay: "none",
             op: "select",
-            train_sparse: false,
             holdout: false,
         },
         StateSpec {
             name: "S6_delay_20ms",
             cut: None,
             write_chunk: None,
-            natural: Some((ProxyMode::Delay(Duration::from_millis(20)), Duration::from_millis(2))),
+            natural: Some((
+                ProxyMode::Delay(Duration::from_millis(20)),
+                Duration::from_millis(2),
+            )),
             contract: "must",
             cut_op: 's',
             write: "complete",
             read: "none",
-            wbucket: "17_64",
-            rbucket: "0",
-            delay: "20ms",
             op: "select",
-            train_sparse: false,
             holdout: false,
         },
         StateSpec {
             name: "S7_delay_300ms",
             cut: None,
             write_chunk: None,
-            natural: Some((ProxyMode::Delay(Duration::from_millis(300)), Duration::from_millis(2))),
+            natural: Some((
+                ProxyMode::Delay(Duration::from_millis(300)),
+                Duration::from_millis(2),
+            )),
             contract: "must",
             cut_op: 's',
             write: "complete",
             read: "none",
-            wbucket: "17_64",
-            rbucket: "0",
-            delay: "300ms",
             op: "select",
-            train_sparse: false,
             holdout: false,
         },
         StateSpec {
@@ -173,46 +147,51 @@ fn states() -> Vec<StateSpec> {
             cut_op: 's',
             write: "complete",
             read: "none",
-            wbucket: "17_64",
-            rbucket: "0",
-            delay: "lost",
             op: "select",
-            train_sparse: false,
             holdout: false,
         },
         StateSpec {
             name: "S9_delay_100ms",
             cut: None,
             write_chunk: None,
-            natural: Some((ProxyMode::Delay(Duration::from_millis(100)), Duration::from_millis(2))),
+            natural: Some((
+                ProxyMode::Delay(Duration::from_millis(100)),
+                Duration::from_millis(2),
+            )),
             contract: "must",
             cut_op: 's',
             write: "complete",
             read: "none",
-            wbucket: "17_64",
-            rbucket: "0",
-            delay: "100ms",
             op: "select",
-            train_sparse: false,
             holdout: true,
         },
     ]
 }
 
-fn features_of(s: &StateSpec) -> BTreeMap<String, String> {
-    let mut m = BTreeMap::new();
-    m.insert("write".into(), s.write.into());
-    m.insert("read".into(), s.read.into());
-    m.insert("wbucket".into(), s.wbucket.into());
-    m.insert("rbucket".into(), s.rbucket.into());
-    m.insert("contract".into(), s.contract.into());
-    m.insert("delay".into(), s.delay.into());
-    m.insert("op".into(), s.op.into());
-    m
+// Only facts present at the decision boundary. Fault configuration (including
+// whether a reply is lost) is intentionally not a feature.
+fn observed_features(s: &StateSpec, io: (usize, usize, usize)) -> BTreeMap<String, String> {
+    let (written, total, read) = io;
+    let write = if written == 0 {
+        "none"
+    } else if written == total {
+        "complete"
+    } else {
+        "partial"
+    };
+    let read = if read == 0 { "none" } else { "partial" };
+    BTreeMap::from([
+        ("write".into(), write.into()),
+        ("read".into(), read.into()),
+        ("contract".into(), s.contract.into()),
+        ("op".into(), s.op.into()),
+    ])
 }
 
-fn key_for(s: &StateSpec) -> (&'static str, &'static str) {
-    (s.name, "")
+fn authorised(action: Action, f: &BTreeMap<String, String>) -> bool {
+    action != Action::FinishDrain
+        || f.get("write").map(String::as_str) == Some("complete")
+        || f.get("contract").map(String::as_str) == Some("may")
 }
 
 async fn run_action(
@@ -239,9 +218,11 @@ async fn run_action(
         space,
         server,
         pass,
-        s.natural,
-        s.cut,
-        s.write_chunk,
+        Injection {
+            natural: s.natural,
+            cut: s.cut,
+            write_chunk: s.write_chunk,
+        },
         &cut_sql,
         &cut_params,
     )
@@ -251,6 +232,7 @@ async fn run_action(
         Err(e) => {
             return ActionResult {
                 action,
+                observed: None,
                 safe: false,
                 latency_us: 0,
                 reconnects: 0,
@@ -259,6 +241,30 @@ async fn run_action(
             };
         }
     };
+    let observed = observed_features(s, run.raw.io_state());
+    // A timer firing is not proof of the intended byte boundary. Reject the
+    // experiment instead of assigning a successful action to an unrealized cut.
+    assert_eq!(
+        observed["write"], s.write,
+        "unrealized write state: {}",
+        s.name
+    );
+    assert_eq!(
+        observed["read"], s.read,
+        "unrealized read state: {}",
+        s.name
+    );
+    if !authorised(action, &observed) {
+        return ActionResult {
+            action,
+            observed: Some(observed),
+            safe: false,
+            latency_us: 0,
+            reconnects: 0,
+            side_effect: None,
+            note: "unauthorised action; not executed".into(),
+        };
+    }
     let timeout = if action == Action::DrainSlow {
         Duration::from_millis(1200)
     } else {
@@ -284,6 +290,7 @@ async fn run_action(
     };
     ActionResult {
         action,
+        observed: Some(observed),
         safe: kind == "ok",
         latency_us,
         reconnects: run.raw.reconnects as i64,
@@ -320,7 +327,11 @@ impl Tree {
 
     fn rules(&self) -> Vec<(Vec<(String, String)>, Action)> {
         let mut out = Vec::new();
-        fn walk(t: &Tree, path: &mut Vec<(String, String)>, out: &mut Vec<(Vec<(String, String)>, Action)>) {
+        fn walk(
+            t: &Tree,
+            path: &mut Vec<(String, String)>,
+            out: &mut Vec<(Vec<(String, String)>, Action)>,
+        ) {
             match t {
                 Tree::Leaf(a) => out.push((path.clone(), *a)),
                 Tree::Split { feat, children } => {
@@ -373,7 +384,11 @@ fn learn(samples: &[Sample], feats: &[&str], depth: usize) -> Tree {
         *counts.entry(s.label).or_default() += 1;
     }
     if counts.len() == 1 || depth >= 5 {
-        let best = counts.iter().max_by_key(|(_, n)| **n).map(|(a, _)| *a).unwrap();
+        let best = counts
+            .iter()
+            .max_by_key(|(_, n)| **n)
+            .map(|(a, _)| *a)
+            .unwrap();
         return Tree::Leaf(best);
     }
     let base = entropy(samples);
@@ -397,7 +412,11 @@ fn learn(samples: &[Sample], feats: &[&str], depth: usize) -> Tree {
     }
     match best {
         None => {
-            let best = counts.iter().max_by_key(|(_, n)| **n).map(|(a, _)| *a).unwrap();
+            let best = counts
+                .iter()
+                .max_by_key(|(_, n)| **n)
+                .map(|(a, _)| *a)
+                .unwrap();
             Tree::Leaf(best)
         }
         Some((_, f)) => {
@@ -421,12 +440,9 @@ fn learn(samples: &[Sample], feats: &[&str], depth: usize) -> Tree {
     }
 }
 
-fn action_cost(r: &ActionResult, penalty: u64) -> u64 {
-    r.latency_us + penalty * (r.reconnects.max(0) as u64)
-}
-
 #[derive(Clone, Debug)]
 struct Cell {
+    observed: BTreeMap<String, String>,
     safe_runs: usize,
     runs: usize,
     median_latency: u64,
@@ -436,11 +452,23 @@ struct Cell {
 }
 
 fn cell(results: &[ActionResult]) -> Cell {
+    let observed = results
+        .first()
+        .and_then(|r| r.observed.clone())
+        .expect("missing observation: preparation failed, no valid experiment");
+    for r in results {
+        assert_eq!(
+            r.observed.as_ref(),
+            Some(&observed),
+            "unstable/missing decision state; cannot label an action cell"
+        );
+    }
     let mut lat: Vec<u64> = results.iter().map(|r| r.latency_us).collect();
     lat.sort_unstable();
     let mut recs: Vec<i64> = results.iter().map(|r| r.reconnects).collect();
     recs.sort_unstable();
     Cell {
+        observed,
         safe_runs: results.iter().filter(|r| r.safe).count(),
         runs: results.len(),
         median_latency: lat.get(lat.len() / 2).copied().unwrap_or(0),
@@ -471,7 +499,7 @@ struct PolicyResult {
 fn evaluate(
     name: &'static str,
     rules: usize,
-    choose: impl Fn(&StateSpec) -> Action,
+    choose: impl Fn(&BTreeMap<String, String>) -> Action,
     table: &BTreeMap<(String, Action), Cell>,
     states: &[StateSpec],
     penalty: u64,
@@ -481,11 +509,10 @@ fn evaluate(
     let mut total_cost = 0;
     let mut details = Vec::new();
     for s in states {
-        let a = choose(s);
-        let c = table
-            .get(&(s.name.to_string(), a))
-            .expect("action cell");
-        if !c.safe() {
+        let f = &table[&(s.name.to_string(), Action::Reuse)].observed;
+        let a = choose(f);
+        let c = table.get(&(s.name.to_string(), a)).expect("action cell");
+        if !c.safe() || !authorised(a, f) {
             unsafe_choices += 1;
         }
         total_cost += c.cost(penalty);
@@ -543,10 +570,10 @@ async fn main() {
     let states = states();
     let mut table: BTreeMap<(String, Action), Cell> = BTreeMap::new();
     for (si, s) in states.iter().enumerate() {
-        if let Ok(only) = std::env::var("RULE_ONLY") {
-            if !s.name.contains(&only) {
-                continue;
-            }
+        if let Ok(only) = std::env::var("RULE_ONLY")
+            && !s.name.contains(&only)
+        {
+            continue;
         }
         for a in Action::ALL {
             if s.cut_op == 'i' && a == Action::FinishDrain && s.write != "partial" {
@@ -565,23 +592,50 @@ async fn main() {
             let c = cell(&results);
             println!(
                 "{:30} {:14} safe={}/{} lat={}us rec={} side={:?} | {}",
-                s.name, a.name(), c.safe_runs, c.runs, c.median_latency, c.median_reconnects,
-                c.side_effect, c.note
+                s.name,
+                a.name(),
+                c.safe_runs,
+                c.runs,
+                c.median_latency,
+                c.median_reconnects,
+                c.side_effect,
+                c.note
             );
+            if let Some(first) = table.get(&(s.name.to_string(), Action::Reuse)) {
+                assert_eq!(
+                    first.observed, c.observed,
+                    "actions reached different states"
+                );
+            }
+            println!("    observed={:?}", c.observed);
             table.insert((s.name.to_string(), a), c);
         }
     }
 
-    let feats = ["write", "read", "wbucket", "rbucket", "contract", "delay", "op"];
+    if std::env::var_os("RULE_ONLY").is_some() {
+        return; // Partial diagnostic runs are not complete policy evaluations.
+    }
+    let feats = ["write", "read", "contract", "op"];
     let holdout: Vec<StateSpec> = states.iter().filter(|s| s.holdout).cloned().collect();
-    let probe: Vec<StateSpec> = states.iter().filter(|s| s.name == "S5_nothing_written").cloned().collect();
+    let probe: Vec<StateSpec> = states
+        .iter()
+        .filter(|s| s.name == "S5_nothing_written")
+        .cloned()
+        .collect();
     for penalty in [0u64, RECONNECT_PENALTY_US] {
         println!("\n### penalty={penalty}us");
         for (setname, names) in [
-            ("sparse", vec!["S1_complete_before_read", "S3_partial_insert"]),
+            (
+                "sparse",
+                vec!["S1_complete_before_read", "S3_partial_insert"],
+            ),
             (
                 "mid",
-                vec!["S1_complete_before_read", "S3_partial_insert", "S5_nothing_written"],
+                vec![
+                    "S1_complete_before_read",
+                    "S3_partial_insert",
+                    "S5_nothing_written",
+                ],
             ),
             (
                 "full",
@@ -611,7 +665,7 @@ async fn main() {
                         }
                     }
                     best.map(|(a, _)| Sample {
-                        features: features_of(s),
+                        features: table[&(s.name.to_string(), Action::Reuse)].observed.clone(),
                         label: a,
                     })
                 })
@@ -622,23 +676,38 @@ async fn main() {
             let tree_rules = tree.rules().len();
             let tree_for_eval = tree.clone();
             for (name, rules, f) in [
-                ("stock_reuse", 1, Box::new(|_: &StateSpec| Action::Reuse) as Box<dyn Fn(&StateSpec) -> Action>),
-                ("retire_all", 1, Box::new(|_: &StateSpec| Action::Retire)),
-                ("drain_only", 1, Box::new(|_: &StateSpec| Action::Drain)),
+                (
+                    "stock_reuse",
+                    1,
+                    Box::new(|_: &BTreeMap<String, String>| Action::Reuse)
+                        as Box<dyn Fn(&BTreeMap<String, String>) -> Action>,
+                ),
+                (
+                    "retire_all",
+                    1,
+                    Box::new(|_: &BTreeMap<String, String>| Action::Retire),
+                ),
+                (
+                    "drain_only",
+                    1,
+                    Box::new(|_: &BTreeMap<String, String>| Action::Drain),
+                ),
                 (
                     "handwritten",
                     4,
-                    Box::new(|s: &StateSpec| match (s.write, s.contract) {
-                        ("none", _) => Action::Reuse,
-                        ("partial", "may") => Action::FinishDrain,
-                        ("partial", _) => Action::Retire,
-                        _ => Action::DrainSlow,
+                    Box::new(|f: &BTreeMap<String, String>| {
+                        match (f["write"].as_str(), f["contract"].as_str()) {
+                            ("none", _) => Action::Reuse,
+                            ("partial", "may") => Action::FinishDrain,
+                            ("partial", _) => Action::Retire,
+                            _ => Action::DrainSlow,
+                        }
                     }),
                 ),
                 (
                     "learned",
                     tree_rules,
-                    Box::new(move |s: &StateSpec| tree_for_eval.decide(&features_of(s))),
+                    Box::new(move |f: &BTreeMap<String, String>| tree_for_eval.decide(f)),
                 ),
             ] {
                 let r = evaluate(name, rules, f, &table, &holdout, penalty);
@@ -650,7 +719,14 @@ async fn main() {
                     println!("    {d}");
                 }
                 if name == "learned" {
-                    let p = evaluate("probe_S5", tree_rules, |s: &StateSpec| tree.decide(&features_of(s)), &table, &probe, penalty);
+                    let p = evaluate(
+                        "probe_S5",
+                        tree_rules,
+                        |f: &BTreeMap<String, String>| tree.decide(f),
+                        &table,
+                        &probe,
+                        penalty,
+                    );
                     println!(
                         "    probe S5_nothing_written: {} unsafe={} false_evictions={} cost={}",
                         p.details.first().cloned().unwrap_or_default(),
@@ -661,5 +737,45 @@ async fn main() {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn slow_lost_and_unseen_delays_are_indistinguishable_before_recovery() {
+        let all = states();
+        let f = observed_features(&all[5], (32, 32, 0));
+        for i in [6, 7, 8] {
+            assert_eq!(f, observed_features(&all[i], (32, 32, 0)));
+        }
+        assert!(!f.contains_key("delay"));
+        assert!(!f.contains_key("name"));
+    }
+
+    #[test]
+    fn observation_is_not_the_planned_cut() {
+        let s = &states()[0]; // expects complete/none
+        let f = observed_features(s, (3, 32, 1));
+        assert_eq!(f["write"], "partial");
+        assert_eq!(f["read"], "partial");
+        assert!(!authorised(Action::FinishDrain, &f));
+        assert!(authorised(Action::Retire, &f));
+    }
+
+    #[test]
+    #[should_panic(expected = "missing observation")]
+    fn preparation_failure_is_not_an_unsafe_training_sample() {
+        cell(&[ActionResult {
+            action: Action::Reuse,
+            observed: None,
+            safe: false,
+            latency_us: 0,
+            reconnects: 0,
+            side_effect: None,
+            note: "setup failed".into(),
+        }]);
     }
 }

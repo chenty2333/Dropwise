@@ -1,6 +1,6 @@
 //! Policies under comparison.  The handwritten guarded policy is deliberately
-//! small; the rule study learns a table with the same feature vocabulary so
-//! the two can be compared without a representation advantage.
+//! small. The rule study uses decision-time byte state and declared authority;
+//! proxy delay/loss configuration is not an online feature.
 
 use crate::features::Features;
 use crate::guard::Suspect;
@@ -28,9 +28,7 @@ impl RecoveryPolicy for ByteStatePolicy {
                     Plan::Run("drain")
                 }
             }
-            ("partial", _)
-                if self.allow_finish_write && contract == "may_apply" =>
-            {
+            ("partial", _) if self.allow_finish_write && contract == "may_apply" => {
                 if s.attempts >= 2 {
                     Plan::Run("finish_write_drain_slow")
                 } else {
@@ -74,11 +72,7 @@ impl LearnedPolicy {
     pub fn render(&self) -> String {
         let mut out = String::new();
         for r in &self.rules {
-            let cond: Vec<String> = r
-                .when
-                .iter()
-                .map(|(k, v)| format!("{k}={v}"))
-                .collect();
+            let cond: Vec<String> = r.when.iter().map(|(k, v)| format!("{k}={v}")).collect();
             let plan = match r.plan {
                 Plan::Run(p) => p,
                 Plan::Retire => "retire",
@@ -92,10 +86,7 @@ impl LearnedPolicy {
 impl RecoveryPolicy for LearnedPolicy {
     fn choose(&self, s: &Suspect) -> Plan {
         for r in &self.rules {
-            if r.when
-                .iter()
-                .all(|(k, v)| s.features.name(k) == Some(*v))
-            {
+            if r.when.iter().all(|(k, v)| s.features.name(k) == Some(*v)) {
                 return r.plan;
             }
         }

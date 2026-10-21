@@ -17,7 +17,7 @@
 use online_guards::lab::policy::ByteStatePolicy;
 use online_guards::lab::raw::{RawSky, ReuseRule};
 use online_guards::pool::{Pool, PoolConfig};
-use online_guards::proto::sky::{CutPoint, Reply, SkyConfig, SkyManager, SkyValue, encode_param_str};
+use online_guards::proto::sky::{CutPoint, Reply, SkyConfig, SkyManager, encode_param_str};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -86,17 +86,18 @@ async fn raw_worker(
     stop: Arc<AtomicBool>,
 ) -> Stats {
     let mut st = Stats::default();
-    let mut raw = match RawSky::connect(0, SkyConfig::loopback(server.port(), "root", &pass), rule).await {
-        Ok(r) => r,
-        Err(_) => {
-            st.error += 1;
-            return st;
-        }
-    };
+    let mut raw =
+        match RawSky::connect(0, SkyConfig::loopback(server.port(), "root", &pass), rule).await {
+            Ok(r) => r,
+            Err(_) => {
+                st.error += 1;
+                return st;
+            }
+        };
     let mut i = 0u64;
     while !stop.load(Ordering::Relaxed) {
         i += 1;
-        let fault = fault_every > 0 && i % fault_every == 0;
+        let fault = fault_every > 0 && i.is_multiple_of(fault_every);
         let started = Instant::now();
         if fault {
             st.faults += 1;
@@ -147,7 +148,7 @@ async fn pool_worker(
     let mut i = 0u64;
     while !stop.load(Ordering::Relaxed) {
         i += 1;
-        let fault = fault_every > 0 && i % fault_every == 0;
+        let fault = fault_every > 0 && i.is_multiple_of(fault_every);
         let started = Instant::now();
         let mut lease = match pool.acquire().await {
             Ok(l) => l,
@@ -203,40 +204,62 @@ async fn main() {
         .expect("usage: throughput <port> [seconds] [concurrency] [fault_every]")
         .parse()
         .unwrap();
-    let seconds: u64 = std::env::args().nth(2).and_then(|s| s.parse().ok()).unwrap_or(3);
-    let conc: usize = std::env::args().nth(3).and_then(|s| s.parse().ok()).unwrap_or(8);
-    let fault_every: u64 = std::env::args().nth(4).and_then(|s| s.parse().ok()).unwrap_or(50);
+    let seconds: u64 = std::env::args()
+        .nth(2)
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(3);
+    let conc: usize = std::env::args()
+        .nth(3)
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(8);
+    let fault_every: u64 = std::env::args()
+        .nth(4)
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(50);
     let pass = std::env::var("SKY_PASS").unwrap_or_else(|_| "online-guards-pass".into());
     let server: SocketAddr = format!("127.0.0.1:{port}").parse().unwrap();
     let space = format!("tp{}", std::process::id());
     {
         let cfg = SkyConfig::loopback(port, "root", &pass);
-        let mut c = online_guards::proto::sky::SkyConn::connect(&cfg).await.expect("connect");
-        c.query(&format!("create space {space}")).await.expect("space");
+        let mut c = online_guards::proto::sky::SkyConn::connect(&cfg)
+            .await
+            .expect("connect");
+        c.query(&format!("create space {space}"))
+            .await
+            .expect("space");
         c.query(&format!("create model {space}.kv(id: string, v: uint64)"))
             .await
             .expect("model");
         for (w, v) in [('a', A_VAL), ('b', B_VAL)] {
             let mut p = encode_param_str(&key(&space, w));
             p.extend(online_guards::proto::sky::encode_param_uint(v));
-            c.query_with(&format!("insert into {space}.kv(?, ?)"), &p).await.expect("prime");
+            c.query_with(&format!("insert into {space}.kv(?, ?)"), &p)
+                .await
+                .expect("prime");
         }
     }
     println!("mode conc={conc} fault_every={fault_every} seconds={seconds}");
-    println!("| mode | ops | ops/s | ok | stale | err | timeout | faults | reconnects | p50 us | p95 us | p99 us | max us |");
+    println!(
+        "| mode | ops | ops/s | ok | stale | err | timeout | faults | reconnects | p50 us | p95 us | p99 us | max us |"
+    );
     println!("|---|---|---|---|---|---|---|---|---|---|---|---|---|");
     for mode in ["b0", "b1", "b2", "b3"] {
         let stop = Arc::new(AtomicBool::new(false));
         let mut handles = Vec::new();
         let pool = if mode == "b3" {
             Some(Arc::new(Pool::new(
-                SkyManager::new(SkyConfig::loopback(port, "root", &pass), online_guards::recovery::EffectContract::MustNotApply),
+                SkyManager::new(
+                    SkyConfig::loopback(port, "root", &pass),
+                    online_guards::recovery::EffectContract::MustNotApply,
+                ),
                 PoolConfig {
                     name: "tp",
                     max_size: conc,
                     recovery_capacity: conc,
                     validate_on_checkout: false,
-                    policy: Arc::new(ByteStatePolicy { allow_finish_write: false }),
+                    policy: Arc::new(ByteStatePolicy {
+                        allow_finish_write: false,
+                    }),
                     acquire_timeout: Some(Duration::from_secs(3)),
                     retry_delay: Duration::from_millis(5),
                     ..PoolConfig::default()
@@ -292,10 +315,14 @@ async fn main() {
             let s = p.snapshot();
             println!(
                 "  pool snapshot: connects={} retired_suspect={} recovery_ok={} failed={} unresolved={} queue_full={}",
-                s.connects, s.retired_suspect, s.recovery_succeeded, s.recovery_failed, s.recovery_unresolved, s.queue_full
+                s.connects,
+                s.retired_suspect,
+                s.recovery_succeeded,
+                s.recovery_failed,
+                s.recovery_unresolved,
+                s.queue_full
             );
             p.shutdown(Duration::from_millis(300)).await;
         }
     }
-    let _ = std::fs::write("/tmp/tp-space", &space);
 }
