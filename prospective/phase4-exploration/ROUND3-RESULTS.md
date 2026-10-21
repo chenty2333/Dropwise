@@ -819,7 +819,7 @@ M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok
 | psycopg 3.3.6 direct | B1/B2/B3 0/18；M1 12/18（6 Post、12 Neither）；B2/B3 的值里已有 `status_after_acquire=INTRANS`，但 level 只看逃逸错误 | **direct-handle 静默泄漏**；B2/B3 语义盲，M1 才是判据 |
 | psycopg pool | B1/B2/B3/M1 全 0/18；release rollback INTRANS→IDLE | **clean/self-heal 正例** |
 | asyncpg 0.32.0 direct | 新 B1-B3 0/9、M1 **9/9**；k1 `in_tx=False` + observer []、k2/k3 `in_tx=True` + [] | direct-handle 族；B2/B3 语义盲，M1 判据 |
-| asyncpg pool | 新 B1/B2/B3/M1 全 0/12；M1 Pre 6/Post 6；最终对照 clean（早先 run 有 1 次 timeout） | 本阶梯 clean；不写成普遍保证 |
+| asyncpg pool | 新 B1/B2/B3/M1 全 0/12；M1 Pre 6/Post 6；最终`run.WcLcOp` 24/24 pool 对照无 timeout | 本阶梯 clean；不写成普遍保证 |
 | redis-py 8.1.0（pool/direct × tx/set） | 120 trials，全 0；M1 Pre/Post 合法；DISCARD/UNWATCH/reconnect 对照 10/10 | 阴性；本场景 clean |
 | pymongo 4.19.0 | 4 units，144 trials，全 0；M1 Pre/Post 合法；cancel 后 socket discarded/reconnect | 阴性；self-heal 正例 |
 | neo4j 6.4.1 | 4 units，144 trials，全 0；M1 Pre/Post；连接归还并复用 | 阴性；self-heal 正例 |
@@ -1003,16 +1003,19 @@ silent（契约缺口）；修复对照成立；但 upstream 未确认，所以�
 | asyncpg 0.32.0 direct | 0/9 | 0/9 | 0/9 | **9/9**（Neither） |
 | asyncpg 0.32.0 pool | 0/12 | 0/12 | 0/12 | 0/12（Pre 6，Post 6） |
 
-- asyncpg direct 的 9/9 是**有效**的：cut 后 `in_tx` 在 k1 报 `False`、
-  k2/k3 报 `True`；k1/k2 的 observer 是 `[]`，k3 的 observer 已有
-  survivor+target（Post 形状），但 `in_tx=True` 仍是 stale 字段；k1 是
-  “`BEGIN` 还在队列里”的强样本。B2/B3 0 是因为 `same()` 确实成功（不是
+- asyncpg direct 的 9/9 是**有效**的，且要拆开：**6/9 真丢写**
+  （k1/k2 observer `[]`；k1 `in_tx=False` 是客户端字段，server 还看不到
+  BEGIN；survivor 写后 `in_tx=True`/server `idle in transaction`），
+  **3/9 仅 stale state**（k3 observer 已有 survivor+target，Post 形状，
+  但 acquire `in_tx=True` 是 stale）。k1 是“`BEGIN` 还在队列里”的强样本，
+  不是“没有事务”。B2/B3 0 是因为 `same()` 确实成功（不是
   旧 `_tx_write` 返回 `None` 的假阴性）；B2/B3 的 value 里可见状态，但
   level 只看逃逸错误，语义盲。
-- asyncpg pool 0/12：M1 Pre/Post 合法；最终 `run.WcLcOp` 对照各变体均
-  clean。早先 `run.1HLY38` 的一次 `survivor acquire failed: timeout 2.0s`
-  保留为未解释的时序噪声，不能据此说 pool 有 stale 值；也不把 pool clean
-  写成普遍保证。
+- asyncpg pool 0/12：M1 Pre/Post 合法；最终 `run.WcLcOp` 的 24/24 pool
+  对照全部 acquire 成功、无 timeout。早先 `run.1HLY38` 的“timeout”是
+  **采样顺序伪影**（server sample 放在 release 前，第二次取消跳过 release），
+  该旧对照作废；不要把它写成 pool 的时序噪声或缺陷。pool clean 仍只对
+  本场景/本阶梯，不写成普遍保证。
 - psycopg pool 的 `cm_target` k=1 有一次 target error：`putconn()` 发现
   cancelled transaction block 留下不可用连接，`returns_bad=1` 丢弃并重连
   （新 pid），survivor/observer 正常。这是 **pool 自修复正例**，不是 target
@@ -1048,18 +1051,35 @@ silent（契约缺口）；修复对照成立；但 upstream 未确认，所以�
   推荐写法就安全”的直觉相反，必须按“静默丢写” vs “显式拒绝”分开。
 - **close+reconnect**：psycopg/asyncpg 都恢复（psycopg 新 backend pid；
   asyncpg 新连接），observer 只有 survivor；这是最后的安全退路。
-- **时序**：`BOUNDARY` 记录 target acquire → BEGIN → cancel →
-  `server_at_cut`（`pg_stat_activity`）→ release → cut returned → survivor；
+- **时序**：`BOUNDARY` 记录 target acquire → BEGIN → cancel → bounded
+  cleanup（先 release；direct 的 release 是 no-op）→
+  `server_after_release`（`pg_stat_activity`）→ cut returned → survivor。
   `in_tx` 字段与 server 查询是两次异步采样，**不是原子快照**。asyncpg
-  k1 的 `False` 是客户端字段；server 端在 cut 时已是 `idle in transaction`
-  或 BEGIN 刚发出，不能把“字段 False”直接推成“没有事务”，也不能把
-  “字段变了”直接判成 bug。
+  k1 的 `False` 是客户端字段，server 在 release 时还看不到 BEGIN，
+  survivor 写之后才看到 `idle in transaction`；不能把“字段 False”推成
+  “没有事务”，也不能把“字段变了”直接判成 bug。
+  `bound()` 用 `asyncio.wait_for`，但 CPython 3.13.13 正常路径
+  `child_task=False`（environment.txt），cut 投递给同一个 `_CutTask`；
+  这排除了“wait_for 创建子任务改变取消点”的解释。
 
-**结论**：psycopg/asyncpg direct 是 **direct-handle 状态泄漏 + 契约缺口**：
-`same()` 可以成功但把后继写进未提交事务；M1 的 observer/concrete value
-才看见。pool 的 rollback/reconnect 是正例；但 context manager/reset 不是
-无条件修复。B2/B3 的 0 是语义盲，不是 clean；B2/B3 的报错也不自动等于
-协议缺陷（对照 aiomysql 的 fail-fast）。
+**结论**：两边要分开归因，不能都写成“driver 状态 bug”：
+
+- **psycopg direct**：**应用组合遗漏 / contract gap**——手写
+  BEGIN→INSERT→COMMIT 没有 rollback；官方 CM 也不是所有 cut 点的修复，
+  `cm_retry` 在已 `INTRANS` 句柄上甚至只提交 savepoint。它不证明
+  psycopg driver 违反取消契约；正确结论是“调用方必须 rollback/reconnect，
+  而文档没有把取消后的恢复义务写清”。
+- **asyncpg direct**：**driver reported-state error + contract gap**——
+  queued BEGIN 下 `is_in_transaction()` 报 `False`，但 survivor 写实际进入
+  未提交事务；k2/k3 是字段 stale/已 in_tx。与已知 #537/#1310 的形状一致，
+  但本实验不能证明 upstream 未修/已修。
+- pool 的 release rollback/reset 是**正例**；psycopg release 时 server
+  last query=ROLLBACK、IDLE、同 pid；asyncpg release 时 server 执行
+  reset 查询、`in_tx=False`、同 pid。psycopg pool cm_target k1 的
+  `the connection is closed` + `returns_bad=1` + 新 pid 是 pool 丢弃坏连接
+  的正例，不计违规。
+- B2/B3 的 0 是**检测/契约盲**：只说明没有异常逃逸，不说明事务状态干净；
+  B2/B3 的报错也不自动等于协议缺陷（对照 aiomysql 的 fail-fast）。
 
 ## 附录 A：关键文件
 
