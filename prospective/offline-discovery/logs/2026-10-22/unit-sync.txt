@@ -1,0 +1,12 @@
+test_classify_states (test_support.ObservationTests.test_classify_states) ... ok
+test_rows_set (test_support.ObservationTests.test_rows_set) ... ok
+test_sanitize_ports_and_tables (test_support.ObservationTests.test_sanitize_ports_and_tables) ... ok
+test_backend_frames_and_partial_feed (test_support.ProxyParserTests.test_backend_frames_and_partial_feed) ... ok
+test_query_payload_split_across_feeds (test_support.ProxyParserTests.test_query_payload_split_across_feeds) ... ok
+test_ssl_request_then_cancel_request (test_support.ProxyParserTests.test_ssl_request_then_cancel_request) ... ok
+test_startup_then_query (test_support.ProxyParserTests.test_startup_then_query) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.000s
+
+OK

@@ -1,0 +1,18 @@
+test_blob_reports_neither_for_the_same_trial (tests.test_fields.ExploreFieldsTests.test_blob_reports_neither_for_the_same_trial) ... ok
+test_mixed_effect_allowed_and_completed_violation (tests.test_fields.ExploreFieldsTests.test_mixed_effect_allowed_and_completed_violation) ... ok
+test_state_guard (tests.test_fields.ExploreFieldsTests.test_state_guard) ... ok
+test_uncovered_in_full_run (tests.test_fields.ExploreFieldsTests.test_uncovered_in_full_run) ... ok
+test_calibration_summary (tests.test_fields.FieldJudgingTests.test_calibration_summary) ... ok
+test_contract_validation (tests.test_fields.FieldJudgingTests.test_contract_validation) ... ok
+test_degenerate_required_effect_is_not_clean (tests.test_fields.FieldJudgingTests.test_degenerate_required_effect_is_not_clean) ... ok
+test_flatten_dotted_names (tests.test_fields.FieldJudgingTests.test_flatten_dotted_names) ... ok
+test_judge_trial_is_synchronous (tests.test_fields.FieldJudgingTests.test_judge_trial_is_synchronous) ... ok
+test_per_field_mixed_allowed_but_blob_is_neither (tests.test_fields.FieldJudgingTests.test_per_field_mixed_allowed_but_blob_is_neither) ... ok
+test_state_guard_violation (tests.test_fields.FieldJudgingTests.test_state_guard_violation) ... ok
+test_uncovered_required_field (tests.test_fields.FieldJudgingTests.test_uncovered_required_field) ... ok
+test_unstable_calibration_is_unknown (tests.test_fields.FieldJudgingTests.test_unstable_calibration_is_unknown) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.011s
+
+OK

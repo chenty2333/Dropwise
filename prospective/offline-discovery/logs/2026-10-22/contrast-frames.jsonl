@@ -1,0 +1,37 @@
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "I"}
+{"dir": "c2s", "type": "Q", "text": "BEGIN", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "BEGIN", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "Q", "text": "SAVEPOINT \"_pg3_2\"", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "SAVEPOINT", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "P", "text": "INSERT INTO dw_od923838_1 (k, v) VALUES ($1, $2)", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "INSERT 0 1", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "Q", "text": "RELEASE \"_pg3_2\"", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "RELEASE", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "Q", "text": "COMMIT", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "COMMIT", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "I"}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "I"}
+{"dir": "c2s", "type": "Q", "text": "BEGIN", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "BEGIN", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "CancelRequest", "text": null, "tag": null, "status": null}
+{"dir": "c2s", "type": "Q", "text": "SAVEPOINT \"_pg3_2\"", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "SAVEPOINT", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "P", "text": "INSERT INTO dw_od923838_2 (k, v) VALUES ($1, $2)", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "INSERT 0 1", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "Q", "text": "RELEASE \"_pg3_2\"", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "RELEASE", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "I"}
+{"dir": "c2s", "type": "Q", "text": "BEGIN", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "BEGIN", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
+{"dir": "c2s", "type": "P", "text": "INSERT INTO dw_od923838_3 (k, v) VALUES ($1, $2)", "tag": null, "status": null}
+{"dir": "s2c", "type": "C", "text": null, "tag": "INSERT 0 1", "status": null}
+{"dir": "s2c", "type": "Z", "text": null, "tag": null, "status": "T"}
