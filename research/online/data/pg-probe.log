@@ -1,0 +1,29 @@
+server: postgres healthy, pid=113
+naive after INSERT request: tag="BEGIN" status=T
+naive row after close: 0
+guard begin: error=Some("cut at CutSnapshot { write_bytes: 11, write_state: \"complete\", read_bytes: 0, read_state: \"none\", fired_after: \"read\" }") phase=Suspect status=idle
+guard successor while suspect: refused (suspect (cancelled) since operation #1; recovery required)
+server state before recovery: idle in transaction
+guard recovery: Recovered(pg.ready_idle) phase=Ready status=idle post-recovery server state: idle
+guard autocommit insert: command=Some("INSERT 0 1") status=idle
+guard row present: 1
+standing begin: status=in_transaction standing=Some("open_transaction") qualification=NeedsCleanup { standing: "open_transaction" }
+standing rollback: Recovered(pg.rolled_back) standing=None qualification=Clean
+after cleanup insert: status=idle rows=1
+guard select cut: Some("cut at CutSnapshot { write_bytes: 39, write_state: \"complete\", read_bytes: 17, read_state: \"partial\", fired_after: \"read\" }") phase=Suspect
+guard select recovery: Recovered(pg.ready_idle)
+successor after select recovery: rows=[[Some("3")]] status=idle
+partial begin finish=false: err=Some("cut at CutSnapshot { write_bytes: 3, write_state: \"partial\", read_bytes: 0, read_state: \"none\", fired_after: \"write\" }") recovery=Failed(Other("partial_write_unrecoverable")) status=idle phase=Retired
+partial begin finish=true: err=Some("cut at CutSnapshot { write_bytes: 3, write_state: \"partial\", read_bytes: 0, read_state: \"none\", fired_after: \"write\" }") recovery=Recovered(pg.ready_idle_after_finish) status=idle phase=Ready
+
+pending rollback: before cut status=InTransaction standing=Some("open_transaction")
+pending rollback: cut=Cut(CutSnapshot { write_bytes: 12, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" }) status=InTransaction
+pending rollback: plan=rollback result=Failed(Other("pending_exchange_requires_drain")) phase=Retired
+pending drain_reset: result=Recovered(pg.ready_idle) status=Idle standing=None phase=Ready
+pending drain_reset successor: command=Some("INSERT 0 1") status=Idle
+pool lease begin cut: Some("cut at CutSnapshot { write_bytes: 11, write_state: \"complete\", read_bytes: 0, read_state: \"none\", fired_after: \"read\" }")
+pool after cut: recovery_enqueued=1 succeeded=1 failed=0 retired_suspect=0
+pool successor insert: status=idle command=Some("INSERT 0 1")
+pool row present: 1
+discard inside tx: error=Some(("25001", "DISCARD ALL cannot run inside a transaction block")) status=failed_transaction
+done

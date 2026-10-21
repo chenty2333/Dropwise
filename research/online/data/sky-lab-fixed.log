@@ -1,0 +1,2559 @@
+setup complete; space=lab962592
+--> S1_cut_before_read B0_stock trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t0 succ=stale got=222 plan=none rec=none reconn=0 lat=57us
+--> S1_cut_before_read B1_poison trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=199696us
+--> S1_cut_before_read B2_drain trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t0 succ=ok got=111 plan=drain rec=drained reconn=0 lat=759us
+--> S1_cut_before_read B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t0 succ=ok got=111 plan=drain rec=ok reconn=0 lat=555us
+--> S1_cut_before_read B0_stock trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t1 succ=stale got=222 plan=none rec=none reconn=0 lat=120us
+--> S1_cut_before_read B1_poison trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=188229us
+--> S1_cut_before_read B2_drain trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t1 succ=ok got=111 plan=drain rec=drained reconn=0 lat=549us
+--> S1_cut_before_read B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t1 succ=ok got=111 plan=drain rec=ok reconn=0 lat=477us
+--> S1_cut_before_read B0_stock trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t2 succ=stale got=222 plan=none rec=none reconn=0 lat=275us
+--> S1_cut_before_read B1_poison trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=191936us
+--> S1_cut_before_read B2_drain trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t2 succ=ok got=111 plan=drain rec=drained reconn=0 lat=418us
+--> S1_cut_before_read B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t2 succ=ok got=111 plan=drain rec=ok reconn=0 lat=672us
+--> S1_cut_before_read B0_stock trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t3 succ=stale got=222 plan=none rec=none reconn=0 lat=311us
+--> S1_cut_before_read B1_poison trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=191686us
+--> S1_cut_before_read B2_drain trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t3 succ=ok got=111 plan=drain rec=drained reconn=0 lat=364us
+--> S1_cut_before_read B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t3 succ=ok got=111 plan=drain rec=ok reconn=0 lat=421us
+--> S1_cut_before_read B0_stock trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t4 succ=stale got=222 plan=none rec=none reconn=0 lat=50us
+--> S1_cut_before_read B1_poison trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=189233us
+--> S1_cut_before_read B2_drain trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t4 succ=ok got=111 plan=drain rec=drained reconn=0 lat=458us
+--> S1_cut_before_read B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t4 succ=ok got=111 plan=drain rec=ok reconn=0 lat=1009us
+--> S1_cut_before_read B0_stock trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t5 succ=stale got=222 plan=none rec=none reconn=0 lat=139us
+--> S1_cut_before_read B1_poison trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=187504us
+--> S1_cut_before_read B2_drain trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t5 succ=ok got=111 plan=drain rec=drained reconn=0 lat=293us
+--> S1_cut_before_read B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t5 succ=ok got=111 plan=drain rec=ok reconn=0 lat=1078us
+--> S1_cut_before_read B0_stock trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t6 succ=stale got=222 plan=none rec=none reconn=0 lat=126us
+--> S1_cut_before_read B1_poison trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=190868us
+--> S1_cut_before_read B2_drain trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t6 succ=ok got=111 plan=drain rec=drained reconn=0 lat=281us
+--> S1_cut_before_read B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t6 succ=ok got=111 plan=drain rec=ok reconn=0 lat=406us
+--> S1_cut_before_read B0_stock trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t7 succ=stale got=222 plan=none rec=none reconn=0 lat=478us
+--> S1_cut_before_read B1_poison trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=187254us
+--> S1_cut_before_read B2_drain trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t7 succ=ok got=111 plan=drain rec=drained reconn=0 lat=933us
+--> S1_cut_before_read B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t7 succ=ok got=111 plan=drain rec=ok reconn=0 lat=737us
+--> S1_cut_before_read B0_stock trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t8 succ=stale got=222 plan=none rec=none reconn=0 lat=521us
+--> S1_cut_before_read B1_poison trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=185887us
+--> S1_cut_before_read B2_drain trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t8 succ=ok got=111 plan=drain rec=drained reconn=0 lat=884us
+--> S1_cut_before_read B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t8 succ=ok got=111 plan=drain rec=ok reconn=0 lat=338us
+--> S1_cut_before_read B0_stock trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B0_stock t9 succ=stale got=222 plan=none rec=none reconn=0 lat=129us
+--> S1_cut_before_read B1_poison trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=190280us
+--> S1_cut_before_read B2_drain trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S1_cut_before_read B2_drain t9 succ=ok got=111 plan=drain rec=drained reconn=0 lat=319us
+--> S1_cut_before_read B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S1_cut_before_read B3_guard t9 succ=ok got=111 plan=drain rec=ok reconn=0 lat=937us
+--> S2_cut_mid_reply B0_stock trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t0 succ=stale got=222 plan=none rec=none reconn=0 lat=28us
+--> S2_cut_mid_reply B1_poison trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=190061us
+--> S2_cut_mid_reply B2_drain trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t0 succ=ok got=111 plan=drain rec=drained reconn=0 lat=73us
+--> S2_cut_mid_reply B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t0 succ=ok got=111 plan=drain rec=ok reconn=0 lat=407us
+--> S2_cut_mid_reply B0_stock trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t1 succ=stale got=222 plan=none rec=none reconn=0 lat=21us
+--> S2_cut_mid_reply B1_poison trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=186720us
+--> S2_cut_mid_reply B2_drain trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t1 succ=ok got=111 plan=drain rec=drained reconn=0 lat=487us
+--> S2_cut_mid_reply B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t1 succ=ok got=111 plan=drain rec=ok reconn=0 lat=254us
+--> S2_cut_mid_reply B0_stock trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t2 succ=stale got=222 plan=none rec=none reconn=0 lat=27us
+--> S2_cut_mid_reply B1_poison trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=187811us
+--> S2_cut_mid_reply B2_drain trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t2 succ=ok got=111 plan=drain rec=drained reconn=0 lat=121us
+--> S2_cut_mid_reply B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t2 succ=ok got=111 plan=drain rec=ok reconn=0 lat=680us
+--> S2_cut_mid_reply B0_stock trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t3 succ=stale got=222 plan=none rec=none reconn=0 lat=37us
+--> S2_cut_mid_reply B1_poison trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=189952us
+--> S2_cut_mid_reply B2_drain trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t3 succ=ok got=111 plan=drain rec=drained reconn=0 lat=472us
+--> S2_cut_mid_reply B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t3 succ=ok got=111 plan=drain rec=ok reconn=0 lat=550us
+--> S2_cut_mid_reply B0_stock trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t4 succ=stale got=222 plan=none rec=none reconn=0 lat=20us
+--> S2_cut_mid_reply B1_poison trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=199658us
+--> S2_cut_mid_reply B2_drain trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t4 succ=ok got=111 plan=drain rec=drained reconn=0 lat=225us
+--> S2_cut_mid_reply B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t4 succ=ok got=111 plan=drain rec=ok reconn=0 lat=250us
+--> S2_cut_mid_reply B0_stock trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t5 succ=stale got=222 plan=none rec=none reconn=0 lat=21us
+--> S2_cut_mid_reply B1_poison trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=189692us
+--> S2_cut_mid_reply B2_drain trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t5 succ=ok got=111 plan=drain rec=drained reconn=0 lat=302us
+--> S2_cut_mid_reply B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t5 succ=ok got=111 plan=drain rec=ok reconn=0 lat=483us
+--> S2_cut_mid_reply B0_stock trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t6 succ=stale got=222 plan=none rec=none reconn=0 lat=19us
+--> S2_cut_mid_reply B1_poison trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=185349us
+--> S2_cut_mid_reply B2_drain trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t6 succ=ok got=111 plan=drain rec=drained reconn=0 lat=182us
+--> S2_cut_mid_reply B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t6 succ=ok got=111 plan=drain rec=ok reconn=0 lat=535us
+--> S2_cut_mid_reply B0_stock trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t7 succ=stale got=222 plan=none rec=none reconn=0 lat=23us
+--> S2_cut_mid_reply B1_poison trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=191594us
+--> S2_cut_mid_reply B2_drain trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t7 succ=ok got=111 plan=drain rec=drained reconn=0 lat=372us
+--> S2_cut_mid_reply B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t7 succ=ok got=111 plan=drain rec=ok reconn=0 lat=936us
+--> S2_cut_mid_reply B0_stock trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t8 succ=stale got=222 plan=none rec=none reconn=0 lat=17us
+--> S2_cut_mid_reply B1_poison trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=185197us
+--> S2_cut_mid_reply B2_drain trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t8 succ=ok got=111 plan=drain rec=drained reconn=0 lat=292us
+--> S2_cut_mid_reply B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t8 succ=ok got=111 plan=drain rec=ok reconn=0 lat=481us
+--> S2_cut_mid_reply B0_stock trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B0_stock t9 succ=stale got=222 plan=none rec=none reconn=0 lat=20us
+--> S2_cut_mid_reply B1_poison trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=188901us
+--> S2_cut_mid_reply B2_drain trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 62, write_state: "complete", read_bytes: 24, read_state: "partial", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S2_cut_mid_reply B2_drain t9 succ=ok got=111 plan=drain rec=drained reconn=0 lat=99us
+--> S2_cut_mid_reply B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S2_cut_mid_reply B3_guard t9 succ=ok got=111 plan=drain rec=ok reconn=0 lat=416us
+--> S3_partial_insert B0_stock trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t0 succ=error got=-6 plan=none rec=none reconn=0 lat=41518us
+--> S3_partial_insert B1_poison trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=186344us
+--> S3_partial_insert B2_drain trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t0 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307439us
+--> S3_partial_insert B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t0 succ=ok got=111 plan=retire rec=failed reconn=1 lat=186133us
+--> S3_partial_insert B3f_finish trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t0 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=123757us
+--> S3_partial_insert B0_stock trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t1 succ=error got=-6 plan=none rec=none reconn=0 lat=41016us
+--> S3_partial_insert B1_poison trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=186876us
+--> S3_partial_insert B2_drain trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t1 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=313500us
+--> S3_partial_insert B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t1 succ=ok got=111 plan=retire rec=failed reconn=1 lat=186407us
+--> S3_partial_insert B3f_finish trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t1 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=124501us
+--> S3_partial_insert B0_stock trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t2 succ=error got=-6 plan=none rec=none reconn=0 lat=40569us
+--> S3_partial_insert B1_poison trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=186432us
+--> S3_partial_insert B2_drain trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t2 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=320016us
+--> S3_partial_insert B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t2 succ=ok got=111 plan=retire rec=failed reconn=1 lat=185799us
+--> S3_partial_insert B3f_finish trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t2 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=122728us
+--> S3_partial_insert B0_stock trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t3 succ=error got=-6 plan=none rec=none reconn=0 lat=40808us
+--> S3_partial_insert B1_poison trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=185414us
+--> S3_partial_insert B2_drain trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t3 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307194us
+--> S3_partial_insert B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t3 succ=ok got=111 plan=retire rec=failed reconn=1 lat=187103us
+--> S3_partial_insert B3f_finish trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t3 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=122408us
+--> S3_partial_insert B0_stock trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t4 succ=error got=-6 plan=none rec=none reconn=0 lat=40633us
+--> S3_partial_insert B1_poison trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=185575us
+--> S3_partial_insert B2_drain trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t4 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=320433us
+--> S3_partial_insert B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t4 succ=ok got=111 plan=retire rec=failed reconn=1 lat=186677us
+--> S3_partial_insert B3f_finish trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t4 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=123859us
+--> S3_partial_insert B0_stock trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t5 succ=error got=-6 plan=none rec=none reconn=0 lat=41107us
+--> S3_partial_insert B1_poison trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=185361us
+--> S3_partial_insert B2_drain trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t5 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307906us
+--> S3_partial_insert B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t5 succ=ok got=111 plan=retire rec=failed reconn=1 lat=185486us
+--> S3_partial_insert B3f_finish trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t5 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=124269us
+--> S3_partial_insert B0_stock trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t6 succ=error got=-6 plan=none rec=none reconn=0 lat=42461us
+--> S3_partial_insert B1_poison trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=186112us
+--> S3_partial_insert B2_drain trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t6 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=319605us
+--> S3_partial_insert B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t6 succ=ok got=111 plan=retire rec=failed reconn=1 lat=185614us
+--> S3_partial_insert B3f_finish trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t6 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=122800us
+--> S3_partial_insert B0_stock trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t7 succ=error got=-6 plan=none rec=none reconn=0 lat=40680us
+--> S3_partial_insert B1_poison trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=186198us
+--> S3_partial_insert B2_drain trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t7 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307857us
+--> S3_partial_insert B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t7 succ=ok got=111 plan=retire rec=failed reconn=1 lat=186471us
+--> S3_partial_insert B3f_finish trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t7 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=122976us
+--> S3_partial_insert B0_stock trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t8 succ=error got=-6 plan=none rec=none reconn=0 lat=41285us
+--> S3_partial_insert B1_poison trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=184672us
+--> S3_partial_insert B2_drain trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t8 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=305900us
+--> S3_partial_insert B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t8 succ=ok got=111 plan=retire rec=failed reconn=1 lat=195993us
+--> S3_partial_insert B3f_finish trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t8 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=122375us
+--> S3_partial_insert B0_stock trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B0_stock t9 succ=error got=-6 plan=none rec=none reconn=0 lat=41020us
+--> S3_partial_insert B1_poison trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=185824us
+--> S3_partial_insert B2_drain trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 5, write_state: "partial", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S3_partial_insert B2_drain t9 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306667us
+--> S3_partial_insert B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3_guard t9 succ=ok got=111 plan=retire rec=failed reconn=1 lat=185800us
+--> S3_partial_insert B3f_finish trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S3_partial_insert B3f_finish t9 succ=ok got=111 plan=finish_write_drain rec=ok reconn=0 lat=123619us
+--> S4_insert_before_read B0_stock trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t0 succ=error got=-108 plan=none rec=none reconn=0 lat=258us
+--> S4_insert_before_read B1_poison trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=185307us
+--> S4_insert_before_read B2_drain trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t0 succ=ok got=111 plan=drain rec=drained reconn=0 lat=437us
+--> S4_insert_before_read B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t0 succ=ok got=111 plan=drain rec=ok reconn=0 lat=739us
+--> S4_insert_before_read B0_stock trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t1 succ=error got=-108 plan=none rec=none reconn=0 lat=230us
+--> S4_insert_before_read B1_poison trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=184972us
+--> S4_insert_before_read B2_drain trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t1 succ=ok got=111 plan=drain rec=drained reconn=0 lat=509us
+--> S4_insert_before_read B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t1 succ=ok got=111 plan=drain rec=ok reconn=0 lat=1579us
+--> S4_insert_before_read B0_stock trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t2 succ=error got=-108 plan=none rec=none reconn=0 lat=286us
+--> S4_insert_before_read B1_poison trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=185494us
+--> S4_insert_before_read B2_drain trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t2 succ=ok got=111 plan=drain rec=drained reconn=0 lat=1069us
+--> S4_insert_before_read B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t2 succ=ok got=111 plan=drain rec=ok reconn=0 lat=766us
+--> S4_insert_before_read B0_stock trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t3 succ=error got=-108 plan=none rec=none reconn=0 lat=116us
+--> S4_insert_before_read B1_poison trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=184878us
+--> S4_insert_before_read B2_drain trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t3 succ=ok got=111 plan=drain rec=drained reconn=0 lat=709us
+--> S4_insert_before_read B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t3 succ=ok got=111 plan=drain rec=ok reconn=0 lat=968us
+--> S4_insert_before_read B0_stock trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t4 succ=error got=-108 plan=none rec=none reconn=0 lat=167us
+--> S4_insert_before_read B1_poison trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=186791us
+--> S4_insert_before_read B2_drain trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t4 succ=ok got=111 plan=drain rec=drained reconn=0 lat=675us
+--> S4_insert_before_read B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t4 succ=ok got=111 plan=drain rec=ok reconn=0 lat=918us
+--> S4_insert_before_read B0_stock trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t5 succ=error got=-108 plan=none rec=none reconn=0 lat=440us
+--> S4_insert_before_read B1_poison trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=185886us
+--> S4_insert_before_read B2_drain trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t5 succ=ok got=111 plan=drain rec=drained reconn=0 lat=871us
+--> S4_insert_before_read B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t5 succ=ok got=111 plan=drain rec=ok reconn=0 lat=583us
+--> S4_insert_before_read B0_stock trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t6 succ=error got=-108 plan=none rec=none reconn=0 lat=295us
+--> S4_insert_before_read B1_poison trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=187289us
+--> S4_insert_before_read B2_drain trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t6 succ=ok got=111 plan=drain rec=drained reconn=0 lat=805us
+--> S4_insert_before_read B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t6 succ=ok got=111 plan=drain rec=ok reconn=0 lat=938us
+--> S4_insert_before_read B0_stock trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t7 succ=error got=-108 plan=none rec=none reconn=0 lat=421us
+--> S4_insert_before_read B1_poison trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=185472us
+--> S4_insert_before_read B2_drain trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t7 succ=ok got=111 plan=drain rec=drained reconn=0 lat=518us
+--> S4_insert_before_read B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t7 succ=ok got=111 plan=drain rec=ok reconn=0 lat=897us
+--> S4_insert_before_read B0_stock trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t8 succ=error got=-108 plan=none rec=none reconn=0 lat=258us
+--> S4_insert_before_read B1_poison trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=184909us
+--> S4_insert_before_read B2_drain trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t8 succ=ok got=111 plan=drain rec=drained reconn=0 lat=364us
+--> S4_insert_before_read B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t8 succ=ok got=111 plan=drain rec=ok reconn=0 lat=818us
+--> S4_insert_before_read B0_stock trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B0_stock t9 succ=error got=-108 plan=none rec=none reconn=0 lat=115us
+--> S4_insert_before_read B1_poison trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=185296us
+--> S4_insert_before_read B2_drain trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 58, write_state: "complete", read_bytes: 0, read_state: "none", fired_after: "read" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S4_insert_before_read B2_drain t9 succ=ok got=111 plan=drain rec=drained reconn=0 lat=121us
+--> S4_insert_before_read B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S4_insert_before_read B3_guard t9 succ=ok got=111 plan=drain rec=ok reconn=0 lat=1216us
+--> S5_nothing_written B0_stock trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t0 succ=ok got=111 plan=none rec=none reconn=0 lat=254us
+--> S5_nothing_written B1_poison trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=184809us
+--> S5_nothing_written B2_drain trial 0
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t0 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306873us
+--> S5_nothing_written B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t0 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=547us
+--> S5_nothing_written B0_stock trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t1 succ=ok got=111 plan=none rec=none reconn=0 lat=155us
+--> S5_nothing_written B1_poison trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=188679us
+--> S5_nothing_written B2_drain trial 1
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t1 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=305761us
+--> S5_nothing_written B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t1 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=414us
+--> S5_nothing_written B0_stock trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t2 succ=ok got=111 plan=none rec=none reconn=0 lat=320us
+--> S5_nothing_written B1_poison trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=184479us
+--> S5_nothing_written B2_drain trial 2
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t2 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306850us
+--> S5_nothing_written B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t2 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=652us
+--> S5_nothing_written B0_stock trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t3 succ=ok got=111 plan=none rec=none reconn=0 lat=307us
+--> S5_nothing_written B1_poison trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=184537us
+--> S5_nothing_written B2_drain trial 3
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t3 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306912us
+--> S5_nothing_written B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t3 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=724us
+--> S5_nothing_written B0_stock trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t4 succ=ok got=111 plan=none rec=none reconn=0 lat=507us
+--> S5_nothing_written B1_poison trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=184701us
+--> S5_nothing_written B2_drain trial 4
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t4 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=310471us
+--> S5_nothing_written B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t4 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=712us
+--> S5_nothing_written B0_stock trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t5 succ=ok got=111 plan=none rec=none reconn=0 lat=488us
+--> S5_nothing_written B1_poison trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=188424us
+--> S5_nothing_written B2_drain trial 5
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t5 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306801us
+--> S5_nothing_written B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t5 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=707us
+--> S5_nothing_written B0_stock trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t6 succ=ok got=111 plan=none rec=none reconn=0 lat=183us
+--> S5_nothing_written B1_poison trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=188338us
+--> S5_nothing_written B2_drain trial 6
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t6 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=305537us
+--> S5_nothing_written B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t6 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=651us
+--> S5_nothing_written B0_stock trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t7 succ=ok got=111 plan=none rec=none reconn=0 lat=493us
+--> S5_nothing_written B1_poison trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=185528us
+--> S5_nothing_written B2_drain trial 7
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t7 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=310385us
+--> S5_nothing_written B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t7 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=1118us
+--> S5_nothing_written B0_stock trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t8 succ=ok got=111 plan=none rec=none reconn=0 lat=414us
+--> S5_nothing_written B1_poison trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=186068us
+--> S5_nothing_written B2_drain trial 8
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t8 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307624us
+--> S5_nothing_written B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t8 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=544us
+--> S5_nothing_written B0_stock trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B0_stock t9 succ=ok got=111 plan=none rec=none reconn=0 lat=393us
+--> S5_nothing_written B1_poison trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=188850us
+--> S5_nothing_written B2_drain trial 9
+  primed raw
+  cut done: Some(CutSnapshot { write_bytes: 0, write_state: "none", read_bytes: 0, read_state: "none", fired_after: "write" })
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S5_nothing_written B2_drain t9 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=309796us
+--> S5_nothing_written B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S5_nothing_written B3_guard t9 succ=ok got=111 plan=discard_local rec=ok reconn=0 lat=688us
+--> S6_late_reply_caught B0_stock trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t0 succ=stale got=222 plan=none rec=none reconn=0 lat=17786us
+--> S6_late_reply_caught B1_poison trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=206103us
+--> S6_late_reply_caught B2_drain trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t0 succ=ok got=111 plan=drain rec=drained reconn=0 lat=40975us
+--> S6_late_reply_caught B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t0 succ=ok got=111 plan=drain rec=ok reconn=0 lat=41065us
+--> S6_late_reply_caught B0_stock trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t1 succ=stale got=222 plan=none rec=none reconn=0 lat=18599us
+--> S6_late_reply_caught B1_poison trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=210776us
+--> S6_late_reply_caught B2_drain trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t1 succ=ok got=111 plan=drain rec=drained reconn=0 lat=41398us
+--> S6_late_reply_caught B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t1 succ=ok got=111 plan=drain rec=ok reconn=0 lat=42487us
+--> S6_late_reply_caught B0_stock trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t2 succ=stale got=222 plan=none rec=none reconn=0 lat=17566us
+--> S6_late_reply_caught B1_poison trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=206832us
+--> S6_late_reply_caught B2_drain trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t2 succ=ok got=111 plan=drain rec=drained reconn=0 lat=40840us
+--> S6_late_reply_caught B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t2 succ=ok got=111 plan=drain rec=ok reconn=0 lat=42357us
+--> S6_late_reply_caught B0_stock trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t3 succ=stale got=222 plan=none rec=none reconn=0 lat=17684us
+--> S6_late_reply_caught B1_poison trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=207655us
+--> S6_late_reply_caught B2_drain trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t3 succ=ok got=111 plan=drain rec=drained reconn=0 lat=41332us
+--> S6_late_reply_caught B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t3 succ=ok got=111 plan=drain rec=ok reconn=0 lat=39995us
+--> S6_late_reply_caught B0_stock trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t4 succ=stale got=222 plan=none rec=none reconn=0 lat=17556us
+--> S6_late_reply_caught B1_poison trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=208526us
+--> S6_late_reply_caught B2_drain trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t4 succ=ok got=111 plan=drain rec=drained reconn=0 lat=41451us
+--> S6_late_reply_caught B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t4 succ=ok got=111 plan=drain rec=ok reconn=0 lat=40235us
+--> S6_late_reply_caught B0_stock trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t5 succ=stale got=222 plan=none rec=none reconn=0 lat=18671us
+--> S6_late_reply_caught B1_poison trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=216472us
+--> S6_late_reply_caught B2_drain trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t5 succ=ok got=111 plan=drain rec=drained reconn=0 lat=40241us
+--> S6_late_reply_caught B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t5 succ=ok got=111 plan=drain rec=ok reconn=0 lat=42231us
+--> S6_late_reply_caught B0_stock trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t6 succ=stale got=222 plan=none rec=none reconn=0 lat=18098us
+--> S6_late_reply_caught B1_poison trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=208358us
+--> S6_late_reply_caught B2_drain trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t6 succ=ok got=111 plan=drain rec=drained reconn=0 lat=40001us
+--> S6_late_reply_caught B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t6 succ=ok got=111 plan=drain rec=ok reconn=0 lat=41334us
+--> S6_late_reply_caught B0_stock trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t7 succ=stale got=222 plan=none rec=none reconn=0 lat=17842us
+--> S6_late_reply_caught B1_poison trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=208552us
+--> S6_late_reply_caught B2_drain trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t7 succ=ok got=111 plan=drain rec=drained reconn=0 lat=41005us
+--> S6_late_reply_caught B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t7 succ=ok got=111 plan=drain rec=ok reconn=0 lat=40465us
+--> S6_late_reply_caught B0_stock trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t8 succ=stale got=222 plan=none rec=none reconn=0 lat=18065us
+--> S6_late_reply_caught B1_poison trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=210207us
+--> S6_late_reply_caught B2_drain trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t8 succ=ok got=111 plan=drain rec=drained reconn=0 lat=38977us
+--> S6_late_reply_caught B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t8 succ=ok got=111 plan=drain rec=ok reconn=0 lat=39570us
+--> S6_late_reply_caught B0_stock trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B0_stock t9 succ=stale got=222 plan=none rec=none reconn=0 lat=18487us
+--> S6_late_reply_caught B1_poison trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=207511us
+--> S6_late_reply_caught B2_drain trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S6_late_reply_caught B2_drain t9 succ=ok got=111 plan=drain rec=drained reconn=0 lat=41107us
+--> S6_late_reply_caught B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+  pooling: successor
+  successor done
+S6_late_reply_caught B3_guard t9 succ=ok got=111 plan=drain rec=ok reconn=0 lat=41061us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t0 succ=stale got=222 plan=none rec=none reconn=0 lat=299262us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=486609us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t0 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=609876us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t0 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=601688us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t1 succ=stale got=222 plan=none rec=none reconn=0 lat=299478us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=499894us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t1 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=607869us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t1 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=599746us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t2 succ=stale got=222 plan=none rec=none reconn=0 lat=297715us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=489488us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t2 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=608734us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t2 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=602567us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t3 succ=stale got=222 plan=none rec=none reconn=0 lat=298429us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=486935us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t3 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=618765us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t3 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=601374us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t4 succ=stale got=222 plan=none rec=none reconn=0 lat=298077us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=487932us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t4 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=612404us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t4 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=601071us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t5 succ=stale got=222 plan=none rec=none reconn=0 lat=299265us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=487056us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t5 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=609003us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t5 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=601376us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t6 succ=stale got=222 plan=none rec=none reconn=0 lat=299565us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=486505us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t6 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=621378us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t6 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=600408us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t7 succ=stale got=222 plan=none rec=none reconn=0 lat=297791us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=501087us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t7 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=627829us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t7 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=603051us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t8 succ=stale got=222 plan=none rec=none reconn=0 lat=298044us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=487580us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t8 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=610301us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t8 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=599748us
+--> S7_late_reply_beyond_first_timeout B0_stock trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B0_stock t9 succ=stale got=222 plan=none rec=none reconn=0 lat=299177us
+--> S7_late_reply_beyond_first_timeout B1_poison trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=489237us
+--> S7_late_reply_beyond_first_timeout B2_drain trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B2_drain t9 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=610824us
+--> S7_late_reply_beyond_first_timeout B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S7_late_reply_beyond_first_timeout B3_guard t9 succ=ok got=111 plan=drain_slow rec=ok reconn=0 lat=601470us
+--> S8_reply_lost B0_stock trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t0 succ=timeout got=-4 plan=none rec=none reconn=0 lat=800978us
+--> S8_reply_lost B1_poison trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t0 succ=ok got=111 plan=retire rec=none reconn=1 lat=189174us
+--> S8_reply_lost B2_drain trial 0
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t0 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306011us
+--> S8_reply_lost B3_guard trial 0
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t0 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1518978us
+--> S8_reply_lost B0_stock trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t1 succ=timeout got=-4 plan=none rec=none reconn=0 lat=801112us
+--> S8_reply_lost B1_poison trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t1 succ=ok got=111 plan=retire rec=none reconn=1 lat=189509us
+--> S8_reply_lost B2_drain trial 1
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t1 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307688us
+--> S8_reply_lost B3_guard trial 1
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t1 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1515349us
+--> S8_reply_lost B0_stock trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t2 succ=timeout got=-4 plan=none rec=none reconn=0 lat=801137us
+--> S8_reply_lost B1_poison trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t2 succ=ok got=111 plan=retire rec=none reconn=1 lat=186100us
+--> S8_reply_lost B2_drain trial 2
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t2 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307696us
+--> S8_reply_lost B3_guard trial 2
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t2 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1515377us
+--> S8_reply_lost B0_stock trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t3 succ=timeout got=-4 plan=none rec=none reconn=0 lat=801471us
+--> S8_reply_lost B1_poison trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t3 succ=ok got=111 plan=retire rec=none reconn=1 lat=185645us
+--> S8_reply_lost B2_drain trial 3
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t3 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307907us
+--> S8_reply_lost B3_guard trial 3
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t3 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1519263us
+--> S8_reply_lost B0_stock trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t4 succ=timeout got=-4 plan=none rec=none reconn=0 lat=802190us
+--> S8_reply_lost B1_poison trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t4 succ=ok got=111 plan=retire rec=none reconn=1 lat=186044us
+--> S8_reply_lost B2_drain trial 4
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t4 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307211us
+--> S8_reply_lost B3_guard trial 4
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t4 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1512983us
+--> S8_reply_lost B0_stock trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t5 succ=timeout got=-4 plan=none rec=none reconn=0 lat=801503us
+--> S8_reply_lost B1_poison trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t5 succ=ok got=111 plan=retire rec=none reconn=1 lat=192256us
+--> S8_reply_lost B2_drain trial 5
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t5 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=308030us
+--> S8_reply_lost B3_guard trial 5
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t5 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1515597us
+--> S8_reply_lost B0_stock trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t6 succ=timeout got=-4 plan=none rec=none reconn=0 lat=801344us
+--> S8_reply_lost B1_poison trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t6 succ=ok got=111 plan=retire rec=none reconn=1 lat=196991us
+--> S8_reply_lost B2_drain trial 6
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t6 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=308511us
+--> S8_reply_lost B3_guard trial 6
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t6 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1516564us
+--> S8_reply_lost B0_stock trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t7 succ=timeout got=-4 plan=none rec=none reconn=0 lat=802082us
+--> S8_reply_lost B1_poison trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t7 succ=ok got=111 plan=retire rec=none reconn=1 lat=185513us
+--> S8_reply_lost B2_drain trial 7
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t7 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306133us
+--> S8_reply_lost B3_guard trial 7
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t7 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1516125us
+--> S8_reply_lost B0_stock trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t8 succ=timeout got=-4 plan=none rec=none reconn=0 lat=800741us
+--> S8_reply_lost B1_poison trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t8 succ=ok got=111 plan=retire rec=none reconn=1 lat=185258us
+--> S8_reply_lost B2_drain trial 8
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t8 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=307722us
+--> S8_reply_lost B3_guard trial 8
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t8 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1516139us
+--> S8_reply_lost B0_stock trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B0_stock t9 succ=timeout got=-4 plan=none rec=none reconn=0 lat=801549us
+--> S8_reply_lost B1_poison trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B1_poison t9 succ=ok got=111 plan=retire rec=none reconn=1 lat=187036us
+--> S8_reply_lost B2_drain trial 9
+  primed raw
+  cut done: None
+  reusing
+  reuse decision done
+  pooling: successor
+  successor done
+S8_reply_lost B2_drain t9 succ=ok got=111 plan=drain rec=drain-failed reconn=1 lat=306189us
+--> S8_reply_lost B3_guard trial 9
+  pooling: acquire
+  pooling: drop lease; wait recovery
+sky recover plan=drain result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+sky recover plan=drain_slow result=Unresolved(Timeout) out=62/62 in=0 phase=Recovering
+sky recover inbuf[0..0]=[]
+  pooling: successor
+  successor done
+S8_reply_lost B3_guard t9 succ=ok got=111 plan=drain_slow rec=unresolved reconn=1 lat=1516357us
+
+| scenario | baseline | n | unsafe | ok | err | timeout | recovered | reconnects | p50 us | p95 us |
+|---|---|---|---|---|---|---|---|---|---|---|
+| S1_cut_before_read | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 139 | 521 |
+| S1_cut_before_read | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 190280 | 199696 |
+| S1_cut_before_read | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 458 | 933 |
+| S1_cut_before_read | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 672 | 1078 |
+| S2_cut_mid_reply | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 21 | 37 |
+| S2_cut_mid_reply | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 189692 | 199658 |
+| S2_cut_mid_reply | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 292 | 487 |
+| S2_cut_mid_reply | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 483 | 936 |
+| S3_partial_insert | B0_stock | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 41020 | 42461 |
+| S3_partial_insert | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186112 | 186876 |
+| S3_partial_insert | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 307906 | 320433 |
+| S3_partial_insert | B3_guard | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186407 | 195993 |
+| S3_partial_insert | B3f_finish | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 123619 | 124501 |
+| S4_insert_before_read | B0_stock | 10 | 0 | 0 | 10 | 0 | 0 | 0 | 258 | 440 |
+| S4_insert_before_read | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 185472 | 187289 |
+| S4_insert_before_read | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 675 | 1069 |
+| S4_insert_before_read | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 918 | 1579 |
+| S5_nothing_written | B0_stock | 10 | 0 | 10 | 0 | 0 | 0 | 0 | 393 | 507 |
+| S5_nothing_written | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 186068 | 188850 |
+| S5_nothing_written | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 306912 | 310471 |
+| S5_nothing_written | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 688 | 1118 |
+| S6_late_reply_caught | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 18065 | 18671 |
+| S6_late_reply_caught | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 208526 | 216472 |
+| S6_late_reply_caught | B2_drain | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 41005 | 41451 |
+| S6_late_reply_caught | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 41065 | 42487 |
+| S7_late_reply_beyond_first_timeout | B0_stock | 10 | 10 | 0 | 0 | 0 | 0 | 0 | 299177 | 299565 |
+| S7_late_reply_beyond_first_timeout | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 487932 | 501087 |
+| S7_late_reply_beyond_first_timeout | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 610824 | 627829 |
+| S7_late_reply_beyond_first_timeout | B3_guard | 10 | 0 | 10 | 0 | 0 | 10 | 0 | 601376 | 603051 |
+| S8_reply_lost | B0_stock | 10 | 0 | 0 | 0 | 10 | 0 | 0 | 801471 | 802190 |
+| S8_reply_lost | B1_poison | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 187036 | 196991 |
+| S8_reply_lost | B2_drain | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 307696 | 308511 |
+| S8_reply_lost | B3_guard | 10 | 0 | 10 | 0 | 0 | 0 | 10 | 1516139 | 1519263 |
+
+wrote 330 records to ../../research/online/data/sky-trials-fixed.jsonl

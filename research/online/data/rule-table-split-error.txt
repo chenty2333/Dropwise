@@ -1,0 +1,180 @@
+S1_complete_before_read        reuse          safe=0/3 lat=63us rec=0 side=None | ; successor=stale
+S1_complete_before_read        drain          safe=3/3 lat=501us rec=0 side=None | ; successor=ok
+S1_complete_before_read        drain_slow     safe=3/3 lat=374us rec=0 side=None | ; successor=ok
+S1_complete_before_read        finish_drain   safe=3/3 lat=387us rec=0 side=None | ; successor=ok
+S1_complete_before_read        retire         safe=3/3 lat=190158us rec=1 side=None | ; successor=ok
+S2_complete_mid_reply          reuse          safe=0/3 lat=21us rec=0 side=None | ; successor=stale
+S2_complete_mid_reply          drain          safe=3/3 lat=101us rec=0 side=None | ; successor=ok
+S2_complete_mid_reply          drain_slow     safe=3/3 lat=126us rec=0 side=None | ; successor=ok
+S2_complete_mid_reply          finish_drain   safe=3/3 lat=169us rec=0 side=None | ; successor=ok
+S2_complete_mid_reply          retire         safe=3/3 lat=192359us rec=1 side=None | ; successor=ok
+S3_partial_insert              reuse          safe=0/3 lat=177us rec=0 side=None | ; successor=error
+S3_partial_insert              drain          safe=3/3 lat=311825us rec=1 side=None | drain failed (io: drain timeout); reconnected; successor=ok
+S3_partial_insert              drain_slow     safe=3/3 lat=1393701us rec=1 side=None | slow drain failed (io: drain timeout); reconnected; successor=ok
+S3_partial_insert              finish_drain   safe=3/3 lat=40986us rec=0 side=Some(333) | ; successor=ok
+S3_partial_insert              retire         safe=3/3 lat=187809us rec=1 side=None | ; successor=ok
+S4_insert_before_read          reuse          safe=0/3 lat=313us rec=0 side=None | ; successor=empty
+S4_insert_before_read          drain          safe=3/3 lat=326us rec=0 side=None | ; successor=ok
+S4_insert_before_read          drain_slow     safe=3/3 lat=300us rec=0 side=None | ; successor=ok
+S4_insert_before_read          finish_drain   safe=3/3 lat=312us rec=0 side=Some(333) | ; successor=ok
+S4_insert_before_read          retire         safe=3/3 lat=190388us rec=1 side=None | ; successor=ok
+S5_nothing_written             reuse          safe=3/3 lat=302us rec=0 side=None | ; successor=ok
+S5_nothing_written             drain          safe=3/3 lat=308361us rec=1 side=None | drain failed (io: drain timeout); reconnected; successor=ok
+S5_nothing_written             drain_slow     safe=3/3 lat=1387646us rec=1 side=None | slow drain failed (io: drain timeout); reconnected; successor=ok
+S5_nothing_written             finish_drain   safe=3/3 lat=322us rec=0 side=None | ; successor=ok
+S5_nothing_written             retire         safe=3/3 lat=187369us rec=1 side=None | ; successor=ok
+S6_delay_20ms                  reuse          safe=0/3 lat=18311us rec=0 side=None | ; successor=stale
+S6_delay_20ms                  drain          safe=3/3 lat=39654us rec=0 side=None | ; successor=ok
+S6_delay_20ms                  drain_slow     safe=3/3 lat=40793us rec=0 side=None | ; successor=ok
+S6_delay_20ms                  finish_drain   safe=3/3 lat=40797us rec=0 side=None | ; successor=ok
+S6_delay_20ms                  retire         safe=3/3 lat=207366us rec=1 side=None | ; successor=ok
+S7_delay_300ms                 reuse          safe=0/3 lat=298321us rec=0 side=None | ; successor=stale
+S7_delay_300ms                 drain          safe=3/3 lat=621994us rec=1 side=None | drain failed (io: drain timeout); reconnected; successor=ok
+S7_delay_300ms                 drain_slow     safe=3/3 lat=600399us rec=0 side=None | ; successor=ok
+S7_delay_300ms                 finish_drain   safe=3/3 lat=609112us rec=1 side=None | finish+drain failed (io: drain timeout); reconnected; successor=ok
+S7_delay_300ms                 retire         safe=3/3 lat=491479us rec=1 side=None | ; successor=ok
+S8_reply_lost                  reuse          safe=0/3 lat=901715us rec=0 side=None | ; successor=timeout
+S8_reply_lost                  drain          safe=3/3 lat=308953us rec=1 side=None | drain failed (io: drain timeout); reconnected; successor=ok
+S8_reply_lost                  drain_slow     safe=3/3 lat=1400320us rec=1 side=None | slow drain failed (io: drain timeout); reconnected; successor=ok
+S8_reply_lost                  finish_drain   safe=3/3 lat=320535us rec=1 side=None | finish+drain failed (io: drain timeout); reconnected; successor=ok
+S8_reply_lost                  retire         safe=3/3 lat=198813us rec=1 side=None | ; successor=ok
+
+### penalty=0us
+--- training set sparse (3 samples)
+if write=complete -> drain_slow
+if write=none -> reuse
+if write=partial -> finish_drain
+stock_reuse    rules=1 unsafe=5 false_evictions=0 cost=1218681us
+    S2_complete_mid_reply: reuse safe=false lat=21 rec=0
+    S4_insert_before_read: reuse safe=false lat=313 rec=0
+    S6_delay_20ms: reuse safe=false lat=18311 rec=0
+    S7_delay_300ms: reuse safe=false lat=298321 rec=0
+    S8_reply_lost: reuse safe=false lat=901715 rec=0
+retire_all     rules=1 unsafe=0 false_evictions=4 cost=1280405us
+    S2_complete_mid_reply: retire safe=true lat=192359 rec=1
+    S4_insert_before_read: retire safe=true lat=190388 rec=1
+    S6_delay_20ms: retire safe=true lat=207366 rec=1
+    S7_delay_300ms: retire safe=true lat=491479 rec=1
+    S8_reply_lost: retire safe=true lat=198813 rec=1
+drain_only     rules=1 unsafe=0 false_evictions=1 cost=971028us
+    S2_complete_mid_reply: drain safe=true lat=101 rec=0
+    S4_insert_before_read: drain safe=true lat=326 rec=0
+    S6_delay_20ms: drain safe=true lat=39654 rec=0
+    S7_delay_300ms: drain safe=true lat=621994 rec=1
+    S8_reply_lost: drain safe=true lat=308953 rec=1
+handwritten    rules=4 unsafe=0 false_evictions=0 cost=2041938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1
+learned        rules=3 unsafe=0 false_evictions=0 cost=2041938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1
+--- training set full (3 samples)
+if write=complete -> drain_slow
+if write=none -> reuse
+if write=partial -> finish_drain
+stock_reuse    rules=1 unsafe=5 false_evictions=0 cost=1218681us
+    S2_complete_mid_reply: reuse safe=false lat=21 rec=0
+    S4_insert_before_read: reuse safe=false lat=313 rec=0
+    S6_delay_20ms: reuse safe=false lat=18311 rec=0
+    S7_delay_300ms: reuse safe=false lat=298321 rec=0
+    S8_reply_lost: reuse safe=false lat=901715 rec=0
+retire_all     rules=1 unsafe=0 false_evictions=4 cost=1280405us
+    S2_complete_mid_reply: retire safe=true lat=192359 rec=1
+    S4_insert_before_read: retire safe=true lat=190388 rec=1
+    S6_delay_20ms: retire safe=true lat=207366 rec=1
+    S7_delay_300ms: retire safe=true lat=491479 rec=1
+    S8_reply_lost: retire safe=true lat=198813 rec=1
+drain_only     rules=1 unsafe=0 false_evictions=1 cost=971028us
+    S2_complete_mid_reply: drain safe=true lat=101 rec=0
+    S4_insert_before_read: drain safe=true lat=326 rec=0
+    S6_delay_20ms: drain safe=true lat=39654 rec=0
+    S7_delay_300ms: drain safe=true lat=621994 rec=1
+    S8_reply_lost: drain safe=true lat=308953 rec=1
+handwritten    rules=4 unsafe=0 false_evictions=0 cost=2041938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1
+learned        rules=3 unsafe=0 false_evictions=0 cost=2041938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1
+
+### penalty=150000us
+--- training set sparse (3 samples)
+if write=complete -> drain_slow
+if write=none -> reuse
+if write=partial -> finish_drain
+stock_reuse    rules=1 unsafe=5 false_evictions=0 cost=1218681us
+    S2_complete_mid_reply: reuse safe=false lat=21 rec=0
+    S4_insert_before_read: reuse safe=false lat=313 rec=0
+    S6_delay_20ms: reuse safe=false lat=18311 rec=0
+    S7_delay_300ms: reuse safe=false lat=298321 rec=0
+    S8_reply_lost: reuse safe=false lat=901715 rec=0
+retire_all     rules=1 unsafe=0 false_evictions=4 cost=2030405us
+    S2_complete_mid_reply: retire safe=true lat=192359 rec=1
+    S4_insert_before_read: retire safe=true lat=190388 rec=1
+    S6_delay_20ms: retire safe=true lat=207366 rec=1
+    S7_delay_300ms: retire safe=true lat=491479 rec=1
+    S8_reply_lost: retire safe=true lat=198813 rec=1
+drain_only     rules=1 unsafe=0 false_evictions=1 cost=1271028us
+    S2_complete_mid_reply: drain safe=true lat=101 rec=0
+    S4_insert_before_read: drain safe=true lat=326 rec=0
+    S6_delay_20ms: drain safe=true lat=39654 rec=0
+    S7_delay_300ms: drain safe=true lat=621994 rec=1
+    S8_reply_lost: drain safe=true lat=308953 rec=1
+handwritten    rules=4 unsafe=0 false_evictions=0 cost=2191938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1
+learned        rules=3 unsafe=0 false_evictions=0 cost=2191938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1
+--- training set full (3 samples)
+if write=complete -> drain_slow
+if write=none -> reuse
+if write=partial -> finish_drain
+stock_reuse    rules=1 unsafe=5 false_evictions=0 cost=1218681us
+    S2_complete_mid_reply: reuse safe=false lat=21 rec=0
+    S4_insert_before_read: reuse safe=false lat=313 rec=0
+    S6_delay_20ms: reuse safe=false lat=18311 rec=0
+    S7_delay_300ms: reuse safe=false lat=298321 rec=0
+    S8_reply_lost: reuse safe=false lat=901715 rec=0
+retire_all     rules=1 unsafe=0 false_evictions=4 cost=2030405us
+    S2_complete_mid_reply: retire safe=true lat=192359 rec=1
+    S4_insert_before_read: retire safe=true lat=190388 rec=1
+    S6_delay_20ms: retire safe=true lat=207366 rec=1
+    S7_delay_300ms: retire safe=true lat=491479 rec=1
+    S8_reply_lost: retire safe=true lat=198813 rec=1
+drain_only     rules=1 unsafe=0 false_evictions=1 cost=1271028us
+    S2_complete_mid_reply: drain safe=true lat=101 rec=0
+    S4_insert_before_read: drain safe=true lat=326 rec=0
+    S6_delay_20ms: drain safe=true lat=39654 rec=0
+    S7_delay_300ms: drain safe=true lat=621994 rec=1
+    S8_reply_lost: drain safe=true lat=308953 rec=1
+handwritten    rules=4 unsafe=0 false_evictions=0 cost=2191938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1
+learned        rules=3 unsafe=0 false_evictions=0 cost=2191938us
+    S2_complete_mid_reply: drain_slow safe=true lat=126 rec=0
+    S4_insert_before_read: drain_slow safe=true lat=300 rec=0
+    S6_delay_20ms: drain_slow safe=true lat=40793 rec=0
+    S7_delay_300ms: drain_slow safe=true lat=600399 rec=0
+    S8_reply_lost: drain_slow safe=true lat=1400320 rec=1

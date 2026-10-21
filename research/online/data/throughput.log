@@ -1,0 +1,8 @@
+mode conc=8 fault_every=50 seconds=3
+| mode | ops | ops/s | ok | stale | err | timeout | faults | reconnects | p50 us | p95 us | p99 us | max us |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| b0 | 416231 | 138630 | 398430 | 1171 | 8311 | 0 | 8319 | 0 | 51 | 104 | 141 | 1483 |
+| b1 | 5250 | 1647 | 5145 | 0 | 0 | 0 | 105 | 105 | 56 | 327 | 207179 | 227285 |
+| b2 | 232359 | 77440 | 227715 | 0 | 0 | 0 | 4644 | 0 | 91 | 151 | 184 | 952 |
+| b3 | 205519 | 68485 | 201412 | 0 | 0 | 0 | 4107 | 0 | 102 | 179 | 235 | 224512 |
+  pool snapshot: connects=8 retired_suspect=0 recovery_ok=4107 failed=0 unresolved=0 queue_full=0

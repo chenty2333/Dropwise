@@ -1,0 +1,13 @@
+[package]
+name = "online-guards"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Online hand-off guards for cancellation at resource handoff boundaries (research prototype)"
+
+[dependencies]
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "net", "io-util", "sync", "time"] }
+dropwise = { path = "../..", features = ["net"] }
+
+[profile.release]
+debug = 1
