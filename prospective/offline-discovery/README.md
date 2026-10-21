@@ -1,7 +1,9 @@
 # Offline discovery: synchronous transaction interruption and field-level judgment
 
-This directory is the round-5 offline-discovery package.  It has two results
-that support each other:
+Start with [ROUND5-RESULTS.md](ROUND5-RESULTS.md) for the round summary
+(delta, refuted hypotheses, implemented vs proposal, next direction).  This
+directory is the round-5 offline-discovery package.  It has two results that
+support each other:
 
 1. **A mechanism result on synchronous psycopg 3.3.6.**  One asynchronous
    exception at transaction entry/exit can produce four states: an advanced

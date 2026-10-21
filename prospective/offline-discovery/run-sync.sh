@@ -73,7 +73,7 @@ echo "contrast"
 
 echo "field contract on the sync target"
 "$PY" -m pgsync.case --port "$PORT" --log-dir "$RUN" fields \
-    --phases entry_wait,entry_pre_send,exit_pre_commit --reps 2 \
+    --phases entry_wait,entry_pre_send,exit_pre_commit,entry_normal --reps 2 \
     >"$RUN/fields.jsonl"
 
 "$PY" -m pgsync.analyze --dir "$RUN" >"$RUN/SUMMARY.md"

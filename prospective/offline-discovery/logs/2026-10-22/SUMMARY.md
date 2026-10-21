@@ -121,6 +121,8 @@ calibration failures: 0
 
 | phase/mode | n | overall | per-field statuses |
 |---|---|---|---|
+| entry_normal/retry | 2 | {'Post': 2} | target.visible: {'Post': 2}; successor.visible: {'Holds': 2}; client.clean: {'Holds': 2}; server.clean: {'Holds': 2} |
+| entry_normal/survivor | 2 | {'Post': 2} | target.visible: {'Post': 2}; successor.visible: {'Holds': 2}; client.clean: {'Holds': 2}; server.clean: {'Holds': 2} |
 | entry_pre_send/retry | 2 | {'Violation': 2} | target.visible: {'Pre': 2}; successor.visible: {'Violation': 2}; client.clean: {'Violation': 2}; server.clean: {'Holds': 2} |
 | entry_pre_send/survivor | 2 | {'Violation': 2} | target.visible: {'Pre': 2}; successor.visible: {'Violation': 2}; client.clean: {'Violation': 2}; server.clean: {'Holds': 2} |
 | entry_wait/retry | 2 | {'Violation': 2} | target.visible: {'Pre': 2}; successor.visible: {'Violation': 2}; client.clean: {'Violation': 2}; server.clean: {'Violation': 2} |

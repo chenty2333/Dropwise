@@ -572,6 +572,8 @@ def cmd_pool(args) -> int:
 
 
 FIELD_PHASES = {
+    # negative control: no interruption, the transaction completes normally
+    "entry_normal": ("none", "entry", 0.0, 0.01),
     "entry_wait": ("timer", "entry", 0.10, 0.30),
     "entry_pre_send": ("trace", "entry", 106,
                        ("transaction.py", "_enter_gen"), 0.01),
@@ -603,7 +605,14 @@ def cmd_fields(args) -> int:
     try:
         for phase in args.phases.split(","):
             kind = FIELD_PHASES[phase]
-            if kind[0] == "timer":
+            if kind[0] == "none":
+                _, _, _, delay = kind
+                if delay not in envs:
+                    envs[delay] = Env(args.port, s2c_delay=delay,
+                                      log_dir=args.log_dir)
+                env = envs[delay]
+                spec = Spec("entry", inject="none")
+            elif kind[0] == "timer":
                 _, _, offset, delay = kind
                 if (delay) not in envs:
                     envs[delay] = Env(args.port, s2c_delay=delay,

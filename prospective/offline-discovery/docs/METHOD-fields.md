@@ -71,6 +71,11 @@ This is a *diagnosis* improvement, not a new bug: the old blob also ends in a
 violation for these trials.  The field contract adds the reason and the coverage
 statement.
 
+Negative control: `entry_normal` (no interruption) is judged `Post` with
+`successor.visible`, `client.clean` and `server.clean` all `Holds`, 2/2.  The
+contract does not flag a normal execution; the violation rows are specific to
+the interrupted states.
+
 ## 4. A constructed case where the old blob is wrong
 
 `tests/test_fields.py::test_per_field_mixed_allowed_but_blob_is_neither` uses a
