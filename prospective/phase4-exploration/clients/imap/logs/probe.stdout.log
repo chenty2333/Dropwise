@@ -1,0 +1,25 @@
+PROBE A: drop SELECT, do not drain, APPEND immediately
+PROBE-A dropped=true proxy=[client=127.0.0.1:33746 up=53 down=74]
+PROBE-A proxy_after_delay=[client=127.0.0.1:33746 up=53 down=357]
+PROBE-A append=Err("Append") raw="could not append mail to mailbox" proxy=[client=127.0.0.1:33746 up=53 down=357]
+PROBE-A queued[0] request_id=None parsed=MailboxData(Exists(9))
+PROBE-A queued[1] request_id=None parsed=MailboxData(Recent(1))
+PROBE-A queued[2] request_id=None parsed=Data { status: Ok, outcome: Outcome { code: Some(UidValidity(1792519514)), information: None } }
+PROBE-A queued[3] request_id=None parsed=Data { status: Ok, outcome: Outcome { code: Some(UidNext(10)), information: None } }
+PROBE-A queued[4] request_id=None parsed=Data { status: Ok, outcome: Outcome { code: Some(Unseen(1)), information: Some("Message 1 is the first unseen") } }
+PROBE-A queued[5] request_id=None parsed=Data { status: Ok, outcome: Outcome { code: Some(PermanentFlags(["\\Answered", "\\Deleted", "\\Draft", "\\Flagged", "\\Seen", "\\*"])), information: None } }
+PROBE-A queued[6] request_id=Some(RequestId("A0002")) parsed=Done { tag: RequestId("A0002"), status: Ok, outcome: Outcome { code: Some(ReadWrite), information: Some("SELECT completed.") } }
+PROBE-A queued[7] request_id=None parsed=Continue(Outcome { code: None, information: Some("OK") })
+PROBE-A queued[8] read timed out
+PROBE-A observer=Ok(0) raw="rest_total=9 subject=\"s-p4imap-723432-0-probe-a\" count=0"
+PROBE B: drop SELECT, drain the queued SELECT responses, APPEND
+PROBE-B dropped=true
+PROBE-B drained[0] request_id=None done=false parsed=MailboxData(Flags(["\\Answered", "\\Deleted", "\\Draft", "\\Flagged", "\\Seen"]))
+PROBE-B drained[1] request_id=None done=false parsed=MailboxData(Exists(10))
+PROBE-B drained[2] request_id=None done=false parsed=MailboxData(Recent(1))
+PROBE-B drained[3] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(UidValidity(1792519514)), information: None } }
+PROBE-B drained[4] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(UidNext(11)), information: None } }
+PROBE-B drained[5] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(Unseen(1)), information: Some("Message 1 is the first unseen") } }
+PROBE-B drained[6] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(PermanentFlags(["\\Answered", "\\Deleted", "\\Draft", "\\Flagged", "\\Seen", "\\*"])), information: None } }
+PROBE-B drained[7] request_id=Some(RequestId("A0002")) done=true parsed=Done { tag: RequestId("A0002"), status: Ok, outcome: Outcome { code: Some(ReadWrite), information: Some("SELECT completed.") } }
+PROBE-B drained_total=8 append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=11 subject=\"s-p4imap-723432-1-probe-b\" count=1"

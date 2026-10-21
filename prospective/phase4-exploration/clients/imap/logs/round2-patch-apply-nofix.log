@@ -1,0 +1,6 @@
+fix=not-applied (published 0.12.0 APPEND continuation read)
+dest=/tmp/dw-p4-imap-r2-tests-75119/async-imap-0.12.0-published
+source=/home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-imap-0.12.0
+fix=0
+client_sha256=5f97d6d581d5d0a4cd86aa9f1894c9ca4e7fcb05b5946f39f33871ab5b4d7d41
+tests_sha256=9bc6b38d22a7bced71ef8f75bb3efd038281d2759939522f55b6db564f8c0f61

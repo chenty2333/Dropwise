@@ -1,0 +1,4 @@
+patching file src/client.rs
+dest=/tmp/dropwise-run.07Uakw/async-imap-0.12.0-round2-patched
+source=/home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-imap-0.12.0
+fix=1

@@ -1,0 +1,32 @@
+# round-2 IMAP environment
+date=2026-10-21T15:16:24+09:00
+repo=/home/ava/Desktop/Dropwise
+round2_crate=/home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2
+work=/tmp/dropwise-run.DHkCq3
+image=greenmail/standalone:2.1.14
+image_id=sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626
+async_imap=0.12.0 (runtime-tokio, default-features off)
+tokio=1.x MultiThread workers=1
+proxy=dropwise::net::Proxy reply_delay=50ms, loopback only
+config=races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0
+observer=GreenMail REST GET /api/user/imapuser@example.com/messages direct
+seed=SMTP direct
+--- unpatched container ---
+variant=unpatched
+container_name=dw-p4-imap-r2-unpatched-139106
+container_id=ad52d2fc4623103cc14652a39647c8bb5223a8175e5c31d6acae30447dc43c41
+image=greenmail/standalone:2.1.14
+smtp=127.0.0.1:32800
+imap=127.0.0.1:32801
+rest=127.0.0.1:32802
+--- patched container ---
+variant=patched
+container_name=dw-p4-imap-r2-patched-139106
+container_id=1948a207aa848ba7317e368124889fdeba495d22c52bc671520606418a59722f
+image=greenmail/standalone:2.1.14
+smtp=127.0.0.1:32805
+imap=127.0.0.1:32806
+rest=127.0.0.1:32807
+--- build identity ---
+      Adding async-imap v0.12.0 (/tmp/dropwise-run.DHkCq3/async-imap-patched)
+   Compiling async-imap v0.12.0 (/tmp/dropwise-run.DHkCq3/async-imap-patched)

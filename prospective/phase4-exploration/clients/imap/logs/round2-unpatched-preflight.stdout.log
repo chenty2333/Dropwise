@@ -1,0 +1,5 @@
+ROUND2-PREFLIGHT run=p4imap-r2-90404-0 seed=s-p4imap-r2-90404-0-seed proxy=[client=127.0.0.1:59048 up=31 down=74] conns=1 session_ptr=0x55eca9212f10 stream_ptr=0x55eca9212f10
+ROUND2-PREFLIGHT select=Ok(SelectInfo { exists: 1, recent: 1, unseen: Some(1), uid_next: Some(2), uid_validity: Some(1792561567), flags_len: 5, flags: "[Answered, Deleted, Draft, Flagged, Seen]", permanent_flags_len: 6, permanent_flags: "[Answered, Deleted, Draft, Flagged, Seen, MayCreate]", ms: 145 }) raw="Ok" ms=145
+ROUND2-PREFLIGHT append=Ok(()) raw="Ok" ms=236
+ROUND2-PREFLIGHT search=Ok(1) raw="seqs=[2]" ms=148 fetch=Ok("p4-imap-survivor-body") raw="seq=2 text_bytes=21" ms=144
+ROUND2-PREFLIGHT observer=Ok(ObserverView { run_subjects: ["s-RUN-seed", "s-RUN-survivor"], run_message_count: 2, seed_body: true, survivor_body: true }) raw="rest_total=2 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" proxy_after=[client=127.0.0.1:59048 up=439 down=558] conns=1

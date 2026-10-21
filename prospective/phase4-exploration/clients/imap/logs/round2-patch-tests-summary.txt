@@ -1,0 +1,11 @@
+# round-2 patch tests
+date=2026-10-21T14:43:49+09:00
+work=/tmp/dw-p4-imap-r2-tests-75119
+published_upstream_rc=0
+published_round2_rc=101 (expected nonzero)
+patched_full_rc=0
+fmt_patched_rc=0
+fmt_unpatched_rc=0
+clippy_patched_rc=0
+clippy_unpatched_rc=0
+status=0

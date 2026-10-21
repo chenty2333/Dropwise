@@ -1,0 +1,7 @@
+variant=unpatched
+container_name=dw-p4-imap-r2-unpatched-139106
+container_id=ad52d2fc4623103cc14652a39647c8bb5223a8175e5c31d6acae30447dc43c41
+image=greenmail/standalone:2.1.14
+smtp=127.0.0.1:32800
+imap=127.0.0.1:32801
+rest=127.0.0.1:32802

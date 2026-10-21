@@ -1,0 +1,6 @@
+patching file src/client.rs
+dest=/tmp/dw-p4-imap-r2-tests-75119/async-imap-0.12.0-round2-patched
+source=/home/ava/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-imap-0.12.0
+fix=1
+client_sha256=65a1446623ed7df95f0d952312020c52142b5cb14445bdd37bf14d63513fdc96
+tests_sha256=9bc6b38d22a7bced71ef8f75bb3efd038281d2759939522f55b6db564f8c0f61

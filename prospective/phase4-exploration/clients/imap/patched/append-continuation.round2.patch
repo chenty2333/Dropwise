@@ -1,0 +1,30 @@
+--- a/src/client.rs
++++ b/src/client.rs
+@@ -1177,12 +1177,21 @@
+             ))
+             .await?;
+ 
+-        let Some(res) = self.read_response().await? else {
+-            return Err(Error::Append);
+-        };
+-        let Response::Continue { .. } = res.parsed() else {
+-            return Err(Error::Append);
+-        };
++        // Round-2 triage patch, not upstream: skip responses left by an
++        // abandoned command until this APPEND's continuation arrives. A
++        // tagged completion for another request is ignored, mirroring the
++        // tag-first loop that PR #142 added to LOGIN. A tagged completion for
++        // this request, or EOF, is an error.
++        loop {
++            let Some(res) = self.read_response().await? else {
++                return Err(Error::Append);
++            };
++            match res.parsed() {
++                Response::Continue { .. } => break,
++                Response::Done { tag, .. } if tag == &id => return Err(Error::Append),
++                _ => continue,
++            }
++        }
+ 
+         self.stream.as_mut().write_all(content).await?;
+         self.stream.as_mut().write_all(b"\r\n").await?;

@@ -1,0 +1,32 @@
+--- a/src/client.rs
++++ b/src/client.rs
+@@ -1177,12 +1177,23 @@
+             ))
+             .await?;
+ 
+-        let Some(res) = self.read_response().await? else {
+-            return Err(Error::Append);
+-        };
+-        let Response::Continue { .. } = res.parsed() else {
+-            return Err(Error::Append);
+-        };
++        loop {
++            let Some(res) = self.read_response().await? else {
++                return Err(Error::Append);
++            };
++            match res.parsed() {
++                Response::Continue { .. } => break,
++                Response::Done { tag, .. } if tag == &id => return Err(Error::Append),
++                Response::Data {
++                    status: imap_proto::Status::Bye,
++                    ..
++                } => {
++                    handle_unilateral(res, self.unsolicited_responses_tx.clone());
++                    return Err(Error::ConnectionLost);
++                }
++                _ => handle_unilateral(res, self.unsolicited_responses_tx.clone()),
++            }
++        }
+ 
+         self.stream.as_mut().write_all(content).await?;
+         self.stream.as_mut().write_all(b"\r\n").await?;

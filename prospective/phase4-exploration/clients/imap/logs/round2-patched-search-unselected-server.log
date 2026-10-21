@@ -1,0 +1,1 @@
+2026-10-21 05:49:13,582 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED

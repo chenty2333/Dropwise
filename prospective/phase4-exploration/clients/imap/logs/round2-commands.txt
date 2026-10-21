@@ -1,0 +1,30 @@
+# generated 2026-10-21T14:45:59+09:00
+# cwd /home/ava/Desktop/Dropwise
+cargo build --release --offline   # round2/, published async-imap 0.12.0
+patched/apply-round2-patch.sh /tmp/dw-p4-imap-round2-88790/async-imap-patched
+CARGO_TARGET_DIR=/tmp/dw-p4-imap-round2-88790/target cargo build --release --offline   # copied round2 crate with [patch.crates-io]
+docker run -d --rm --name dw-p4-imap-r2-<variant>-88790 -p 127.0.0.1::3025 -p 127.0.0.1::3143 -p 127.0.0.1::8080 -e GREENMAIL_OPTS='-Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled -Dgreenmail.users=imapuser:pass@example.com' greenmail/standalone:2.1.14
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 preflight > logs/round2-unpatched-preflight.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 chain 1 > logs/round2-unpatched-chain-1.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 chain 2 > logs/round2-unpatched-chain-2.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 chain 3 > logs/round2-unpatched-chain-3.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 chain-reverse 1 > logs/round2-unpatched-chain-reverse-1.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 chain-reverse 2 > logs/round2-unpatched-chain-reverse-2.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 chain-reverse 3 > logs/round2-unpatched-chain-reverse-3.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 patch-behavior > logs/round2-unpatched-patch-behavior.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 search-unselected > logs/round2-unpatched-search-unselected.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 ladder 1 > logs/round2-unpatched-ladder-1.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 ladder 2 > logs/round2-unpatched-ladder-2.stdout.log
+P4_SMTP_PORT=32790 P4_IMAP_PORT=32791 P4_REST_PORT=32792 /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/imap/round2/target/release/imap-round2 ladder 3 > logs/round2-unpatched-ladder-3.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 preflight > logs/round2-patched-preflight.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 chain 1 > logs/round2-patched-chain-1.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 chain 2 > logs/round2-patched-chain-2.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 chain 3 > logs/round2-patched-chain-3.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 chain-reverse 1 > logs/round2-patched-chain-reverse-1.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 chain-reverse 2 > logs/round2-patched-chain-reverse-2.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 chain-reverse 3 > logs/round2-patched-chain-reverse-3.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 patch-behavior > logs/round2-patched-patch-behavior.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 search-unselected > logs/round2-patched-search-unselected.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 ladder 1 > logs/round2-patched-ladder-1.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 ladder 2 > logs/round2-patched-ladder-2.stdout.log
+P4_SMTP_PORT=32793 P4_IMAP_PORT=32795 P4_REST_PORT=32796 /tmp/dw-p4-imap-round2-88790/target/release/imap-round2 ladder 3 > logs/round2-patched-ladder-3.stdout.log

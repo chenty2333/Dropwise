@@ -1,0 +1,80 @@
+warning: use of deprecated macro `unsafe_pinned`: this macro is not safe; use safe pin-project or pin-project-lite crate instead
+   --> src/client.rs:347:5
+    |
+347 |     unsafe_pinned!(conn: Connection<T>);
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated macro `unsafe_pinned`: this macro is not safe; use safe pin-project or pin-project-lite crate instead
+    --> src/client.rs:1399:5
+     |
+1399 |     unsafe_pinned!(stream: ImapStream<T>);
+     |     ^^^^^^^^^^^^^
+
+warning: use of deprecated macro `unsafe_pinned`: this macro is not safe; use safe pin-project or pin-project-lite crate instead
+  --> src/extensions/idle.rs:70:5
+   |
+70 |     unsafe_pinned!(stream: &'a mut St);
+   |     ^^^^^^^^^^^^^
+
+warning: use of deprecated macro `unsafe_pinned`: this macro is not safe; use safe pin-project or pin-project-lite crate instead
+   --> src/extensions/idle.rs:113:5
+    |
+113 |     unsafe_pinned!(session: Session<T>);
+    |     ^^^^^^^^^^^^^
+
+warning: `async-imap` (lib test) generated 4 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (target/debug/deps/async_imap-07896366a353e021)
+
+running 15 tests
+test client::tests::round2_append_eof_before_continuation_returns_error ... ok
+test client::tests::round2_append_bye_must_not_send_literal ... ok
+test client::tests::round2_append_own_tagged_ok_without_continuation_returns_error ... ok
+test client::tests::round2_append_eof_after_stale_responses_returns_error ... ok
+test client::tests::round2_append_bad_after_continuation_returns_error ... ok
+test client::tests::round2_append_bad_before_continuation_returns_error ... ok
+test client::tests::round2_append_no_after_continuation_returns_error ... ok
+test client::tests::round2_append_rejected_before_continuation_returns_error ... ok
+test client::tests::round2_append_skips_stale_no_for_other_command ... FAILED
+test client::tests::round2_append_preserves_unsolicited_before_continuation ... FAILED
+test client::tests::round2_append_skips_stale_select_responses ... FAILED
+test client::tests::round2_append_stale_tagged_ok_after_continuation_is_not_swallowed ... ok
+test client::tests::round2_append_stale_untagged_after_continuation_still_completes ... ok
+test client::tests::round2_append_skips_stale_bad_for_other_command ... FAILED
+test client::tests::round2_normal_append_still_works ... ok
+
+failures:
+
+---- client::tests::round2_append_skips_stale_no_for_other_command stdout ----
+
+thread 'client::tests::round2_append_skips_stale_no_for_other_command' (135874) panicked at src/client.rs:2879:56:
+called `Result::unwrap()` on an `Err` value: Append
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- client::tests::round2_append_preserves_unsolicited_before_continuation stdout ----
+
+thread 'client::tests::round2_append_preserves_unsolicited_before_continuation' (135871) panicked at src/client.rs:2996:56:
+called `Result::unwrap()` on an `Err` value: Append
+
+---- client::tests::round2_append_skips_stale_select_responses stdout ----
+
+thread 'client::tests::round2_append_skips_stale_select_responses' (135875) panicked at src/client.rs:2862:56:
+called `Result::unwrap()` on an `Err` value: Append
+
+---- client::tests::round2_append_skips_stale_bad_for_other_command stdout ----
+
+thread 'client::tests::round2_append_skips_stale_bad_for_other_command' (135873) panicked at src/client.rs:2894:56:
+called `Result::unwrap()` on an `Err` value: Append
+
+
+failures:
+    client::tests::round2_append_preserves_unsolicited_before_continuation
+    client::tests::round2_append_skips_stale_bad_for_other_command
+    client::tests::round2_append_skips_stale_no_for_other_command
+    client::tests::round2_append_skips_stale_select_responses
+
+test result: FAILED. 11 passed; 4 failed; 0 ignored; 0 measured; 73 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

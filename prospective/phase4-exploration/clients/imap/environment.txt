@@ -1,0 +1,23 @@
+generated_at=2026-10-21T03:05:15+09:00
+command=bash prospective/phase4-exploration/clients/imap/run.sh
+rustc=rustc 1.98.0 (88d9e12ae 2026-08-18)
+cargo=cargo 1.98.0 (797e8a9bc 2026-08-05)
+docker=Docker version 29.8.2, build 2.fc44
+uname=Linux 7.2.11-cachyos1.fc44.x86_64 x86_64
+crate=async-imap 0.12.0 (default-features=false, features=[runtime-tokio])
+async-imap: 0.12.0
+imap-proto: 0.17.0
+tokio: 1.54.0
+futures-util: 0.3.34
+serde_json: 1.0.154
+dropwise: 0.1.0
+dropwise_source=path ../../../.. (workspace package dropwise 0.1.0)
+server_image=greenmail/standalone:2.1.14
+server_image_id=sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626
+server_repo_digests=["greenmail/standalone@sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626"]
+2026-10-20 18:05:14,599 INFO  GreenMailStandaloneRunner| Starting GreenMail standalone v2.1.14 using [ServerSetup{port=3025, bindAddress='0.0.0.0', protocol='smtp', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3465, bindAddress='0.0.0.0', protocol='smtps', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3110, bindAddress='0.0.0.0', protocol='pop3', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3995, bindAddress='0.0.0.0', protocol='pop3s', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3143, bindAddress='0.0.0.0', protocol='imap', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3993, bindAddress='0.0.0.0', protocol='imaps', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}]
+greenmail_test_setup=-Dgreenmail.setup.test.all -Dgreenmail.auth.disabled -Dgreenmail.users=imapuser:pass@example.com
+observer=GET http://127.0.0.1:<rest>/api/user/imapuser@example.com/messages (direct, no proxy)
+pending=dropwise::net::Proxy reply_delay=50ms, Flavor::MultiThread{workers:1}
+config=races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0
+repetitions=3 (ladder 1,2,3 separate processes; one container for the runner)

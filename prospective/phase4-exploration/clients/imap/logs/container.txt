@@ -1,0 +1,8 @@
+container_name=dw-p4-imap-722881
+container_id=3f6fa4982d9f368685d08d061c75381f194e7989eb8749206a6db90565b17df1
+image=greenmail/standalone:2.1.14
+image_id=sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626
+repo_digests=["greenmail/standalone@sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626"]
+smtp=127.0.0.1:32784
+imap=127.0.0.1:32785
+rest=127.0.0.1:32786

@@ -1,0 +1,570 @@
+Executing 'java -Djava.net.preferIPv4Stack=true -Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled -Dgreenmail.users=imapuser:pass@example.com  -jar greenmail-standalone.jar' ...
+2026-10-20 18:05:14,599 INFO  GreenMailStandaloneRunner| Starting GreenMail standalone v2.1.14 using [ServerSetup{port=3025, bindAddress='0.0.0.0', protocol='smtp', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3465, bindAddress='0.0.0.0', protocol='smtps', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3110, bindAddress='0.0.0.0', protocol='pop3', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3995, bindAddress='0.0.0.0', protocol='pop3s', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3143, bindAddress='0.0.0.0', protocol='imap', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3993, bindAddress='0.0.0.0', protocol='imaps', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}]
+2026-10-20 18:05:14,765 INFO  GreenMailStandaloneRunner| Starting GreenMail API server at http://0.0.0.0:8080/
+2026-10-20 18:05:17,322 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-20 18:05:18,760 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:50502" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:52428" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.SocketException: Broken pipe
+	at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+	at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+	at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:394)
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:410)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:440)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:819)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1195)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:125)
+	at java.base/java.io.BufferedOutputStream.implFlush(BufferedOutputStream.java:252)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:240)
+	at java.base/java.io.FilterOutputStream.close(FilterOutputStream.java:184)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:70)
+	... 2 more
+2026-10-20 18:05:23,072 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:52522" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:23,317 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:52532" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:23,944 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:52558" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:29,864 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:52574" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:30,162 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-20 18:05:30,555 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-20 18:05:37,168 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:35074" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:42,467 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:35078" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:47,807 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:47810" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:47834" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.SocketException: Broken pipe
+	at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+	at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+	at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:394)
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:410)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:440)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:819)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1195)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:125)
+	at java.base/java.io.BufferedOutputStream.implFlush(BufferedOutputStream.java:252)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:240)
+	at java.base/java.io.FilterOutputStream.close(FilterOutputStream.java:184)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:70)
+	... 2 more
+2026-10-20 18:05:51,472 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:58182" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:51,755 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:58186" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:52,052 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:58192" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:52,392 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:58206" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:58,276 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:58232" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:05:58,612 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-20 18:05:59,005 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-20 18:06:05,708 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:50750" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:06:11,002 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:50752" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:06:16,341 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:60114" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:60136" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.SocketException: Broken pipe
+	at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+	at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+	at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:394)
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:410)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:440)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:819)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1195)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:125)
+	at java.base/java.io.BufferedOutputStream.implFlush(BufferedOutputStream.java:252)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:240)
+	at java.base/java.io.FilterOutputStream.close(FilterOutputStream.java:184)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:70)
+	... 2 more
+2026-10-20 18:06:20,036 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:45024" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:06:20,327 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:45026" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-10-20 18:06:26,246 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:45048" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-10-20 18:06:26,583 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-20 18:06:26,974 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-20 18:06:33,479 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:45100" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-10-20 18:06:38,816 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:59246" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more
+2026-10-20 18:06:44,153 WARN     commands.AppendCommand| Error processing command: Unexpected end of stream. Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Unexpected end of stream.
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.read(ImapRequestLineReader.java:137)
+	at com.icegreen.greenmail.imap.commands.CommandParser.readLiteral(CommandParser.java:315)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:280)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:59262" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: com.icegreen.greenmail.imap.ProtocolException: End of stream
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.nextChar(ImapRequestLineReader.java:68)
+	at com.icegreen.greenmail.imap.ImapRequestLineReader.consumeLine(ImapRequestLineReader.java:175)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:57)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	... 2 more

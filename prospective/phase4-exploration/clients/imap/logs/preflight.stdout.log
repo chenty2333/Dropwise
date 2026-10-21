@@ -1,0 +1,16 @@
+PREFLIGHT 1/3 no-cancel select+append+search+fetch+observer
+NOCANCEL setup run_id=p4imap-723344-0 seed=s-p4imap-723344-0-seed session_ptr=0x556baf1c6d10 stream_ptr=0x556baf1c6d10 proxy=client=127.0.0.1:43406 up=31 down=74
+NOCANCEL select=Ok("exists=1 recent=1 unseen=Some(1) uid_next=Some(2) uid_validity=Some(1792519514) flags=[Answered, Deleted, Draft, Flagged, Seen]") raw="Ok" append=Ok(()) raw="Ok"
+NOCANCEL search=Ok(1) raw="seqs=[2]" fetch=Ok("p4-imap-survivor-body") raw="seq=2 text_bytes=21"
+NOCANCEL observer=Ok(ObserverView { run_subjects: ["s-RUN-seed", "s-RUN-survivor"], run_message_count: 2, seed_body: true, survivor_body: true }) raw="rest_total=2 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true"
+NOCANCEL proxy_after=client=127.0.0.1:43406 up=433 down=558
+PREFLIGHT 2/3 reuse/identity three sequential commands
+REUSE start run_id=p4imap-723344-1 session_ptr=0x556baf1c6d10 stream_ptr=0x556baf1c6d10 conns=1 stats=[client=127.0.0.1:54548 up=31 down=74]
+REUSE after_cmd1 select=Ok("exists=3 recent=1 unseen=Some(1) uid_next=Some(4) uid_validity=Some(1792519514) flags=[Answered, Deleted, Draft, Flagged, Seen]") raw="Ok" conns=1 stats=[client=127.0.0.1:54548 up=53 down=356]
+REUSE after_cmd2 append=Ok(()) raw="Ok" conns=1 stats=[client=127.0.0.1:54548 up=345 down=439]
+REUSE after_cmd3 search=Ok(1) raw="seqs=[4]" seqs=Ok([4]) conns=1 stats=[client=127.0.0.1:54548 up=393 down=479]
+REUSE end session_ptr=0x556baf1c6d10 stream_ptr=0x556baf1c6d10 same_session=true same_stream=true conns=1
+PREFLIGHT 3/3 manual pre/post calibration
+CALIBRATION side=pre select=None append=Ok(()) raw="Ok" search=Ok(0) raw="seqs=[]" fetch=Err("NoMatch") raw="no seq to fetch" observer=Ok(ObserverView { run_subjects: ["s-RUN-seed", "s-RUN-survivor"], run_message_count: 2, seed_body: true, survivor_body: true }) observer_raw="rest_total=6 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true"
+CALIBRATION side=post select=Some((Ok("exists=7 recent=3 unseen=Some(1) uid_next=Some(8) uid_validity=Some(1792519514) flags=[Answered, Deleted, Draft, Flagged, Seen]"), "Ok")) append=Ok(()) raw="Ok" search=Ok(1) raw="seqs=[8]" fetch=Ok("p4-imap-survivor-body") raw="seq=8 text_bytes=21" observer=Ok(ObserverView { run_subjects: ["s-RUN-seed", "s-RUN-survivor"], run_message_count: 2, seed_body: true, survivor_body: true }) observer_raw="rest_total=8 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true"
+PREFLIGHT PASS

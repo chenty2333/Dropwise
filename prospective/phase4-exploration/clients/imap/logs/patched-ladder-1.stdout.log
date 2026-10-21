@@ -1,0 +1,107 @@
+=== LADDER REPETITION 1 START ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0
+B1-RUN cancelled=false target=Some(Ok(104))
+B1-RUN cancelled=true target=None
+B1-RUN cancelled=true target=None
+B1-RUN cancelled=true target=None
+B1-RUN cancelled=true target=None
+LADDER B1 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+--- DIAGNOSTICS B1 rep=1 ---
+dropwise diagnostics: 1 target(s), 4 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): src/main.rs:755:28 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): src/main.rs:755:28 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): src/main.rs:755:28 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): src/main.rs:755:28 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+LADDER B2 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+B2-BASELINE actual=baseline Ok(exists=109 recent=1 unseen=Some(1) uid_next=Some(110) uid_validity=Some(1792519024) flags=[Answered, Deleted, Draft, Flagged, Seen])
+B2-ACTUAL plan=#0@1:Immediate realized=true actual=cancelled retry=Ok("exists=110 recent=0 unseen=Some(1) uid_next=Some(111) uid_validity=Some(1792519024) flags=[Answered, Deleted, Draft, Flagged, Seen, Answered, Deleted, Draft, Flagged, Seen]") raw="Ok"
+B2-ACTUAL plan=#0@1:AfterWake realized=true actual=cancelled retry=Ok("exists=111 recent=0 unseen=Some(1) uid_next=Some(112) uid_validity=Some(1792519024) flags=[Answered, Deleted, Draft, Flagged, Seen, Answered, Deleted, Draft, Flagged, Seen]") raw="Ok"
+B2-ACTUAL plan=#0@2:Immediate realized=true actual=cancelled retry=Ok("exists=112 recent=0 unseen=Some(1) uid_next=Some(113) uid_validity=Some(1792519024) flags=[Answered, Deleted, Draft, Flagged, Seen]") raw="Ok"
+B2-ACTUAL plan=#0@2:AfterWake realized=true actual=cancelled retry=Ok("exists=113 recent=0 unseen=Some(1) uid_next=Some(114) uid_validity=Some(1792519024) flags=[Answered, Deleted, Draft, Flagged, Seen]") raw="Ok"
+--- DIAGNOSTICS B2 rep=1 ---
+dropwise diagnostics: 1 target(s), 4 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): src/main.rs:774:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): src/main.rs:774:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): src/main.rs:774:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): src/main.rs:774:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+LADDER B3 APPEND_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+B3-BASELINE actual=baseline Ok(exists=114 recent=1 unseen=Some(1) uid_next=Some(115) uid_validity=Some(1792519024) flags=[Answered, Deleted, Draft, Flagged, Seen])
+B3-ACTUAL plan=#0@1:Immediate realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=116 subject=\"s-p4imap-720827-11-b3\" count=1"
+B3-ACTUAL plan=#0@1:AfterWake realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=118 subject=\"s-p4imap-720827-12-b3\" count=1"
+B3-ACTUAL plan=#0@2:Immediate realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=120 subject=\"s-p4imap-720827-13-b3\" count=1"
+B3-ACTUAL plan=#0@2:AfterWake realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=122 subject=\"s-p4imap-720827-14-b3\" count=1"
+--- DIAGNOSTICS B3 rep=1 ---
+dropwise diagnostics: 1 target(s), 4 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): src/main.rs:814:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): src/main.rs:814:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): src/main.rs:814:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): src/main.rs:814:32 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+M1-RUN cancelled=false select_exists=Some(Ok(123)) append_raw="Ok" search_raw="seqs=[124]" fetch_raw="seq=124 text_bytes=21" observer_raw="rest_total=124 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[126]" fetch_raw="seq=126 text_bytes=21" observer_raw="rest_total=126 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[]" fetch_raw="no seq to fetch" observer_raw="rest_total=128 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[]" fetch_raw="no seq to fetch" observer_raw="rest_total=130 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=false select_exists=Some(Ok(131)) append_raw="Ok" search_raw="seqs=[132]" fetch_raw="seq=132 text_bytes=21" observer_raw="rest_total=132 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=false select_exists=Some(Ok(133)) append_raw="Ok" search_raw="seqs=[134]" fetch_raw="seq=134 text_bytes=21" observer_raw="rest_total=134 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[136]" fetch_raw="seq=136 text_bytes=21" observer_raw="rest_total=136 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[138]" fetch_raw="seq=138 text_bytes=21" observer_raw="rest_total=138 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[140]" fetch_raw="seq=140 text_bytes=21" observer_raw="rest_total=140 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+LADDER M1 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=4 mixed=0 neither=0 unknown=0
+--- DIAGNOSTICS M1 rep=1 ---
+dropwise diagnostics: 1 target(s), 4 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): src/main.rs:868:28 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, pre=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, post=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): src/main.rs:868:28 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, pre=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, post=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): src/main.rs:868:28 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, pre=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, post=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): src/main.rs:868:28 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, pre=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }, post=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+  invariant: ok
+=== LADDER REPETITION 1 END ===

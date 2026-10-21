@@ -1,0 +1,28 @@
+--- /tmp/imapsrc/async-imap-0.12.0/src/client.rs	2006-07-24 10:21:28.000000000 +0900
++++ /tmp/async-imap-patched/src/client.rs	2026-10-21 03:04:17.325449210 +0900
+@@ -1177,12 +1177,19 @@
+             ))
+             .await?;
+ 
+-        let Some(res) = self.read_response().await? else {
+-            return Err(Error::Append);
+-        };
+-        let Response::Continue { .. } = res.parsed() else {
+-            return Err(Error::Append);
+-        };
++        // Triage patch, not upstream: skip responses left by an abandoned
++        // command until the server's APPEND continuation arrives. A stale
++        // tagged response for a different request is ignored.
++        loop {
++            let Some(res) = self.read_response().await? else {
++                return Err(Error::Append);
++            };
++            match res.parsed() {
++                Response::Continue { .. } => break,
++                Response::Done { tag, .. } if tag == &id => return Err(Error::Append),
++                _ => continue,
++            }
++        }
+ 
+         self.stream.as_mut().write_all(content).await?;
+         self.stream.as_mut().write_all(b"\r\n").await?;

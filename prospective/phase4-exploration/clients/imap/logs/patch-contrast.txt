@@ -1,0 +1,72 @@
+# Triage-only patched dependency contrast (NOT part of the official ladder)
+#
+# A copy of async-imap 0.12.0 under /tmp/async-imap-patched changes the
+# APPEND continuation read to skip responses left by the abandoned SELECT
+# until the server continuation (+) arrives. The experiment crate itself was
+# copied to /tmp/p4-imap-patched with [patch.crates-io]; the repo crate and
+# the repo client dependency tree were not changed.
+
+## diff
+--- /tmp/imapsrc/async-imap-0.12.0/src/client.rs	2006-07-24 10:21:28.000000000 +0900
++++ /tmp/async-imap-patched/src/client.rs	2026-10-21 03:04:17.325449210 +0900
+@@ -1177,12 +1177,19 @@
+             ))
+             .await?;
+ 
+-        let Some(res) = self.read_response().await? else {
+-            return Err(Error::Append);
+-        };
+-        let Response::Continue { .. } = res.parsed() else {
+-            return Err(Error::Append);
+-        };
++        // Triage patch, not upstream: skip responses left by an abandoned
++        // command until the server's APPEND continuation arrives. A stale
++        // tagged response for a different request is ignored.
++        loop {
++            let Some(res) = self.read_response().await? else {
++                return Err(Error::Append);
++            };
++            match res.parsed() {
++                Response::Continue { .. } => break,
++                Response::Done { tag, .. } if tag == &id => return Err(Error::Append),
++                _ => continue,
++            }
++        }
+ 
+         self.stream.as_mut().write_all(content).await?;
+         self.stream.as_mut().write_all(b"\r\n").await?;
+
+## patched probe stdout
+PROBE A: drop SELECT, do not drain, APPEND immediately
+PROBE-A dropped=true proxy=[client=127.0.0.1:38994 up=53 down=74]
+PROBE-A proxy_after_delay=[client=127.0.0.1:38994 up=53 down=360]
+PROBE-A append=Ok(()) raw="Ok" proxy=[client=127.0.0.1:38994 up=349 down=447]
+PROBE-A queued[0] read timed out
+PROBE-A observer=Ok(1) raw="rest_total=101 subject=\"s-p4imap-720663-0-probe-a\" count=1"
+PROBE B: drop SELECT, drain the queued SELECT responses, APPEND
+PROBE-B dropped=true
+PROBE-B drained[0] request_id=None done=false parsed=MailboxData(Flags(["\\Answered", "\\Deleted", "\\Draft", "\\Flagged", "\\Seen"]))
+PROBE-B drained[1] request_id=None done=false parsed=MailboxData(Exists(102))
+PROBE-B drained[2] request_id=None done=false parsed=MailboxData(Recent(1))
+PROBE-B drained[3] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(UidValidity(1792519024)), information: None } }
+PROBE-B drained[4] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(UidNext(103)), information: None } }
+PROBE-B drained[5] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(Unseen(1)), information: Some("Message 1 is the first unseen") } }
+PROBE-B drained[6] request_id=None done=false parsed=Data { status: Ok, outcome: Outcome { code: Some(PermanentFlags(["\\Answered", "\\Deleted", "\\Draft", "\\Flagged", "\\Seen", "\\*"])), information: None } }
+PROBE-B drained[7] request_id=Some(RequestId("A0002")) done=true parsed=Done { tag: RequestId("A0002"), status: Ok, outcome: Outcome { code: Some(ReadWrite), information: Some("SELECT completed.") } }
+PROBE-B drained_total=8 append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=103 subject=\"s-p4imap-720663-1-probe-b\" count=1"
+
+## patched ladder 1 summary
+LADDER B1 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B2 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B3 APPEND_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+B3-ACTUAL plan=#0@1:Immediate realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=116 subject=\"s-p4imap-720827-11-b3\" count=1"
+B3-ACTUAL plan=#0@1:AfterWake realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=118 subject=\"s-p4imap-720827-12-b3\" count=1"
+B3-ACTUAL plan=#0@2:Immediate realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=120 subject=\"s-p4imap-720827-13-b3\" count=1"
+B3-ACTUAL plan=#0@2:AfterWake realized=true actual=cancelled append=Ok(()) raw="Ok" observer=Ok(1) observer_raw="rest_total=122 subject=\"s-p4imap-720827-14-b3\" count=1"
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[126]" fetch_raw="seq=126 text_bytes=21" observer_raw="rest_total=126 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[]" fetch_raw="no seq to fetch" observer_raw="rest_total=128 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[]" fetch_raw="no seq to fetch" observer_raw="rest_total=130 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(0), fetch_text: Err("NoMatch"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[136]" fetch_raw="seq=136 text_bytes=21" observer_raw="rest_total=136 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[138]" fetch_raw="seq=138 text_bytes=21" observer_raw="rest_total=138 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+M1-RUN cancelled=true select_exists=None append_raw="Ok" search_raw="seqs=[140]" fetch_raw="seq=140 text_bytes=21" observer_raw="rest_total=140 run_count=2 subjects=[\"s-RUN-seed\", \"s-RUN-survivor\"] seed_body=true survivor_body=true" obs=Obs { append: Ok(()), search: Ok(1), fetch_text: Ok("p4-imap-survivor-body"), observer_subjects: Ok(["s-RUN-seed", "s-RUN-survivor"]), observer_seed_body: true, observer_survivor_body: true, observer_run_message_count: 2 }
+LADDER M1 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=4 mixed=0 neither=0 unknown=0

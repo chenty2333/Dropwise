@@ -1,0 +1,109 @@
+# async-imap 0.12.0 cancel-safety and recovery-surface triage
+# source: /tmp/imapsrc/async-imap-0.12.0 (crate source, after first cancellation run)
+
+## grep: cancellation/drop-future guidance in README, CHANGELOG, lib.rs, src
+$ grep -RinE "cancel|abort|drop.*future|future.*drop|cancel.?safe" README.md CHANGELOG.md src/lib.rs src
+(no matches)
+
+## public close/recovery methods (signatures + docs)
+540-
+541-    /// Noop always succeeds, and it does nothing.
+542:    pub async fn noop(&mut self) -> Result<()> {
+543-        let id = self.run_command("NOOP").await?;
+544-        parse_noop(
+545-            &mut self.conn.stream,
+546-            self.unsolicited_responses_tx.clone(),
+--
+552-
+553-    /// Logout informs the server that the client is done with the connection.
+554:    pub async fn logout(&mut self) -> Result<()> {
+555-        self.run_command_and_check_ok("LOGOUT").await?;
+556-        Ok(())
+557-    }
+558-
+--
+766-    /// `EXPUNGE-LOGOUT` or `EXPUNGE-SELECT` because no `EXPUNGE` responses (which the client would
+767-    /// probably ignore) are sent.
+768:    pub async fn close(&mut self) -> Result<()> {
+769-        self.run_command_and_check_ok("CLOSE").await?;
+770-        Ok(())
+771-    }
+772-
+--
+1391-
+1392-    /// Read the next response on the connection.
+1393:    pub async fn read_response(&mut self) -> io::Result<Option<ResponseData>> {
+1394-        self.conn.read_response().await
+1395-    }
+1396-}
+1397-
+--
+1416-
+1417-    /// Read the next response on the connection.
+1418:    pub async fn read_response(&mut self) -> io::Result<Option<ResponseData>> {
+1419-        self.stream.try_next().await
+1420-    }
+1421-
+1422-    pub(crate) async fn run_command_untagged(&mut self, command: &str) -> Result<()> {
+
+## Drop impl search
+(no Drop impl for Session)
+
+## GitHub issue/PR search (chatmail/async-imap)
+### q=cancel
+total_count 1
+https://github.com/chatmail/async-imap/pull/19 | Fixed response value for manual interrupt in IDLE
+### q=cancel+safe
+total_count 0
+### q=drop+future
+total_count 1
+https://github.com/chatmail/async-imap/pull/142 | fix: do not fail LOGIN command when receiving a NO response for another request
+### q=abort
+total_count 0
+### q=resync
+total_count 0
+
+## 0.12.0 CHANGELOG entry
+12:- Do not fail `LOGIN` command when receiving a `NO` response for another request
+
+## PR #142 metadata/body
+title: fix: do not fail LOGIN command when receiving a NO response for another request
+state: closed merged: True merged_at: 2026-09-11T12:37:45Z
+body: Normally the response should have been read by the time login command is sent, so this should not happen. This can still happen if the future reading the response was dropped or if the server is violating the standard and e.g. duplicates responses.
+
+## 0.12.0 login loop (tag matching)
+        loop {
+            let Some(res) = ok_or_unauth_client_err!(self.stream.try_next().await, self) else {
+                return Err((Error::ConnectionLost, self));
+            };
+
+            if let Response::Done {
+                status,
+                outcome,
+                tag,
+            } = res.parsed()
+                && *tag == id
+            {
+                ok_or_unauth_client_err!(
+                    self.check_status_ok(
+                        status,
+                        outcome.code.as_ref(),
+                        outcome.information.as_deref()
+                    ),
+                    self
+                );
+
+                let capabilities =
+                    if let Some(imap_proto::ResponseCode::Capabilities(capabilities)) =
+                        &outcome.code
+                    {
+                        use crate::types::{Capabilities, Capability};
+                        let capability_set: HashSet<Capability> =
+                            capabilities.iter().map(Capability::from).collect();
+                        Some(Capabilities(capability_set))
+                    } else {
+                        None
+                    };
+                return Ok((Session::new(self.conn), capabilities));
+            }
+        }

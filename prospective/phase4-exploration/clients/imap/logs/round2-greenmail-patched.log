@@ -1,0 +1,111 @@
+Executing 'java -Djava.net.preferIPv4Stack=true -Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled -Dgreenmail.users=imapuser:pass@example.com  -jar greenmail-standalone.jar' ...
+2026-10-21 05:48:42,537 INFO  GreenMailStandaloneRunner| Starting GreenMail standalone v2.1.14 using [ServerSetup{port=3025, bindAddress='0.0.0.0', protocol='smtp', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3465, bindAddress='0.0.0.0', protocol='smtps', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3110, bindAddress='0.0.0.0', protocol='pop3', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3995, bindAddress='0.0.0.0', protocol='pop3s', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3143, bindAddress='0.0.0.0', protocol='imap', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}, ServerSetup{port=3993, bindAddress='0.0.0.0', protocol='imaps', readTimeout=-1, connectionTimeout=-1, writeTimeout=-1, verbose=false, serverStartupTimeout=2000, mailProperties={}}]
+2026-10-21 05:48:42,703 INFO  GreenMailStandaloneRunner| Starting GreenMail API server at http://0.0.0.0:8080/
+2026-10-21 05:49:09,385 WARN     commands.AppendCommand| Error processing command
+com.icegreen.greenmail.store.FolderException: No such folder : NoSuchBox-round2
+	at com.icegreen.greenmail.imap.ImapHostManagerImpl.getFolder(ImapHostManagerImpl.java:73)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.getMailbox(CommandTemplate.java:123)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:59)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-10-21 05:49:09,733 WARN     commands.AppendCommand| Error processing command: Invalid flag keyword: '\Bogus' Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Invalid flag keyword: '\Bogus'
+	at com.icegreen.greenmail.imap.commands.CommandParser.validateKeyword(CommandParser.java:442)
+	at com.icegreen.greenmail.imap.commands.CommandParser.setFlag(CommandParser.java:431)
+	at com.icegreen.greenmail.imap.commands.CommandParser.flagList(CommandParser.java:408)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.optionalAppendFlags(AppendCommand.java:81)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:46)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-10-21 05:49:10,079 WARN     commands.AppendCommand| Error processing command: Expected:'{' found:'n' Command should be '<tag> APPEND <mailbox> [<flag_list>] [<date_time>] literal'
+com.icegreen.greenmail.imap.ProtocolException: Expected:'{' found:'n'
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeChar(CommandParser.java:353)
+	at com.icegreen.greenmail.imap.commands.CommandParser.consumeLiteralAsBytes(CommandParser.java:251)
+	at com.icegreen.greenmail.imap.commands.AppendCommand$AppendCommandParser.mimeMessage(AppendCommand.java:112)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:54)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-10-21 05:49:11,193 WARN     commands.AppendCommand| Error processing command
+com.icegreen.greenmail.store.FolderException: No such folder : NoSuchBox-round2
+	at com.icegreen.greenmail.imap.ImapHostManagerImpl.getFolder(ImapHostManagerImpl.java:73)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.getMailbox(CommandTemplate.java:123)
+	at com.icegreen.greenmail.imap.commands.AppendCommand.doProcess(AppendCommand.java:59)
+	at com.icegreen.greenmail.imap.commands.CommandTemplate.process(CommandTemplate.java:56)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.doProcessRequest(ImapRequestHandler.java:96)
+	at com.icegreen.greenmail.imap.ImapRequestHandler.handleRequest(ImapRequestHandler.java:53)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:67)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2026-10-21 05:49:13,582 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:40276" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.SocketException: Broken pipe
+	at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+	at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+	at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:394)
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:410)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:440)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:819)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1195)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:125)
+	at java.base/java.io.BufferedOutputStream.implFlush(BufferedOutputStream.java:252)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:240)
+	at java.base/java.io.FilterOutputStream.close(FilterOutputStream.java:184)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:70)
+	... 2 more
+2026-10-21 05:49:21,822 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-21 05:49:22,213 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:54620" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.SocketException: Broken pipe
+	at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+	at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+	at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:394)
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:410)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:440)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:819)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1195)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:125)
+	at java.base/java.io.BufferedOutputStream.implFlush(BufferedOutputStream.java:252)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:240)
+	at java.base/java.io.FilterOutputStream.close(FilterOutputStream.java:184)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:70)
+	... 2 more
+2026-10-21 05:49:31,992 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-21 05:49:32,344 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+Exception in thread "imap:0.0.0.0:3143<-/172.17.0.1:39152" java.lang.IllegalStateException: Can not handle IMAP connection
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:72)
+	at com.icegreen.greenmail.server.AbstractServer.lambda$handleClientSocket$0(AbstractServer.java:174)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.SocketException: Broken pipe
+	at java.base/sun.nio.ch.SocketDispatcher.write0(Native Method)
+	at java.base/sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:65)
+	at java.base/sun.nio.ch.NioSocketImpl.tryWrite(NioSocketImpl.java:394)
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:410)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:440)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:819)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1195)
+	at java.base/java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:125)
+	at java.base/java.io.BufferedOutputStream.implFlush(BufferedOutputStream.java:252)
+	at java.base/java.io.BufferedOutputStream.flush(BufferedOutputStream.java:240)
+	at java.base/java.io.FilterOutputStream.close(FilterOutputStream.java:184)
+	at com.icegreen.greenmail.imap.ImapHandler.run(ImapHandler.java:70)
+	... 2 more
+2026-10-21 05:49:41,497 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED
+2026-10-21 05:49:41,849 ERROR   imap.ImapRequestHandler| Command 'SEARCH' not valid in this state AUTHENTICATED

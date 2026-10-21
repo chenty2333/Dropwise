@@ -1,0 +1,4 @@
+SEARCH-UNSELECTED phase=before-select search=Ok(0) raw="seqs=[]" seqs=Ok([]) ms=52
+SEARCH-UNSELECTED phase=select select=Ok(SelectInfo { exists: 62, recent: 1, unseen: Some(1), uid_next: Some(63), uid_validity: Some(1792563320), flags_len: 5, flags: "[Answered, Deleted, Draft, Flagged, Seen]", permanent_flags_len: 6, permanent_flags: "[Answered, Deleted, Draft, Flagged, Seen, MayCreate]", ms: 102 }) raw="Ok" ms=102
+SEARCH-UNSELECTED phase=after-select search=Ok(0) raw="seqs=[]" seqs=Ok([]) ms=92
+SEARCH-UNSELECTED expected=before-select Ok(0) despite GreenMail BAD; after-select Ok(0) is a genuine empty result

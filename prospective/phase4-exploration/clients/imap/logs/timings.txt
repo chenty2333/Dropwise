@@ -1,0 +1,5 @@
+preflight rc=0 seconds=3
+probe rc=0 seconds=1
+round-1 rc=0 seconds=28
+round-2 rc=0 seconds=29
+round-3 rc=0 seconds=28

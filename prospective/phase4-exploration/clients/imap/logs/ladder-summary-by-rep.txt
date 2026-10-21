@@ -1,0 +1,12 @@
+LADDER round-1 B1 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-1 B2 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-1 B3 APPEND_INBOX [release]: plans=4 violations=3 unrealized=1 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-1 M1 SELECT_INBOX [release]: plans=4 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=0 mixed=0 neither=4 unknown=0
+LADDER round-2 B1 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-2 B2 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-2 B3 APPEND_INBOX [release]: plans=4 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-2 M1 SELECT_INBOX [release]: plans=4 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=0 mixed=0 neither=4 unknown=0
+LADDER round-3 B1 SELECT_INBOX [release]: plans=4 violations=0 unrealized=1 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-3 B2 SELECT_INBOX [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-3 B3 APPEND_INBOX [release]: plans=2 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER round-3 M1 SELECT_INBOX [release]: plans=4 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=0 mixed=0 neither=4 unknown=0
