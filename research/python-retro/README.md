@@ -11,6 +11,10 @@ asyncio，对 redis-py、SQLAlchemy 和 aiohttp 的历史问题做回溯检测�
   “让出事件循环”的挂起点，第 k 次后 `Task.cancel()`；pre/post 各两次，
   不一致记 Unknown，等于 pre 或 post 通过，否则 Neither。B1/B2/B3/M1 都在
   这里。
+- `dropwise_py/fields.py`：字段级观察契约（EFFECT/STATE、逐字段 Expect、
+  覆盖缺口 Uncovered/Degenerate）。增量模块，不改变 `engine.py` 行为；
+  `tests/test_fields.py` 为无服务测试，第五轮同步 psycopg harness 复用同一
+  `judge_trial`。
 - `cases/redis_case.py`：R1 `BLPOP`（4.5.3/4.5.4）、R2 pipeline
   （4.5.2/4.5.3）。R1 用服务端阻塞制造未读回复；R2 用本目录的延迟 TCP 代理。
 - `cases/sqla_case.py`：SQLAlchemy 1.4.17/1.4.18 + asyncpg 0.23.0。纯取消
