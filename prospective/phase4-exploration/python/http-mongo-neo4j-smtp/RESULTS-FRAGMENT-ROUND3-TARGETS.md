@@ -15,7 +15,7 @@ Batch dir: `prospective/phase4-exploration/python/http-mongo-neo4j-smtp/`.
 |---|---|---|---|
 | aiohttp | **3.14.5** | B1, B2, B3, M1 × 3 | **complete** (this addendum) |
 | curl-cffi | **0.16.3** | B1, B2, B3, M1 × 3 | **complete** (this addendum) |
-| pymongo / neo4j | — | — | still **not covered** (unchanged; see `RESULTS-FRAGMENT.md` §7) |
+| pymongo / neo4j | — | — | Covered by the separate [mongo-neo4j batch](../mongo-neo4j/RESULTS-FRAGMENT.md), not this runner |
 | httpx / aiosmtplib | 0.28.1 / 5.1.3 | already complete | unchanged, not re-run |
 
 New artefacts: `cases/aiohttp_case.py` (322 lines), `cases/curl_cffi_case.py`

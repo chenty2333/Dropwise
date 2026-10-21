@@ -3,6 +3,7 @@
 # one long-lived async connection on a disposable MySQL 9.6, loopback-only
 # ephemeral host port.
 set -u
+STATUS=0
 cd "$(dirname "$0")"
 REPO=$(cd ../../../.. && pwd)
 PY=${PY:-$HOME/dropwise-py-work-r3/venv313/bin/python}
@@ -45,5 +46,9 @@ export PYTHONPATH=".:$REPO/research/python-retro"
 "$PY" -m cases.mysqlconnector_case --port "$PORT" --user root --password dw \
   --dbname "$DB" --mode direct --probe 1,2,3,4 \
   > "$RUN/mysqlconnector-probe.txt" 2>&1
-echo "exit=$?" >> "$RUN/mysqlconnector-direct.txt"
+rc=$?
+if [ "$rc" -ne 0 ]; then STATUS=1; fi
+echo "exit=$rc" >> "$RUN/mysqlconnector-direct.txt"
 echo "logs: $RUN"
+
+exit "$STATUS"

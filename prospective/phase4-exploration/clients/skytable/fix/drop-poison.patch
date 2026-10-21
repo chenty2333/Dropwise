@@ -1,6 +1,6 @@
-Dependency-copy patch for skytable 0.8.12 (experimental, round-3 deep pass).
+Dependency-copy patch for skytable 0.8.12 (experimental, reviewed round-3 deep pass).
 Layer: client connection state, not Dropwise core.
-Apply from the copied crate root with: (cd fix/skytable-0.8.12 && patch -p1 < ../drop-poison.patch).
+Apply from a clean crate root with: patch -p1 < ../drop-poison.patch
 
 --- a/src/io/aio.rs
 +++ b/src/io/aio.rs
@@ -8,13 +8,13 @@ Apply from the copied crate root with: (cd fix/skytable-0.8.12 && patch -p1 < ..
  pub struct TcpConnection<C: AsyncWriteExt + AsyncReadExt + Unpin> {
      con: C,
      buf: Vec<u8>,
-+    /// Set when a `query` future was dropped before it consumed the whole
++    /// Set when a query or pipeline future was dropped before it consumed the whole
 +    /// reply. The stream position is then unknown; every later operation on
 +    /// this connection fails instead of reading another request's reply.
 +    poisoned: bool,
 +}
 +
-+/// Sets `poisoned` on drop unless the query completed. This covers cancellation
++/// Sets `poisoned` on drop unless the exchange completed. This covers cancellation
 +/// at any await point (including a partial write) and I/O/protocol errors, after
 +/// which the next byte boundary is unknown.
 +struct PoisonOnDrop<'a> {
@@ -31,14 +31,15 @@ Apply from the copied crate root with: (cd fix/skytable-0.8.12 && patch -p1 < ..
  }
  
  impl<C: AsyncWriteExt + AsyncReadExt + Unpin> TcpConnection<C> {
-@@ -133,8 +153,21 @@
+@@ -133,7 +153,20 @@
          Self {
              con,
              buf: Vec::with_capacity(crate::BUFSIZE),
+-        }
 +            poisoned: false,
-         }
-     }
-+    /// Whether a previous `query` future was dropped (or failed) before the
++        }
++    }
++    /// Whether a previous query or pipeline future was dropped (or failed) before the
 +    /// reply was fully consumed. A poisoned connection must not be reused:
 +    /// drop it (and reconnect) or ask the pool to discard it.
 +    pub fn is_poisoned(&self) -> bool {
@@ -49,11 +50,64 @@ Apply from the copied crate root with: (cd fix/skytable-0.8.12 && patch -p1 < ..
 +            std::io::ErrorKind::ConnectionAborted,
 +            "skytable: query future dropped before its reply; connection poisoned",
 +        ))
-+    }
+     }
      async fn _handshake(mut self, cfg: &Config) -> ClientResult<Self> {
          let handshake = ClientHandshake::new(cfg);
-         self.con.write_all(handshake.inner()).await?;
-@@ -181,26 +214,43 @@
+@@ -147,30 +180,40 @@
+     }
+     /// Execute a pipeline. The server returns the queries in the order they were sent (unless otherwise set).
+     pub async fn execute_pipeline(&mut self, pipeline: &Pipeline) -> ClientResult<Vec<Response>> {
+-        self.buf.clear();
+-        self.buf.push(b'P');
++        if self.poisoned {
++            return Err(Self::poisoned_error());
++        }
++        let Self { con, buf, poisoned } = self;
++        let mut guard = PoisonOnDrop {
++            poisoned,
++            armed: true,
++        };
++        buf.clear();
++        buf.push(b'P');
+         // packet size
+-        self.buf
+-            .extend(itoa::Buffer::new().format(pipeline.buf().len()).as_bytes());
+-        self.buf.push(b'\n');
++        buf.extend(itoa::Buffer::new().format(pipeline.buf().len()).as_bytes());
++        buf.push(b'\n');
+         // write
+-        self.con.write_all(&self.buf).await?;
+-        self.con.write_all(pipeline.buf()).await?;
+-        self.buf.clear();
++        con.write_all(buf).await?;
++        con.write_all(pipeline.buf()).await?;
++        buf.clear();
+         // read
+         let mut cursor = 0;
+         let mut state = MRespState::default();
+         loop {
+-            let mut buf = [0u8; crate::BUFSIZE];
+-            let n = self.con.read(&mut buf).await?;
++            let mut chunk = [0u8; crate::BUFSIZE];
++            let n = con.read(&mut chunk).await?;
+             if n == 0 {
+                 return Err(Error::IoError(std::io::ErrorKind::ConnectionReset.into()));
+             }
+-            self.buf.extend_from_slice(&buf[..n]);
++            buf.extend_from_slice(&chunk[..n]);
+             let (_state, _position) =
+-                Decoder::new(&self.buf, cursor).validate_pipe(pipeline.query_count(), state);
++                Decoder::new(buf, cursor).validate_pipe(pipeline.query_count(), state);
+             match _state {
+-                PipelineResult::Completed(r) => return Ok(r),
++                PipelineResult::Completed(r) => {
++                    guard.armed = false;
++                    return Ok(r);
++                }
+                 PipelineResult::Pending(_state) => {
+                     cursor = _position;
+                     state = _state;
+@@ -181,26 +224,39 @@
      }
      /// Run a query and return a raw [`Response`]
      pub async fn query(&mut self, q: &Query) -> ClientResult<Response> {
@@ -66,11 +120,7 @@ Apply from the copied crate root with: (cd fix/skytable-0.8.12 && patch -p1 < ..
 +        }
 +        // Split the borrow so the guard can watch `poisoned` while the body
 +        // uses the socket and the response buffer.
-+        let Self {
-+            con,
-+            buf,
-+            poisoned,
-+        } = self;
++        let Self { con, buf, poisoned } = self;
 +        let mut guard = PoisonOnDrop {
 +            poisoned,
 +            armed: true,
@@ -106,6 +156,114 @@ Apply from the copied crate root with: (cd fix/skytable-0.8.12 && patch -p1 < ..
                  DecodeState::ChangeState(_state) => {
                      expected = 1;
                      state = _state;
+@@ -220,3 +276,107 @@
+         self.buf.shrink_to_fit()
+     }
+ }
++
++#[cfg(test)]
++mod cancellation_tests {
++    use super::*;
++    use std::{
++        future::{poll_fn, Future},
++        pin::Pin,
++        sync::{
++            atomic::{AtomicUsize, Ordering},
++            Arc,
++        },
++        task::{Context, Poll},
++    };
++    use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
++
++    struct PendingReply(Arc<AtomicUsize>);
++    impl AsyncRead for PendingReply {
++        fn poll_read(
++            self: Pin<&mut Self>,
++            _: &mut Context<'_>,
++            _: &mut ReadBuf<'_>,
++        ) -> Poll<std::io::Result<()>> {
++            Poll::Pending
++        }
++    }
++    impl AsyncWrite for PendingReply {
++        fn poll_write(
++            self: Pin<&mut Self>,
++            _: &mut Context<'_>,
++            bytes: &[u8],
++        ) -> Poll<std::io::Result<usize>> {
++            self.0.fetch_add(bytes.len(), Ordering::SeqCst);
++            Poll::Ready(Ok(bytes.len()))
++        }
++        fn poll_flush(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<std::io::Result<()>> {
++            Poll::Ready(Ok(()))
++        }
++        fn poll_shutdown(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<std::io::Result<()>> {
++            Poll::Ready(Ok(()))
++        }
++    }
++    async fn drop_at_pending(future: impl Future) {
++        let mut future = Box::pin(future);
++        poll_fn(|cx| {
++            assert!(future.as_mut().poll(cx).is_pending());
++            Poll::Ready(())
++        })
++        .await;
++    }
++    #[tokio::test]
++    async fn dropped_query_blocks_both_entry_points_without_writing() {
++        let writes = Arc::new(AtomicUsize::new(0));
++        let mut conn = TcpConnection::new(PendingReply(writes.clone()));
++        drop_at_pending(conn.query(&Query::new("sysctl report status"))).await;
++        assert!(conn.is_poisoned());
++        let before = writes.load(Ordering::SeqCst);
++        assert!(conn
++            .query(&Query::new("sysctl report status"))
++            .await
++            .is_err());
++        assert!(conn.execute_pipeline(&Pipeline::new()).await.is_err());
++        assert_eq!(before, writes.load(Ordering::SeqCst));
++    }
++    #[tokio::test]
++    async fn dropped_pipeline_also_poisons_the_connection() {
++        let writes = Arc::new(AtomicUsize::new(0));
++        let mut conn = TcpConnection::new(PendingReply(writes.clone()));
++        let mut pipeline = Pipeline::new();
++        pipeline.push(&Query::new("sysctl report status"));
++        drop_at_pending(conn.execute_pipeline(&pipeline)).await;
++        assert!(conn.is_poisoned());
++        let before = writes.load(Ordering::SeqCst);
++        assert!(conn.execute_pipeline(&pipeline).await.is_err());
++        assert!(conn
++            .query(&Query::new("sysctl report status"))
++            .await
++            .is_err());
++        assert_eq!(before, writes.load(Ordering::SeqCst));
++    }
++    #[tokio::test]
++    async fn completed_replies_do_not_poison_query_or_pipeline() {
++        for reply in [&b"\x12"[..], &b"\x10\x01\x00"[..]] {
++            let (socket, mut peer) = tokio::io::duplex(256);
++            peer.write_all(reply).await.unwrap();
++            let mut conn = TcpConnection::new(socket);
++            conn.query(&Query::new("sysctl report status"))
++                .await
++                .unwrap();
++            assert!(!conn.is_poisoned());
++            peer.write_all(reply).await.unwrap();
++            let mut pipeline = Pipeline::new();
++            pipeline.push(&Query::new("sysctl report status"));
++            assert_eq!(conn.execute_pipeline(&pipeline).await.unwrap().len(), 1);
++            assert!(!conn.is_poisoned());
++        }
++    }
++    #[test]
++    fn unpolled_query_does_not_poison() {
++        let mut conn = TcpConnection::new(PendingReply(Arc::new(AtomicUsize::new(0))));
++        let query = Query::new("sysctl report status");
++        drop(conn.query(&query));
++        assert!(!conn.is_poisoned());
++    }
++}
 --- a/src/pool.rs
 +++ b/src/pool.rs
 @@ -115,10 +115,16 @@

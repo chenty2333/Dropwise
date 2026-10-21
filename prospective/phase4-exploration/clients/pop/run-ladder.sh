@@ -9,6 +9,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../../../.." && pwd)"
 source "$HERE/../runner-common.sh"
+cd "$HERE"
 new_logdir "$HERE"
 SERVER_PID=""
 USER_EMAIL="popuser@example.com"
@@ -97,12 +98,14 @@ export DW_POP_PASS="$PASS"
 } > "$LOGS/environment.txt"
 
 : > "$LOGS/timings.txt"
+STATUS=0
 run_phase() {
   local name="$1"; shift
   local start; start="$(date +%s)"
   set +e
   "$@" > "$LOGS/$name.stdout.log" 2> "$LOGS/$name.stderr.log"
   local rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
   set -e
   echo "$name rc=$rc seconds=$(( $(date +%s) - start ))" >> "$LOGS/timings.txt"
   echo "$name rc=$rc" >&2
@@ -122,3 +125,5 @@ for rep in 1 2 3; do
 done
 
 echo "done logs=$LOGS"
+
+exit "$STATUS"

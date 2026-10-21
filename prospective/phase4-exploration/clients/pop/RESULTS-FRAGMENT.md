@@ -61,13 +61,13 @@ calibration failure. For a retr cut, both sides are the successful post state.
 | B1 LOGIN_RETR | 8 | 0 | 0 | 0 | 0 | true |
 | B2 LOGIN_RETR | 8 | 2 | 0 | 0 | 0 | true |
 | B3 CAPA | 8 | 6 | 0 | 0 | 0 | true |
-| M1 LOGIN_RETR | 8 | 8 (of which 2 clean, 6 unresolved) | 0 | 0 | 0 | true |
+| M1 LOGIN_RETR | 8 | 8 raw Neither (2 unambiguous failures, 6 unresolved) | 0 | 0 | 0 | true |
 
 `baseline_targets=2`; plans are `#0@1..#0@3` (login) and `#1@1..#1@3` (retr)
 × {Immediate, AfterWake}. M1 verdicts: neither=8, pre=0, post=0, mixed=0,
 unknown=0.
 
-### Clean, unambiguous case: retr target with pre == post = Ok
+### Unambiguous failure: retr target with successful pre == post
 
 Plan `#1@1` (both races, 3/3 reps), calibration `pre = post = {stat:Ok("1/159"),
 retr:Ok((157,true))}`. The cancelled RETR's multi-line reply is still in the
@@ -101,9 +101,9 @@ The server received and answered the survivor's STAT (`-ERR`), but the client's
 STAT consumed the old `USER +OK`; RETR then consumed STAT's `-ERR`. So the
 server-visible exchange equals `pre` while the client-visible observation
 differs from both sides. Under `Expect::Atomic` that is a partial state, but
-because the pre side is an error side (unavoidable for a login target), these 6
-plans are reported as **unresolved / coverage**, not counted as clean
-violations.
+the permitted partial-authentication state and recovery responsibility have not
+been established, these 6 plans remain **unresolved**, not confirmed defects.
+A stable error-valued pre endpoint is not by itself invalid calibration.
 
 ### B2 (2/8 plans) — no calibration involved
 
@@ -148,8 +148,8 @@ association, not in mailbox state.
    desync beyond a single stale reply.
 3. Classification: **confirmed client-side response-association candidate**.
    The retr-target M1 (clean pre/post) and B2/B3 (no calibration) are concrete;
-   the login-target M1 is partial-state/unresolved because its pre side is an
-   error side by construction. Not memory-safety.
+   the login-target M1 remains unresolved pending its partial-authentication
+   contract; an error-valued pre endpoint alone does not invalidate it. Not memory-safety.
 4. Upstream: read-only search of the Dust-Mail/async-pop repository/issues
    found no matching cancellation/reuse or CAPA-chunking report. Status: **new
    to this exploration, upstream unknown**.

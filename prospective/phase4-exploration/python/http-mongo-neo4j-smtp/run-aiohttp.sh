@@ -4,6 +4,7 @@
 # venv used by the httpx/curl-cffi runs is not modified.
 # Four levels x 3 reps; fresh logs/run.XXXXXX, never overwritten.
 set -uo pipefail
+STATUS=0
 export PYTHONDONTWRITEBYTECODE=1
 
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -75,9 +76,13 @@ for level in B1 B2 B3 M1; do
     --url "http://127.0.0.1:$PORT" \
     --levels "$level" --reps 3 --timeout 15 \
     >"$LOGS/level-$level.log" 2>"$LOGS/level-$level.err"
-  echo "$?" >"$LOGS/level-$level.status"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
+  echo "$rc" >"$LOGS/level-$level.status"
 done
 
 echo "=== summary ==="
 grep -h '^SUMMARY' "$LOGS"/level-*.log || true
 echo "logs=$LOGS"
+
+exit "$STATUS"

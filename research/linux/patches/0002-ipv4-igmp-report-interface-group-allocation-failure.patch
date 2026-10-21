@@ -16,10 +16,12 @@ fix __ip_mc_inc_group usage"), so it can also report the allocation
 failure.  Make it return -ENOBUFS, and have __ip_mc_join_group() call it
 before linking iml into inet->mc_list and free iml on failure.  The
 interface-up/init wrapper keeps its void API: those callers cannot
-report an error and a missing group is corrected by the next IGMP query.
+report an error through this legacy interface. Its existing best-effort
+behavior is unchanged; an IGMP query cannot recreate a missing group.
 
-Everything runs under RTNL, so no other thread can observe the
-half-built membership.
+RTNL serializes writers, not RCU readers. On allocation failure the
+socket-side membership is freed before it is published. Successful joins
+still publish the fully initialized socket-side record through RCU.
 
 Reproduced with fail-nth on v6.19 and v7.3-rc2: n=1 fails
 sock_kmalloc() and returns -ENOBUFS cleanly; n=2 fails the kzalloc() in
@@ -79,8 +81,8 @@ index d56355aca797..eedbdb5334fc 100644
  {
 -	____ip_mc_inc_group(in_dev, addr, MCAST_EXCLUDE, gfp);
 +	/*
-+	 * Cannot report an error here: callers are interface-up / init paths
-+	 * where a missing group is corrected by the next IGMP query.
++	 * Preserve the best-effort behavior of the legacy void interface.
++	 * Receiving an IGMP query cannot recreate a missing device group.
 +	 */
 +	(void)____ip_mc_inc_group(in_dev, addr, MCAST_EXCLUDE, gfp);
  }

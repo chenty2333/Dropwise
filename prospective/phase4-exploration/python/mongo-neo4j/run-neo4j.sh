@@ -3,6 +3,7 @@
 # disposable Neo4j community container, loopback-published ports only.
 # Unique name, unique log dir, auth neo4j/testpassword (basic, not NONE).
 set -u
+STATUS=0
 cd "$(dirname "$0")"
 REPO=$(cd ../../../.. && pwd)
 PY=${PY:-$HOME/dropwise-py-work-r3/venv-py313/bin/python}
@@ -56,9 +57,15 @@ export PYTHONPATH=".:$REPO/research/python-retro"
 for mode in txn plain; do
   "$PY" -m cases.neo4j_case --port "$BOLT" --mode "$mode" \
     --levels B1,B2,B3,M1 --reps 3 > "$RUN/neo4j-$mode.txt" 2>&1
-  echo "exit=$?" >> "$RUN/neo4j-$mode.txt"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
+  echo "exit=$rc" >> "$RUN/neo4j-$mode.txt"
   "$PY" -m cases.neo4j_case --port "$BOLT" --mode "$mode" --diag \
     > "$RUN/neo4j-$mode-diag.txt" 2>&1
-  echo "exit=$?" >> "$RUN/neo4j-$mode-diag.txt"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
+  echo "exit=$rc" >> "$RUN/neo4j-$mode-diag.txt"
 done
 echo "logs: $RUN"
+
+exit "$STATUS"

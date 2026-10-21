@@ -94,8 +94,8 @@ async def main() -> int:
             flush=True,
         )
 
-    # B1: a target that raises must surface (baseline error; with one yield
-    # the cancelled trial also reports the error outcome as a violation).
+    # B1: a failed uncancelled target invalidates the baseline; it is not
+    # a cancellation finding and no trials should be judged.
     r = await level_b1(
         "selftest", lambda: Fake("target-fail"), reps=1, timeout=0.5
     )

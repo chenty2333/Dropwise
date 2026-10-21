@@ -3,6 +3,7 @@
 # single-node MongoDB replica set (transactions need a replica set).
 # Loopback only: host network + --bind_ip 127.0.0.1. Unique name, unique log dir.
 set -u
+STATUS=0
 cd "$(dirname "$0")"
 REPO=$(cd ../../../.. && pwd)
 PY=${PY:-$HOME/dropwise-py-work-r3/venv-py313/bin/python}
@@ -68,9 +69,15 @@ export PYTHONPATH=".:$REPO/research/python-retro"
 for mode in txn plain; do
   "$PY" -m cases.mongo_case --port "$PORT" --mode "$mode" \
     --levels B1,B2,B3,M1 --reps 3 > "$RUN/mongo-$mode.txt" 2>&1
-  echo "exit=$?" >> "$RUN/mongo-$mode.txt"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
+  echo "exit=$rc" >> "$RUN/mongo-$mode.txt"
   "$PY" -m cases.mongo_case --port "$PORT" --mode "$mode" --diag \
     > "$RUN/mongo-$mode-diag.txt" 2>&1
-  echo "exit=$?" >> "$RUN/mongo-$mode-diag.txt"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
+  echo "exit=$rc" >> "$RUN/mongo-$mode-diag.txt"
 done
 echo "logs: $RUN"
+
+exit "$STATUS"

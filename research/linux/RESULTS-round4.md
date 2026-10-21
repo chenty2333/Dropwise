@@ -20,7 +20,7 @@ worktree `~/dropwise-linux-r4` (no other tree touched, no commit).
 * 55 campaign boots / 303 trials / 0 misses / 0 harness errors / 0
   unstable baselines.  40 signal trials per signal target (4 delays x 2
   reps x 5 boots), all 40 injected (`waited=1`, `EINTR`).
-* **One confirmed contract violation, new root cause**:
+* **One reproduced contract-violation candidate in a distinct code path**:
   `IP_ADD_MEMBERSHIP` returns 0 while the interface never got the group
   (`____ip_mc_inc_group()` kzalloc failure is discarded because the
   function returns `void`).  Socket-side membership exists, device-side
@@ -28,7 +28,7 @@ worktree `~/dropwise-linux-r4` (no other tree touched, no commit).
   `/proc/net/igmp` while the all-hosts `010000E0` entry remains (the
   earlier “/proc/net/igmp empty” wording was wrong; corrected in
   `RESULTS-round4-multicast.md`).  5/5 boots at N=2.  Fixed by a 26-line patch; fixed kernel 0/5
-  violations, same-tree regression otherwise identical.
+  violations, same-tree regression found no additional violation; per-site counts vary.
 * Three **contract-external** partial/destructive effects on error, kept
   as concrete counterexamples but not bugs and not fixed:
   `mmap(MAP_FIXED)` error leaves a gap (5/5 boots),
@@ -350,10 +350,11 @@ All 26 targets (15 existing + 11 new), 1 boot each, on the same tree:
   violations, mprotect 3, mmap 1; all clean targets clean), and the
   known round-3 eventpoll violations (45/22) because this tree does not
   carry the round-3 eventpoll patch.
-* fixed v7.3-rc2: identical to stock for all 25 non-igmp targets
-  (verdict counts and per-site classifications unchanged; only
-  `sites` varies by +/-1 in a few targets, e.g. `scm_rights` 2 vs 3,
-  which is normal allocation-count noise and has no verdict effect).
+* fixed v7.3-rc2: no additional violations for the 25 non-igmp targets.
+  Counts are not identical: scm_rights has 2 vs 3 sites/trials/OK_PRE,
+  and epoll_add_wakeup has OK_PRE/OK_POST 49/5 vs 48/6. These runs show
+  small allocation-count and cut-position variations, not an identical
+  per-site distribution.
   `ip_add_membership` changed exactly as intended (viol 1 -> 0,
   ok_pre 1 -> 2).
 * The 15 existing targets on v6.19 with the unchanged harness show the

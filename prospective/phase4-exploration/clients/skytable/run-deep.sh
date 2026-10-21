@@ -88,12 +88,14 @@ fi
 } > "$LOGS/environment.txt"
 
 : > "$LOGS/timings.txt"
+STATUS=0
 run_phase() {
   local name="$1"; shift
   local start; start="$(date +%s)"
   set +e
   RUST_LOG=debug "$@" > "$LOGS/$name.stdout.log" 2> "$LOGS/$name.stderr.log"
   local rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
   set -e
   echo "$name rc=$rc seconds=$(( $(date +%s) - start ))" >> "$LOGS/timings.txt"
   echo "$name rc=$rc" >&2
@@ -137,3 +139,5 @@ for variant in pooled direct; do
 done
 
 echo "done logs=$LOGS"
+
+exit "$STATUS"

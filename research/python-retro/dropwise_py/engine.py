@@ -124,7 +124,11 @@ async def _await_target(
     error = None
     try:
         result = await asyncio.wait_for(task, timeout)
-        outcome = "completed"
+        if operation_failed(result):
+            outcome = "error"
+            error = f"target reported failure: {result!r}"
+        else:
+            outcome = "completed"
     except asyncio.CancelledError:
         outcome = "cancelled"
     except asyncio.TimeoutError:
@@ -319,6 +323,12 @@ async def explore_observed(
     report = Report(case=case, level="M1")
     first = await count_yields(factory, timeout)
     report.target_yields = first.yields
+    if not first.yields:
+        report.exhaustive = False
+        report.notes.append("no target suspension observed; no cancellation coverage")
+    elif plans is not None and set(plans) != set(range(1, first.yields + 1)):
+        report.exhaustive = False
+        report.notes.append("explicit plans do not cover the discovered suspension range")
     if first.outcome != "completed":
         report.baseline_errors.append(f"uncancelled target: {first.outcome} {first.error or ''}")
         report.exhaustive = False
@@ -332,9 +342,14 @@ async def explore_observed(
         )
         report.pre.append(obs)
     for _ in range(2):
-        obs, _ = await _observed_once(
+        obs, target = await _observed_once(
             factory, run_target=True, cut_after=None, timeout=timeout
         )
+        if target is None or target.outcome != "completed":
+            report.baseline_errors.append(f"post calibration target failed: {target!r}")
+            report.exhaustive = False
+            report.seconds = time.monotonic() - started
+            return report
         report.post.append(obs)
     calibration_ok = report.pre[0] == report.pre[1] and report.post[0] == report.post[1]
     if not calibration_ok:
@@ -342,7 +357,7 @@ async def explore_observed(
     if report.pre[0] == report.post[0]:
         report.notes.append("pre == post (degenerate observation)")
 
-    for k in plans or range(1, report.target_yields + 1):
+    for k in range(1, report.target_yields + 1) if plans is None else plans:
         for rep in range(1, reps + 1):
             trial_started = time.monotonic()
             obs, tr = await _observed_once(
@@ -355,7 +370,10 @@ async def explore_observed(
                 observation=obs,
                 seconds=time.monotonic() - trial_started,
             )
-            if not calibration_ok:
+            if tr is None or not tr.realized:
+                trial.verdict = Verdict.UNKNOWN
+                report.exhaustive = False
+            elif not calibration_ok:
                 trial.verdict = Verdict.UNKNOWN
             else:
                 trial.verdict = _classify(obs, report.pre[0], report.post[0])
@@ -391,13 +409,24 @@ async def level_b1(
     report = Report(case=case, level="B1")
     first = await count_yields(factory, timeout)
     report.target_yields = first.yields
+    if not first.yields:
+        report.exhaustive = False
+        report.notes.append("no target suspension observed; no cancellation coverage")
+    elif plans is not None and set(plans) != set(range(1, first.yields + 1)):
+        report.exhaustive = False
+        report.notes.append("explicit plans do not cover the discovered suspension range")
     if first.outcome != "completed":
         report.baseline_errors.append(f"uncancelled target: {first.outcome} {first.error or ''}")
-    for k in plans or range(1, report.target_yields + 1):
+        report.exhaustive = False
+        report.seconds = time.monotonic() - started
+        return report
+    for k in range(1, report.target_yields + 1) if plans is None else plans:
         for rep in range(1, reps + 1):
             tr, secs = await _cut_only(factory, k, timeout)
             trial = Trial(plan=f"pending#{k}", rep=rep, target=tr, observation=None, seconds=secs)
-            if tr.outcome in ("error", "timeout"):
+            if not tr.realized:
+                report.exhaustive = False
+            elif tr.outcome in ("error", "timeout"):
                 trial.violation = f"after {plan(k)}: {tr.outcome} {tr.error or ''}"
             report.trials.append(trial)
     report.seconds = time.monotonic() - started
@@ -440,9 +469,18 @@ async def level_retry(
     report = Report(case=case, level=level)
     first = await count_yields(factory, timeout)
     report.target_yields = first.yields
+    if not first.yields:
+        report.exhaustive = False
+        report.notes.append("no target suspension observed; no cancellation coverage")
+    elif plans is not None and set(plans) != set(range(1, first.yields + 1)):
+        report.exhaustive = False
+        report.notes.append("explicit plans do not cover the discovered suspension range")
     if first.outcome != "completed":
         report.baseline_errors.append(f"uncancelled target: {first.outcome} {first.error or ''}")
-    for k in plans or range(1, report.target_yields + 1):
+        report.exhaustive = False
+        report.seconds = time.monotonic() - started
+        return report
+    for k in range(1, report.target_yields + 1) if plans is None else plans:
         for rep in range(1, reps + 1):
             tr, value, secs = await _survivor_once(
                 factory, cut_after=k, retry=retry, timeout=timeout
@@ -450,7 +488,9 @@ async def level_retry(
             trial = Trial(
                 plan=f"pending#{k}", rep=rep, target=tr, observation=value, seconds=secs
             )
-            if operation_failed(value):
+            if not tr.realized:
+                report.exhaustive = False
+            elif operation_failed(value):
                 trial.violation = f"after {plan(k)}: {value!r}"
             report.trials.append(trial)
     report.seconds = time.monotonic() - started

@@ -6,6 +6,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../../../.." && pwd)"
 source "$HERE/../runner-common.sh"
+cd "$HERE"
 new_logdir "$HERE"
 
 SERVER_PID=""
@@ -56,12 +57,14 @@ echo "server=127.0.0.1:$PORT"
 } > "$LOGS/environment.txt"
 
 : > "$LOGS/timings.txt"
+STATUS=0
 run_phase() {
   local name="$1"; shift
   local start; start="$(date +%s)"
   set +e
   "$@" > "$LOGS/$name.stdout.log" 2> "$LOGS/$name.stderr.log"
   local rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
   set -e
   echo "$name rc=$rc seconds=$(( $(date +%s) - start ))" >> "$LOGS/timings.txt"
   echo "$name rc=$rc" >&2
@@ -82,3 +85,5 @@ done
 
 cp "$LOGS/server-requests.jsonl" "$LOGS/server-requests.snapshot.jsonl" 2>/dev/null || true
 echo "done logs=$LOGS"
+
+exit "$STATUS"

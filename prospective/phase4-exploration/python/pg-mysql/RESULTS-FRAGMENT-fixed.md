@@ -4,8 +4,7 @@ Status: **exploratory correction, 2026-10-21, not Phase 4 data.** This fragment
 supersedes the psycopg 3.3.6 / asyncpg 0.32.0 B2/B3 evidence in
 `RESULTS-FRAGMENT.md` and the asyncpg contrast note in
 `ADAPTER-AUDIT-ROUND3.md` §2/§6. It does **not** modify `logs/run.KqRbB4/` or
-any Phase 4 data. aiomysql and mysql-connector are owned by another agent and
-were not edited or rerun here.
+any Phase 4 data. aiomysql and mysql-connector are covered in the separate round-3b fragment.
 
 Raw logs (new, never overwritten):
 
@@ -48,8 +47,10 @@ units (`grep baseline_error` in `run.1HLY38/*fixed.txt` is empty).
 | asyncpg direct | B3 | 3 | 9 | 0 | 0 | 0 | – |
 | asyncpg direct | M1 | 3 | 9 | **9** | 0 | 0 | Neither 9 |
 
-228 ladder trials; **21 violations, 21 executions of the same two root causes**
-(psycopg direct handle, asyncpg direct handle). Pool modes contribute 0.
+228 ladder trials; **21 raw Neither outcomes across two direct-handle scenarios**.
+These are not 21 bugs or proof of two driver defects. Asyncpg includes 6 externally
+invisible writes and 3 state-only differences; psycopg uses a manually managed
+transaction without rollback. Pool modes contribute 0.
 
 ### Old vs new delta
 
@@ -78,14 +79,16 @@ Concrete corrected values:
   reps). All BEGIN/INSERT/COMMIT stage tuples are `Ok`; the retry's `COMMIT`
   ends the abandoned transaction. #5/#6 are `IDLE`.
 - asyncpg direct B2/B3: **12 of 18 retries acquired with
-  `is_in_transaction()=True`** (#2/#3); #1 reports `False` while a queued
-  BEGIN is still client-side. All stages `Ok`.
+  `is_in_transaction()=True`** (#2/#3); #1 reports `False`. A queued-BEGIN
+  explanation is discussed as an inference in §3. All stages `Ok`.
 - psycopg direct M1: survivor `write=('ok','INSERT 0 1')`,
   `own=('ok',7)`, acquire `INTRANS`, observer `rows=[]` in all 12 violations.
-- asyncpg direct M1: plan #1/#2 (6 trials) observer `rows=[]` (true invisible
+- asyncpg direct M1: plan #1/#2 (6 trials) observer `rows=[]` (externally invisible
   write); plan #3 (3 trials) observer `[['survivor',7],['target',1]]` with
   stale acquire `in_tx=True` — **state-only Neither, not a lost write**.
-  Split: **6/9 lost write + 3/9 stale-state-only**.
+  Split: **6/9 externally invisible writes + 3/9 acquire-time-state-only**.
+  External invisibility is not proof of permanent loss; the state-only result
+  is not independently a driver violation.
 - psycopg pool M1: acquire `IDLE`, observer `[survivor]` (Pre, plans #1–#4)
   or `[survivor,target]` (Post, #5/#6), same backend pid.
 - asyncpg pool M1: acquire `False`, observer `[survivor]` (Pre, #1/#2) or
@@ -113,10 +116,11 @@ observer after the survivor, `in_*` is the client state at acquire.
 | target itself through `conn.transaction()` (`cm_target`) | k=1/2: still `INTRANS`, observer `[]`; k=3/4: `IDLE`, observer `[survivor]` | `IDLE`, observer `[survivor,target]` |
 | close + reconnect | `IDLE`, observer `[survivor]` | `IDLE`, observer `[survivor,target]` |
 
-So the official block is **not** an automatic post-cancellation recovery
-guarantee: at k=1/2 its own exit did not roll back, and retrying through it on
-the already-`INTRANS` handle silently commits only a savepoint. Explicit
-`rollback()` and reconnect are reliable in this cut set.
+The `cm_target` k=1/2 observation remains `INTRANS`; the precise cancellation
+point in context entry/exit needs separate tracing before attributing it to
+a driver defect. `cm_retry` on an already-open outer transaction can manage
+only a savepoint: successful block exit does not promise an outer COMMIT.
+Explicit `rollback()` and reconnect restore visibility in this cut set.
 
 ### asyncpg direct (manual cut, k = 1..3)
 
@@ -126,13 +130,13 @@ the already-`INTRANS` handle silently commits only a savepoint. Explicit
 | explicit SQL `ROLLBACK` | `in_tx_before=False → after=False`, observer `[survivor]` | `True → False`, observer `[survivor]` | `True → False`, observer `[survivor,target]` |
 | `conn.reset()` | `in_tx_after=True` (!), observer `[]` — **not healed** | `False`, observer `[survivor]` | `False`, observer `[survivor,target]` |
 | retry through `conn.transaction()` | OpResult ok, observer `[b3,survivor]` | OpResult **ok=false**, `InterfaceError: cannot use Connection.transaction() in a manually started transaction`, observer `[]` | same error, observer `[survivor,target]` |
-| target through `conn.transaction()` | observer `[]` (still lost) | observer `[survivor]` | observer `[survivor,target]`, acquire `in_tx=True` (stale only) |
+| target through `conn.transaction()` | observer `[]` (externally invisible) | observer `[survivor]` | observer `[survivor,target]`, acquire `in_tx=True` (stale only) |
 | close + reconnect | observer `[survivor]` | `[survivor]` | `[survivor,target]` |
 
-`reset()` is not a universal repair: at k=1 (queued BEGIN, client says
-`in_tx=False`) it returns Ok but leaves `in_tx=True` and the survivor write
-uncommitted. Explicit SQL `ROLLBACK` heals k=1 too (it flushes/terminates the
-queued BEGIN); close+reconnect is the clean control.
+At k=1, `reset()` returns Ok but the later sample is `in_tx=True` and the
+survivor write is uncommitted. Explicit SQL `ROLLBACK` restores visibility;
+close+reconnect is the control. A BEGIN pending across reset is a plausible
+explanation, not a direct observation of the driver's queue (see §3).
 
 ### Pools (positive; all contrast variants clean)
 
@@ -242,15 +246,15 @@ Fixes in `cases/psycopg_case.py` and `cases/asyncpg_case.py` (no
   asyncpg-pool B1/B2 false positives are filed as invalid in
   `run.nfnJcD/INVALID.md`.
 
-Classification (same root cause per family, one target each):
+Classification (one target scenario per family; raw outcomes are not bug counts):
 
 | unit | classification | basis |
 |---|---|---|
 | psycopg pool | **pool repair positive**, not a documented guarantee | release prints “rolling back returned connection”, server query `ROLLBACK`, next acquire `IDLE`, same pid; survivor visible |
-| psycopg direct | **app-composition omission / contract gap** | caller did manual `BEGIN`/`COMMIT` with no rollback/reset; docs do not promise auto-reset after cancellation; explicit rollback/reconnect repairs; official CM is not a guaranteed repair at all cuts |
+| psycopg direct | **app-composition recovery omission** | caller did manual `BEGIN`/`COMMIT` with no rollback/reset; docs do not promise auto-reset after cancellation; explicit rollback/reconnect repairs; CM retry may be a nested savepoint; CM-target entry/exit cuts remain to be located |
 | asyncpg pool | **pool repair positive**, not a documented guarantee | release prints “Resetting connection with an active transaction”, server reset query, next acquire `in_tx=False`, same pid; survivor visible |
-| asyncpg direct | **driver state error (reported-state variant) + contract gap** | cancellation leaves a queued BEGIN (`in_tx=False`) or open transaction (`True`); next write succeeds but is uncommitted; known upstream shape #537/#1310; explicit ROLLBACK/reconnect repairs, `reset()` not at k=1 |
-| B2/B3 layer | **contract/detection gap** | only an escaping exception/timeout is judged; transaction-state corruption after an “ok” retry is invisible. Corrected values now show 24 psycopg-direct `INTRANS` and 12 asyncpg-direct `in_tx=True` retries at 0 violations. Do not cite B2/B3 0 as semantic cleanliness. |
+| asyncpg direct | **manual-transaction recovery candidate, not a proven driver defect** | 6/9 externally invisible writes and 3/9 acquire-time-state-only differences; queued BEGIN is an inference; explicit ROLLBACK/reconnect restores visibility, `reset()` not at k=1; upstream matches remain unverified |
+| B2/B3 layer | **observation limitation** | retry failure is judged through exceptions or explicit `ok=False`; that does not establish independent visibility or transaction cleanup. Corrected values now show 24 psycopg-direct `INTRANS` and 12 asyncpg-direct `in_tx=True` retries at 0 violations. Do not cite B2/B3 0 as semantic cleanliness. |
 
 ## 5. Tests
 
@@ -261,10 +265,11 @@ No-service, stdlib `unittest` (pytest not required):
   success normalized, asyncpg no longer returns `None`, released-handle
   diagnostic does not become a target error, cancellation stays
   `CancelledError`, `OpResult(ok=False)` and timeout are B2/B3 violations.
-- `research/python-retro/tests/test_ladder_outcomes.py` — lead's 10 engine
-  tests (`OpResult`, dict failure, exception, timeout, setup failure).
-- Run log: `logs/run.WcLcOp/tests.txt` (`Ran 11`, `Ran 10`, 21 ok).
-- Related: `tests/test_adapter_contract.py` (other agent's contract tests).
+- `research/python-retro/tests/test_ladder_outcomes.py` — now 14 engine tests,
+  including failed baselines/post calibration, unrealized cuts and empty plans.
+- Historical run: `logs/run.WcLcOp/tests.txt` (`Ran 11`, `Ran 10`, 21 ok);
+  it predates the four added engine cases, which passed during this review.
+- Related: `tests/test_adapter_contract.py` (structured outcome checks).
 
 ## 6. Coverage / limits
 
@@ -285,5 +290,3 @@ No-service, stdlib `unittest` (pytest not required):
   do not cite. `run.1HLY38` contrast files predate the release-before-sample
   reorder, so their asyncpg-pool plan-4 acquire timeout is a diagnostic
   artifact; cite `run.WcLcOp` for contrast.
-- No commit was made by this agent. The lead landed commits `16f32dc` and
-  `8d5290c` while this work ran; `run.KqRbB4/` mtimes are unchanged.

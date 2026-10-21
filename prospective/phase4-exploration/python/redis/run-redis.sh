@@ -8,6 +8,7 @@
 #
 # usage: ./run-redis.sh --port 32851 --logdir logs/run.XXXXXX
 set -uo pipefail
+STATUS=0
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PY="${PY:-/home/ava/dropwise-py-work-r3/venv-redis313/bin/python}"
@@ -37,9 +38,13 @@ for mode in pool direct; do
         --host 127.0.0.1 --port "$PORT" --mode "$mode" --unit "$unit" \
         --levels "$level" --reps "$REPS" --round 3 \
         > "$LOGDIR/level-$name.log" 2> "$LOGDIR/level-$name.err"
-      echo "$?" > "$LOGDIR/level-$name.status"
+      rc=$?
+      if [ "$rc" -ne 0 ]; then STATUS=1; fi
+      echo "$rc" > "$LOGDIR/level-$name.status"
       tail -n 2 "$LOGDIR/level-$name.log"
     done
   done
 done
 echo "=== ladder done $(date -Is) ==="
+
+exit "$STATUS"

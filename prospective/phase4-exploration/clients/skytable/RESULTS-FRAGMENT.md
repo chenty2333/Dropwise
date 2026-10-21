@@ -4,6 +4,11 @@ Status: **unfrozen exploration**, 2026-10-21. One client family, two reuse modes
 not Phase 4 data. Raw logs: `logs/run.VlevMa/` (only that directory; earlier
 `logs/run.*` are untouched).
 
+Current status: the [deep pass](RESULTS-FRAGMENT-DEEP.md) supersedes the preliminary
+classification and adds repair contrasts. The counts below are the original batch,
+not the newer fixed/original run; this remains a reuse-failure candidate with an
+unspecified cancellation contract and no upstream confirmation.
+
 ## Versions, image, service
 
 - Client: `skytable 0.8.12` (crates.io, exact pin); pool: `skytable::pool::get_async(1, Config)`
@@ -156,7 +161,7 @@ connection; no skipped cases, no unrun cases (`skipped=0 unrun=0`).
 
 ## Triage and classification
 
-- **Confirmed client-side defect (protocol/response association after a dropped
+- **Reproduced reuse-failure candidate (protocol/response association after a dropped
   query future), one root cause.** The cancelled `query()` leaves the reply (or a
   prefix/one packet of it) on the connection; the next request through the same
   handle — bb8's validation query in pooled mode, or the survivor's update in

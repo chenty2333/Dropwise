@@ -2,6 +2,7 @@
 # aiomysql 0.3.2 DIRECT unit on MariaDB 11.4.  Pool mode lives in
 # run-aiomysql-pool.sh (round 3b) and is reported in RESULTS-FRAGMENT-round3b.md.
 set -u
+STATUS=0
 cd "$(dirname "$0")"
 REPO=$(cd ../../../.. && pwd)
 PY=${PY:-$HOME/dropwise-py-work-r3/venv313/bin/python}
@@ -30,5 +31,9 @@ done
 
 "$PY" -m cases.aiomysql_case --port "$PORT" --user root --password dw \
   --mode direct --levels B1,B2,B3,M1 --reps 3 > "$RUN/aiomysql-direct.txt" 2>&1
-echo "exit=$?" >> "$RUN/aiomysql-direct.txt"
+rc=$?
+if [ "$rc" -ne 0 ]; then STATUS=1; fi
+echo "exit=$rc" >> "$RUN/aiomysql-direct.txt"
 echo "logs: $RUN"
+
+exit "$STATUS"

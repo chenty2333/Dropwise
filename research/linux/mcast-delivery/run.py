@@ -8,13 +8,12 @@ scenario; each scenario runs in a fresh child with fresh sockets.
 
 import argparse
 import datetime as dt
-import gzip
-import hashlib
-import os
+import re
 import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -22,7 +21,6 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
 WORK = Path.home() / "dropwise-linux-r4"
 BUILD = ROOT / "build"
-OUT = REPO / "logs" / "20261021-r4-mcast-delivery"
 QEMU = shutil.which("qemu-system-x86_64")
 
 KERNELS = [
@@ -66,6 +64,21 @@ file /init {BUILD / 'init'} 0755 0 0
     return initramfs
 
 
+def valid_run(text):
+    """A finished boot is usable only if every scenario and control ran.
+
+    DELIVERY_MISS is an experimental finding, not a harness failure.
+    """
+    if not re.search(r"^MCAST_DONE\b", text, re.M):
+        return False
+    if re.search(r"^(?:NET_FAIL|MOUNT_FAIL|KNOB_FAIL|HARNESS_ERROR|CONTROL_FAIL|SCENARIO_ERROR)\b", text, re.M):
+        return False
+    ended = re.findall(r"^SCENARIO_END name=(\S+) status=(\d+)\b", text, re.M)
+    expected = {"normal", "n1", "n2", "n2_cross", "ssm_n2", "invalid", "two_sockets"}
+    return (len(ended) == len(expected) and {name for name, _ in ended} == expected
+            and all(status == "0" for _, status in ended))
+
+
 def boot(label, kernel, initramfs, outdir, timeout):
     logpath = outdir / f"{label}.log"
     cmd = [
@@ -80,9 +93,8 @@ def boot(label, kernel, initramfs, outdir, timeout):
     (outdir / f"{label}.cmd").write_text(
         "date=" + dt.datetime.now().astimezone().isoformat() + "\n" +
         "cmd=" + " ".join(str(c) for c in cmd) + "\n")
-    sha = hashlib.sha256(kernel.read_bytes()).hexdigest()
     (outdir / f"{label}.meta").write_text(
-        f"kernel={kernel}\nsha256={sha}\n"
+        f"kernel={kernel}\n"
         f"start={dt.datetime.now().astimezone().isoformat()}\n")
     start = time.time()
     with open(logpath, "w", errors="replace") as log:
@@ -119,6 +131,7 @@ def boot(label, kernel, initramfs, outdir, timeout):
             if proc.poll() is None:
                 proc.kill()
                 proc.wait()
+    done = done and valid_run(logpath.read_text(errors="replace"))
     elapsed = time.time() - start
     with open(outdir / f"{label}.meta", "a") as f:
         f.write(f"end={dt.datetime.now().astimezone().isoformat()}\n"
@@ -128,7 +141,6 @@ def boot(label, kernel, initramfs, outdir, timeout):
 
 
 def summarize(outdir):
-    lines = ["label,scenario,field,value"]
     for path in sorted(outdir.glob("*.log")):
         label = path.stem
         for raw in path.read_text(errors="replace").splitlines():
@@ -140,10 +152,15 @@ def summarize(outdir):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--timeout", type=int, default=90)
-    ap.add_argument("--outdir", default=str(OUT))
+    ap.add_argument("--outdir", help="New output directory (must not already exist)")
     args = ap.parse_args()
-    outdir = Path(args.outdir)
-    outdir.mkdir(parents=True, exist_ok=True)
+    if args.outdir:
+        outdir = Path(args.outdir)
+        outdir.mkdir(parents=True, exist_ok=False)
+    else:
+        parent = REPO / "logs"
+        parent.mkdir(parents=True, exist_ok=True)
+        outdir = Path(tempfile.mkdtemp(prefix="mcast-review-", dir=parent))
     if not QEMU:
         sys.exit("qemu-system-x86_64 not found")
     initramfs = build_init()

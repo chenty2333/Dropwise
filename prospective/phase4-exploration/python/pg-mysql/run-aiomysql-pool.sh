@@ -4,6 +4,7 @@
 # port.  The direct unit is unchanged and lives in run-aiomysql.sh /
 # logs/run.KqRbB4/.
 set -u
+STATUS=0
 cd "$(dirname "$0")"
 REPO=$(cd ../../../.. && pwd)
 PY=${PY:-$HOME/dropwise-py-work-r3/venv313/bin/python}
@@ -40,11 +41,21 @@ EOF
 export PYTHONPATH=".:$REPO/research/python-retro"
 "$PY" -m cases.aiomysql_case --port "$PORT" --user root --password dw \
   --dbname "$DB" --mode pool --diag > "$RUN/aiomysql-pool-diag.txt" 2>&1
+rc=$?
+if [ "$rc" -ne 0 ]; then STATUS=1; fi
+echo "exit=$rc" >> "$RUN/aiomysql-pool-diag.txt"
 "$PY" -m cases.aiomysql_case --port "$PORT" --user root --password dw \
   --dbname "$DB" --mode pool --levels B1,B2,B3,M1 --reps 3 \
   > "$RUN/aiomysql-pool.txt" 2>&1
+rc=$?
+if [ "$rc" -ne 0 ]; then STATUS=1; fi
+echo "exit=$rc" >> "$RUN/aiomysql-pool.txt"
 "$PY" -m cases.aiomysql_case --port "$PORT" --user root --password dw \
   --dbname "$DB" --mode pool --probe 1,2,3,4 \
   > "$RUN/aiomysql-pool-probe.txt" 2>&1
-echo "exit=$?" >> "$RUN/aiomysql-pool.txt"
+rc=$?
+if [ "$rc" -ne 0 ]; then STATUS=1; fi
+echo "exit=$rc" >> "$RUN/aiomysql-pool-probe.txt"
 echo "logs: $RUN"
+
+exit "$STATUS"

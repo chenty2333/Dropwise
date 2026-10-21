@@ -264,15 +264,18 @@ and not the server. No Dropwise file is modified by the patch.
 - `fix/p4e-skytable-fixed/` — the same ladder source built against the copy via
   `[patch.crates-io] skytable = { path = "../skytable-0.8.12" }`; original
   `p4e-skytable` package still uses crates.io.
-- `fix/drop-poison.patch` — unified diff (129 lines incl. headers).
+- `fix/drop-poison.patch` — unified diff, now including the pipeline guard and no-service tests.
 
 Why this layer: the lost state is in `TcpConnection` (`buf` + the stream
 position); bb8 is the reuse decision point and already has `has_broken` /
 `is_valid` hooks, but the skytable manager never populated them. The patch
-does not try to resynchronise (impossible without a request id); it fails
+does not attempt protocol resynchronisation or request replay; it fails
 closed and lets the pool discard.
 
-Limits: `execute_pipeline()` is not guarded; the sync `Connection` path has no
+The recorded live contrast used the original query-only patch. The reviewed
+patch now also guards `execute_pipeline()` and has no-service tests for query/
+pipeline cancellation, rejected reuse, completed replies and server errors.
+No live pipeline contrast has been run. The sync `Connection` path has no
 async drop; a poisoned **direct** connection remains open until the handle is
 dropped (the next call fails, but the socket is not synchronously shut down);
 there is no dedicated error variant and no auto-reconnect (auto-reconnect could
@@ -408,7 +411,8 @@ its reply is one request behind. This is the user-visible consequence.
 - No generated target×successor cases rerun; no pool size > 1; no TLS, no sync
   path, no pipelines, no server restart/crash, no `After(Duration)` races, one
   client version, one server image.
-- Fixed patch is experimental: pipeline unguarded, direct socket not closed
+- Fixed patch is experimental: live pipeline untested (the reviewed patch now
+  guards it with no-service tests), direct socket not closed
   synchronously, no dedicated error variant, no auto-reconnect, no
   multi-thread/concurrent borrower test.
 - Loopback disposable server only; no vendor/production Skytable; no upstream

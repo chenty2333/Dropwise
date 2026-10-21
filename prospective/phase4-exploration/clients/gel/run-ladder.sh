@@ -7,6 +7,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../../../.." && pwd)"
 source "$HERE/../runner-common.sh"
+cd "$HERE"
 new_logdir "$HERE"
 
 CID=""
@@ -92,12 +93,14 @@ SERVER_VERSION="$(docker exec "$CID" gel query --host 127.0.0.1 --port 5656 \
 } > "$LOGS/environment.txt"
 
 : > "$LOGS/timings.txt"
+STATUS=0
 run_phase() {
   local name="$1"; shift
   local start; start="$(date +%s.%N)"
   set +e
   "$@" > "$LOGS/$name.stdout.log" 2> "$LOGS/$name.stderr.log"
   local rc=$?
+  if [ "$rc" -ne 0 ]; then STATUS=1; fi
   set -e
   local end; end="$(date +%s.%N)"
   awk -v n="$name" -v rc="$rc" -v s="$start" -v e="$end" \
@@ -131,3 +134,5 @@ done
 } > "$LOGS/counts.txt"
 
 echo "done logs=$LOGS"
+
+exit "$STATUS"

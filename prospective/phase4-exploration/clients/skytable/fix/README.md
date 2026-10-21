@@ -9,7 +9,7 @@ upstream-ready patch.
 - `skytable-0.8.12/` — copy of the crates.io 0.8.12 driver with the patch
   already applied.
   - `TcpConnection` gains `poisoned: bool` and `is_poisoned()`.
-  - `query()` arms a `PoisonOnDrop` guard; dropping the future at any await
+  - `query()` and `execute_pipeline()` arm a `PoisonOnDrop` guard; dropping a polled future at any await
     (write or read) poisons the connection. The guard is disarmed only when a
     complete `Response` was decoded.
   - A poisoned connection returns
@@ -41,10 +41,13 @@ cargo build --release
 
 ## Limits
 
-- `execute_pipeline()` is not guarded.
+- Pipeline now shares the guard and rejects an already-poisoned connection.
+  No-service tests cover both cancellation directions, refused reuse, and
+  completed replies (including server errors) without spurious poisoning; the recorded live
+  contrast predates this extension and exercises query only.
 - The sync connection path has no async drop guard.
 - A poisoned direct connection is not synchronously closed; the next call
   fails and the caller must drop/reconnect.
-- No request id exists in the protocol, so the fix fails closed rather than
-  resynchronising. Auto-reconnect/replay is deliberately not attempted.
-- Experimental: no dedicated error variant, no TLS/pool>1/pipeline tests.
+- The fix fails closed instead of attempting protocol resynchronisation.
+  Auto-reconnect/replay is deliberately not attempted.
+- Experimental: no dedicated error variant, no TLS/pool>1/live pipeline tests.

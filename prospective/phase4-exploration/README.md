@@ -1,10 +1,15 @@
-# Phase 4 exploration, rounds 1–2 (unfrozen)
+# Phase 4 exploration (unfrozen)
 
 Started 2026-10-21. This directory is a small, time-boxed first contact with
 real Rust clients after the standalone-crate productization. Round 2 was added
 after reading the round-1 results; it is a follow-up on the same three clients,
 not a new client batch, not a Phase 4 expansion, and not a preregistered study.
-It does **not** change the frozen Phase 4 list, gates or budget.
+It does **not** change or freeze the formal Phase 4 draft list, gates or budget.
+
+Current reviewed findings and next steps are in [ROUND3-RESULTS.md](ROUND3-RESULTS.md),
+with the [adapter audit](ADAPTER-AUDIT-ROUND3.md) separating valid observations
+from old invalid runs. [RESULTS.md](RESULTS.md) and the description below retain
+the rounds 1–2 context; they are not the current all-client summary.
 
 ## First batch (written before any cancellation run)
 

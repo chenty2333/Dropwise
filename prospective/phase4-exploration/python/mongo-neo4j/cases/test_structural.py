@@ -38,7 +38,7 @@ class FakeScenario(Scenario):
 
     async def target(self):
         if self.mode == "target_raises":
-            # raise before the first suspension: B1 must see an error
+            # Raise before the first suspension: invalidate the baseline.
             raise RuntimeError("target boom")
         await asyncio.sleep(0)  # exactly one task yield
         return OpResult(True, "target", value={"v": 1})
@@ -89,7 +89,8 @@ async def main() -> int:
 
     r = await level_b1("fake-target", factory("target_raises"), reps=1,
                        timeout=2.0, plans=[1])
-    checks.append(("raising target is a B1 violation", len(r.violations()) == 1))
+    checks.append(("raising target invalidates baseline, not a cancellation finding",
+                   bool(r.baseline_errors) and not r.trials and not r.exhaustive))
 
     r = await level_retry("fake-clean", factory("clean"), level="B2",
                           retry="same", reps=1, timeout=2.0, plans=[1])

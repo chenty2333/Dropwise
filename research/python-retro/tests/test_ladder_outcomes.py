@@ -25,6 +25,8 @@ from dropwise_py.engine import (  # noqa: E402
     Scenario,
     _allows,
     level_retry,
+    level_b1,
+    explore_observed,
     normalize,
     operation_failed,
     Verdict,
@@ -164,6 +166,51 @@ class OutcomeInterfaceTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(_allows(Expect.ATOMIC, Verdict.MIXED))
         self.assertFalse(_allows(Expect.ATOMIC, Verdict.NEITHER))
         self.assertFalse(_allows(Expect.ATOMIC, Verdict.UNKNOWN))
+
+
+class BaselineAndCoverageTests(unittest.IsolatedAsyncioTestCase):
+    async def run_levels(self, factory, plans=None):
+        return [
+            await level_b1("fake", factory, reps=1, plans=plans),
+            await level_retry("fake", factory, level="B2", retry="same", reps=1, plans=plans),
+            await level_retry("fake", factory, level="B3", retry="different", reps=1, plans=plans),
+            await explore_observed("fake", factory, reps=1, plans=plans),
+        ]
+
+    async def test_structured_target_failure_invalidates_baseline(self):
+        class Bad(FakeScenario):
+            async def target(self):
+                await asyncio.sleep(0)
+                return OpResult(False, "begin", error="failed")
+        for report in await self.run_levels(Bad):
+            self.assertTrue(report.baseline_errors)
+            self.assertFalse(report.exhaustive)
+            self.assertEqual(report.trials, [])
+
+    async def test_later_post_calibration_failure_is_not_an_endpoint(self):
+        calls = 0
+        class BadPost(FakeScenario):
+            async def target(self):
+                nonlocal calls
+                calls += 1
+                await asyncio.sleep(0)
+                if calls > 1:
+                    raise RuntimeError("post failed after successful discovery")
+                return "ok"
+        report = await explore_observed("fake", BadPost, reps=1)
+        self.assertTrue(report.baseline_errors)
+        self.assertFalse(report.exhaustive)
+        self.assertEqual(report.trials, [])
+
+    async def test_unreached_cut_cannot_produce_a_violation(self):
+        for report in await self.run_levels(lambda: FakeScenario(failure="raise"), plans=[99]):
+            self.assertEqual(len(report.unrealized()), 1)
+            self.assertEqual(report.violations(), [])
+            self.assertFalse(report.exhaustive)
+
+    async def test_empty_plan_list_does_not_run_default_search(self):
+        for report in await self.run_levels(FakeScenario, plans=[]):
+            self.assertEqual(report.trials, [])
 
 
 if __name__ == "__main__":

@@ -68,6 +68,48 @@ new_logdir ignored
                     p = subprocess.run(["bash", "-c", script, "test", logs, text, str(code)], capture_output=True)
                     self.assertEqual(p.returncode, expected, p.stderr.decode())
 
+    def test_new_phase_runners_propagate_failures(self):
+        for name in ["gel/run-ladder.sh", "modbus/run-ladder.sh", "pop/run-ladder.sh",
+                     "skytable/run-ladder.sh", "skytable/run-deep.sh"]:
+            source = (ROOT / name).read_text()
+            function = "run_phase() {" + source.split("run_phase() {", 1)[1].split("\n}\n", 1)[0] + "\n}\n"
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as logs:
+                script = 'LOGS="$1"; STATUS=0\n' + function + '\nrun_phase bad bash -c "exit 7"\nrun_phase good true\nexit "$STATUS"\n'
+                result = subprocess.run(["bash", "-c", script, "test", logs], capture_output=True)
+                self.assertEqual(result.returncode, 1, result.stderr.decode())
+
+    def test_relative_cargo_builds_use_the_client_directory(self):
+        for name in ["gel", "modbus", "pop", "skytable"]:
+            source = (ROOT / name / "run-ladder.sh").read_text()
+            self.assertLess(source.index('cd "$HERE"'), source.index('cargo build'))
+
+    def test_python_pool_runner_keeps_each_stage_status(self):
+        source = (ROOT.parent / "python/pg-mysql/run-aiomysql-pool.sh").read_text()
+        body = source[source.index('export PYTHONPATH='):]
+        for stage, log in [("--diag", "diag"), ("--levels", None), ("--probe", "probe")]:
+            with self.subTest(stage=stage), tempfile.TemporaryDirectory() as work:
+                stub = pathlib.Path(work) / "python"
+                stub.write_text('#!/bin/sh\nfor arg do\n  [ "$arg" != "$FAIL_STAGE" ] || exit 7\ndone\nexit 0\n')
+                stub.chmod(0o700)
+                script = 'STATUS=0; REPO="$1"; RUN="$1"; PY="$1/python"; PORT=1; DB=test\nexport FAIL_STAGE="$2"\n' + body
+                result = subprocess.run(["bash", "-c", script, "test", work, stage], capture_output=True)
+                self.assertEqual(result.returncode, 1, result.stderr.decode())
+                suffix = "" if log is None else "-" + log
+                self.assertIn("exit=7", (pathlib.Path(work) / f"aiomysql-pool{suffix}.txt").read_text())
+
+    def test_postgres_readiness_requires_tcp_and_rejects_timeout(self):
+        for name in ["run-fixed.sh", "run-contrast.sh", "run-psycopg.sh", "run-asyncpg.sh"]:
+            source = (ROOT.parent / "python/pg-mysql" / name).read_text()
+            wait = 'READY=0\n' + source.split('READY=0\n', 1)[1].split('\nfi\n', 1)[0] + '\nfi\n'
+            for state, expected in [("ready", 0), ("unready", 1)]:
+                script = '''NAME=fake; READY_STATE="$1"
+docker() { [[ " $* " == *" pg_isready -h 127.0.0.1 "* ]] && [[ "$READY_STATE" == ready ]]; }
+sleep() { :; }
+''' + wait
+                with self.subTest(name=name, state=state):
+                    result = subprocess.run(["bash", "-c", script, "test", state], capture_output=True)
+                    self.assertEqual(result.returncode, expected, result.stderr.decode())
+
 
 if __name__ == "__main__":
     unittest.main()
