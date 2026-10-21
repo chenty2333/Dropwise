@@ -26,11 +26,12 @@
 
 use crate::features::Features;
 use std::fmt;
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 static NEXT_OBJECT: AtomicU64 = AtomicU64::new(1);
+static NEXT_OWNER: AtomicU64 = AtomicU64::new(1);
 
 /// Identity of one resource object (a connection, a stream, a kernel object).
 /// Never reused, so it is safe to keep in logs after the object is gone.
@@ -297,6 +298,12 @@ pub enum Refusal {
     Recovering { attempts: u32 },
     /// The object is permanently unusable.
     Retired { cause: Cause },
+    /// A live owner has authority over the object; the requested recovery or
+    /// reuse would act behind its back.
+    Owned { owners: usize, tag: &'static str },
+    /// The caller presented an owner witness that is not live for this object
+    /// and owner generation (stale, handed off, or a different object).
+    OwnerMismatch,
     /// The owner stopped serving new operations.
     Closed,
 }
@@ -315,6 +322,13 @@ impl fmt::Display for Refusal {
                 write!(f, "exclusive recovery in progress (attempt {attempts})")
             }
             Refusal::Retired { cause } => write!(f, "retired ({cause})"),
+            Refusal::Owned { owners, tag } => write!(
+                f,
+                "{owners} live owner(s) hold authority (last: {tag}); recovery and reuse are refused"
+            ),
+            Refusal::OwnerMismatch => {
+                f.write_str("owner witness is not live for this object/generation")
+            }
             Refusal::Closed => f.write_str("closed"),
         }
     }
@@ -343,6 +357,14 @@ pub enum Qualification {
     Recovering {
         attempts: u32,
     },
+    /// At least one live owner claim still holds authority over the object.
+    /// This is not a protocol state: the same wire state can be legitimate
+    /// nesting or an abandoned transaction, and only the owner's liveness
+    /// distinguishes them.
+    Owned {
+        owners: usize,
+        tag: &'static str,
+    },
     Retired {
         cause: Cause,
     },
@@ -364,6 +386,185 @@ pub struct GuardStats {
     pub refused_suspect: u64,
     pub refused_recovering: u64,
     pub refused_retired: u64,
+    pub owners_claimed: u64,
+    pub owners_released: u64,
+    pub owners_handed_off: u64,
+    pub stale_owner_releases: u64,
+    pub refused_owned: u64,
+    pub refused_owner_mismatch: u64,
+}
+
+/// Identity of one ownership claim.  Never reused, so a stale witness is
+/// distinguishable from a current claim without consulting the owner.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct OwnerId(u64);
+
+impl OwnerId {
+    pub fn raw(self) -> u64 {
+        self.0
+    }
+}
+
+impl fmt::Debug for OwnerId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "owner#{}", self.0)
+    }
+}
+
+impl fmt::Display for OwnerId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "owner#{}", self.0)
+    }
+}
+
+/// One live ownership claim.  `generation` is the object's owner generation:
+/// a handoff replaces the whole owner cohort and starts a new generation, so a
+/// witness from before the handoff cannot authorize or block anything after it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OwnerInfo {
+    pub id: OwnerId,
+    pub tag: &'static str,
+    pub generation: u64,
+    /// The operation epoch at which the claim was established.  Informational;
+    /// operations advance the epoch but do not invalidate ownership.
+    pub op_epoch: Epoch,
+    pub since: Instant,
+    /// How many times responsibility was handed off before this claim.
+    pub handoffs: u32,
+}
+
+/// A copyable proof of one ownership claim for one object.  It is not an
+/// authority token: acting as the owner requires [`OwnerClaim`], which owns an
+/// `Arc<Guard>` and cannot be fabricated.  A witness is checked against the
+/// object, generation and claim id, so a stale or cross-object witness is
+/// rejected.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OwnerWitness {
+    pub owner: OwnerId,
+    pub obj: ObjId,
+    pub generation: u64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OwnershipError {
+    /// The claim was replaced by a handoff, belongs to an older generation, or
+    /// was already released.
+    Stale,
+    /// An operation is in flight.  Responsibility for an unresolved operation
+    /// cannot be transferred until it settles or is abandoned (Suspect).
+    Busy,
+    /// The object is permanently unusable.
+    Retired,
+}
+
+impl fmt::Display for OwnershipError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            OwnershipError::Stale => f.write_str("ownership claim is no longer live"),
+            OwnershipError::Busy => {
+                f.write_str("cannot hand off ownership while an operation is in flight")
+            }
+            OwnershipError::Retired => f.write_str("object is retired"),
+        }
+    }
+}
+
+impl std::error::Error for OwnershipError {}
+
+/// RAII ownership of one responsibility unit.  The claim is live while this
+/// value exists; dropping it is the positive, in-process evidence that the
+/// owner relinquished authority.  A claim that is forgotten
+/// (`std::mem::forget`) or leaked stays live and continues to block cleanup;
+/// absence of a claim is never inferred from silence.
+///
+/// Claims can be nested (an outer transaction and an inner savepoint scope).
+/// Releasing one does not release the others.  [`OwnerClaim::handoff`] is
+/// all-or-nothing: it replaces the whole owner cohort with one new claim.
+pub struct OwnerClaim {
+    guard: Arc<Guard>,
+    info: OwnerInfo,
+    released: bool,
+}
+
+impl OwnerClaim {
+    pub fn id(&self) -> OwnerId {
+        self.info.id
+    }
+
+    pub fn tag(&self) -> &'static str {
+        self.info.tag
+    }
+
+    pub fn info(&self) -> &OwnerInfo {
+        &self.info
+    }
+
+    pub fn guard(&self) -> &Arc<Guard> {
+        &self.guard
+    }
+
+    pub fn witness(&self) -> OwnerWitness {
+        OwnerWitness {
+            owner: self.info.id,
+            obj: self.guard.obj(),
+            generation: self.info.generation,
+        }
+    }
+
+    /// Claim recovery of *this* object on behalf of the live owner.  This is
+    /// the only way to recover while an owner is live; an unowned caller gets
+    /// [`Refusal::Owned`].
+    pub fn claim_recovery(&self) -> Result<RecoveryPermit<'_>, Refusal> {
+        self.guard.claim_recovery_as(&self.witness())
+    }
+
+    /// Hand responsibility to a new owner (for example, a background cleanup
+    /// task).  The whole owner cohort is replaced: the returned claim is the
+    /// only live claim, and every older witness is stale.  On success this
+    /// claim is stale (its generation is gone) and must not be used again; a
+    /// later drop is recorded as a stale release.  A refused handoff leaves
+    /// this claim live, so the owner can retry after the operation resolves.
+    pub fn handoff(&self, tag: &'static str) -> Result<OwnerClaim, OwnershipError> {
+        match self
+            .guard
+            .handoff_owner(self.info.id, self.info.generation, tag)
+        {
+            Ok(info) => Ok(OwnerClaim {
+                guard: self.guard.clone(),
+                info,
+                released: false,
+            }),
+            Err(error) => Err(error),
+        }
+    }
+
+    /// Explicitly relinquish ownership.  Equivalent to dropping the claim.
+    pub fn release(mut self) {
+        self.released = true;
+        self.guard.release_owner(self.info.id, self.info.generation);
+    }
+}
+
+impl Drop for OwnerClaim {
+    fn drop(&mut self) {
+        if !self.released {
+            self.guard.release_owner(self.info.id, self.info.generation);
+        }
+    }
+}
+
+impl fmt::Debug for OwnerClaim {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("OwnerClaim")
+            .field("info", &self.info)
+            .field("released", &self.released)
+            .finish()
+    }
+}
+
+#[derive(Debug)]
+struct OwnerRecord {
+    info: OwnerInfo,
 }
 
 #[derive(Debug)]
@@ -398,6 +599,14 @@ pub struct Guard {
     refused_suspect: AtomicU64,
     refused_recovering: AtomicU64,
     refused_retired: AtomicU64,
+    owners: Mutex<Vec<OwnerRecord>>,
+    owner_generation: AtomicU64,
+    owners_claimed: AtomicU64,
+    owners_released: AtomicU64,
+    owners_handed_off: AtomicU64,
+    stale_owner_releases: AtomicU64,
+    refused_owned: AtomicU64,
+    refused_owner_mismatch: AtomicU64,
 }
 
 impl Guard {
@@ -427,6 +636,14 @@ impl Guard {
             refused_suspect: AtomicU64::new(0),
             refused_recovering: AtomicU64::new(0),
             refused_retired: AtomicU64::new(0),
+            owners: Mutex::new(Vec::new()),
+            owner_generation: AtomicU64::new(1),
+            owners_claimed: AtomicU64::new(0),
+            owners_released: AtomicU64::new(0),
+            owners_handed_off: AtomicU64::new(0),
+            stale_owner_releases: AtomicU64::new(0),
+            refused_owned: AtomicU64::new(0),
+            refused_owner_mismatch: AtomicU64::new(0),
         }
     }
 
@@ -440,6 +657,144 @@ impl Guard {
 
     pub fn phase(&self) -> Phase {
         Phase::from_u8(self.phase.load(Ordering::Acquire))
+    }
+    /// Current owner-cohort generation.  A handoff starts a new generation;
+    /// operation epochs do not.
+    pub fn owner_generation(&self) -> u64 {
+        self.owner_generation.load(Ordering::Acquire)
+    }
+
+    /// Every claim record, including stale ones from earlier generations.
+    pub fn owners(&self) -> Vec<OwnerInfo> {
+        self.owners
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|record| record.info.clone())
+            .collect()
+    }
+
+    /// Claims that are live in the current owner generation.  A claim from an
+    /// earlier generation is a stale witness: it can neither block a new owner
+    /// nor authorize recovery.
+    pub fn live_owners(&self) -> Vec<OwnerInfo> {
+        let generation = self.owner_generation.load(Ordering::Acquire);
+        self.owners
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|record| record.info.generation == generation)
+            .map(|record| record.info.clone())
+            .collect()
+    }
+
+    pub fn live_owner_count(&self) -> usize {
+        self.live_owners().len()
+    }
+
+    pub fn live_owner(&self) -> Option<OwnerInfo> {
+        self.live_owners().into_iter().next()
+    }
+
+    /// Validate a copyable owner witness against this object, generation and
+    /// live claim list.  This is read-only; it cannot release or replace a
+    /// claim.
+    pub fn owner_witness_live(&self, witness: &OwnerWitness) -> bool {
+        witness.obj == self.obj
+            && witness.generation == self.owner_generation.load(Ordering::Acquire)
+            && self.owners.lock().unwrap().iter().any(|record| {
+                record.info.id == witness.owner && record.info.generation == witness.generation
+            })
+    }
+
+    /// Establish an ownership claim.  Multiple claims may be live at once
+    /// (nested transaction scopes); a claim can only be established while the
+    /// object is Ready, not in the middle of an operation or recovery.
+    pub fn claim_owner(self: &Arc<Self>, tag: &'static str) -> Result<OwnerClaim, Refusal> {
+        if self.phase() != Phase::Ready {
+            return Err(self.refuse(self.current_refusal()));
+        }
+        let info = OwnerInfo {
+            id: OwnerId(NEXT_OWNER.fetch_add(1, Ordering::Relaxed)),
+            tag,
+            generation: self.owner_generation.load(Ordering::Acquire),
+            op_epoch: self.epoch(),
+            since: Instant::now(),
+            handoffs: 0,
+        };
+        self.owners
+            .lock()
+            .unwrap()
+            .push(OwnerRecord { info: info.clone() });
+        self.owners_claimed.fetch_add(1, Ordering::Relaxed);
+        Ok(OwnerClaim {
+            guard: self.clone(),
+            info,
+            released: false,
+        })
+    }
+
+    /// Recover on behalf of a specific live owner.  The witness must match this
+    /// object, the current owner generation and a live claim id.  A stale,
+    /// handed-off or cross-object witness is refused without changing state.
+    pub fn claim_recovery_as(&self, witness: &OwnerWitness) -> Result<RecoveryPermit<'_>, Refusal> {
+        if !self.owner_witness_live(witness) {
+            return Err(self.refuse(Refusal::OwnerMismatch));
+        }
+        self.claim_recovery_inner(true)
+    }
+
+    /// Replace the whole owner cohort with one new claim.  All older claims
+    /// become stale, so a late release or a late recovery by the previous owner
+    /// cannot affect the new generation.
+    fn handoff_owner(
+        &self,
+        id: OwnerId,
+        generation: u64,
+        tag: &'static str,
+    ) -> Result<OwnerInfo, OwnershipError> {
+        if self.retired() {
+            return Err(OwnershipError::Retired);
+        }
+        if self.phase() == Phase::Busy {
+            return Err(OwnershipError::Busy);
+        }
+        let mut owners = self.owners.lock().unwrap();
+        let Some(position) = owners
+            .iter()
+            .position(|record| record.info.id == id && record.info.generation == generation)
+        else {
+            return Err(OwnershipError::Stale);
+        };
+        let previous = owners[position].info.clone();
+        let next_generation = self.owner_generation.fetch_add(1, Ordering::AcqRel) + 1;
+        let info = OwnerInfo {
+            id: OwnerId(NEXT_OWNER.fetch_add(1, Ordering::Relaxed)),
+            tag,
+            generation: next_generation,
+            op_epoch: self.epoch(),
+            since: Instant::now(),
+            handoffs: previous.handoffs + 1,
+        };
+        owners.clear();
+        owners.push(OwnerRecord { info: info.clone() });
+        self.owners_handed_off.fetch_add(1, Ordering::Relaxed);
+        Ok(info)
+    }
+
+    fn release_owner(&self, id: OwnerId, generation: u64) {
+        let current = self.owner_generation.load(Ordering::Acquire);
+        let mut owners = self.owners.lock().unwrap();
+        let Some(position) = owners.iter().position(|record| record.info.id == id) else {
+            self.stale_owner_releases.fetch_add(1, Ordering::Relaxed);
+            return;
+        };
+        let record = owners.remove(position);
+        if record.info.generation == current && generation == current {
+            self.owners_released.fetch_add(1, Ordering::Relaxed);
+        } else {
+            self.stale_owner_releases.fetch_add(1, Ordering::Relaxed);
+        }
     }
 
     pub fn current_op(&self) -> u64 {
@@ -472,11 +827,28 @@ impl Guard {
     }
 
     pub fn reusable(&self) -> bool {
-        self.phase() == Phase::Ready && self.standing().is_none()
+        self.phase() == Phase::Ready && self.standing().is_none() && self.live_owner_count() == 0
     }
 
     pub fn qualification(&self) -> Qualification {
         let phase = self.phase();
+        if phase == Phase::Retired {
+            return Qualification::Retired {
+                cause: self
+                    .retired
+                    .lock()
+                    .unwrap()
+                    .as_ref()
+                    .map(|r| r.cause)
+                    .unwrap_or(Cause::Other("retired")),
+            };
+        }
+        if let Some(owner) = self.live_owner() {
+            return Qualification::Owned {
+                owners: self.live_owner_count(),
+                tag: owner.tag,
+            };
+        }
         match phase {
             Phase::Ready => match self.standing() {
                 Some(s) => Qualification::NeedsCleanup { standing: s },
@@ -533,6 +905,12 @@ impl Guard {
             refused_suspect: self.refused_suspect.load(Ordering::Relaxed),
             refused_recovering: self.refused_recovering.load(Ordering::Relaxed),
             refused_retired: self.refused_retired.load(Ordering::Relaxed),
+            owners_claimed: self.owners_claimed.load(Ordering::Relaxed),
+            owners_released: self.owners_released.load(Ordering::Relaxed),
+            owners_handed_off: self.owners_handed_off.load(Ordering::Relaxed),
+            stale_owner_releases: self.stale_owner_releases.load(Ordering::Relaxed),
+            refused_owned: self.refused_owned.load(Ordering::Relaxed),
+            refused_owner_mismatch: self.refused_owner_mismatch.load(Ordering::Relaxed),
         }
     }
 
@@ -542,6 +920,8 @@ impl Guard {
             Refusal::Suspect { .. } => self.refused_suspect.fetch_add(1, Ordering::Relaxed),
             Refusal::Recovering { .. } => self.refused_recovering.fetch_add(1, Ordering::Relaxed),
             Refusal::Retired { .. } => self.refused_retired.fetch_add(1, Ordering::Relaxed),
+            Refusal::Owned { .. } => self.refused_owned.fetch_add(1, Ordering::Relaxed),
+            Refusal::OwnerMismatch => self.refused_owner_mismatch.fetch_add(1, Ordering::Relaxed),
             Refusal::Closed => 0,
         };
         refusal
@@ -613,6 +993,7 @@ impl Guard {
             op: self.current_op(),
             standing: self.standing(),
             attempts: self.attempts(),
+            owners: self.live_owner_count(),
         }
     }
 
@@ -620,6 +1001,19 @@ impl Guard {
     /// ready object with a standing obligation.  Exactly one caller can hold a
     /// permit for a given phase transition.
     pub fn claim_recovery(&self) -> Result<RecoveryPermit<'_>, Refusal> {
+        self.claim_recovery_inner(false)
+    }
+
+    fn claim_recovery_inner(&self, allow_owner: bool) -> Result<RecoveryPermit<'_>, Refusal> {
+        if self.retired() {
+            return Err(self.refuse(self.current_refusal()));
+        }
+        if !allow_owner && let Some(owner) = self.live_owner() {
+            return Err(self.refuse(Refusal::Owned {
+                owners: self.live_owner_count(),
+                tag: owner.tag,
+            }));
+        }
         // First try the suspect path.
         if self
             .phase
@@ -798,6 +1192,7 @@ pub struct Observation {
     pub op: u64,
     pub standing: Option<&'static str>,
     pub attempts: u32,
+    pub owners: usize,
 }
 
 #[derive(Debug)]
@@ -1437,5 +1832,224 @@ mod tests {
         assert!(permit.recovered(bad).is_err());
         assert_eq!(g.phase(), Phase::Suspect);
         assert!(g.claim_recovery().is_ok());
+    }
+    fn owner_guard() -> Arc<Guard> {
+        Arc::new(Guard::new())
+    }
+
+    fn abandon_armed(g: &Guard) {
+        let mut t = g.begin().unwrap();
+        t.arm();
+        drop(t);
+    }
+
+    #[test]
+    fn nested_live_owners_block_cleanup_until_each_releases() {
+        let g = owner_guard();
+        let outer = g.claim_owner("transaction").unwrap();
+        let inner = g.claim_owner("savepoint").unwrap();
+        assert_eq!(g.live_owner_count(), 2);
+        abandon_armed(&g);
+        assert_eq!(g.phase(), Phase::Suspect);
+
+        // A watchdog cannot clean up behind a live transaction.
+        assert!(matches!(
+            g.claim_recovery(),
+            Err(Refusal::Owned { owners: 2, .. })
+        ));
+        assert_eq!(g.phase(), Phase::Suspect);
+
+        // Releasing the inner scope does not release the outer one.
+        inner.release();
+        assert_eq!(g.live_owner_count(), 1);
+        assert!(matches!(
+            g.claim_recovery(),
+            Err(Refusal::Owned { owners: 1, .. })
+        ));
+
+        // The live owner can recover its own object, but the claim remains live
+        // until the owner relinquishes it.
+        let permit = outer.claim_recovery().unwrap();
+        let witness = RecoveryWitness::new(g.obj(), g.epoch(), "owner.rollback", "clean");
+        permit.recovered(witness).unwrap();
+        assert_eq!(g.phase(), Phase::Ready);
+        assert_eq!(g.live_owner_count(), 1);
+        assert!(!g.reusable());
+        outer.release();
+        assert_eq!(g.live_owner_count(), 0);
+        assert!(g.reusable());
+        assert!(g.suspect().is_none());
+    }
+
+    #[test]
+    fn a_forgotten_claim_is_not_inferred_dead() {
+        let g = owner_guard();
+        let claim = g.claim_owner("transaction").unwrap();
+        let witness = claim.witness();
+        std::mem::forget(claim);
+        assert_eq!(g.live_owner_count(), 1);
+        assert!(g.owner_witness_live(&witness));
+        assert!(!g.reusable());
+        assert!(matches!(
+            g.claim_recovery(),
+            Err(Refusal::Owned { owners: 1, .. })
+        ));
+
+        // A second scope may exist, but it does not replace the forgotten one.
+        let second = g.claim_owner("second").unwrap();
+        assert_eq!(g.live_owner_count(), 2);
+        second.release();
+        assert_eq!(g.live_owner_count(), 1);
+    }
+
+    #[test]
+    fn handoff_replaces_the_owner_cohort_and_stales_old_witnesses() {
+        let g = owner_guard();
+        let outer = g.claim_owner("transaction").unwrap();
+        let inner = g.claim_owner("savepoint").unwrap();
+        let outer_witness = outer.witness();
+        let inner_witness = inner.witness();
+        abandon_armed(&g);
+
+        let background = outer.handoff("background").unwrap();
+        assert_eq!(g.live_owner_count(), 1);
+        assert_eq!(background.tag(), "background");
+        assert_eq!(background.info().handoffs, 1);
+        assert!(!g.owner_witness_live(&outer_witness));
+        assert!(
+            !g.owner_witness_live(&inner_witness),
+            "handoff is all-or-nothing: nested claims from the old cohort are stale"
+        );
+        assert!(matches!(
+            g.claim_recovery_as(&inner_witness),
+            Err(Refusal::OwnerMismatch)
+        ));
+        assert!(background.claim_recovery().is_ok());
+        drop(background);
+        assert_eq!(g.live_owner_count(), 0);
+    }
+
+    #[test]
+    fn handoff_is_refused_mid_operation_but_allowed_after_abandonment() {
+        let g = owner_guard();
+        let claim = g.claim_owner("transaction").unwrap();
+        let mut ticket = g.begin().unwrap();
+        ticket.arm();
+        match claim.handoff("background") {
+            Ok(_) => panic!("handoff must not succeed while the operation is in flight"),
+            Err(OwnershipError::Busy) => {
+                // The refused handoff left the original claim live.
+                assert_eq!(g.live_owner_count(), 1);
+            }
+            Err(other) => panic!("unexpected handoff error: {other:?}"),
+        }
+        drop(ticket);
+        assert_eq!(g.phase(), Phase::Suspect);
+        let background = claim.handoff("background").unwrap();
+        assert!(background.claim_recovery().is_ok());
+    }
+
+    #[test]
+    fn cross_object_owner_witness_is_rejected_without_touching_either_object() {
+        let a = owner_guard();
+        let b = owner_guard();
+        let claim = a.claim_owner("transaction").unwrap();
+        let witness = claim.witness();
+        assert!(matches!(
+            b.claim_recovery_as(&witness),
+            Err(Refusal::OwnerMismatch)
+        ));
+        assert_eq!(a.live_owner_count(), 1);
+        assert_eq!(b.live_owner_count(), 0);
+        assert!(b.claim_recovery_as(&witness).is_err());
+        assert_eq!(b.phase(), Phase::Ready);
+    }
+
+    #[test]
+    fn a_completed_exchange_does_not_poison_ownership_or_require_cleanup() {
+        let g = owner_guard();
+        let claim = g.claim_owner("transaction").unwrap();
+        let before = g.epoch();
+        let mut ticket = g.begin().unwrap();
+        ticket.arm();
+        let discharge = Discharge::new(
+            g.obj(),
+            ticket.epoch(),
+            ticket.op(),
+            DischargeKind::Complete,
+            "test.complete",
+        );
+        ticket.settle(discharge).unwrap();
+        assert!(g.epoch() > before, "a settled exchange mints a generation");
+        assert_eq!(g.phase(), Phase::Ready);
+        assert!(g.suspect().is_none());
+        assert_eq!(g.live_owner_count(), 1);
+        assert!(
+            g.owner_witness_live(&claim.witness()),
+            "operation epochs do not invalidate ownership"
+        );
+        assert!(matches!(
+            g.qualification(),
+            Qualification::Owned {
+                owners: 1,
+                tag: "transaction"
+            }
+        ));
+        // A late cancellation cannot target a settled ticket; the only way to
+        // make this object suspect would be a new operation.
+        claim.release();
+        assert_eq!(g.qualification(), Qualification::Clean);
+        assert!(g.reusable());
+    }
+
+    #[test]
+    fn a_second_cancel_during_recovery_keeps_the_object_quarantined() {
+        let g = owner_guard();
+        let claim = g.claim_owner("transaction").unwrap();
+        abandon_armed(&g);
+        {
+            let permit = claim.claim_recovery().unwrap();
+            drop(permit); // second cancellation
+        }
+        assert_eq!(g.phase(), Phase::Suspect);
+        assert_eq!(g.stats().recoveries_cancelled, 1);
+        let permit = claim.claim_recovery().unwrap();
+        let witness = RecoveryWitness::new(g.obj(), g.epoch(), "retry", "clean");
+        permit.recovered(witness).unwrap();
+        claim.release();
+        assert!(g.reusable());
+    }
+
+    #[test]
+    fn a_suspect_object_refuses_new_owners_until_it_is_recovered() {
+        let g = owner_guard();
+        abandon_armed(&g);
+        assert!(matches!(
+            g.claim_owner("late"),
+            Err(Refusal::Suspect { .. })
+        ));
+        let permit = g.claim_recovery().unwrap();
+        let witness = RecoveryWitness::new(g.obj(), g.epoch(), "drain", "clean");
+        permit.recovered(witness).unwrap();
+        let claim = g.claim_owner("after_recovery").unwrap();
+        assert_eq!(g.live_owner_count(), 1);
+        claim.release();
+    }
+
+    #[test]
+    fn retirement_wins_over_a_live_owner_and_cannot_be_undone() {
+        let g = owner_guard();
+        let claim = g.claim_owner("transaction").unwrap();
+        g.retire(Cause::Shutdown);
+        assert_eq!(g.phase(), Phase::Retired);
+        assert!(matches!(g.claim_owner("new"), Err(Refusal::Retired { .. })));
+        assert!(matches!(g.claim_recovery(), Err(Refusal::Retired { .. })));
+        assert!(matches!(
+            claim.claim_recovery(),
+            Err(Refusal::Retired { .. })
+        ));
+        drop(claim);
+        assert_eq!(g.phase(), Phase::Retired);
+        assert!(!g.reusable());
     }
 }

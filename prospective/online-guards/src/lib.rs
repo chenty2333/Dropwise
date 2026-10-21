@@ -28,9 +28,10 @@ pub mod recovery;
 
 pub use features::{Features, Value};
 pub use guard::{
-    Cause, Discharge, DischargeKind, Epoch, Guard, GuardStats, ObjId, Observation, Phase,
-    Qualification, RecoveryError, RecoveryKind, RecoveryLimits, RecoveryPermit, RecoveryWitness,
-    Refusal, SettleError, Suspect, Ticket,
+    Cause, Discharge, DischargeKind, Epoch, Guard, GuardStats, ObjId, Observation, OwnerClaim,
+    OwnerId, OwnerInfo, OwnerWitness, OwnershipError, Phase, Qualification, RecoveryError,
+    RecoveryKind, RecoveryLimits, RecoveryPermit, RecoveryWitness, Refusal, SettleError, Suspect,
+    Ticket,
 };
 pub use policy::{Plan, RecoveryPolicy, RuleTable};
 pub use pool::{

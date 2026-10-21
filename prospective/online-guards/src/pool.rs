@@ -76,6 +76,10 @@ pub struct PoolConfig {
     pub policy: Arc<dyn RecoveryPolicy>,
     pub acquire_timeout: Option<Duration>,
     pub retry_delay: Duration,
+    /// How long a returned session whose owner is still live stays deferred
+    /// before it is retired.  A live owner is never cleaned up behind its back;
+    /// a leaked claim therefore costs the object, not safety.
+    pub ownership_grace: Duration,
 }
 
 impl Default for PoolConfig {
@@ -89,6 +93,7 @@ impl Default for PoolConfig {
             policy: Arc::new(crate::policy::ConservativeRetire),
             acquire_timeout: Some(Duration::from_secs(5)),
             retry_delay: Duration::from_millis(10),
+            ownership_grace: Duration::from_millis(250),
         }
     }
 }
@@ -118,6 +123,10 @@ struct Counters {
     recovery_drained_on_shutdown: AtomicU64,
     acquire_cancelled: AtomicU64,
     shutdowns: AtomicU64,
+    deferred_returns: AtomicU64,
+    deferred_released: AtomicU64,
+    deferred_expired: AtomicU64,
+    deferred_drained: AtomicU64,
 }
 
 pub struct PoolSnapshot {
@@ -148,6 +157,11 @@ pub struct PoolSnapshot {
     pub recovery_cancelled: u64,
     pub recovery_drained_on_shutdown: u64,
     pub acquire_cancelled: u64,
+    pub deferred: usize,
+    pub deferred_returns: u64,
+    pub deferred_released: u64,
+    pub deferred_expired: u64,
+    pub deferred_drained: u64,
     pub last_plan: &'static str,
     pub closed: bool,
 }
@@ -162,6 +176,7 @@ impl PoolSnapshot {
 
 pub struct ShutdownReport {
     pub retired_idle: usize,
+    pub retired_deferred: usize,
     pub drained_queue: usize,
     pub outstanding_leases: usize,
     pub forced: bool,
@@ -174,6 +189,14 @@ struct State<S> {
     recovering: usize,
     active_leases: usize,
     worker_started: bool,
+    /// Returned sessions whose owner claim is still live.  They are not idle
+    /// and not recoverable until the claim is released or the grace expires.
+    deferred: VecDeque<Deferred<S>>,
+}
+
+struct Deferred<S> {
+    session: S,
+    deadline: Instant,
 }
 
 struct Inner<S, M> {
@@ -297,6 +320,9 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
                 );
                 self.release_slot();
             }
+            Qualification::Owned { .. } => {
+                self.defer_return(session);
+            }
             Qualification::Recovering { .. } => {
                 self.retire_and_count(
                     &mut session,
@@ -339,6 +365,7 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
             let fresh = session.guard().qualification();
             let kind = match fresh {
                 Qualification::Suspect { .. } => RetireKind::Suspect,
+                Qualification::Owned { .. } => RetireKind::Forced,
                 _ => RetireKind::Cleanup,
             };
             self.retire_and_count(&mut session, cause, kind);
@@ -350,6 +377,79 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
             .fetch_add(1, Ordering::Relaxed);
         self.worker_notify.notify_one();
         self.ensure_worker();
+    }
+
+    /// A returned session with a live owner cannot be cleaned, validated or
+    /// handed out: the owner may still be using it.  Park it with a deadline;
+    /// if the owner releases in time, the normal return path runs, otherwise
+    /// the object is retired (never silently reused).
+    fn defer_return(self: &Arc<Self>, session: S) {
+        let deadline = Instant::now() + self.cfg.ownership_grace;
+        let mut holder = Some(session);
+        let pushed = {
+            let mut st = self.state.lock().unwrap();
+            if self.closed() {
+                false
+            } else {
+                st.deferred.push_back(Deferred {
+                    session: holder.take().unwrap(),
+                    deadline,
+                });
+                true
+            }
+        };
+        if !pushed {
+            let mut session = holder.take().unwrap();
+            self.retire_and_count(&mut session, Cause::Shutdown, RetireKind::Forced);
+            self.release_slot();
+            return;
+        }
+        self.counters
+            .deferred_returns
+            .fetch_add(1, Ordering::Relaxed);
+        self.idle_notify.notify_waiters();
+    }
+
+    /// Complete deferred returns whose owner has released, and retire those
+    /// whose grace expired.  Called at the top of every acquisition (and by
+    /// shutdown), so a released owner does not require an external timer.
+    fn reap_deferred(self: &Arc<Self>) {
+        let now = Instant::now();
+        let mut ready = Vec::new();
+        let mut expired = Vec::new();
+        {
+            let mut st = self.state.lock().unwrap();
+            let mut index = 0;
+            while index < st.deferred.len() {
+                let entry = &st.deferred[index];
+                if entry.deadline <= now {
+                    let entry = st.deferred.remove(index).unwrap();
+                    expired.push(entry.session);
+                } else if entry.session.guard().live_owner_count() == 0 {
+                    let entry = st.deferred.remove(index).unwrap();
+                    self.counters
+                        .deferred_released
+                        .fetch_add(1, Ordering::Relaxed);
+                    ready.push(entry.session);
+                } else {
+                    index += 1;
+                }
+            }
+        }
+        for mut session in expired {
+            self.counters
+                .deferred_expired
+                .fetch_add(1, Ordering::Relaxed);
+            self.retire_and_count(
+                &mut session,
+                Cause::Other("owner_deadline"),
+                RetireKind::Forced,
+            );
+            self.release_slot();
+        }
+        for session in ready {
+            self.put_back(session);
+        }
     }
 
     fn ensure_worker(self: &Arc<Self>) {
@@ -417,6 +517,7 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
                     recovering: 0,
                     active_leases: 0,
                     worker_started: false,
+                    deferred: VecDeque::new(),
                 }),
                 closed: AtomicBool::new(false),
                 idle_notify: Notify::new(),
@@ -456,6 +557,7 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
             if self.inner.closed() {
                 return Err(PoolError::Closed);
             }
+            self.inner.reap_deferred();
             let notified = self.inner.idle_notify.notified();
             tokio::pin!(notified);
             notified.as_mut().enable();
@@ -496,6 +598,15 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
                         // Defensive: a dirty session must never be idle.  Put it
                         // through the recovery path instead of handing it out or
                         // probing it.
+                        let session = hold.take();
+                        self.inner.put_back(session);
+                        continue;
+                    }
+                    Qualification::Owned { .. } => {
+                        // Defensive: an owned session must never be idle.  Put
+                        // it through the ownership-aware return path, which
+                        // defers it while the owner is live, instead of handing
+                        // it to a new borrower or retiring it behind the owner.
                         let session = hold.take();
                         self.inner.put_back(session);
                         continue;
@@ -599,10 +710,13 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
         // Admission closes under the same lock used by enqueue/worker publish.
         // Drain here as well as in the worker: enqueue may have completed before
         // shutdown while ensure_worker has not run yet.
-        let idle = {
+        let (idle, deferred) = {
             let mut st = self.inner.state.lock().unwrap();
             self.inner.closed.store(true, Ordering::Release);
-            std::mem::take(&mut st.idle)
+            (
+                std::mem::take(&mut st.idle),
+                std::mem::take(&mut st.deferred),
+            )
         };
         let _ = self.inner.shutdown_tx.send(true);
         self.inner.idle_notify.notify_waiters();
@@ -610,6 +724,17 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
         for mut session in idle {
             self.inner
                 .retire_and_count(&mut session, Cause::Shutdown, RetireKind::Clean);
+            self.inner.release_slot();
+        }
+        let retired_deferred = deferred.len();
+        for deferred in deferred {
+            let mut session = deferred.session;
+            self.inner
+                .counters
+                .deferred_drained
+                .fetch_add(1, Ordering::Relaxed);
+            self.inner
+                .retire_and_count(&mut session, Cause::Shutdown, RetireKind::Forced);
             self.inner.release_slot();
         }
         drain_queue(&self.inner);
@@ -645,6 +770,7 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
         };
         ShutdownReport {
             retired_idle,
+            retired_deferred,
             drained_queue: drained.saturating_sub(drained_before) as usize,
             outstanding_leases,
             forced,
@@ -684,6 +810,11 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
             recovery_cancelled: c.recovery_cancelled.load(Ordering::Relaxed),
             recovery_drained_on_shutdown: c.recovery_drained_on_shutdown.load(Ordering::Relaxed),
             acquire_cancelled: c.acquire_cancelled.load(Ordering::Relaxed),
+            deferred: st.deferred.len(),
+            deferred_returns: c.deferred_returns.load(Ordering::Relaxed),
+            deferred_released: c.deferred_released.load(Ordering::Relaxed),
+            deferred_expired: c.deferred_expired.load(Ordering::Relaxed),
+            deferred_drained: c.deferred_drained.load(Ordering::Relaxed),
             last_plan: *self.last_plan.lock().unwrap(),
             closed: self.closed(),
         }
@@ -697,13 +828,20 @@ impl<S: GuardedSession, M: Manager<S>> Drop for Pool<S, M> {
         // owner when the worker task (which holds an Arc) is dropped.
         self.inner.closed.store(true, Ordering::Release);
         let _ = self.inner.shutdown_tx.send(true);
-        let sessions = {
+        let (sessions, deferred) = {
             let mut st = self.inner.state.lock().unwrap();
-            std::mem::take(&mut st.idle)
+            (
+                std::mem::take(&mut st.idle),
+                std::mem::take(&mut st.deferred),
+            )
         };
         for mut s in sessions {
             s.guard().retire(Cause::Shutdown);
             s.close();
+        }
+        for mut deferred in deferred {
+            deferred.session.guard().retire(Cause::Shutdown);
+            deferred.session.close();
         }
         self.inner.idle_notify.notify_waiters();
         self.inner.worker_notify.notify_waiters();
@@ -1294,6 +1432,7 @@ mod tests {
             policy: Arc::new(RunPlan),
             acquire_timeout: Some(Duration::from_secs(1)),
             retry_delay: Duration::from_millis(1),
+            ownership_grace: Duration::from_millis(100),
         }
     }
 
@@ -1678,5 +1817,126 @@ mod tests {
         assert_eq!(pool.snapshot().recovery_unresolved, 1);
         assert_eq!(pool.snapshot().retired_suspect, 1);
         pool.shutdown(Duration::from_millis(100)).await;
+    }
+    #[tokio::test]
+    async fn a_returned_session_with_a_live_sub_owner_is_deferred_not_reused() {
+        let m = FakeMgr::new(vec![]);
+        let mut c = cfg();
+        c.max_size = 1;
+        c.ownership_grace = Duration::from_secs(1);
+        c.acquire_timeout = Some(Duration::from_millis(30));
+        let pool = Pool::new(m.clone(), c);
+        let lease = pool.acquire().await.unwrap();
+        let obj = lease.obj();
+        lease.session().make_clean();
+        let guard = lease.guard().clone();
+        let owner = guard.claim_owner("transaction").unwrap();
+        drop(lease);
+
+        let snap = pool.snapshot();
+        assert_eq!(snap.deferred, 1, "the return is parked, not cleaned");
+        assert_eq!(snap.deferred_returns, 1);
+        assert_eq!(snap.idle, 0);
+        assert_eq!(snap.returned_clean, 0);
+        assert_eq!(snap.recovery_enqueued, 0);
+        assert!(pool.acquire().await.is_err(), "the object is not reusable");
+
+        // Releasing the owner is positive evidence; the next acquisition
+        // completes the deferred return and hands out the same object.
+        owner.release();
+        let lease = pool.acquire().await.unwrap();
+        assert_eq!(lease.obj(), obj);
+        let snap = pool.snapshot();
+        assert_eq!(snap.deferred, 0);
+        assert_eq!(snap.deferred_released, 1);
+        assert_eq!(snap.deferred_expired, 0);
+        assert_eq!(snap.returned_clean, 1);
+    }
+
+    #[tokio::test]
+    async fn a_leaked_owner_costs_the_object_after_the_grace_but_is_never_cleaned() {
+        let m = FakeMgr::new(vec![]);
+        let mut c = cfg();
+        c.ownership_grace = Duration::from_millis(40);
+        let pool = Pool::new(m.clone(), c);
+        let lease = pool.acquire().await.unwrap();
+        let old_obj = lease.obj();
+        let guard = lease.guard().clone();
+        let owner = guard.claim_owner("transaction").unwrap();
+        std::mem::forget(owner);
+        drop(lease);
+        assert_eq!(pool.snapshot().deferred, 1);
+        assert_eq!(pool.snapshot().recovery_enqueued, 0);
+
+        tokio::time::sleep(Duration::from_millis(70)).await;
+        let lease = pool.acquire().await.unwrap();
+        assert_ne!(lease.obj(), old_obj);
+        let snap = pool.snapshot();
+        assert_eq!(snap.deferred, 0);
+        assert_eq!(snap.deferred_expired, 1);
+        assert_eq!(snap.retired_forced, 1);
+        assert_eq!(snap.connects, 2);
+        assert_eq!(guard.phase(), crate::guard::Phase::Retired);
+        assert_eq!(
+            guard.live_owner_count(),
+            1,
+            "the leaked claim is still live"
+        );
+    }
+
+    #[tokio::test]
+    async fn a_live_owner_can_recover_its_own_object_before_the_pool_reaps_it() {
+        let m = FakeMgr::new(vec![]);
+        let mut c = cfg();
+        c.ownership_grace = Duration::from_secs(1);
+        let pool = Pool::new(m.clone(), c);
+        let lease = pool.acquire().await.unwrap();
+        let obj = lease.obj();
+        let guard = lease.guard().clone();
+        let owner = guard.claim_owner("transaction").unwrap();
+        lease.session().make_suspect();
+        drop(lease);
+        assert_eq!(pool.snapshot().deferred, 1);
+        assert_eq!(pool.snapshot().recovery_enqueued, 0);
+
+        let permit = owner.claim_recovery().unwrap();
+        let witness = crate::guard::RecoveryWitness::new(
+            guard.obj(),
+            guard.epoch(),
+            "owner.rollback",
+            "clean",
+        );
+        permit.recovered(witness).unwrap();
+        owner.release();
+
+        let lease = pool.acquire().await.unwrap();
+        assert_eq!(lease.obj(), obj);
+        assert_eq!(pool.snapshot().recovery_enqueued, 0);
+        assert_eq!(pool.snapshot().returned_suspect, 0);
+        assert_eq!(pool.snapshot().deferred_released, 1);
+    }
+
+    #[tokio::test]
+    async fn shutdown_retires_deferred_sessions_instead_of_leaking_slots() {
+        let m = FakeMgr::new(vec![]);
+        let pool = Pool::new(m.clone(), cfg());
+        let lease = pool.acquire().await.unwrap();
+        let guard = lease.guard().clone();
+        let owner = guard.claim_owner("transaction").unwrap();
+        drop(lease);
+        assert_eq!(pool.snapshot().deferred, 1);
+
+        let report = pool.shutdown(Duration::from_millis(50)).await;
+        assert_eq!(report.retired_deferred, 1);
+        assert_eq!(report.outstanding_leases, 0);
+        assert_eq!(report.drained_queue, 0);
+        assert_eq!(guard.phase(), crate::guard::Phase::Retired);
+        assert_eq!(pool.snapshot().deferred_drained, 1);
+        assert_eq!(pool.snapshot().deferred, 0);
+        // The owner was not "silently" made clean: its claim is still live even
+        // though the object is retired.
+        assert_eq!(guard.live_owner_count(), 1);
+        owner.release();
+        assert_eq!(guard.live_owner_count(), 0);
     }
 }

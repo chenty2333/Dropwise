@@ -459,6 +459,7 @@ async fn run_pool(
             policy: std::sync::Arc::new(policy),
             acquire_timeout: Some(Duration::from_secs(5)),
             retry_delay: Duration::from_millis(5),
+            ownership_grace: Duration::from_millis(250),
         },
     );
     if spec.natural.is_some() {
