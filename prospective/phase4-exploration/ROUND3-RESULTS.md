@@ -1130,7 +1130,8 @@ COMMIT 已被 server 处理，caller 的 future 被 drop，observer 看到
 | tokio-modbus | direct | B1 0/2、B2/B3/M1 2/2；stale txid；§12.3 | 候选；无 patch |
 | async-pop | direct | B1 0/8、B2 2/8、B3 6/8；M1 2 clean + 6 unresolved；§12.3 | 部分候选；无 patch |
 | gel-tokio | pooled/single（无 public direct） | 96 cut trials 0；M1 Pre21/Post3；§12.10 | 阴性；单模式 |
-| http-client H1Client | pooled（async-std） | **未执行**：async-std runtime 不能进现有 Tokio ladder；不把 hyper_client 冒充 H1Client | 运行时边界排除；覆盖缺口 |
+| http-client H1Client | pooled（async-std） | **未执行**：async-std runtime 不能进现有 Tokio ladder；不把 hyper_client 冒充 H1Client | 条件族，运行时边界排除 |
+| tiberius | pooled + direct | **未执行**：SQL Server 2022 需接受 EULA/启动重服务；按用户先前决定本轮不询问许可、不启动 | **license-blocked 覆盖缺口** |
 
 Gel 的“无 direct handle”和 http-client 的“运行时边界”都是**版本/架构限制**，
 不是阴性结果。A 线可执行的主名单到此收口；http-client 若要覆盖，需要
