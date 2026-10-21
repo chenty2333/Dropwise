@@ -1,0 +1,64 @@
+ROUND2-DIAG plan=#0@3:Immediate send_bound=2s
+REST create_user dw-diag-31394-0-a@example.com: {"login":"dw-diag-31394-0-a","email":"dw-diag-31394-0-a@example.com"}
+REST create_user dw-diag-31394-0-b@example.com: {"login":"dw-diag-31394-0-b","email":"dw-diag-31394-0-b@example.com"}
+SETUP token=dw-diag-31394-0 smtp=127.0.0.1:32768 proxy=127.0.0.1:42605 upstream=127.0.0.1:32768 transport=0x7ffce645ae70
+DIAG setup_token=dw-diag-31394-0 target_cancelled=false elapsed_ms=315
+ROUND2 DIAG survivor start elapsed_ms=0
+ROUND2 DIAG survivor done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+ROUND2 DIAG third start elapsed_ms=0
+ROUND2 DIAG third done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+REST create_user dw-diag-31394-1-a@example.com: {"login":"dw-diag-31394-1-a","email":"dw-diag-31394-1-a@example.com"}
+REST create_user dw-diag-31394-1-b@example.com: {"login":"dw-diag-31394-1-b","email":"dw-diag-31394-1-b@example.com"}
+SETUP token=dw-diag-31394-1 smtp=127.0.0.1:32768 proxy=127.0.0.1:36437 upstream=127.0.0.1:32768 transport=0x7ffce645ae70
+DIAG setup_token=dw-diag-31394-1 target_cancelled=true elapsed_ms=210
+ROUND2 DIAG survivor start elapsed_ms=0
+ROUND2 DIAG survivor timeout elapsed_ms=2000
+ROUND2 DIAG third start elapsed_ms=0
+ROUND2 DIAG third timeout elapsed_ms=2000
+ROUND2-DIAG report=#0@3:Immediate
+----- report display -----
+dropwise: 1 target(s), 1 cancellation plan(s) explored
+  result: no violation observed within the explored coverage
+
+----- report diagnostics -----
+dropwise diagnostics: 1 target(s), 1 trial(s), exhaustive=true, truncated=false
+plan 1: #0@3:Immediate
+  target #0 after pending #3 (competitor ready immediately): tests/levels.rs:604:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+
+DIAG-RUN target=Ok(code=250, message=["OK"]) survivor=Code(250) third=Code(250) mailbox=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }] } connections=1 ["client=127.0.0.1:45138 up=1173 down=325"]
+DIAG-RUN target=cancelled survivor=Timeout third=Timeout mailbox=Observation { count: 0, messages: [] } connections=1 ["client=127.0.0.1:39758 up=235 down=177"]
+ROUND2-DIAG realized=#0@3:Immediate:true trials=1
+ROUND2-DIAG plan=#0@3:AfterWake send_bound=2s
+REST create_user dw-diag-31394-2-a@example.com: {"login":"dw-diag-31394-2-a","email":"dw-diag-31394-2-a@example.com"}
+REST create_user dw-diag-31394-2-b@example.com: {"login":"dw-diag-31394-2-b","email":"dw-diag-31394-2-b@example.com"}
+SETUP token=dw-diag-31394-2 smtp=127.0.0.1:32768 proxy=127.0.0.1:35957 upstream=127.0.0.1:32768 transport=0x7ffce645ae70
+DIAG setup_token=dw-diag-31394-2 target_cancelled=false elapsed_ms=367
+ROUND2 DIAG survivor start elapsed_ms=0
+ROUND2 DIAG survivor done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+ROUND2 DIAG third start elapsed_ms=0
+ROUND2 DIAG third done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-diag-31394-3-a@example.com: {"login":"dw-diag-31394-3-a","email":"dw-diag-31394-3-a@example.com"}
+REST create_user dw-diag-31394-3-b@example.com: {"login":"dw-diag-31394-3-b","email":"dw-diag-31394-3-b@example.com"}
+SETUP token=dw-diag-31394-3 smtp=127.0.0.1:32768 proxy=127.0.0.1:44425 upstream=127.0.0.1:32768 transport=0x7ffce645ae70
+DIAG setup_token=dw-diag-31394-3 target_cancelled=true elapsed_ms=263
+ROUND2 DIAG survivor start elapsed_ms=0
+ROUND2 DIAG survivor timeout elapsed_ms=2000
+ROUND2 DIAG third start elapsed_ms=0
+ROUND2 DIAG third timeout elapsed_ms=2001
+ROUND2-DIAG report=#0@3:AfterWake
+----- report display -----
+dropwise: 1 target(s), 1 cancellation plan(s) explored
+  result: no violation observed within the explored coverage
+
+----- report diagnostics -----
+dropwise diagnostics: 1 target(s), 1 trial(s), exhaustive=true, truncated=false
+plan 1: #0@3:AfterWake
+  target #0 after pending #3 (competitor ready once the target is woken): tests/levels.rs:604:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+
+DIAG-RUN target=Ok(code=250, message=["OK"]) survivor=Code(250) third=Code(250) mailbox=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }] } connections=1 ["client=127.0.0.1:53938 up=1173 down=325"]
+DIAG-RUN target=cancelled survivor=Timeout third=Timeout mailbox=Observation { count: 0, messages: [] } connections=1 ["client=127.0.0.1:55022 up=235 down=177"]
+ROUND2-DIAG realized=#0@3:AfterWake:true trials=1

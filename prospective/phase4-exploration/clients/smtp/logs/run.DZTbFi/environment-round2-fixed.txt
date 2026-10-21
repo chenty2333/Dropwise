@@ -1,0 +1,9 @@
+date_utc=2026-10-21T06:19:57Z
+fixed_source=/tmp/dropwise-run.h2nDvc/async-smtp-fixed
+patch=/home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/patches/async-smtp-poison.diff
+container=dw-p4-smtp-r2f-170844 smtp=127.0.0.1:32808 http=http://127.0.0.1:32809
+dropwise_commit=e841a60b825e0e66ecf50033fe906875c28e84f8
+cargo_tree:
+async-smtp v0.10.2 (/tmp/dropwise-run.h2nDvc/async-smtp-fixed)
+dropwise v0.1.0 (/home/ava/Desktop/Dropwise)
+env_logger v0.11.11

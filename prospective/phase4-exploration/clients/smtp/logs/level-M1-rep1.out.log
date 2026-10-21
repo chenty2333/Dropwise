@@ -1,0 +1,152 @@
+LEVEL start level=M1 rep=1 flavor=MultiThread workers=1 races=Immediate+AfterWake max_runs=64 settle=ZERO timeout=20s reply_delay=50ms
+REST create_user dw-738172-0-a@example.com: {"login":"dw-738172-0-a","email":"dw-738172-0-a@example.com"}
+REST create_user dw-738172-0-b@example.com: {"login":"dw-738172-0-b","email":"dw-738172-0-b@example.com"}
+SETUP token=dw-738172-0 smtp=127.0.0.1:32787 proxy=127.0.0.1:41631 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-0 elapsed_ms=107
+PHASE M1 target_done cancelled=false elapsed_ms=315
+PHASE M1 observe_done elapsed_ms=528
+REST create_user dw-738172-1-a@example.com: {"login":"dw-738172-1-a","email":"dw-738172-1-a@example.com"}
+REST create_user dw-738172-1-b@example.com: {"login":"dw-738172-1-b","email":"dw-738172-1-b@example.com"}
+SETUP token=dw-738172-1 smtp=127.0.0.1:32787 proxy=127.0.0.1:46829 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-1 elapsed_ms=158
+PHASE M1 target_done cancelled=true elapsed_ms=158
+PHASE M1 observe_done elapsed_ms=314
+REST create_user dw-738172-2-a@example.com: {"login":"dw-738172-2-a","email":"dw-738172-2-a@example.com"}
+REST create_user dw-738172-2-b@example.com: {"login":"dw-738172-2-b","email":"dw-738172-2-b@example.com"}
+SETUP token=dw-738172-2 smtp=127.0.0.1:32787 proxy=127.0.0.1:33783 upstream=127.0.0.1:32787 transport=0x7ffc72b34a48
+PHASE M1 setup_done token=dw-738172-2 elapsed_ms=157
+PHASE M1 target_done cancelled=true elapsed_ms=157
+PHASE M1 observe_done elapsed_ms=369
+REST create_user dw-738172-3-a@example.com: {"login":"dw-738172-3-a","email":"dw-738172-3-a@example.com"}
+REST create_user dw-738172-3-b@example.com: {"login":"dw-738172-3-b","email":"dw-738172-3-b@example.com"}
+SETUP token=dw-738172-3 smtp=127.0.0.1:32787 proxy=127.0.0.1:37943 upstream=127.0.0.1:32787 transport=0x7ffc72b34a48
+PHASE M1 setup_done token=dw-738172-3 elapsed_ms=108
+PHASE M1 target_done cancelled=true elapsed_ms=109
+PHASE M1 observe_done elapsed_ms=319
+REST create_user dw-738172-4-a@example.com: {"login":"dw-738172-4-a","email":"dw-738172-4-a@example.com"}
+REST create_user dw-738172-4-b@example.com: {"login":"dw-738172-4-b","email":"dw-738172-4-b@example.com"}
+SETUP token=dw-738172-4 smtp=127.0.0.1:32787 proxy=127.0.0.1:42129 upstream=127.0.0.1:32787 transport=0x7ffc72b34a48
+PHASE M1 setup_done token=dw-738172-4 elapsed_ms=107
+PHASE M1 target_done cancelled=false elapsed_ms=315
+PHASE M1 observe_done elapsed_ms=525
+REST create_user dw-738172-5-a@example.com: {"login":"dw-738172-5-a","email":"dw-738172-5-a@example.com"}
+REST create_user dw-738172-5-b@example.com: {"login":"dw-738172-5-b","email":"dw-738172-5-b@example.com"}
+SETUP token=dw-738172-5 smtp=127.0.0.1:32787 proxy=127.0.0.1:42757 upstream=127.0.0.1:32787 transport=0x7ffc72b34a48
+PHASE M1 setup_done token=dw-738172-5 elapsed_ms=107
+PHASE M1 target_done cancelled=false elapsed_ms=314
+PHASE M1 observe_done elapsed_ms=524
+REST create_user dw-738172-6-a@example.com: {"login":"dw-738172-6-a","email":"dw-738172-6-a@example.com"}
+REST create_user dw-738172-6-b@example.com: {"login":"dw-738172-6-b","email":"dw-738172-6-b@example.com"}
+SETUP token=dw-738172-6 smtp=127.0.0.1:32787 proxy=127.0.0.1:46133 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-6 elapsed_ms=105
+PHASE M1 target_done cancelled=true elapsed_ms=157
+PHASE M1 observe_done elapsed_ms=264
+REST create_user dw-738172-7-a@example.com: {"login":"dw-738172-7-a","email":"dw-738172-7-a@example.com"}
+REST create_user dw-738172-7-b@example.com: {"login":"dw-738172-7-b","email":"dw-738172-7-b@example.com"}
+SETUP token=dw-738172-7 smtp=127.0.0.1:32787 proxy=127.0.0.1:37501 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-7 elapsed_ms=107
+PHASE M1 target_done cancelled=true elapsed_ms=159
+PHASE M1 observe_done elapsed_ms=265
+REST create_user dw-738172-8-a@example.com: {"login":"dw-738172-8-a","email":"dw-738172-8-a@example.com"}
+REST create_user dw-738172-8-b@example.com: {"login":"dw-738172-8-b","email":"dw-738172-8-b@example.com"}
+SETUP token=dw-738172-8 smtp=127.0.0.1:32787 proxy=127.0.0.1:45785 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-8 elapsed_ms=107
+PHASE M1 target_done cancelled=true elapsed_ms=210
+PHASE M1 observe_done elapsed_ms=316
+REST create_user dw-738172-9-a@example.com: {"login":"dw-738172-9-a","email":"dw-738172-9-a@example.com"}
+REST create_user dw-738172-9-b@example.com: {"login":"dw-738172-9-b","email":"dw-738172-9-b@example.com"}
+SETUP token=dw-738172-9 smtp=127.0.0.1:32787 proxy=127.0.0.1:33195 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-9 elapsed_ms=112
+PHASE M1 target_done cancelled=true elapsed_ms=216
+REST create_user dw-738172-10-a@example.com: {"login":"dw-738172-10-a","email":"dw-738172-10-a@example.com"}
+REST create_user dw-738172-10-b@example.com: {"login":"dw-738172-10-b","email":"dw-738172-10-b@example.com"}
+SETUP token=dw-738172-10 smtp=127.0.0.1:32787 proxy=127.0.0.1:36815 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-10 elapsed_ms=106
+PHASE M1 target_done cancelled=true elapsed_ms=261
+REST create_user dw-738172-11-a@example.com: {"login":"dw-738172-11-a","email":"dw-738172-11-a@example.com"}
+REST create_user dw-738172-11-b@example.com: {"login":"dw-738172-11-b","email":"dw-738172-11-b@example.com"}
+SETUP token=dw-738172-11 smtp=127.0.0.1:32787 proxy=127.0.0.1:38171 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-11 elapsed_ms=106
+PHASE M1 target_done cancelled=true elapsed_ms=261
+PHASE M1 observe_done elapsed_ms=469
+REST create_user dw-738172-12-a@example.com: {"login":"dw-738172-12-a","email":"dw-738172-12-a@example.com"}
+REST create_user dw-738172-12-b@example.com: {"login":"dw-738172-12-b","email":"dw-738172-12-b@example.com"}
+SETUP token=dw-738172-12 smtp=127.0.0.1:32787 proxy=127.0.0.1:33569 upstream=127.0.0.1:32787 transport=0x7ffc72b355d8
+PHASE M1 setup_done token=dw-738172-12 elapsed_ms=156
+PHASE M1 target_done cancelled=true elapsed_ms=363
+PHASE M1 observe_done elapsed_ms=519
+----- report display -----
+dropwise: 1 target(s), 8 cancellation plan(s) explored
+  target #0 (tests/levels.rs:420:23) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: scenario did not finish within 20s (liveness)
+  target #0 (tests/levels.rs:420:23) loses after pending #3, competitor ready once the target is woken -> Cancelled:
+    invariant violated: scenario did not finish within 20s (liveness)
+  verdicts (6 plan(s)): pre=4 post=2 mixed=0 neither=0 unknown=0
+  result: violation observed
+
+----- report diagnostics -----
+dropwise diagnostics: 1 target(s), 8 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/levels.rs:420:23 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, pre=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, post=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/levels.rs:420:23 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, pre=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, post=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/levels.rs:420:23 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, pre=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, post=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/levels.rs:420:23 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, pre=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, post=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+  invariant: ok
+plan 5: #0@3:Immediate
+  target #0 after pending #3 (competitor ready immediately): tests/levels.rs:420:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: scenario did not finish within 20s (liveness)
+plan 6: #0@3:AfterWake
+  target #0 after pending #3 (competitor ready once the target is woken): tests/levels.rs:420:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: scenario did not finish within 20s (liveness)
+plan 7: #0@4:Immediate
+  target #0 after pending #4 (competitor ready immediately): tests/levels.rs:420:23 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, pre=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, post=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+  invariant: ok
+plan 8: #0@4:AfterWake
+  target #0 after pending #4 (competitor ready once the target is woken): tests/levels.rs:420:23 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, pre=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }, post=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+  invariant: ok
+
+M1-RUN target=Ok(code=250, message=["OK"]) survivor=Ok(code=250, message=["OK"]) connections=1 ["client=127.0.0.1:35652 up=736 down=255"]
+M1-OBS mailbox=dw-738172-0-a@example.com observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:42386 up=419 down=185"]
+M1-OBS mailbox=dw-738172-1-a@example.com observation=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=250, message=["OK"]) connections=1 ["client=127.0.0.1:54472 up=380 down=185"]
+M1-OBS mailbox=dw-738172-2-a@example.com observation=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=250, message=["OK"]) connections=1 ["client=127.0.0.1:44062 up=380 down=185"]
+M1-OBS mailbox=dw-738172-3-a@example.com observation=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=Ok(code=250, message=["OK"]) survivor=Ok(code=250, message=["OK"]) connections=1 ["client=127.0.0.1:40854 up=736 down=255"]
+M1-OBS mailbox=dw-738172-4-a@example.com observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=Ok(code=250, message=["OK"]) survivor=Ok(code=250, message=["OK"]) connections=1 ["client=127.0.0.1:32982 up=736 down=255"]
+M1-OBS mailbox=dw-738172-5-a@example.com observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:58988 up=419 down=185"]
+M1-OBS mailbox=dw-738172-6-a@example.com observation=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:53186 up=176 down=193"]
+M1-OBS mailbox=dw-738172-7-a@example.com observation=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:34632 up=456 down=193"]
+M1-OBS mailbox=dw-738172-8-a@example.com observation=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:50538 up=750 down=247"]
+M1-OBS mailbox=dw-738172-11-a@example.com observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+M1-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:34272 up=750 down=247"]
+M1-OBS mailbox=dw-738172-12-a@example.com observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+LADDER M1 rep1 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=4 post=2 mixed=0 neither=0 unknown=0
+LADDER-VIOLATION M1 rep1 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION M1 rep1 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)

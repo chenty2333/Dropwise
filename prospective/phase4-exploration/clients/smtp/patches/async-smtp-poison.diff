@@ -1,0 +1,59 @@
+--- a/src/smtp_client.rs
++++ b/src/smtp_client.rs
+@@ -5,6 +5,7 @@
+ use crate::authentication::{Credentials, Mechanism};
+ use crate::commands::*;
+ use crate::error::{Error, SmtpResult};
++use crate::response::Severity;
+ use crate::extension::{ClientId, Extension, MailBodyParameter, MailParameter, ServerInfo};
+ use crate::stream::SmtpStream;
+ use crate::SendableEmail;
+@@ -98,6 +99,10 @@
+     client_info: SmtpClient,
+     /// Low level client
+     stream: SmtpStream<S>,
++    /// Set before a send starts and cleared only after a complete 2xx final
++    /// reply. A cancelled send leaves this true, so the next send refuses to
++    /// reuse a stream whose protocol position is unknown.
++    poisoned: bool,
+ }
+ 
+ impl<S: BufRead + Write + Unpin> SmtpTransport<S> {
+@@ -119,6 +124,7 @@
+             server_info,
+             client_info: builder,
+             stream,
++            poisoned: false,
+         };
+         Ok(transport)
+     }
+@@ -210,7 +216,29 @@
+     }
+ 
+     /// Sends an email.
++    ///
++    /// A send that is dropped before it consumes its final 2xx reply leaves the
++    /// transport marked unusable. The caller must reconnect; the next call
++    /// returns an explicit error instead of reusing a half-finished exchange.
+     pub async fn send(&mut self, email: SendableEmail) -> SmtpResult {
++        if self.poisoned {
++            return Err(Error::Client(
++                "previous send did not complete; reconnect the transport",
++            ));
++        }
++        self.poisoned = true;
++        let result = self.send_inner(email).await;
++        match result {
++            Ok(response) if response.code.severity == Severity::PositiveCompletion => {
++                self.poisoned = false;
++                Ok(response)
++            }
++            Ok(_) => Err(Error::Client("send ended at a non-final SMTP response")),
++            Err(error) => Err(error),
++        }
++    }
++
++    async fn send_inner(&mut self, email: SendableEmail) -> SmtpResult {
+         // Mail
+         let mut mail_options = vec![];
+ 

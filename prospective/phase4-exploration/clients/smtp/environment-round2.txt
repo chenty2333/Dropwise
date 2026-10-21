@@ -1,0 +1,19 @@
+date_utc=2026-10-21T05:31:33Z
+rustc=rustc 1.98.0 (88d9e12ae 2026-08-18)
+cargo=cargo 1.98.0 (797e8a9bc 2026-08-05)
+docker=Docker version 29.8.2, build 2.fc44
+image=greenmail/standalone:2.1.14
+image_id=sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626
+image_digests=["greenmail/standalone@sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626"]
+container=dw-p4-smtp-r2-29112 smtp=127.0.0.1:32768 http=http://127.0.0.1:32769
+dropwise_commit=e841a60b825e0e66ecf50033fe906875c28e84f8
+round2_send_bound=2s
+cargo_tree:
+async-smtp v0.10.2
+tokio v1.54.0
+dropwise v0.1.0 (/home/ava/Desktop/Dropwise)
+tokio v1.54.0 (*)
+serde_json v1.0.154
+tokio v1.54.0 (*)
+ureq v2.12.1
+env_logger v0.11.11

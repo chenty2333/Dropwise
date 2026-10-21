@@ -1,0 +1,9 @@
+ROUND2-CAL pre survivor=Code(250) third=Code(250) observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }] }
+ROUND2-CAL post target=Code(250) survivor=Code(250) third=Code(250) observation=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }] }
+ROUND2-CAL distinguishable=true pre_count=2 post_count=3
+ROUND2-POISON start rep=1 all generated cuts send_bound=2s
+ROUND2-POISON summary rep=1 plans=8 violations=0 unrealized=0 baseline_errors=0
+ROUND2-POISON start rep=2 all generated cuts send_bound=2s
+ROUND2-POISON summary rep=2 plans=8 violations=0 unrealized=0 baseline_errors=0
+ROUND2-POISON start rep=3 all generated cuts send_bound=2s
+ROUND2-POISON summary rep=3 plans=8 violations=0 unrealized=0 baseline_errors=0

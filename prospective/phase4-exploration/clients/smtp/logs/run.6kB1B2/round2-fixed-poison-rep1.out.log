@@ -1,0 +1,140 @@
+ROUND2-POISON start rep=1 all generated cuts send_bound=2s
+REST create_user dw-pois-147091-0-a@example.com: {"login":"dw-pois-147091-0-a","email":"dw-pois-147091-0-a@example.com"}
+REST create_user dw-pois-147091-0-b@example.com: {"login":"dw-pois-147091-0-b","email":"dw-pois-147091-0-b@example.com"}
+SETUP token=dw-pois-147091-0 smtp=127.0.0.1:32803 proxy=127.0.0.1:36407 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=false elapsed_ms=368
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-1-a@example.com: {"login":"dw-pois-147091-1-a","email":"dw-pois-147091-1-a@example.com"}
+REST create_user dw-pois-147091-1-b@example.com: {"login":"dw-pois-147091-1-b","email":"dw-pois-147091-1-b@example.com"}
+SETUP token=dw-pois-147091-1 smtp=127.0.0.1:32803 proxy=127.0.0.1:38689 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=158
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-2-a@example.com: {"login":"dw-pois-147091-2-a","email":"dw-pois-147091-2-a@example.com"}
+REST create_user dw-pois-147091-2-b@example.com: {"login":"dw-pois-147091-2-b","email":"dw-pois-147091-2-b@example.com"}
+SETUP token=dw-pois-147091-2 smtp=127.0.0.1:32803 proxy=127.0.0.1:37417 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=210
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-3-a@example.com: {"login":"dw-pois-147091-3-a","email":"dw-pois-147091-3-a@example.com"}
+REST create_user dw-pois-147091-3-b@example.com: {"login":"dw-pois-147091-3-b","email":"dw-pois-147091-3-b@example.com"}
+SETUP token=dw-pois-147091-3 smtp=127.0.0.1:32803 proxy=127.0.0.1:45061 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=210
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=206 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-4-a@example.com: {"login":"dw-pois-147091-4-a","email":"dw-pois-147091-4-a@example.com"}
+REST create_user dw-pois-147091-4-b@example.com: {"login":"dw-pois-147091-4-b","email":"dw-pois-147091-4-b@example.com"}
+SETUP token=dw-pois-147091-4 smtp=127.0.0.1:32803 proxy=127.0.0.1:33225 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=263
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-5-a@example.com: {"login":"dw-pois-147091-5-a","email":"dw-pois-147091-5-a@example.com"}
+REST create_user dw-pois-147091-5-b@example.com: {"login":"dw-pois-147091-5-b","email":"dw-pois-147091-5-b@example.com"}
+SETUP token=dw-pois-147091-5 smtp=127.0.0.1:32803 proxy=127.0.0.1:46305 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=210
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-6-a@example.com: {"login":"dw-pois-147091-6-a","email":"dw-pois-147091-6-a@example.com"}
+REST create_user dw-pois-147091-6-b@example.com: {"login":"dw-pois-147091-6-b","email":"dw-pois-147091-6-b@example.com"}
+SETUP token=dw-pois-147091-6 smtp=127.0.0.1:32803 proxy=127.0.0.1:36993 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=312
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-7-a@example.com: {"login":"dw-pois-147091-7-a","email":"dw-pois-147091-7-a@example.com"}
+REST create_user dw-pois-147091-7-b@example.com: {"login":"dw-pois-147091-7-b","email":"dw-pois-147091-7-b@example.com"}
+SETUP token=dw-pois-147091-7 smtp=127.0.0.1:32803 proxy=127.0.0.1:45199 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=311
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-147091-8-a@example.com: {"login":"dw-pois-147091-8-a","email":"dw-pois-147091-8-a@example.com"}
+REST create_user dw-pois-147091-8-b@example.com: {"login":"dw-pois-147091-8-b","email":"dw-pois-147091-8-b@example.com"}
+SETUP token=dw-pois-147091-8 smtp=127.0.0.1:32803 proxy=127.0.0.1:41651 upstream=127.0.0.1:32803 transport=0x7ffe6e1aeb00
+PHASE POISON target_done cancelled=true elapsed_ms=317
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=0 result=Err(client: previous send did not complete; reconnect the transport)
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+----- report display -----
+dropwise: 1 target(s), 8 cancellation plan(s) explored
+  result: no violation observed within the explored coverage
+
+----- report diagnostics -----
+dropwise diagnostics: 1 target(s), 8 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 5: #0@3:Immediate
+  target #0 after pending #3 (competitor ready immediately): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 6: #0@3:AfterWake
+  target #0 after pending #3 (competitor ready once the target is woken): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 7: #0@4:Immediate
+  target #0 after pending #4 (competitor ready immediately): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 8: #0@4:AfterWake
+  target #0 after pending #4 (competitor ready once the target is woken): /home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/tests/levels.rs:710:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+
+POISON-RUN target=Ok(code=250, message=["OK"]) second=Code(250) third=Code(250) recovery=Code(250) mailbox=Observation { count: 4, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:59734 up=1194 down=325"] after_connections=2 ["client=127.0.0.1:59734 up=1194 down=325", "client=127.0.0.1:59740 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:48328 up=62 down=115"] after_connections=2 ["client=127.0.0.1:48328 up=62 down=123", "client=127.0.0.1:48330 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:59988 up=62 down=123"] after_connections=2 ["client=127.0.0.1:59988 up=62 down=123", "client=127.0.0.1:59990 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:40812 up=104 down=123"] after_connections=2 ["client=127.0.0.1:40812 up=104 down=131", "client=127.0.0.1:40826 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:52344 up=104 down=131"] after_connections=2 ["client=127.0.0.1:52344 up=104 down=131", "client=127.0.0.1:52346 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:53726 up=110 down=131"] after_connections=2 ["client=127.0.0.1:53726 up=110 down=177", "client=127.0.0.1:53738 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:50938 up=110 down=177"] after_connections=2 ["client=127.0.0.1:50938 up=110 down=177", "client=127.0.0.1:50948 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:47212 up=409 down=177"] after_connections=2 ["client=127.0.0.1:47212 up=409 down=185", "client=127.0.0.1:47214 up=415 down=185"]
+POISON-RUN target=cancelled second=Error("client: previous send did not complete; reconnect the transport") third=Error("client: previous send did not complete; reconnect the transport") recovery=Code(250) mailbox=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:34650 up=409 down=185"] after_connections=2 ["client=127.0.0.1:34650 up=409 down=185", "client=127.0.0.1:34654 up=415 down=185"]
+ROUND2-POISON summary rep=1 plans=8 violations=0 unrealized=0 baseline_errors=0

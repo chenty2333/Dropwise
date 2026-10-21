@@ -1,0 +1,140 @@
+ROUND2-POISON start rep=2 all generated cuts send_bound=2s
+REST create_user dw-pois-31581-0-a@example.com: {"login":"dw-pois-31581-0-a","email":"dw-pois-31581-0-a@example.com"}
+REST create_user dw-pois-31581-0-b@example.com: {"login":"dw-pois-31581-0-b","email":"dw-pois-31581-0-b@example.com"}
+SETUP token=dw-pois-31581-0 smtp=127.0.0.1:32768 proxy=127.0.0.1:44869 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=false elapsed_ms=365
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=206 result=Ok(code=250, message=["OK"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=207 result=Ok(code=250, message=["OK"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-1-a@example.com: {"login":"dw-pois-31581-1-a","email":"dw-pois-31581-1-a@example.com"}
+REST create_user dw-pois-31581-1-b@example.com: {"login":"dw-pois-31581-1-b","email":"dw-pois-31581-1-b@example.com"}
+SETUP token=dw-pois-31581-1 smtp=127.0.0.1:32768 proxy=127.0.0.1:44909 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=105
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=203 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=203 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=207 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-2-a@example.com: {"login":"dw-pois-31581-2-a","email":"dw-pois-31581-2-a@example.com"}
+REST create_user dw-pois-31581-2-b@example.com: {"login":"dw-pois-31581-2-b","email":"dw-pois-31581-2-b@example.com"}
+SETUP token=dw-pois-31581-2 smtp=127.0.0.1:32768 proxy=127.0.0.1:43733 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=157
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=153 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=203 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-3-a@example.com: {"login":"dw-pois-31581-3-a","email":"dw-pois-31581-3-a@example.com"}
+REST create_user dw-pois-31581-3-b@example.com: {"login":"dw-pois-31581-3-b","email":"dw-pois-31581-3-b@example.com"}
+SETUP token=dw-pois-31581-3 smtp=127.0.0.1:32768 proxy=127.0.0.1:40263 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=158
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=205 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=204 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-4-a@example.com: {"login":"dw-pois-31581-4-a","email":"dw-pois-31581-4-a@example.com"}
+REST create_user dw-pois-31581-4-b@example.com: {"login":"dw-pois-31581-4-b","email":"dw-pois-31581-4-b@example.com"}
+SETUP token=dw-pois-31581-4 smtp=127.0.0.1:32768 proxy=127.0.0.1:40551 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=260
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=103 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=205 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=206 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-5-a@example.com: {"login":"dw-pois-31581-5-a","email":"dw-pois-31581-5-a@example.com"}
+REST create_user dw-pois-31581-5-b@example.com: {"login":"dw-pois-31581-5-b","email":"dw-pois-31581-5-b@example.com"}
+SETUP token=dw-pois-31581-5 smtp=127.0.0.1:32768 proxy=127.0.0.1:39181 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=260
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old timeout elapsed_ms=2001
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old timeout elapsed_ms=2001
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-6-a@example.com: {"login":"dw-pois-31581-6-a","email":"dw-pois-31581-6-a@example.com"}
+REST create_user dw-pois-31581-6-b@example.com: {"login":"dw-pois-31581-6-b","email":"dw-pois-31581-6-b@example.com"}
+SETUP token=dw-pois-31581-6 smtp=127.0.0.1:32768 proxy=127.0.0.1:33743 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=311
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old timeout elapsed_ms=2001
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old timeout elapsed_ms=2001
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-7-a@example.com: {"login":"dw-pois-31581-7-a","email":"dw-pois-31581-7-a@example.com"}
+REST create_user dw-pois-31581-7-b@example.com: {"login":"dw-pois-31581-7-b","email":"dw-pois-31581-7-b@example.com"}
+SETUP token=dw-pois-31581-7 smtp=127.0.0.1:32768 proxy=127.0.0.1:39219 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=261
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=207 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=204 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=207 result=Ok(code=250, message=["OK"])
+REST create_user dw-pois-31581-8-a@example.com: {"login":"dw-pois-31581-8-a","email":"dw-pois-31581-8-a@example.com"}
+REST create_user dw-pois-31581-8-b@example.com: {"login":"dw-pois-31581-8-b","email":"dw-pois-31581-8-b@example.com"}
+SETUP token=dw-pois-31581-8 smtp=127.0.0.1:32768 proxy=127.0.0.1:40143 upstream=127.0.0.1:32768 transport=0x7fffed803e90
+PHASE POISON target_done cancelled=true elapsed_ms=366
+ROUND2 POISON second old start elapsed_ms=0
+ROUND2 POISON second old done elapsed_ms=154 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON third old start elapsed_ms=0
+ROUND2 POISON third old done elapsed_ms=204 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+ROUND2 POISON recovery fresh start elapsed_ms=0
+ROUND2 POISON recovery fresh done elapsed_ms=207 result=Ok(code=250, message=["OK"])
+----- report display -----
+dropwise: 1 target(s), 8 cancellation plan(s) explored
+  result: no violation observed within the explored coverage
+
+----- report diagnostics -----
+dropwise diagnostics: 1 target(s), 8 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 5: #0@3:Immediate
+  target #0 after pending #3 (competitor ready immediately): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 6: #0@3:AfterWake
+  target #0 after pending #3 (competitor ready once the target is woken): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 7: #0@4:Immediate
+  target #0 after pending #4 (competitor ready immediately): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 8: #0@4:AfterWake
+  target #0 after pending #4 (competitor ready once the target is woken): tests/levels.rs:648:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+
+POISON-RUN target=Ok(code=250, message=["OK"]) second=Code(250) third=Code(250) recovery=Code(250) mailbox=Observation { count: 4, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:41710 up=1173 down=325"] after_connections=2 ["client=127.0.0.1:41710 up=1173 down=325", "client=127.0.0.1:41722 up=408 down=185"]
+POISON-RUN target=cancelled second=Code(354) third=Code(354) recovery=Code(250) mailbox=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:51698 up=832 down=255"] after_connections=2 ["client=127.0.0.1:51698 up=832 down=263", "client=127.0.0.1:51706 up=408 down=185"]
+POISON-RUN target=cancelled second=Code(354) third=Code(354) recovery=Code(250) mailbox=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:48208 up=832 down=255"] after_connections=2 ["client=127.0.0.1:48208 up=832 down=263", "client=127.0.0.1:48220 up=408 down=185"]
+POISON-RUN target=cancelled second=Code(354) third=Code(354) recovery=Code(250) mailbox=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:42646 up=873 down=263"] after_connections=2 ["client=127.0.0.1:42646 up=873 down=271", "client=127.0.0.1:42662 up=408 down=185"]
+POISON-RUN target=cancelled second=Code(354) third=Code(354) recovery=Code(250) mailbox=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:47724 up=873 down=263"] after_connections=2 ["client=127.0.0.1:47724 up=873 down=271", "client=127.0.0.1:47732 up=408 down=185"]
+POISON-RUN target=cancelled second=Timeout third=Timeout recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:49338 up=235 down=177"] after_connections=2 ["client=127.0.0.1:49338 up=235 down=177", "client=127.0.0.1:49350 up=408 down=185"]
+POISON-RUN target=cancelled second=Timeout third=Timeout recovery=Code(250) mailbox=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:56262 up=235 down=177"] after_connections=2 ["client=127.0.0.1:56262 up=235 down=177", "client=127.0.0.1:56278 up=408 down=185"]
+POISON-RUN target=cancelled second=Code(354) third=Code(354) recovery=Code(250) mailbox=Observation { count: 4, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:54836 up=1173 down=317"] after_connections=2 ["client=127.0.0.1:54836 up=1173 down=325", "client=127.0.0.1:35968 up=408 down=185"]
+POISON-RUN target=cancelled second=Code(354) third=Code(354) recovery=Code(250) mailbox=Observation { count: 4, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }, MessageView { subject: "p4-smtp <run> recovery", message_id: "<<run>.recovery@dw.test>", body: "body <run> recovery" }] } old_connections=1 ["client=127.0.0.1:58150 up=1173 down=317"] after_connections=2 ["client=127.0.0.1:58150 up=1173 down=325", "client=127.0.0.1:58152 up=408 down=185"]
+ROUND2-POISON summary rep=2 plans=8 violations=0 unrealized=0 baseline_errors=0

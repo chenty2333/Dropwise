@@ -1,0 +1,95 @@
+LEVEL start level=B1 rep=1 flavor=MultiThread workers=1 races=Immediate+AfterWake max_runs=64 settle=ZERO timeout=20s reply_delay=50ms
+REST create_user dw-726812-0-a@example.com: {"login":"dw-726812-0-a","email":"dw-726812-0-a@example.com"}
+REST create_user dw-726812-0-b@example.com: {"login":"dw-726812-0-b","email":"dw-726812-0-b@example.com"}
+SETUP token=dw-726812-0 smtp=127.0.0.1:32787 proxy=127.0.0.1:42417 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-0 elapsed_ms=159
+PHASE B1 target_done cancelled=false elapsed_ms=368
+REST create_user dw-726812-1-a@example.com: {"login":"dw-726812-1-a","email":"dw-726812-1-a@example.com"}
+REST create_user dw-726812-1-b@example.com: {"login":"dw-726812-1-b","email":"dw-726812-1-b@example.com"}
+SETUP token=dw-726812-1 smtp=127.0.0.1:32787 proxy=127.0.0.1:42155 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-1 elapsed_ms=159
+PHASE B1 target_done cancelled=true elapsed_ms=159
+REST create_user dw-726812-2-a@example.com: {"login":"dw-726812-2-a","email":"dw-726812-2-a@example.com"}
+REST create_user dw-726812-2-b@example.com: {"login":"dw-726812-2-b","email":"dw-726812-2-b@example.com"}
+SETUP token=dw-726812-2 smtp=127.0.0.1:32787 proxy=127.0.0.1:45577 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-2 elapsed_ms=108
+PHASE B1 target_done cancelled=true elapsed_ms=160
+REST create_user dw-726812-3-a@example.com: {"login":"dw-726812-3-a","email":"dw-726812-3-a@example.com"}
+REST create_user dw-726812-3-b@example.com: {"login":"dw-726812-3-b","email":"dw-726812-3-b@example.com"}
+SETUP token=dw-726812-3 smtp=127.0.0.1:32787 proxy=127.0.0.1:46283 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-3 elapsed_ms=158
+PHASE B1 target_done cancelled=true elapsed_ms=210
+REST create_user dw-726812-4-a@example.com: {"login":"dw-726812-4-a","email":"dw-726812-4-a@example.com"}
+REST create_user dw-726812-4-b@example.com: {"login":"dw-726812-4-b","email":"dw-726812-4-b@example.com"}
+SETUP token=dw-726812-4 smtp=127.0.0.1:32787 proxy=127.0.0.1:35343 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-4 elapsed_ms=107
+PHASE B1 target_done cancelled=true elapsed_ms=212
+REST create_user dw-726812-5-a@example.com: {"login":"dw-726812-5-a","email":"dw-726812-5-a@example.com"}
+REST create_user dw-726812-5-b@example.com: {"login":"dw-726812-5-b","email":"dw-726812-5-b@example.com"}
+SETUP token=dw-726812-5 smtp=127.0.0.1:32787 proxy=127.0.0.1:34949 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-5 elapsed_ms=159
+PHASE B1 target_done cancelled=true elapsed_ms=263
+REST create_user dw-726812-6-a@example.com: {"login":"dw-726812-6-a","email":"dw-726812-6-a@example.com"}
+REST create_user dw-726812-6-b@example.com: {"login":"dw-726812-6-b","email":"dw-726812-6-b@example.com"}
+SETUP token=dw-726812-6 smtp=127.0.0.1:32787 proxy=127.0.0.1:44123 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-6 elapsed_ms=158
+PHASE B1 target_done cancelled=true elapsed_ms=314
+REST create_user dw-726812-7-a@example.com: {"login":"dw-726812-7-a","email":"dw-726812-7-a@example.com"}
+REST create_user dw-726812-7-b@example.com: {"login":"dw-726812-7-b","email":"dw-726812-7-b@example.com"}
+SETUP token=dw-726812-7 smtp=127.0.0.1:32787 proxy=127.0.0.1:42813 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-7 elapsed_ms=158
+PHASE B1 target_done cancelled=true elapsed_ms=314
+REST create_user dw-726812-8-a@example.com: {"login":"dw-726812-8-a","email":"dw-726812-8-a@example.com"}
+REST create_user dw-726812-8-b@example.com: {"login":"dw-726812-8-b","email":"dw-726812-8-b@example.com"}
+SETUP token=dw-726812-8 smtp=127.0.0.1:32787 proxy=127.0.0.1:36847 upstream=127.0.0.1:32787 transport=0x7ffc551f9768
+PHASE B1 setup_done token=dw-726812-8 elapsed_ms=107
+PHASE B1 target_done cancelled=true elapsed_ms=317
+----- report display -----
+dropwise: 1 target(s), 8 cancellation plan(s) explored
+  result: no violation observed within the explored coverage
+
+----- report diagnostics -----
+dropwise diagnostics: 1 target(s), 8 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 5: #0@3:Immediate
+  target #0 after pending #3 (competitor ready immediately): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 6: #0@3:AfterWake
+  target #0 after pending #3 (competitor ready once the target is woken): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 7: #0@4:Immediate
+  target #0 after pending #4 (competitor ready immediately): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 8: #0@4:AfterWake
+  target #0 after pending #4 (competitor ready once the target is woken): tests/levels.rs:305:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+
+B1-RUN target=Ok(code=250, message=["OK"]) connections=1 ["client=127.0.0.1:60198 up=374 down=185"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:55178 up=18 down=115"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:54696 up=57 down=123"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:41038 up=94 down=123"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:54870 up=94 down=131"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:33538 up=94 down=131"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:41160 up=100 down=177"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:38612 up=100 down=177"]
+B1-RUN target=cancelled connections=1 ["client=127.0.0.1:57172 up=374 down=185"]
+LADDER B1 rep1 [async-smtp-0.10.2]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1

@@ -1,0 +1,5 @@
+ERROR: round2 M1 produced a baseline error or violation
+error: test failed, to rerun pass `--test levels`
+
+Caused by:
+  process didn't exit successfully: `/home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/target/debug/deps/levels-ad9c719242cc7729 round2-m1 3` (exit status: 1)

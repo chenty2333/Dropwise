@@ -1,0 +1,12 @@
+REST create_user prep-pre-726740-0-a@example.com: {"login":"prep-pre-726740-0-a","email":"prep-pre-726740-0-a@example.com"}
+REST create_user prep-pre-726740-0-b@example.com: {"login":"prep-pre-726740-0-b","email":"prep-pre-726740-0-b@example.com"}
+SETUP token=prep-pre-726740-0 smtp=127.0.0.1:32787 proxy=127.0.0.1:45645 upstream=127.0.0.1:32787 transport=0x7ffe3355e148
+PREP-CALIBRATION pre_survivor=Ok(code=250, message=["OK"])
+PREP-CALIBRATION pre=Observation { count: 1, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+REST create_user prep-post-726740-1-a@example.com: {"login":"prep-post-726740-1-a","email":"prep-post-726740-1-a@example.com"}
+REST create_user prep-post-726740-1-b@example.com: {"login":"prep-post-726740-1-b","email":"prep-post-726740-1-b@example.com"}
+SETUP token=prep-post-726740-1 smtp=127.0.0.1:32787 proxy=127.0.0.1:36859 upstream=127.0.0.1:32787 transport=0x7ffe3355e148
+PREP-CALIBRATION post_target=Ok(code=250, message=["OK"])
+PREP-CALIBRATION post_survivor=Ok(code=250, message=["OK"])
+PREP-CALIBRATION post=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }] }
+PREP-CALIBRATION distinguishable=true pre_count=1 post_count=2

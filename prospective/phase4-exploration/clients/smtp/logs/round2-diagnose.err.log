@@ -1,0 +1,98 @@
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 220 /172.17.0.2 GreenMail SMTP Service v2.1.14 ready<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> EHLO [127.0.0.1]<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>250 SMTPUTF8<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::smtp_client] server /172.17.0.2 with {Authentication(Login), Authentication(Plain), SmtpUtfEight, Authentication(Xoauth2)}
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-0-a@example.com><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-0-a@example.com><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-0-a@example.com>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::smtp_client] status=sent (OK)
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-0-a@example.com><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-0-a@example.com><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-0-a@example.com>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::smtp_client] status=sent (OK)
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-0-a@example.com><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-0-a@example.com><CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-0-a@example.com>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:24Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::smtp_client] status=sent (OK)
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 220 /172.17.0.2 GreenMail SMTP Service v2.1.14 ready<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] >> EHLO [127.0.0.1]<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>250 SMTPUTF8<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::smtp_client] server /172.17.0.2 with {Authentication(Login), Authentication(Plain), Authentication(Xoauth2), SmtpUtfEight}
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-1-a@example.com><CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-1-a@example.com><CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-1-a@example.com>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-1-a@example.com><CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:25Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-1-a@example.com><CRLF>
+[2026-10-21T05:32:27Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-1-a@example.com><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 220 /172.17.0.2 GreenMail SMTP Service v2.1.14 ready<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> EHLO [127.0.0.1]<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>250 SMTPUTF8<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::smtp_client] server /172.17.0.2 with {Authentication(Plain), Authentication(Xoauth2), Authentication(Login), SmtpUtfEight}
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-2-a@example.com><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-2-a@example.com><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-2-a@example.com>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::smtp_client] status=sent (OK)
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-2-a@example.com><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-2-a@example.com><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-2-a@example.com>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::smtp_client] status=sent (OK)
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-2-a@example.com><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-2-a@example.com><CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-2-a@example.com>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:29Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::smtp_client] status=sent (OK)
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 220 /172.17.0.2 GreenMail SMTP Service v2.1.14 ready<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] >> EHLO [127.0.0.1]<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 250-/172.17.0.2<CRLF>250-AUTH PLAIN LOGIN XOAUTH2<CRLF>250 SMTPUTF8<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::smtp_client] server /172.17.0.2 with {Authentication(Login), Authentication(Plain), Authentication(Xoauth2), SmtpUtfEight}
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-3-a@example.com><CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-3-a@example.com><CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 250 OK<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::smtp_client] to=<dw-diag-31394-3-a@example.com>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] >> DATA<CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-3-a@example.com><CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] << 354 Start mail input; end with <CRLF>.<CRLF><CRLF>
+[2026-10-21T05:32:30Z DEBUG async_smtp::stream] >> RCPT TO:<dw-diag-31394-3-a@example.com><CRLF>
+[2026-10-21T05:32:32Z DEBUG async_smtp::stream] >> MAIL FROM:<dw-diag-31394-3-a@example.com><CRLF>

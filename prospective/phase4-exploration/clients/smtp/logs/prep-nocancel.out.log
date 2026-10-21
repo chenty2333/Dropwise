@@ -1,0 +1,7 @@
+REST create_user prep-nocancel-726677-0-a@example.com: {"login":"prep-nocancel-726677-0-a","email":"prep-nocancel-726677-0-a@example.com"}
+REST create_user prep-nocancel-726677-0-b@example.com: {"login":"prep-nocancel-726677-0-b","email":"prep-nocancel-726677-0-b@example.com"}
+SETUP token=prep-nocancel-726677-0 smtp=127.0.0.1:32787 proxy=127.0.0.1:37545 upstream=127.0.0.1:32787 transport=0x7ffc0cb3df78
+PREP-NOCANCEL first=Ok(code=250, message=["OK"])
+PREP-NOCANCEL second=Ok(code=250, message=["OK"])
+PREP-NOCANCEL transport_ptr=0x7ffc0cb41138 same_object=true connections=1 ["client=127.0.0.1:54240 up=920 down=255"]
+PREP-NOCANCEL observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> nocancel-one", message_id: "<<run>.nocancel-one@dw.test>", body: "body <run> nocancel-one" }, MessageView { subject: "p4-smtp <run> nocancel-two", message_id: "<<run>.nocancel-two@dw.test>", body: "body <run> nocancel-two" }] }

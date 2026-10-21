@@ -1,0 +1,30 @@
+LADDER B1 rep1 [async-smtp-0.10.2]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B1 rep2 [async-smtp-0.10.2]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B1 rep3 [async-smtp-0.10.2]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER B2 rep1 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B2 rep1 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B2 rep1 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER B2 rep2 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B2 rep2 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B2 rep2 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER B2 rep3 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B2 rep3 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B2 rep3 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER B3 rep1 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B3 rep1 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B3 rep1 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER B3 rep2 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B3 rep2 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B3 rep2 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER B3 rep3 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B3 rep3 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B3 rep3 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER M1 rep1 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=4 post=2 mixed=0 neither=0 unknown=0
+LADDER-VIOLATION M1 rep1 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION M1 rep1 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER M1 rep2 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=4 post=2 mixed=0 neither=0 unknown=0
+LADDER-VIOLATION M1 rep2 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION M1 rep2 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER M1 rep3 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=4 post=2 mixed=0 neither=0 unknown=0
+LADDER-VIOLATION M1 rep3 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION M1 rep3 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)

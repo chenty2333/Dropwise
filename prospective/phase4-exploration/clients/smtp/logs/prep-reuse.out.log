@@ -1,0 +1,11 @@
+REST create_user prep-reuse-726717-0-a@example.com: {"login":"prep-reuse-726717-0-a","email":"prep-reuse-726717-0-a@example.com"}
+REST create_user prep-reuse-726717-0-b@example.com: {"login":"prep-reuse-726717-0-b","email":"prep-reuse-726717-0-b@example.com"}
+SETUP token=prep-reuse-726717-0 smtp=127.0.0.1:32787 proxy=127.0.0.1:37569 upstream=127.0.0.1:32787 transport=0x7ffebb222fd8
+PREP-REUSE first=Ok(code=250, message=["OK"])
+PREP-REUSE second=Ok(code=250, message=["OK"])
+PREP-REUSE transport_ptr=0x7ffebb226440 same_object=true
+PREP-REUSE before=connections=1 ["client=127.0.0.1:33162 up=18 down=115"]
+PREP-REUSE after_first=connections=1 ["client=127.0.0.1:33162 up=439 down=185"]
+PREP-REUSE after_second=connections=1 ["client=127.0.0.1:33162 up=860 down=255"]
+PREP-REUSE same_tcp_connection=true one_connection=true bytes_grew=true
+PREP-REUSE observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> reuse-one", message_id: "<<run>.reuse-one@dw.test>", body: "body <run> reuse-one" }, MessageView { subject: "p4-smtp <run> reuse-two", message_id: "<<run>.reuse-two@dw.test>", body: "body <run> reuse-two" }] }

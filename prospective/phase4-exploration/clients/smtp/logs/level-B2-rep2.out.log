@@ -1,0 +1,115 @@
+LEVEL start level=B2 rep=2 flavor=MultiThread workers=1 races=Immediate+AfterWake max_runs=64 settle=ZERO timeout=20s reply_delay=50ms
+REST create_user dw-730605-0-a@example.com: {"login":"dw-730605-0-a","email":"dw-730605-0-a@example.com"}
+REST create_user dw-730605-0-b@example.com: {"login":"dw-730605-0-b","email":"dw-730605-0-b@example.com"}
+SETUP token=dw-730605-0 smtp=127.0.0.1:32787 proxy=127.0.0.1:46367 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-0 elapsed_ms=108
+PHASE B2 target_done cancelled=false elapsed_ms=316
+PHASE B2 survivor_start elapsed_ms=316
+PHASE B2 survivor_done elapsed_ms=526 result=Ok(code=250, message=["OK"])
+REST create_user dw-730605-1-a@example.com: {"login":"dw-730605-1-a","email":"dw-730605-1-a@example.com"}
+REST create_user dw-730605-1-b@example.com: {"login":"dw-730605-1-b","email":"dw-730605-1-b@example.com"}
+SETUP token=dw-730605-1 smtp=127.0.0.1:32787 proxy=127.0.0.1:41653 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-1 elapsed_ms=159
+PHASE B2 target_done cancelled=true elapsed_ms=159
+PHASE B2 survivor_start elapsed_ms=159
+PHASE B2 survivor_done elapsed_ms=364 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+REST create_user dw-730605-2-a@example.com: {"login":"dw-730605-2-a","email":"dw-730605-2-a@example.com"}
+REST create_user dw-730605-2-b@example.com: {"login":"dw-730605-2-b","email":"dw-730605-2-b@example.com"}
+SETUP token=dw-730605-2 smtp=127.0.0.1:32787 proxy=127.0.0.1:46859 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-2 elapsed_ms=108
+PHASE B2 target_done cancelled=true elapsed_ms=160
+PHASE B2 survivor_start elapsed_ms=160
+PHASE B2 survivor_done elapsed_ms=314 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+REST create_user dw-730605-3-a@example.com: {"login":"dw-730605-3-a","email":"dw-730605-3-a@example.com"}
+REST create_user dw-730605-3-b@example.com: {"login":"dw-730605-3-b","email":"dw-730605-3-b@example.com"}
+SETUP token=dw-730605-3 smtp=127.0.0.1:32787 proxy=127.0.0.1:45833 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-3 elapsed_ms=107
+PHASE B2 target_done cancelled=true elapsed_ms=158
+PHASE B2 survivor_start elapsed_ms=158
+PHASE B2 survivor_done elapsed_ms=261 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+REST create_user dw-730605-4-a@example.com: {"login":"dw-730605-4-a","email":"dw-730605-4-a@example.com"}
+REST create_user dw-730605-4-b@example.com: {"login":"dw-730605-4-b","email":"dw-730605-4-b@example.com"}
+SETUP token=dw-730605-4 smtp=127.0.0.1:32787 proxy=127.0.0.1:46349 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-4 elapsed_ms=108
+PHASE B2 target_done cancelled=true elapsed_ms=212
+PHASE B2 survivor_start elapsed_ms=212
+PHASE B2 survivor_done elapsed_ms=369 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+REST create_user dw-730605-5-a@example.com: {"login":"dw-730605-5-a","email":"dw-730605-5-a@example.com"}
+REST create_user dw-730605-5-b@example.com: {"login":"dw-730605-5-b","email":"dw-730605-5-b@example.com"}
+SETUP token=dw-730605-5 smtp=127.0.0.1:32787 proxy=127.0.0.1:39033 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-5 elapsed_ms=108
+PHASE B2 target_done cancelled=true elapsed_ms=212
+PHASE B2 survivor_start elapsed_ms=212
+REST create_user dw-730605-6-a@example.com: {"login":"dw-730605-6-a","email":"dw-730605-6-a@example.com"}
+REST create_user dw-730605-6-b@example.com: {"login":"dw-730605-6-b","email":"dw-730605-6-b@example.com"}
+SETUP token=dw-730605-6 smtp=127.0.0.1:32787 proxy=127.0.0.1:39911 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-6 elapsed_ms=108
+PHASE B2 target_done cancelled=true elapsed_ms=262
+PHASE B2 survivor_start elapsed_ms=262
+REST create_user dw-730605-7-a@example.com: {"login":"dw-730605-7-a","email":"dw-730605-7-a@example.com"}
+REST create_user dw-730605-7-b@example.com: {"login":"dw-730605-7-b","email":"dw-730605-7-b@example.com"}
+SETUP token=dw-730605-7 smtp=127.0.0.1:32787 proxy=127.0.0.1:40667 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-7 elapsed_ms=108
+PHASE B2 target_done cancelled=true elapsed_ms=263
+PHASE B2 survivor_start elapsed_ms=263
+PHASE B2 survivor_done elapsed_ms=469 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+REST create_user dw-730605-8-a@example.com: {"login":"dw-730605-8-a","email":"dw-730605-8-a@example.com"}
+REST create_user dw-730605-8-b@example.com: {"login":"dw-730605-8-b","email":"dw-730605-8-b@example.com"}
+SETUP token=dw-730605-8 smtp=127.0.0.1:32787 proxy=127.0.0.1:41257 upstream=127.0.0.1:32787 transport=0x7ffdd279f828
+PHASE B2 setup_done token=dw-730605-8 elapsed_ms=106
+PHASE B2 target_done cancelled=true elapsed_ms=315
+PHASE B2 survivor_start elapsed_ms=315
+PHASE B2 survivor_done elapsed_ms=469 result=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"])
+----- report display -----
+dropwise: 1 target(s), 8 cancellation plan(s) explored
+  target #0 (tests/levels.rs:332:23) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: scenario did not finish within 20s (liveness)
+  target #0 (tests/levels.rs:332:23) loses after pending #3, competitor ready once the target is woken -> Cancelled:
+    invariant violated: scenario did not finish within 20s (liveness)
+  result: violation observed
+
+----- report diagnostics -----
+dropwise diagnostics: 1 target(s), 8 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 5: #0@3:Immediate
+  target #0 after pending #3 (competitor ready immediately): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: scenario did not finish within 20s (liveness)
+plan 6: #0@3:AfterWake
+  target #0 after pending #3 (competitor ready once the target is woken): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: scenario did not finish within 20s (liveness)
+plan 7: #0@4:Immediate
+  target #0 after pending #4 (competitor ready immediately): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+plan 8: #0@4:AfterWake
+  target #0 after pending #4 (competitor ready once the target is woken): tests/levels.rs:332:23 -> Cancelled
+  verdict: none (not an observed run), settled: true
+  invariant: ok
+
+B2-RUN target=Ok(code=250, message=["OK"]) survivor=Ok(code=250, message=["OK"]) connections=1 ["client=127.0.0.1:59818 up=718 down=255"]
+B2-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:51408 up=407 down=185"]
+B2-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:42936 up=407 down=185"]
+B2-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:39474 up=444 down=193"]
+B2-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:55654 up=444 down=193"]
+B2-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:43076 up=718 down=247"]
+B2-RUN target=cancelled survivor=Ok(code=354, message=["Start mail input; end with <CRLF>.<CRLF>"]) connections=1 ["client=127.0.0.1:55090 up=718 down=247"]
+LADDER B2 rep2 [async-smtp-0.10.2]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B2 rep2 [async-smtp-0.10.2] plan=#0@3:Immediate cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B2 rep2 [async-smtp-0.10.2] plan=#0@3:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)

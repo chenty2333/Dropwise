@@ -1,0 +1,22 @@
+[package]
+name = "smtp-p4-exploration"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Path correction applied: clients/smtp -> prospective -> repo root is four
+# levels up, not three.
+[dependencies]
+dropwise = { path = "../../../..", features = ["net"] }
+async-smtp = "=0.10.2"
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "net", "io-util", "time", "macros", "sync"] }
+ureq = "2"
+serde_json = "1"
+
+[dev-dependencies]
+env_logger = "0.11"
+
+[[test]]
+name = "levels"
+path = "tests/levels.rs"
+harness = false

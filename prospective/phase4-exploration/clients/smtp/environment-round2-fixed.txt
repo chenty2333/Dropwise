@@ -1,0 +1,6 @@
+date_utc=2026-10-21T05:36:10Z
+fixed_source=/tmp/dw-async-smtp-0.10.2-fixed
+patch=/home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/smtp/patches/async-smtp-poison.diff
+container=dw-p4-smtp-r2f-42047 smtp=127.0.0.1:32775 http=http://127.0.0.1:32776
+dropwise_commit=e841a60b825e0e66ecf50033fe906875c28e84f8
+cargo_tree:

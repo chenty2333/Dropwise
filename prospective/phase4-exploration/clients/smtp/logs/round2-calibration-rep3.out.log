@@ -1,0 +1,19 @@
+REST create_user prep-r2-pre-29562-0-a@example.com: {"login":"prep-r2-pre-29562-0-a","email":"prep-r2-pre-29562-0-a@example.com"}
+REST create_user prep-r2-pre-29562-0-b@example.com: {"login":"prep-r2-pre-29562-0-b","email":"prep-r2-pre-29562-0-b@example.com"}
+SETUP token=prep-r2-pre-29562-0 smtp=127.0.0.1:32768 proxy=127.0.0.1:44337 upstream=127.0.0.1:32768 transport=0x7ffcc3f12110
+ROUND2 R2-CAL pre survivor start elapsed_ms=0
+ROUND2 R2-CAL pre survivor done elapsed_ms=209 result=Ok(code=250, message=["OK"])
+ROUND2 R2-CAL pre third start elapsed_ms=0
+ROUND2 R2-CAL pre third done elapsed_ms=207 result=Ok(code=250, message=["OK"])
+ROUND2-CAL pre survivor=Code(250) third=Code(250) observation=Observation { count: 2, messages: [MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }] }
+REST create_user prep-r2-post-29562-1-a@example.com: {"login":"prep-r2-post-29562-1-a","email":"prep-r2-post-29562-1-a@example.com"}
+REST create_user prep-r2-post-29562-1-b@example.com: {"login":"prep-r2-post-29562-1-b","email":"prep-r2-post-29562-1-b@example.com"}
+SETUP token=prep-r2-post-29562-1 smtp=127.0.0.1:32768 proxy=127.0.0.1:36735 upstream=127.0.0.1:32768 transport=0x7ffcc3f12110
+ROUND2 R2-CAL post target start elapsed_ms=0
+ROUND2 R2-CAL post target done elapsed_ms=208 result=Ok(code=250, message=["OK"])
+ROUND2 R2-CAL post survivor start elapsed_ms=0
+ROUND2 R2-CAL post survivor done elapsed_ms=210 result=Ok(code=250, message=["OK"])
+ROUND2 R2-CAL post third start elapsed_ms=0
+ROUND2 R2-CAL post third done elapsed_ms=211 result=Ok(code=250, message=["OK"])
+ROUND2-CAL post target=Code(250) survivor=Code(250) third=Code(250) observation=Observation { count: 3, messages: [MessageView { subject: "p4-smtp <run> target", message_id: "<<run>.target@dw.test>", body: "body <run> target" }, MessageView { subject: "p4-smtp <run> survivor", message_id: "<<run>.survivor@dw.test>", body: "body <run> survivor" }, MessageView { subject: "p4-smtp <run> third", message_id: "<<run>.third@dw.test>", body: "body <run> third" }] }
+ROUND2-CAL distinguishable=true pre_count=2 post_count=3
