@@ -1,0 +1,16 @@
+date=2026-10-22T02:04:37+09:00
+repo=/home/ava/Desktop/Dropwise
+container=dw-r3-skylife-717107
+image=skytable/skytable:v0.8.4
+image_id=sha256:823e1a390a55ddcc5579e27af58cf6f92d92a7735c5fd4fc3551673b22d08f41
+repo_digest=skytable/skytable@sha256:823e1a390a55ddcc5579e27af58cf6f92d92a7735c5fd4fc3551673b22d08f41
+tcp=127.0.0.1:32902 tls=127.0.0.1:32903
+skytable_client=0.8.12 bb8=0.9.1
+stock_bin=sha256:14c780db94970b4be1c9ef08de1cbf4d82efebcae6024d17a2db6b321ec59c52
+fixed_bin=sha256:1e6f94a676b80698f7d603202d520c1761ceaddfc397a00aac3a49be998cfc05
+fixed_skytable_sha=sha256:8694a21aca97a1c4bd27a5735ea134f5b53be401b2983f0abb6fd30be958ba0a
+patch_files=fix/skytable-0.8.12/src/io/aio.rs,fix/skytable-0.8.12/src/pool.rs
+cert_sha256=025599635f7ab22b760ed3acd09f4217869ec13f1e423413fb27efdcb920a6da
+cut_ms=10 reply_delay_ms=50
+server_password=test-only, 23 chars, not logged
+proxy=dropwise::net::Proxy (plain TCP forwarder, 50ms reply delay; TLS is end-to-end through it)

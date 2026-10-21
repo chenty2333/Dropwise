@@ -1,0 +1,14 @@
+
+███████ ██   ██ ██    ██ ████████  █████  ██████  ██      ███████
+██      ██  ██   ██  ██     ██    ██   ██ ██   ██ ██      ██
+███████ █████     ████      ██    ███████ ██████  ██      █████
+     ██ ██  ██     ██       ██    ██   ██ ██   ██ ██      ██
+███████ ██   ██    ██       ██    ██   ██ ██████  ███████ ███████
+
+Skytable v0.8.4 | https://github.com/skytable/skytable
+
+[2026-10-21T17:04:36Z WARN  skyd::engine] running in dev mode
+[2026-10-21T17:04:36Z INFO  skyd::engine] starting storage engine
+[2026-10-21T17:04:36Z INFO  skyd::engine::storage] initializing databases
+[2026-10-21T17:04:37Z INFO  skyd::engine] storage engine ready. initializing system
+[2026-10-21T17:04:37Z INFO  skyd::engine] listening on tcp@0.0.0.0:2003 and tls@0.0.0.0:2004

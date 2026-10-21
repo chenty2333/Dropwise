@@ -156,16 +156,16 @@ impl<C: AsyncWriteExt + AsyncReadExt + Unpin> TcpConnection<C> {
             poisoned: false,
         }
     }
-    /// Whether a previous query or pipeline future was dropped (or failed) before the
-    /// reply was fully consumed. A poisoned connection must not be reused:
-    /// drop it (and reconnect) or ask the pool to discard it.
-    pub fn is_poisoned(&self) -> bool {
+    /// Whether a previous operation was cancelled or failed before its reply
+    /// was fully consumed. Such a connection must be discarded: the pool does
+    /// this in `has_broken`, while a direct user must reconnect.
+    pub(crate) fn is_poisoned(&self) -> bool {
         self.poisoned
     }
     fn poisoned_error() -> Error {
         Error::IoError(std::io::Error::new(
             std::io::ErrorKind::ConnectionAborted,
-            "skytable: query future dropped before its reply; connection poisoned",
+            "skytable: connection poisoned by an incomplete operation",
         ))
     }
     async fn _handshake(mut self, cfg: &Config) -> ClientResult<Self> {
@@ -179,6 +179,12 @@ impl<C: AsyncWriteExt + AsyncReadExt + Unpin> TcpConnection<C> {
         }
     }
     /// Execute a pipeline. The server returns the queries in the order they were sent (unless otherwise set).
+    ///
+    /// If the returned future is dropped after it has been polled, the
+    /// connection is poisoned: the pipeline may have been written but its
+    /// reply was not consumed. Later operations return `ConnectionAborted`.
+    /// Drop the connection and reconnect, or use a pool, which discards
+    /// poisoned connections.
     pub async fn execute_pipeline(&mut self, pipeline: &Pipeline) -> ClientResult<Vec<Response>> {
         if self.poisoned {
             return Err(Self::poisoned_error());
@@ -223,6 +229,12 @@ impl<C: AsyncWriteExt + AsyncReadExt + Unpin> TcpConnection<C> {
         }
     }
     /// Run a query and return a raw [`Response`]
+    ///
+    /// If the returned future is dropped after it has been polled, the
+    /// connection is poisoned: the query may have been written but its reply
+    /// was not consumed. Later operations return `ConnectionAborted`. Drop the
+    /// connection and reconnect, or use a pool, which discards poisoned
+    /// connections.
     pub async fn query(&mut self, q: &Query) -> ClientResult<Response> {
         if self.poisoned {
             return Err(Self::poisoned_error());
@@ -292,6 +304,44 @@ mod cancellation_tests {
     use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
     struct PendingReply(Arc<AtomicUsize>);
+
+    /// Accepts at most `limit` bytes and then stays pending, so the query
+    /// future is cancelled after a partial write.
+    struct PartialWrite {
+        writes: Arc<AtomicUsize>,
+        accepted: usize,
+        limit: usize,
+    }
+    impl AsyncRead for PartialWrite {
+        fn poll_read(
+            self: Pin<&mut Self>,
+            _: &mut Context<'_>,
+            _: &mut ReadBuf<'_>,
+        ) -> Poll<std::io::Result<()>> {
+            Poll::Pending
+        }
+    }
+    impl AsyncWrite for PartialWrite {
+        fn poll_write(
+            mut self: Pin<&mut Self>,
+            _: &mut Context<'_>,
+            bytes: &[u8],
+        ) -> Poll<std::io::Result<usize>> {
+            if self.accepted >= self.limit {
+                return Poll::Pending;
+            }
+            let n = bytes.len().min(self.limit - self.accepted);
+            self.accepted += n;
+            self.writes.fetch_add(n, Ordering::SeqCst);
+            Poll::Ready(Ok(n))
+        }
+        fn poll_flush(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+            Poll::Ready(Ok(()))
+        }
+        fn poll_shutdown(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+            Poll::Ready(Ok(()))
+        }
+    }
     impl AsyncRead for PendingReply {
         fn poll_read(
             self: Pin<&mut Self>,
@@ -336,8 +386,78 @@ mod cancellation_tests {
             .query(&Query::new("sysctl report status"))
             .await
             .is_err());
+        assert!(conn
+            .query_parse::<()>(&Query::new("sysctl report status"))
+            .await
+            .is_err());
         assert!(conn.execute_pipeline(&Pipeline::new()).await.is_err());
         assert_eq!(before, writes.load(Ordering::SeqCst));
+    }
+
+    #[tokio::test]
+    async fn partially_written_query_poisons_the_connection() {
+        let writes = Arc::new(AtomicUsize::new(0));
+        let mut conn = TcpConnection::new(PartialWrite {
+            writes: writes.clone(),
+            accepted: 0,
+            limit: 1,
+        });
+        drop_at_pending(conn.query(&Query::new("sysctl report status"))).await;
+        assert!(conn.is_poisoned());
+        assert_eq!(writes.load(Ordering::SeqCst), 1);
+        assert!(conn
+            .query(&Query::new("sysctl report status"))
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
+    async fn partially_read_query_poisons_the_connection() {
+        let (socket, mut peer) = tokio::io::duplex(256);
+        // A response type byte without the rest of the reply: the decoder is
+        // still pending when the future is dropped.
+        peer.write_all(b"\x10").await.unwrap();
+        let mut conn = TcpConnection::new(socket);
+        drop_at_pending(conn.query(&Query::new("sysctl report status"))).await;
+        assert!(conn.is_poisoned());
+        assert!(conn
+            .query(&Query::new("sysctl report status"))
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
+    async fn protocol_error_poisons_the_connection() {
+        let (socket, mut peer) = tokio::io::duplex(256);
+        peer.write_all(b"\xff").await.unwrap();
+        let mut conn = TcpConnection::new(socket);
+        let err = conn
+            .query(&Query::new("sysctl report status"))
+            .await
+            .unwrap_err();
+        assert!(matches!(err, Error::ProtocolError(_)), "{:?}", err);
+        assert!(conn.is_poisoned());
+        assert!(conn
+            .query(&Query::new("sysctl report status"))
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
+    async fn eof_poisons_the_connection() {
+        let (socket, peer) = tokio::io::duplex(256);
+        drop(peer);
+        let mut conn = TcpConnection::new(socket);
+        let err = conn
+            .query(&Query::new("sysctl report status"))
+            .await
+            .unwrap_err();
+        assert!(matches!(err, Error::IoError(_)), "{:?}", err);
+        assert!(conn.is_poisoned());
+        assert!(conn
+            .query(&Query::new("sysctl report status"))
+            .await
+            .is_err());
     }
     #[tokio::test]
     async fn dropped_pipeline_also_poisons_the_connection() {
@@ -377,6 +497,15 @@ mod cancellation_tests {
         let mut conn = TcpConnection::new(PendingReply(Arc::new(AtomicUsize::new(0))));
         let query = Query::new("sysctl report status");
         drop(conn.query(&query));
+        assert!(!conn.is_poisoned());
+    }
+
+    #[test]
+    fn unpolled_pipeline_does_not_poison() {
+        let mut conn = TcpConnection::new(PendingReply(Arc::new(AtomicUsize::new(0))));
+        let mut pipeline = Pipeline::new();
+        pipeline.push(&Query::new("sysctl report status"));
+        drop(conn.execute_pipeline(&pipeline));
         assert!(!conn.is_poisoned());
     }
 }

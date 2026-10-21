@@ -428,3 +428,92 @@ its reply is one request behind. This is the user-visible consequence.
   source only gained `SKY-RESIDUE` prints (`src/lib.rs`, no behaviour change).
 - Cost: main suite 194 s wall (28 phases) + focused cut ~3 s of runs + container
   start/build (~10 s); release builds warm. `CARGO_BUILD_JOBS=6`.
+
+## 10. Round-4 closure: TLS, pool>1 and live pipelines (2026-10-22)
+
+This section supersedes the corresponding §8 bullets ("no pool size > 1, no
+TLS, no pipelines", "live pipeline untested", "no multi-thread/concurrent
+borrower test"); the earlier sections and logs are unchanged.  No remote PR,
+issue, email or upstream contact was made.
+
+### 10.1 Patch state
+
+- `fix/skytable-0.8.12` now poisons on a dropped or interrupted exchange in
+  `query()`, `query_parse()` and `execute_pipeline()`.  The guard is armed when
+  the future is first polled and disarmed only after a complete reply is
+  decoded (a complete server error counts as complete).  Later operations
+  return `IoError(ConnectionAborted, "skytable: connection poisoned by an
+  incomplete operation")` without writing.
+- `is_poisoned()` is `pub(crate)`; no public API or error variant was added.
+- The async **TCP and TLS** pool managers now reject a poisoned connection in
+  `is_valid()` and return it from `has_broken()`, so bb8 discards the slot at
+  return and reconnects on the next checkout.  The TLS manager was the
+  remaining gap: it previously hard-coded `has_broken=false`.
+- The cancellation contract is documented on both entry points and in the
+  pool module.
+- Unit tests: 17 total, 9 lifecycle tests (unpolled query/pipeline; dropped
+  query/pipeline; partial write; partial read; protocol error; EOF; complete
+  success and complete server error for both entry points; `query_parse` is
+  included in the blocked-reuse assertion).
+- `fix/drop-poison.patch` was regenerated from a clean 0.8.12 crate.  It
+  applies with both `patch -p1` and `git apply`; after applying, the two
+  changed files are byte-identical to the tested copy.  The patch has no
+  author or sign-off (the sender must add their own).
+
+### 10.2 Live lifecycle matrix
+
+`run-lifecycle.sh` starts one disposable Skytable v0.8.4 container with TCP and
+TLS endpoints, generates a self-signed cert in `/tmp` (private key never
+logged), builds the stock and fixed probes, and runs each mode against both.
+A plain TCP `dropwise::net::Proxy` forwards the TCP and TLS bytes with a 50 ms
+reply delay; the probe cuts a **pipeline** after 10 ms.  The cancelled pipeline
+selects row `k=0`; the next user selects `lifecycle=4242`.  The probe uses only
+the public client API, so the same source builds against both clients.
+
+| mode | stock 0.8.12 | fixed copy |
+|---|---|---|
+| direct | next pipeline `Stale(0)` | `Blocked` (`ConnectionAborted`) |
+| pool2: max_size=2, `test_on_check_out(false)`, one connection held | next checkout `Stale(0)` | next checkout `Fresh`; concurrent held connection also `Fresh` |
+| tls-direct | next pipeline `Stale(0)` | `Blocked` |
+| tls-pool: max_size=1, `test_on_check_out(false)` | next checkout `Stale(0)` | next checkout `Fresh` |
+
+The stock results are the control, not a test assertion that stock is safe.
+The fixed pool `Fresh` results show the manager discarded the poisoned slot
+and reconnected.  Without the TLS manager change the next TLS call would still
+be blocked by the client-side poison check (safe), but the pool would keep
+returning a dead slot; the `Fresh` result distinguishes the manager fix.
+
+Run: `logs/run.7m5uyt/` (`environment.txt`, `timings.txt`, per-mode stock/fixed
+logs, `container.log`).  The stock probe binaries and the fixed probe binary
+are recorded by SHA-256 in `environment.txt`.
+
+### 10.3 Upstream status and readiness
+
+- `skytable/client-rust` latest tag remains v0.8.12 (2025-02-16, `4fceb22`);
+  no newer master commit or matching issue/PR was found when checked.  This is
+  "not found", not proof of absence; no upstream contact was made.
+- Decision: the patch is suitable for direct upstream review after the TLS
+  manager fix and docs, not just a documentation change.  It adds no public
+  API, uses the pool's existing `has_broken` mechanism, and includes tests.
+  The semantic change (a cancelled connection is no longer reusable) is the
+  fix and must be stated in the PR.
+- Review text: `fix/PR-DRAFT.md`; local patch: `fix/drop-poison.patch`.
+  No remote PR was created.
+
+### 10.4 Remaining limits
+
+- A cancelled request may already have executed on the server; the patch does
+  not replay, roll back, or assume the server did either.  Direct users must
+  reconnect; the pool reconnects on the next checkout.
+- The sync (`r2d2`) path is unchanged; it has no async drop point.  The direct
+  socket is not synchronously closed by the guard; the next call fails.
+- Loopback only; one server image (v0.8.4); self-signed TLS certificate; no
+  TLS client certificates, server restart/crash, or non-loopback/hardware.
+- The live cut is timing-based (10 ms cut, 50 ms reply delay); the probe checks
+  that the first future was actually cancelled, but it is not a byte-level wire
+  capture of every cut.
+- `test_on_check_out(true)` with a poisoned slot is covered by the
+  `is_valid()` poison check and the client-side block, but the live matrix uses
+  `test_on_check_out(false)` to isolate `has_broken()`; both paths are safe.
+- No upstream contact, maintainer confirmation, or third-party test; no
+  `Reported-by`/`Tested-by` is claimed.

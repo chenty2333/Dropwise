@@ -1,0 +1,2 @@
+LIFECYCLE label=pool2-concurrent outcome=Fresh
+LIFECYCLE label=pool2 outcome=Fresh
