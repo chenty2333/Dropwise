@@ -1,0 +1,6 @@
+kernel=/home/ava/dropwise-linux-work/build/arch/x86/boot/bzImage
+sha256=9329ad932256bd881ad6f0f02b8f2a292904b89d4d7c54b93654141a94b3a6b1
+start=2026-10-21T22:55:59.750300+09:00
+end=2026-10-21T22:56:06.866985+09:00
+wall_s=7.12
+done=1

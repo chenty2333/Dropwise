@@ -523,3 +523,18 @@ observations that would have caught a violation.
   * `patches/0002-ipv4-igmp-report-interface-group-allocation-failure.patch`,
   * `~/dropwise-linux-r4/bzImage-stock`, `~/dropwise-linux-r4/bzImage-fixed`,
   * logs as listed in 1.3.
+
+## 10. Audit/delivery addendum (2026-10-21, V4-1)
+
+Append-only pointer to a separate audit file; no existing section, log or
+artifact above was modified.  V4-1 (`ip_add_membership`) was re-tested with
+real UDP delivery in an isolated guest on v6.19 stock, v7.3-rc2 stock and the
+fixed v7.3-rc2 kernel.  Normal join delivered 4/4 datagrams; stock N=2
+returned 0 with no device group and delivered 0/4; fixed N=2 returned
+`-1/ENOBUFS`, left no state, and a later normal join delivered 2/2.  The
+audit also found a cross-socket consequence: on stock kernels, closing the
+half-joined socket removes a device group that a second socket successfully
+joined.  Patch ordering/refcount, reader ordering, the void-wrapper recovery
+claim, and upstream status are audited in
+`RESULTS-round4-multicast.md`; raw logs are under
+`logs/20261021-r4-mcast-delivery/`.

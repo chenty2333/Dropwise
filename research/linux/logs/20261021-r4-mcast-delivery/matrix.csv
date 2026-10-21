@@ -1,0 +1,23 @@
+kernel,scenario,join_ret,join_errno,msf_rc,msf_errno,igmp_group_users,unicast_recv,multicast_recv,multicast_sent,note
+v6.19-stock,normal,0,0,0,0,1,1,4,4,positive control
+v7.3-rc2-stock,normal,0,0,0,0,1,1,4,4,positive control
+v7.3-rc2-fixed,normal,0,0,0,0,1,1,4,4,positive control
+v6.19-stock,n2,0,0,0,0,-1,1,0,4,silent success; no device group; no delivery
+v7.3-rc2-stock,n2,0,0,0,0,-1,1,0,4,silent success; no device group; no delivery
+v7.3-rc2-fixed,n2,-1,105,-1,99,-1,1,0,4,clean ENOBUFS; no socket/device state
+v7.3-rc2-fixed,n2_then_normal_join,0,0,0,0,1,1,2,2,clean failure then normal join works
+v6.19-stock,n1,-1,105,-1,99,-1,1,0,2,clean failure control; rejoin delivers 2/2
+v7.3-rc2-stock,n1,-1,105,-1,99,-1,1,0,2,clean failure control; rejoin delivers 2/2
+v7.3-rc2-fixed,n1,-1,105,-1,99,-1,1,0,2,clean failure control; rejoin delivers 2/2
+v6.19-stock,n2_cross_second_join,0,0,0,0,1,,2,2,second socket creates group; first failed socket still open
+v7.3-rc2-stock,n2_cross_second_join,0,0,0,0,1,,2,2,second socket creates group; first failed socket still open
+v7.3-rc2-fixed,n2_cross_second_join,0,0,0,0,1,,2,2,second socket creates group
+v6.19-stock,n2_cross_after_close_failed_socket,n/a,n/a,0,0,-1,,0,2,close of failed-inc socket removes other socket's group
+v7.3-rc2-stock,n2_cross_after_close_failed_socket,n/a,n/a,0,0,-1,,0,2,close of failed-inc socket removes other socket's group
+v7.3-rc2-fixed,n2_cross_after_close_failed_socket,n/a,n/a,0,0,1,,2,2,no iml published; other socket's group survives
+v6.19-stock,ssm_n2,0,0,0,0,-1,1,0,2,IP_ADD_SOURCE_MEMBERSHIP also silent success
+v7.3-rc2-stock,ssm_n2,0,0,0,0,-1,1,0,2,IP_ADD_SOURCE_MEMBERSHIP also silent success
+v7.3-rc2-fixed,ssm_n2,-1,105,-1,99,-1,1,0,2,clean ENOBUFS
+v6.19-stock,invalid_group,-1,22,-1,99,-1,,,,"EINVAL, no state"
+v7.3-rc2-fixed,invalid_ifindex,-1,19,-1,99,-1,,,,"ENODEV, no state"
+v6.19-stock,two_sockets_users,0,0,0,0,2,1,1,1,users 1->2; duplicate same socket EADDRINUSE; close B ->1; delivery A works
