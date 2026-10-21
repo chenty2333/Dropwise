@@ -454,6 +454,7 @@ async fn run_pool(
             limits: online_guards::guard::RecoveryLimits {
                 max_attempts: 2,
                 deadline: Duration::from_secs(2),
+                probe_budget: Duration::from_millis(50),
             },
             validate_on_checkout: false,
             policy: std::sync::Arc::new(policy),

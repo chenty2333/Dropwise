@@ -154,6 +154,14 @@ in both cases (measured below).
 - `discard`: only from `I`; a session reset, not a transaction reset.
 - `finish_drain_reset`: with `AtomicEffectMayApply`, finish the interrupted
   simple-query frame, then drain/reset.
+- `probe_reset`: if a reply is already pending, wait up to `probe_budget` for
+  its `ReadyForQuery`; otherwise send one empty simple query and read its
+  status.  After either observation, reset exactly as `drain_reset` does
+  (ROLLBACK when the status is `T`/`E`).  A probe timeout leaves the request
+  marker in place, so a retry waits for the same reply rather than sending a
+  second probe.  A local `Idle` status after an I/O failure is not evidence
+  that the socket is alive: `drain_reset` now performs the same bounded probe
+  before certifying a no-pending object instead of minting from stale state.
 
 The status byte is authoritative, but the local mirror can be stale until a
 reply is read.  A cancelled `COMMIT` whose reply was never read is not turned
@@ -165,9 +173,11 @@ into success: the adapter either observes the server's `CommandComplete`/
 Implemented and exercised against real servers: guard ledger, tickets,
 discharge/witness checks, quarantine, recovery worker, retry, shutdown, the
 Skytable and PostgreSQL adapters, the B0/B1/B2/B3/B3f labs, the rule-lab
-action harness.  Ownership claims and the pool's deferred-return path are
-implemented and covered by unit/integration tests with a fake session; they are
-not yet created by the protocol adapters themselves.
+action harness, and the PostgreSQL bounded probe (`probe_reset`) with a
+configurable `RecoveryLimits::probe_budget`, including its pool path.
+Ownership claims and the pool's deferred-return path are implemented and
+covered by unit/integration tests with a fake session; they are not yet
+created by the protocol adapters themselves.
 
 Model-only: the claim that a per-stream guard composes with a connection
 guard under multiplexing; the exact cost model for choosing between

@@ -167,6 +167,10 @@ pub struct PgConn {
     /// ReadyForQuery.  `rollback`/`discard` must not be sent while this is
     /// true: they would consume the abandoned exchange's reply.
     pending: bool,
+    /// Research injection: sleep once before the next socket read, to model a
+    /// delayed reply.  Not consulted by any policy, so it cannot act as a
+    /// fault label.
+    pub read_delay_once: Option<Duration>,
 }
 
 fn put_i32(v: &mut Vec<u8>, n: i32) {
@@ -320,6 +324,7 @@ impl PgConn {
             out_kind: None,
             recovered_ready: false,
             pending: false,
+            read_delay_once: None,
         };
         loop {
             let (ty, payload) = conn.read_frame().await.map_err(io_of)?;
@@ -404,6 +409,9 @@ impl PgConn {
                     self.io.inbuf.drain(..total);
                     return Ok((ty, payload));
                 }
+            }
+            if let Some(delay) = self.read_delay_once.take() {
+                tokio::time::sleep(delay).await;
             }
             let n = {
                 let io = &mut self.io;
@@ -718,15 +726,74 @@ impl PgConn {
         Ok(())
     }
 
+    /// Wait for a reply already on the wire, or send one bounded empty-query
+    /// probe when no reply is pending.  This is information acquisition: the
+    /// caller pays a short round trip instead of certifying from a stale local
+    /// status.  A timeout leaves the request state recoverable: a retry waits
+    /// for the same reply and does not send the probe twice.
+    async fn probe_roundtrip(
+        &mut self,
+        deadline: tokio::time::Instant,
+    ) -> Result<(), RecoveryAttempt> {
+        if self.io.out_off < self.io.out.len() {
+            return Err(RecoveryAttempt::Failed(Cause::Other(
+                "partial_write_unrecoverable",
+            )));
+        }
+        if self.pending {
+            self.read_to_ready(deadline).await?;
+            self.pending = false;
+        } else {
+            self.io.out = encode_query("");
+            self.io.out_off = 0;
+            self.out_kind = Some("probe");
+            if let Err(e) = self.flush_out(None).await {
+                return Err(RecoveryAttempt::Failed(match e {
+                    PgError::Io(_) | PgError::Closed => Cause::Io,
+                    _ => Cause::Protocol,
+                }));
+            }
+            self.pending = true;
+            self.read_to_ready(deadline).await?;
+            self.pending = false;
+        }
+        self.io.out.clear();
+        self.io.out_off = 0;
+        self.out_kind = None;
+        self.recovered_ready = true;
+        Ok(())
+    }
+
     pub async fn recover(&mut self, ctx: &RecoveryContext) -> RecoveryAttempt {
         let timeout = PG_DRAIN.min(ctx.remaining);
         let deadline = tokio::time::Instant::now() + timeout;
         match ctx.plan {
             "drain_reset" => {
+                // A local `Idle` status is not evidence that the socket is
+                // alive.  After an I/O failure, require one bounded round trip
+                // before certifying a no-pending object as reusable.
+                if !self.pending
+                    && ctx.cause == Cause::Io
+                    && let Err(attempt) = self.probe_roundtrip(deadline).await
+                {
+                    return attempt;
+                }
                 if let Err(attempt) = self.drain_and_reset(deadline).await {
                     return attempt;
                 }
                 self.finish_recovery(ctx, "pg.ready_idle")
+            }
+            "probe_reset" => {
+                let probe_deadline =
+                    tokio::time::Instant::now() + ctx.limits.probe_budget.min(ctx.remaining);
+                if let Err(attempt) = self.probe_roundtrip(probe_deadline).await {
+                    return attempt;
+                }
+                let reset_deadline = tokio::time::Instant::now() + ctx.remaining;
+                if let Err(attempt) = self.drain_and_reset(reset_deadline).await {
+                    return attempt;
+                }
+                self.finish_recovery(ctx, "pg.probed_reset")
             }
             "finish_drain_reset" => {
                 if self.io.out_off < self.io.out.len()

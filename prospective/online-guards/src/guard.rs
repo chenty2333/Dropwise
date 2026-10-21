@@ -1529,6 +1529,10 @@ impl std::error::Error for RecoveryError {}
 pub struct RecoveryLimits {
     pub max_attempts: u32,
     pub deadline: Duration,
+    /// How long an adapter may spend on a single active probe (an empty
+    /// round trip or a wait for a pending reply) before it must report
+    /// `Unresolved` rather than certify or destroy the object.
+    pub probe_budget: Duration,
 }
 
 impl Default for RecoveryLimits {
@@ -1536,6 +1540,7 @@ impl Default for RecoveryLimits {
         Self {
             max_attempts: 2,
             deadline: Duration::from_secs(2),
+            probe_budget: Duration::from_millis(50),
         }
     }
 }

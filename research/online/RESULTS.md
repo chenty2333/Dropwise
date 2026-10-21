@@ -466,6 +466,68 @@ changes during exception handling; a weakref/GC liveness witness is therefore
 not authority.  The Python repair was not re-implemented with owner tokens in
 this round; the Rust RAII claims are the implementation of that idea.
 
+### 8.4 Bounded probing vs blind draining (PostgreSQL)
+
+`probe_reset` and `RecoveryLimits::probe_budget` make waiting an explicit
+recovery action.  The experiment uses a real PostgreSQL 18 server, a completed
+`BEGIN`, and a `SELECT` abandoned before its reply is read.  A client-read
+delay (`PgConn::read_delay_once`, 20/100/1000 ms) is injected after the cut;
+the delay is **not** a suspect feature and no policy can read it.  The policy
+sees only the observed `write=complete`, `read=none`, standing transaction and
+cause, and chooses `retire`, `drain_reset`, or `probe_reset`.  Each row is one
+trial; `same` means the recovered connection is the same backend, `new` means
+the old socket was closed and a fresh connection passed the successor query.
+
+| delay | policy | outcome | socket | elapsed | successor |
+|---:|---|---|---|---:|---|
+| 20 ms | retire | closed+reconnect | new | 1 ms | ok |
+| 20 ms | drain_reset | Recovered | same | 21 ms | ok |
+| 20 ms | probe_reset, 50 ms | Recovered | same | 21 ms | ok |
+| 20 ms | probe_reset, 150 ms | Recovered | same | 21 ms | ok |
+| 100 ms | drain_reset | Recovered | same | 101 ms | ok |
+| 100 ms | probe_reset, 50 ms | Unresolved(Timeout) | new | 53 ms | ok |
+| 100 ms | probe_reset, 150 ms | Recovered | same | 101 ms | ok |
+| 1000 ms | drain_reset | Unresolved(Timeout) | new | 253 ms | ok |
+| 1000 ms | probe_reset, 50 ms | Unresolved(Timeout) | new | 54 ms | ok |
+| 1000 ms | probe_reset, 150 ms | Unresolved(Timeout) | new | 154 ms | ok |
+
+The full run also printed 1 ms for `retire` at 100 ms and 1000 ms.  That is a
+loopback reconnect, not a general cost: it discards the object and loses any
+standing transaction rather than recovering it.
+
+What this measures:
+
+- A successful probe recovers the **same** backend and reaches `idle`; the
+  server is never left in `idle in transaction`.  The pool path selected
+  `probe_reset` from the suspect record, enqueued and succeeded one recovery,
+  and handed the same backend back (`same_backend=true`) with no reconnect.
+- A budget shorter than the reply delay **falsely retires** a healthy
+  object (`probe_50` at 100 ms).  The successor still succeeds on a new
+  backend, so a test that only asks "does the next query work?" does not see
+  the availability cost.  The fault label is absent; the observation is only
+  "no reply within the budget".
+- A budget longer than the delay recovers without a reconnect.  On a
+  permanently unresponsive read, the same budget bounds the decision: 54 ms
+  for 50 ms, 154 ms for 150 ms, versus 253 ms for the fixed 250 ms drain.  A
+  shorter budget is better for a dead peer and worse for a slow one; there is
+  no universally safe budget, and this experiment does not learn one.
+- `drain_reset` still has the lower false-retirement rate at 100 ms, because
+  its 250 ms budget exceeds that delay.  The probe is a decision mechanism,
+  not a strict improvement.
+
+Separate safety result: after an I/O abandonment with **no** pending reply,
+the adapter's status can still say `idle` while the socket is dead.  The
+`drain_reset` path now performs one bounded empty-query round trip before
+certifying such an object.  With a 100 ms client-read delay the recovery took
+100 ms and returned `Recovered(pg.ready_idle)`; the previous code would have
+minted from local state with no I/O.  This is one positive path on a healthy
+server, not a differential test against a dead socket.
+
+The delay is injected on the client read path, not in the network, and the
+server reply is often already buffered.  It measures decision timing and the
+probe's state handling, not WAN latency or packet loss.  All trials use the
+simple query protocol and trust authentication.
+
 ## 9. Limits
 
 
@@ -479,7 +541,14 @@ this round; the Rust RAII claims are the implementation of that idea.
   framing guard) but not implemented; the cross-mechanism claim is limited to
   the two single-connection protocols above.
 - Deadlines and attempt limits are fixed constants, not derived from a
-  calibrated cost model.
+  calibrated cost model.  The PostgreSQL probe budget is also fixed per
+  policy; the 50 ms policy's false retirement at 100 ms shows why a budget
+  must be chosen against a tail, and no adaptive/history-based budget is
+  measured.
+- The probe experiment delays the client's socket read, not the network.  It
+  tests the decision and state machine, not real WAN loss or server load.
+- Ownership claims are still local and are not created by the Python or Rust
+  protocol adapters; the cross-process/kernel case remains a proposal.
 - The rule study is small; it demonstrates label construction and holdout
   behaviour, not a general synthesis method.
 - The review was static and found defects that the original probes did not

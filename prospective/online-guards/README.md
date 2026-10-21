@@ -21,7 +21,10 @@ not depend on the offline exploration crates at runtime.
 - `src/proto/sky.rs` — Skytable Skyhash2 adapter and codec; recovery plans
   `discard_local`, `drain`, `drain_slow`, `finish_write_drain`.
 - `src/proto/pg.rs` — PostgreSQL 3.0 simple-query adapter: status-aware
-  `drain_reset`, `rollback`, `discard`, `finish_drain_reset`.
+  `drain_reset`, `rollback`, `discard`, `finish_drain_reset`, and
+  `probe_reset` (bounded wait for a pending reply or one empty-query probe,
+  then reset).  `RecoveryLimits::probe_budget` bounds the probe; a no-pending
+  object with an I/O cause is probed before it can be certified.
 - `src/lab/` — raw baselines, fault proxy, action harness, JSONL records.
 - `src/bin/` — `sky_lab`, `rule_lab`, `throughput`, `sky_probe`, `pg_probe`.
 

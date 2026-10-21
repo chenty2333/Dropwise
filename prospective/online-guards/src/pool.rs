@@ -1490,6 +1490,7 @@ mod tests {
             limits: RecoveryLimits {
                 max_attempts: 3,
                 deadline: Duration::from_secs(5),
+                probe_budget: Duration::from_millis(50),
             },
             validate_on_checkout: false,
             policy: Arc::new(RunPlan),
