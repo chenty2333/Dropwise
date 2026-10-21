@@ -1,0 +1,17 @@
+[package]
+name = "p4e-bolt-r2-fixed"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../../../../../..", features = ["net"] }
+bolt-client = { version = "=0.11.0", features = ["tokio-stream"] }
+bb8-bolt = "=0.8.0"
+async-trait = "0.1"
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
+tokio-util = { version = "0.7", features = ["compat"] }
+futures-util = "0.3"
+
+[patch.crates-io]
+bb8 = { path = "vendor/bb8-0.8.6" }

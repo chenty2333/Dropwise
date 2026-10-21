@@ -1,0 +1,11 @@
+--- /tmp/bb8-get-0.8.6.rs	2026-10-21 14:45:41.976327941 +0900
++++ /tmp/bb8-get-0.9.1.rs	2026-10-21 14:45:41.978027366 +0900
+@@ -37,6 +37,8 @@
+             }
+         };
+ 
++        self.inner.statistics.record_get_started();
++
+         let result = match timeout(self.inner.statics.connection_timeout, future).await {
+             Ok(result) => result,
+             _ => {

@@ -1,0 +1,25 @@
+p4e-bolt-r2-original v0.0.0 (/home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/bolt/round2/original)
+├── async-trait v0.1.92 (proc-macro)
+│   ├── proc-macro2 v1.0.107
+│   ├── quote v1.0.47
+│   └── syn v3.0.9
+├── bb8-bolt v0.8.0
+│   ├── async-trait v0.1.92 (proc-macro) (*)
+│   ├── bb8 v0.8.6
+│   ├── bolt-client v0.11.0
+│   ├── tokio v1.54.0
+│   └── tokio-util v0.7.20
+├── bolt-client v0.11.0 (*)
+├── dropwise v0.1.0 (/home/ava/Desktop/Dropwise)
+│   ├── libc v0.2.191
+│   └── tokio v1.54.0 (*)
+├── futures-util v0.3.34
+│   ├── futures-core v0.3.34
+│   ├── futures-io v0.3.34
+│   ├── futures-macro v0.3.34 (proc-macro)
+│   ├── futures-task v0.3.34
+│   ├── memchr v2.8.3
+│   ├── pin-project-lite v0.2.17
+│   └── slab v0.4.12
+├── tokio v1.54.0 (*)
+└── tokio-util v0.7.20 (*)

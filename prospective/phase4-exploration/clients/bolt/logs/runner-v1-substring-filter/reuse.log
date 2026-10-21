@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/bolt.rs (target/debug/deps/bolt-efd0ca13b90156ac)
+
+running 2 tests
+test reuse_direct ... REUSE D1 writes=[0, 1, 2] proxy_connections=1 state=direct
+ok
+test reuse_pooled ... REUSE P1 writes=[0, 1, 2] proxy_connections=1 state=State { connections: 1, idle_connections: 1, statistics: Statistics { get_direct: 3, get_waited: 1, get_timed_out: 0, get_wait_time: 160.404ms, connections_created: 1, connections_closed_broken: 0, connections_closed_invalid: 0, connections_closed_max_lifetime: 0, connections_closed_idle_timeout: 0 } }
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 1.40s
+

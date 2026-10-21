@@ -1,0 +1,131 @@
+warning: field `proxy` is never read
+   --> tests/bolt.rs:157:5
+    |
+152 | struct Env {
+    |        --- field in this struct
+...
+157 |     proxy: Proxy,
+    |     ^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `p4e-bolt` (test "bolt") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/bolt.rs (prospective/phase4-exploration/clients/bolt/target/debug/deps/bolt-efd0ca13b90156ac)
+
+running 8 tests
+test direct_b1 ... LADDER B1 D1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test direct_b2 ... LADDER B2 D1 [release]: plans=4 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B2 D1 [release] plan=#0@1:Immediate cancelled=1 verdict=None detail=retry of the same operation failed: server gave unexpected response while in Streaming state.
+request: Some(RunWithMetadata(RunWithMetadata { statement: "MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v", parameters: {"id": String("dw-p4e-bolt-703963-6"), "v": Integer(1)}, metadata: {} }))
+response: Failure(Failure { metadata: {"code": String("Neo.ClientError.Request.Invalid"), "message": String("Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state.")} })
+LADDER-VIOLATION B2 D1 [release] plan=#0@1:AfterWake cancelled=1 verdict=None detail=retry of the same operation failed: server gave unexpected response while in Streaming state.
+request: Some(RunWithMetadata(RunWithMetadata { statement: "MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v", parameters: {"v": Integer(1), "id": String("dw-p4e-bolt-703963-7")}, metadata: {} }))
+response: Failure(Failure { metadata: {"message": String("Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state."), "code": String("Neo.ClientError.Request.Invalid")} })
+LADDER-VIOLATION B2 D1 [release] plan=#0@2:Immediate cancelled=1 verdict=None detail=retry of the same operation failed: unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: "MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v", parameters: {"id": String("dw-p4e-bolt-703963-8"), "v": Integer(1)}, metadata: {} })
+LADDER-VIOLATION B2 D1 [release] plan=#0@2:AfterWake cancelled=1 verdict=None detail=retry of the same operation failed: unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: "MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v", parameters: {"id": String("dw-p4e-bolt-703963-9"), "v": Integer(1)}, metadata: {} })
+ok
+test direct_b3 ... LADDER B3 D1 [release]: plans=4 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B3 D1 [release] plan=#0@1:Immediate cancelled=1 verdict=None detail=different operation failed: server gave unexpected response while in Streaming state.
+request: Some(RunWithMetadata(RunWithMetadata { statement: "MATCH (k:DwBolt {id: $id}) RETURN k.v AS v", parameters: {"id": String("dw-p4e-bolt-703963-11")}, metadata: {} }))
+response: Failure(Failure { metadata: {"message": String("Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state."), "code": String("Neo.ClientError.Request.Invalid")} })
+LADDER-VIOLATION B3 D1 [release] plan=#0@1:AfterWake cancelled=1 verdict=None detail=different operation failed: server gave unexpected response while in Streaming state.
+request: Some(RunWithMetadata(RunWithMetadata { statement: "MATCH (k:DwBolt {id: $id}) RETURN k.v AS v", parameters: {"id": String("dw-p4e-bolt-703963-12")}, metadata: {} }))
+response: Failure(Failure { metadata: {"message": String("Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state."), "code": String("Neo.ClientError.Request.Invalid")} })
+LADDER-VIOLATION B3 D1 [release] plan=#0@2:Immediate cancelled=1 verdict=None detail=different operation failed: unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: "MATCH (k:DwBolt {id: $id}) RETURN k.v AS v", parameters: {"id": String("dw-p4e-bolt-703963-13")}, metadata: {} })
+LADDER-VIOLATION B3 D1 [release] plan=#0@2:AfterWake cancelled=1 verdict=None detail=different operation failed: unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: "MATCH (k:DwBolt {id: $id}) RETURN k.v AS v", parameters: {"id": String("dw-p4e-bolt-703963-14")}, metadata: {} })
+ok
+test direct_m ... LADDER M D1 [release]: plans=4 violations=4 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=0 mixed=0 neither=4 unknown=0
+LADDER-VIOLATION M D1 [release] plan=#0@1:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Streaming state.\nrequest: Some(RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-16\"), \"v\": Integer(7)}, metadata: {} }))\nresponse: Failure(Failure { metadata: {\"message\": String(\"Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state.\"), \"code\": String(\"Neo.ClientError.Request.Invalid\")} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-16\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-16-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+LADDER-VIOLATION M D1 [release] plan=#0@1:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Streaming state.\nrequest: Some(RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-21\"), \"v\": Integer(7)}, metadata: {} }))\nresponse: Failure(Failure { metadata: {\"message\": String(\"Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state.\"), \"code\": String(\"Neo.ClientError.Request.Invalid\")} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-21\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-21-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+LADDER-VIOLATION M D1 [release] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(0), write: Err("unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-22\"), \"v\": Integer(7)}, metadata: {} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-22\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-22-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+LADDER-VIOLATION M D1 [release] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(1), write: Err("unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"v\": Integer(7), \"id\": String(\"dw-p4e-bolt-703963-23\")}, metadata: {} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-23\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-23-survivor\")}, metadata: {} })"), visible: Ok(1) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+dropwise diagnostics: 1 target(s), 4 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Streaming state.\nrequest: Some(RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-16\"), \"v\": Integer(7)}, metadata: {} }))\nresponse: Failure(Failure { metadata: {\"message\": String(\"Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state.\"), \"code\": String(\"Neo.ClientError.Request.Invalid\")} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-16\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-16-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Streaming state.\nrequest: Some(RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-16\"), \"v\": Integer(7)}, metadata: {} }))\nresponse: Failure(Failure { metadata: {\"message\": String(\"Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state.\"), \"code\": String(\"Neo.ClientError.Request.Invalid\")} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-16\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-16-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Streaming state.\nrequest: Some(RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-21\"), \"v\": Integer(7)}, metadata: {} }))\nresponse: Failure(Failure { metadata: {\"message\": String(\"Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state.\"), \"code\": String(\"Neo.ClientError.Request.Invalid\")} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-21\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-21-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Streaming state.\nrequest: Some(RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-21\"), \"v\": Integer(7)}, metadata: {} }))\nresponse: Failure(Failure { metadata: {\"message\": String(\"Message of type RunMessage cannot be handled by a session in the AUTO_COMMIT state.\"), \"code\": String(\"Neo.ClientError.Request.Invalid\")} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-21\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-21-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(0), write: Err("unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-22\"), \"v\": Integer(7)}, metadata: {} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-22\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-22-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(0), write: Err("unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-22\"), \"v\": Integer(7)}, metadata: {} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-22\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-22-survivor\")}, metadata: {} })"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(1), write: Err("unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"v\": Integer(7), \"id\": String(\"dw-p4e-bolt-703963-23\")}, metadata: {} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-23\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-23-survivor\")}, metadata: {} })"), visible: Ok(1) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(1), write: Err("unsupported operation for server in Streaming state: RunWithMetadata(RunWithMetadata { statement: \"MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v\", parameters: {\"v\": Integer(7), \"id\": String(\"dw-p4e-bolt-703963-23\")}, metadata: {} })"), own: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"MATCH (k:DwBolt {id: $id}) RETURN k.v AS v\", parameters: {\"id\": String(\"dw-p4e-bolt-703963-23\")}, metadata: {} })"), tag: Err("unsupported operation for server in Defunct state: RunWithMetadata(RunWithMetadata { statement: \"RETURN $tag AS t\", parameters: {\"tag\": String(\"p4e-tag-703963-23-survivor\")}, metadata: {} })"), visible: Ok(1) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+
+ok
+test pooled_b1 ... LADDER B1 P1 [release]: plans=6 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+ok
+test pooled_b2 ... P1 B2 retry returned Ok(1)
+P1 B2 retry returned Ok(1)
+P1 B2 retry returned Ok(1)
+P1 B2 retry returned Ok(1)
+LADDER B2 P1 [release]: plans=6 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B2 P1 [release] plan=#0@1:Immediate cancelled=1 verdict=None detail=retry of the same operation failed: server gave unexpected response while in Ready state.
+request: Some(Reset)
+response: Success(Success { metadata: {} })
+LADDER-VIOLATION B2 P1 [release] plan=#0@1:AfterWake cancelled=1 verdict=None detail=retry of the same operation failed: server gave unexpected response while in Ready state.
+request: Some(Reset)
+response: Success(Success { metadata: {} })
+ok
+test pooled_b3 ... P1 B3 different read returned Ok(0)
+P1 B3 different read returned Ok(0)
+P1 B3 different read returned Ok(0)
+P1 B3 different read returned Ok(1)
+LADDER B3 P1 [release]: plans=6 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B3 P1 [release] plan=#0@1:Immediate cancelled=1 verdict=None detail=different operation failed: server gave unexpected response while in Ready state.
+request: Some(Reset)
+response: Success(Success { metadata: {} })
+LADDER-VIOLATION B3 P1 [release] plan=#0@1:AfterWake cancelled=1 verdict=None detail=different operation failed: server gave unexpected response while in Ready state.
+request: Some(Reset)
+response: Success(Success { metadata: {} })
+ok
+test pooled_m ... LADDER M P1 [release]: plans=6 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=3 post=1 mixed=0 neither=2 unknown=0
+LADDER-VIOLATION M P1 [release] plan=#0@1:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+LADDER-VIOLATION M P1 [release] plan=#0@1:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+dropwise diagnostics: 1 target(s), 6 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 5: #0@3:Immediate
+  target #0 after pending #3 (competitor ready immediately): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 6: #0@3:AfterWake
+  target #0 after pending #3 (competitor ready once the target is woken): tests/bolt.rs:271:15 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+
+ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.53s
+

@@ -1,0 +1,117 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/bolt.rs (target/debug/deps/bolt-efd0ca13b90156ac)
+
+running 1 test
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+D1-RESET result: Ok("ok")
+LADDER M-reset D1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=3 post=1 mixed=0 neither=0 unknown=0
+dropwise diagnostics: 1 target(s), 4 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+
+test direct_m_reset_test ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 5.93s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/bolt.rs (target/debug/deps/bolt-efd0ca13b90156ac)
+
+running 1 test
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+D1-RESET-DELAYED result: Ok("ok")
+LADDER M-reset-delayed D1 [release]: plans=4 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=2 post=2 mixed=0 neither=0 unknown=0
+dropwise diagnostics: 1 target(s), 4 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Pre, settled: true
+  comparison: observed Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 3: #0@2:Immediate
+  target #0 after pending #2 (competitor ready immediately): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+plan 4: #0@2:AfterWake
+  target #0 after pending #2 (competitor ready once the target is woken): tests/bolt.rs:282:15 -> Cancelled
+  verdict: Post, settled: true
+  comparison: observed Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(1), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: ok
+
+test direct_m_reset_delayed_test ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 6.80s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running tests/bolt.rs (target/debug/deps/bolt-efd0ca13b90156ac)
+
+running 1 test
+LADDER M-checkout P1 [release]: plans=2 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=0 mixed=0 neither=2 unknown=0
+LADDER-VIOLATION M-checkout P1 [release] plan=#0@1:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+LADDER-VIOLATION M-checkout P1 [release] plan=#0@1:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+LADDER-NOTE M-checkout P1: target(s) #0: pre and post observations are equal (Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+dropwise diagnostics: 1 target(s), 2 trial(s), exhaustive=true, truncated=false
+plan 1: #0@1:Immediate
+  target #0 after pending #1 (competitor ready immediately): tests/bolt.rs:590:35 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+plan 2: #0@1:AfterWake
+  target #0 after pending #1 (competitor ready once the target is woken): tests/bolt.rs:590:35 -> Cancelled
+  verdict: Neither, settled: true
+  comparison: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+  invariant: Neither under Atomic: observed Obs { before: Ok(0), write: Err("server gave unexpected response while in Ready state.\nrequest: Some(Reset)\nresponse: Success(Success { metadata: {} })"), own: Ok(0), tag: Ok("-survivor"), visible: Ok(0) }, pre=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }, post=Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }
+note: target(s) #0: pre and post observations are equal (Obs { before: Ok(0), write: Ok(7), own: Ok(7), tag: Ok("-survivor"), visible: Ok(7) }); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+test pooled_m_checkout_test ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 5.49s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/bolt.rs (target/debug/deps/bolt-efd0ca13b90156ac)
+
+running 1 test
+LADDER M-checkout-nocheck P1 [release]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=0 mixed=0 neither=0 unknown=0
+dropwise diagnostics: 1 target(s), 0 trial(s), exhaustive=true, truncated=false
+coverage gap: no marked target returned Pending: no cancellation plan was generated (the cancellation point is absent or was not reached)
+
+test pooled_m_checkout_nocheck_test ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.54s
+

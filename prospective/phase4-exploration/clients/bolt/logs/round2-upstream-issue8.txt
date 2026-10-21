@@ -1,0 +1,111 @@
+# Round 2 upstream evidence: 0xSiO/bolt-rs#8 and Bolt states
+
+Fetched 2026-10-21 with the GitHub REST API; no upstream interaction was made.
+Issue: https://github.com/0xSiO/bolt-rs/issues/8 (open, opened 2021-05-06 by
+meiamsome, 5 comments). The issue body is about PULL/PULL_ALL returning a Vec
+instead of an iterator, and about read_message/send_message being pub(crate).
+The residual-response and RESET points are in the comments, not the body.
+
+## Issue body (excerpt)
+
+> Currently the PullAll and Pull messages return a Vec of results instead of
+> some form of iterator. This means that it is not possible to write streaming
+> algorithms against older versions of Neo4j. Additionally, as the low-level
+> read_message and send_message are only pub(crate) it isn't possible to
+> implement this behaviour as a consumer.
+
+URL: https://github.com/0xSiO/bolt-rs/issues/8
+
+## Comments (exact excerpts)
+
+### 2021-06-12, meiamsome: https://github.com/0xSiO/bolt-rs/issues/8#issuecomment-860108448
+
+> if you drop RecordStream before pulling the summary the client ends up in a
+> weird state where it hasn't read some of the responses yet.
+
+> The basic idea is that in order to construct a RecordStream ... you have to
+> relinquish the Client entirely, so that the only way you can get the Client
+> back is by finishing the RecordStream.
+
+> That's obviously problematic for use cases where the Client is not directly
+> owned, but I couldn't think of a good way to ensure that the messages are
+> exhausted except embedding a bunch of logic in to every other message handler
+> to handle the out of sync case.
+
+### 2021-06-13, 0xSiO: https://github.com/0xSiO/bolt-rs/issues/8#issuecomment-860131118
+
+> it's probably fine if the user doesn't consume all the records in the stream -
+> there are messages still left to read, but I think those can be discarded with
+> a RESET.
+
+(This is a suggestion, not a documented guarantee; the next comment disputes
+that RESET works with the current implementation.)
+
+### 2021-06-13, meiamsome: https://github.com/0xSiO/bolt-rs/issues/8#issuecomment-860132881
+
+> Even the way RESET is currently implemented wouldn't work, though - the issue
+> is that all of the methods currently assume the incoming queue of messages
+> will be in a clean slate, so if we leave messages in the queue everything is
+> out of sync. In the case of RESET it just reads the next message, which would
+> probably be a RECORD or the SUCCESS/FAILURE result of the dropped
+> ResultStream.
+
+> Essentially, the way everything is written currently assumes that everything
+> will read the correct amount of messages ... you can't drop ResultStream ...
+> until the incoming message queue is back in to a valid (empty) state.
+
+> Additionally, it's likely there are plenty of times you wouldn't want to RESET
+> (Inside of a TX that you don't want to cancel, for example).
+
+### 2021-06-13, 0xSiO: https://github.com/0xSiO/bolt-rs/issues/8#issuecomment-860137879
+
+> Ah, yep - my mistake, and changing the parsing wouldn't help much in that
+> case. This sort of cleanup sounds like something an async Drop would help
+> with, but that concept comes with its own set of issues.
+
+> I've been avoiding tracking server state since it wasn't specified in the docs
+> I used to write this library, but with the newer protocol docs now clearly
+> specifying the Bolt server states and transitions, this is probably the
+> biggest thing to address next.
+
+## Protocol pages
+
+- READY handles RUN/BEGIN:
+  https://neo4j.com/docs/bolt/current/bolt/server-state/#server-ready
+- STREAMING: "This result must be fully consumed or discarded by a client
+  before the server can re-enter the READY state and allow any further queries
+  to be executed."
+  https://neo4j.com/docs/bolt/current/bolt/server-state/#server-streaming
+- RESET: "it jumps ahead in the message queue, stopping any unit of work ...
+  All the queued messages originally in front of the RESET message will then be
+  IGNORED until the RESET position is reached. Then from this point, the server
+  state is reset to a state that is ready for a new session."
+  https://neo4j.com/docs/bolt/current/bolt/message/#messages-reset
+- RESET response SUCCESS enters READY; FAILURE enters DEFUNCT:
+  https://neo4j.com/docs/bolt/current/bolt/message/#messages-reset-success
+- PULL streams the remainder of a result; detail messages are followed by
+  SUCCESS/IGNORED/FAILURE:
+  https://neo4j.com/docs/bolt/current/bolt/message/#messages-pull
+
+## Installed library shape
+
+- bolt-client 0.11.0: Client::reset sends RESET and loops read_message until a
+  Success/Failure, ignoring Ignored. read_message pairs the next socket message
+  with the front of sent_queue; it does not correlate request/response by an id.
+  Local: src/client.rs:1039-1077 and :103-120.
+  https://docs.rs/bolt-client/0.11.0/bolt_client/struct.Client.html#method.reset
+- Client::server_state is public, but no docs promise that dropping a future
+  repairs the queue. Local: src/client.rs:98-101.
+- Client::pull returns all records plus the summary; there is no public
+  cancellation-safe partial-result object. Local: src/client.rs:764-844.
+  https://docs.rs/bolt-client/0.11.0/bolt_client/struct.Client.html#method.pull
+- The only explicit caller RESET obligation is after a server FAILURE:
+  "The client must clear the failure state by sending a RESET ... or
+  ACK_FAILURE". Local: src/client.rs:1109-1119. This is not a cancellation
+  contract.
+- bb8-bolt 0.8.0: Manager::is_valid calls conn.reset() and requires Success;
+  has_broken is server_state == Defunct. Local: src/lib.rs:131-138.
+  https://docs.rs/bb8-bolt/0.8.0/bb8_bolt/struct.Manager.html
+- bb8 0.8.6: Pool::get awaits manager.is_valid; if that future is dropped the
+  connection is left in whatever state the manager's reset reached. The local
+  patch marks it Invalid before awaiting, so Drop/put_back discards it.

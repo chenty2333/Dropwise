@@ -1,0 +1,20 @@
+date_utc=2026-10-21T05:42:18Z
+rustc=rustc 1.98.0 (88d9e12ae 2026-08-18)
+cargo=cargo 1.98.0 (797e8a9bc 2026-08-05)
+image=neo4j:5.26.0-community
+image_digest=neo4j@sha256:5a015e53de1895e7eee1574ae0325cf8c4b89587222778108c594bdd45a474b5
+url=bolt://127.0.0.1:32786
+container=dw-p4e-bolt-r2-67207
+neo4j="Neo4j Kernel", ["5.26.0"], "community"
+--- round2 original resolved versions ---
+name = "bb8" version = "0.8.6"
+name = "bb8-bolt" version = "0.8.0"
+name = "bolt-client" version = "0.11.0"
+name = "bolt-proto" version = "0.12.0"
+name = "dropwise" version = "0.1.0"
+--- round2 fixed resolved versions ---
+name = "bb8" version = "0.8.6"
+name = "bb8-bolt" version = "0.8.0"
+name = "bolt-client" version = "0.11.0"
+name = "bolt-proto" version = "0.12.0"
+name = "dropwise" version = "0.1.0"
