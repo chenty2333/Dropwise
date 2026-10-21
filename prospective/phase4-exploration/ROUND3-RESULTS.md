@@ -1004,7 +1004,8 @@ silent（契约缺口）；修复对照成立；但 upstream 未确认，所以�
 | asyncpg 0.32.0 pool | 0/12 | 0/12 | 0/12 | 0/12（Pre 6，Post 6） |
 
 - asyncpg direct 的 9/9 是**有效**的：cut 后 `in_tx` 在 k1 报 `False`、
-  k2/k3 报 `True`，但 survivor write 都是 `Ok`、observer `[]`；k1 是
+  k2/k3 报 `True`；k1/k2 的 observer 是 `[]`，k3 的 observer 已有
+  survivor+target（Post 形状），但 `in_tx=True` 仍是 stale 字段；k1 是
   “`BEGIN` 还在队列里”的强样本。B2/B3 0 是因为 `same()` 确实成功（不是
   旧 `_tx_write` 返回 `None` 的假阴性）；B2/B3 的 value 里可见状态，但
   level 只看逃逸错误，语义盲。
@@ -1017,20 +1018,23 @@ silent（契约缺口）；修复对照成立；但 upstream 未确认，所以�
 
 **责任边界/恢复对照（BOUNDARY 事件 + 真实 cut）：**
 
-- **手写 SQL、什么也不做**：psycopg k8–k11 留在 `INTRANS`，survivor
-  write `Ok`、observer `[]`（12/18 的 Neither 就是这个形状）；k12–k13
-  cut 在 COMMIT 之后，`IDLE`、observer 有 target+survivor（合法 Post）。
+- **手写 SQL、什么也不做**：psycopg 的 cut yields=8–11（plans #1–#4）
+  留在 `INTRANS`，survivor write `Ok`、observer `[]`（12/18 的 Neither
+  就是这个形状）；yields=12–13（plans #5–#6）cut 在 COMMIT 之后，
+  `IDLE`、observer 有 target+survivor（合法 Post）。
   asyncpg k1 `in_tx=False` + observer `[]`（`BEGIN` 还未发出/在队列里），
-  k2/k3 `in_tx=True` + `[]`；k4 是 Post。
+  k2 `in_tx=True` + `[]`；k3 `in_tx=True` + observer 有 target+survivor
+  （合法 Post）。
 - **显式 `rollback()`**：psycopg `INTRANS→IDLE`，observer 只有 survivor；
   asyncpg `ROLLBACK` 同样恢复。**这是有效的应用层修复。**
 - **`reset()`**：asyncpg 的 `reset()` 在 k1（`in_tx` 字段 False、BEGIN
   还在队列）**没有清掉**：`in_tx_after=True`、observer `[]`；k2/k3 能清。
   所以“有 reset API”不等于“reset 覆盖所有 cut 点”，必须按状态采样点
   分开报。
-- **官方 transaction context manager**：psycopg `cm_target`/`cm_retry`
-  的 k1/k2 仍是 `INTRANS` + observer `[]`；asyncpg `cm_retry` 的 k2/k3
-  仍是 `in_tx=True` + `[]`。**context manager 不是 cancellation 后的
+- **官方 transaction context manager**：psycopg `cm_target` plans #1/#2
+  仍是 `INTRANS` + observer `[]`，`cm_retry` plans #1–#4 也是；asyncpg
+  `cm_retry` 的 k2/k3 仍是 `in_tx=True`（k3 observer 有 target+survivor，
+  但字段 stale）。**context manager 不是 cancellation 后的
   自动恢复保证**；这与“用官方推荐写法就安全”的直觉相反，必须写成契约
   缺口/调用方仍需检查。
 - **close+reconnect**：psycopg/asyncpg 都恢复（psycopg 新 backend pid；
