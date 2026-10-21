@@ -437,6 +437,13 @@ starts a new generation.  Tests cover:
   empties.  This is a liveness test, not a safety proof; the 25 ms tick is a
   local scheduling constant, not a measured production latency.
 
+Verification at this commit: core `cargo test --locked` passes 89 tests (16
+library, 71 integration, 2 doctests; one doctest intentionally ignored), and
+`cargo clippy --all-targets -- -D warnings`, `cargo fmt --check` and
+`RUSTDOCFLAGS=-D warnings cargo doc` are clean.  `online-guards` passes 52
+library tests and 3 rule-input tests with the same lint/format checks.  The
+upstream baseline crate builds `--offline --locked`.
+
 The measured part is the decision path and the pool bookkeeping (unit and
 integration tests with a fake session).  The protocol adapters do not yet
 create claims for their own transactions, and there is no kernel/runtime hook:
