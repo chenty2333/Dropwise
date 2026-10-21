@@ -1,6 +1,7 @@
 # 第三轮结果：共性作为“发现启发式”的检验
 
 状态：2026-10-21，未冻结探索；不是 Phase 4 数据，不改写 Phase 4 表。
+**二次校正：§12 与 [ADAPTER-AUDIT-ROUND3.md](ADAPTER-AUDIT-ROUND3.md) 取代前文冲突数字；旧日志保留但标注无效/语义盲。**
 问题：我们总结出的共性，能否**事先**指导未知问题的发现，而不仅仅解释已经知道的案例？
 
 本文件是主报告；预测原文在
@@ -778,6 +779,275 @@ M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok
 
 ---
 
+## 12. 二次校正与新增覆盖（2026-10-21 深夜）
+
+> 本节是 append-only 校正。与 §0/§1/§7/§8/§9 冲突处，以本节和
+> [ADAPTER-AUDIT-ROUND3.md](ADAPTER-AUDIT-ROUND3.md) 为准。旧的日志不删除，
+> 但在表格里标明“无效/语义盲/弱阴性”，不把旧数字和新数字混加。
+
+### 12.1 适配器错误吞噬：B2/B3 的 0 不再自动等于“没有后果”
+
+第一轮 `aiomysql`、`asyncpg` 的 `_tx_write()` 调用了 `bound()` 却不检查
+返回值：失败阶段可能返回 `None`（aiomysql/asyncpg）或只被放进普通 dict
+（psycopg 旧版），`level_retry` 只找 `"ERR "` 字符串，于是把失败当成功。
+这不是“取消没有后果”，是**检测层假阴性**。
+
+修复不是改 `Expect`，而是把操作结果结构化：
+
+- `research/python-retro/dropwise_py/engine.py` 新增
+  `OpResult(ok, stage, value, error)` 与 `operation_failed()`；
+  `level_retry` 按结构化的 `ok`（或显式 `{"ok": false}`）判失败，不再靠
+  错误字符串猜；
+- 每个 adapter 的 `target()` 在未取消时若关键阶段失败就抛出（不能让失败
+  变成合法 post）；`same()/different()` 返回 `OpResult` 或抛出；
+- setup/warmup/acquire 失败必须抛出；cleanup 可以 best-effort，但要记录；
+- 无服务回归测试
+  `research/python-retro/tests/test_ladder_outcomes.py` 10/10 通过：
+  `OpResult(ok=False)`、dict `ok=False`、异常、超时都算违规；
+  `ok=True` 不算；setup 异常直接传播；target 异常记 baseline error。
+
+**不能继续把 aiomysql/asyncpg 的旧 B2/B3 0 当作“只有 M1 能抓到”的证据。**
+这条结论在 `ADAPTER-AUDIT-ROUND3.md` 里有逐包审计。
+
+### 12.2 校正后的 Python 结论（含新增包）
+
+| 包/模式 | 结果（3 reps） | 分类 |
+|---|---|---|
+| aiomysql direct | B1 0/9；B2 9/9、B3 9/9 都是显式 `InterfaceError: Cancelled during execution`；M1 9/9 Neither（survivor 也报错、observer 空） | **合法 fail-fast / 契约缺口**，不是静默污染；不计协议根因 |
+| aiomysql pool | B1/B2/B3/M1 全 0/12；M1 Pre 6/Post 6；失效连接被 pool 丢弃，survivor 新 cid、`own=[[7]]` | **clean self-heal 正例** |
+| mysql-connector 26.7.0 direct | B1 0/12；B2 12/12、B3 12/12 结构化 fail-fast；M1 12/12 Neither：6/12 丢写/未提交，3/12 已提交但误报，3/12 反序列化错位 | **候选客户端缺陷**；M1 才看到静默后果 |
+| psycopg 3.3.6 direct | B1/B2/B3 0/18；M1 12/18（6 Post、12 Neither）；B2/B3 的值里已有 `status_after_acquire=INTRANS`，但 level 只看逃逸错误 | **direct-handle 静默泄漏**；B2/B3 语义盲，M1 才是判据 |
+| psycopg pool | B1/B2/B3/M1 全 0/18；release rollback INTRANS→IDLE | **clean/self-heal 正例** |
+| asyncpg 0.32.0 direct | 新 B1-B3 0/9、M1 **9/9**；k1 `in_tx=False` + observer []、k2/k3 `in_tx=True` + [] | direct-handle 族；B2/B3 语义盲，M1 判据 |
+| asyncpg pool | 新 B1/B2/B3/M1 全 0/12；M1 Pre 6/Post 6；contrast 有 1 次 acquire timeout | 本阶梯 clean；不写成普遍保证 |
+| redis-py 8.1.0（pool/direct × tx/set） | 120 trials，全 0；M1 Pre/Post 合法；DISCARD/UNWATCH/reconnect 对照 10/10 | 阴性；本场景 clean |
+| pymongo 4.19.0 | 4 units，144 trials，全 0；M1 Pre/Post 合法；cancel 后 socket discarded/reconnect | 阴性；self-heal 正例 |
+| neo4j 6.4.1 | 4 units，144 trials，全 0；M1 Pre/Post；连接归还并复用 | 阴性；self-heal 正例 |
+| aiohttp 3.14.5 | B1-B3 0/3、M1 0/3（Post）；yields=1，只覆盖已经写出的 POST | **弱阴性**；覆盖不足 |
+| curl-cffi 0.16.3 | B1-B3 0/3、M1 0/3（Pre）；yields=1，cut 在 libcurl 发送前；mid-flight probe 3/3 Post 但不算阶梯 | **弱阴性**；覆盖不足 |
+| httpx 0.28.1 | 已知上游 #2821/httpcore #726；B2/B3/M1 3/18 | 已知上游实例，不是新根因 |
+| aiosmtplib 5.1.3 | B2/B3/M1 12/12，`SMTPDataError: (250,'OK')` 或 `TimeoutError` | 已知 SMTP 响应关联族的新客户端实例 |
+
+两点必须同时说：
+
+1. **B2/B3 的失败不自动等于 bug。** aiomysql direct 的 9/9 是显式拒绝，
+   没有 stale success；把它计成协议缺陷会夸大共性，写成 clean 又会掩盖
+   “direct handle 需要换连接”的契约缺口。正确类别是 **fail-fast /
+   caller obligation**。
+2. **B2/B3 的 0 也不自动等于 clean。** psycopg direct 的 B2/B3 0 是因为
+   `same()` 真的成功，但值里已有 `INTRANS`；M1 才显示后继写进了未提交
+   事务。B2/B3 只看逃逸错误，语义上是盲的。
+
+### 12.3 新增 Rust 客户端：modbus 与 async-pop
+
+**tokio-modbus 0.17.0（direct `client::Context`，MBAP server，50 ms proxy）**
+
+| level | plans | violations |
+|---|---:|---:|
+| B1 | 2 | 0 |
+| B2 | 2 | **2** |
+| B3 | 2 | **2** |
+| M1 | 2 | **2（Neither）** |
+
+反例：取消 `write_single_register(1,1)` 后 server 已应用
+（`before=[100,1]`）；延迟 reply（func 6、txid 1）留在 client；下一条请求
+得到 `mismatching headers: expected txid 2, actual txid 1
+Ok(WriteSingleRegister(1,1))`。M1 survivor 的写也在 server 生效
+（`visible=[100,7]`），但 client 报错、own 读也错位。**确认的
+response-association 候选，契约外，upstream unknown，未做最小 patch。**
+
+**async-pop 1.1.3（direct `Client<tokio TcpStream>`，loopback POP3 server）**
+
+| level | plans | violations | 说明 |
+|---|---:|---:|---|
+| B1 | 8 | 0 | — |
+| B2 | 8 | **2** | plan `#0@3` retry login `Err("Did not received the expected user response")` |
+| B3 | 8 | **6** | `#0@1`、`#0@2`、`#1@1` 的 capa `Err("Did not received the expected capa response")` |
+| M1 | 8 | **2 clean + 6 unresolved** | 只有 2/2 retr-target 的 pre==post 干净；6/6 login-target 的 pre 是未认证 `-ERR`，明确不计违规 |
+
+GreenMail 2.1.14 上 `async_pop::new+login` 会挂起：`PopStream::decode`
+在 `Incomplete` 后设 `decode_needs`，成功后没复位，GreenMail 的两段 CAPA
+让下一条短 `+OK` 永远不完整。这是**与取消无关的独立客户端 bug**，不并入
+本轮共性计数；改用允许的 loopback POP3 server。`run.7q9n0j` 标为 INVALID
+保留；`run.WKXVqY` 是有效运行。
+
+### 12.4 skytable：已完成触发链/源码/修复对照（范围内确认的行为缺陷；upstream unknown）
+
+S1 的 deep pass（`clients/skytable/RESULTS-FRAGMENT-DEEP.md`，
+`logs/run.CncmjF/`）把触发链和修复对照补齐了：
+
+- **协议无 request id**：Skyhash 2 只有位置关联（docs 明确“按发送顺序返回”）；
+  没有 request/transaction id，客户端在 drop 后无法重新同步。
+- **direct**：`query()` 的 response 状态是局部变量，`self.buf` 持久；drop 在
+  read 阶段留下一个 pending reply（下一个请求错位）；drop 在 write 阶段留下
+  半包（server error 6 = Illegal client packet，是**截断请求**，不是 stale
+  read）。两种 cut 点，同一“连接协议位置未知”根因。
+- **pooled**：bb8 `is_valid` 发 `sysctl report status`；它消费 stale
+  `0x12`（Empty）并当成成功，然后 survivor 的 update 消费 validation 的
+  reply，survivor select 读空。pool 的 `has_broken` 硬编码 `false`，所以
+  `connections_closed_broken=0`，同一条流被还回。**validation 不是修复，
+  而是把错位往后推一格。**
+- **契约**：docs/README 没有 cancel/drop/timeout/reuse/reset 语义；
+  `reset_buffer` 只是 buffer shrink；协议也没有 correlation id。属于
+  **silent contract**，不是 “contract-external”（没有页面说“不保证”）。
+- **upstream**：client-rust 34 issues/PRs 无匹配；crates.io 最新仍 0.8.12；
+  HEAD 同版本；upstream unknown（未联系）。
+- **最小修复**（dependency copy，不改 Dropwise core）：`query()` 加
+  `PoisonOnDrop` guard；drop/fail 时 poison；`is_valid`/`has_broken` 拒绝
+  poison；pool 丢弃并重连。patch 见 `fix/drop-poison.patch`。
+- **原版/修复对照**：pooled 原版 **27/48**，修复 **0/48**；direct 原版
+  **15/24**，修复仍是 18/24，但全部是显式
+  `IoError(ConnectionAborted, "...connection poisoned")`，**fail-closed，
+  不是 stale Ok，也不是 survivor 写成功**。修复后 direct 需要换连接，这是
+  预期，不是 regression。
+
+措辞：**现象在测试范围内确认；根因是客户端连接协议位置未知；contract
+silent（契约缺口）；修复对照成立；但 upstream 未确认，所以对外仍称
+“已复现并已做修复对照的复用失败候选”，不是“确认的新 upstream bug”。**
+旧 `run.VlevMa` 的 35/72 与新 run 的 42/72 是同一根因的时序差异，不相加。
+
+### 12.5 Linux multicast：从“设备记录缺失”到真实投递
+
+新增 `research/linux/RESULTS-round4-multicast.md` 和
+`logs/20261021-r4-mcast-delivery/`。在隔离 QEMU guest 的 `lo` 上真实
+`sendto`/`recv`：
+
+| 场景 | join | 设备组 | 单播 | 组播 |
+|---|---|---|---|---|
+| v6.19 stock normal | 0 | users=1 | 1/1 | **4/4** |
+| v7.3-rc2 stock normal | 0 | users=1 | 1/1 | **4/4** |
+| v7.3-rc2 fixed normal | 0 | users=1 | 1/1 | **4/4** |
+| v6.19 stock N=2 | **0** | absent | 1/1 | **0/4** |
+| v7.3-rc2 stock N=2 | **0** | absent | 1/1 | **0/4** |
+| v7.3-rc2 fixed N=2 | **-1/ENOBUFS** | absent | 1/1 | 0/4（clean） |
+| v7.3-rc2 fixed N=2 后再 normal join | 0 | users=1 | 1/1 | **2/2** |
+| 三个 kernel N=1 | -1/ENOBUFS | absent | 1/1 | 0/2（clean control） |
+| stock SSM N=2 | **0** | absent | 1/1 | **0/2** |
+| fixed SSM N=2 | -1/ENOBUFS | absent | 1/1 | 0/2（clean） |
+| stock cross-socket close | — | **other group removed** | — | 0/2（其他 socket 的组被删） |
+| fixed cross-socket close | — | other group survives | — | **2/2** |
+
+这把“没有投递”从推断变成了观测。patch audit 覆盖：
+
+- `sock_kmalloc`/`sock_kfree_s` 的 size 配对；失败时 `iml` 尚未发布，非 RCU
+  free 安全；
+- RTNL 只串行化 writer，不串行化 RCU reader；真正的安全理由是“失败时
+  不发布 `iml`”，不是“RTNL 让所有读者看不到半成品”；
+- duplicate join（同 socket `EADDRINUSE`）与 existing-group `users++`
+  （第二个 socket）分开；SSM `IP_ADD_SOURCE_MEMBERSHIP` 走同一失败路径；
+- `void __ip_mc_inc_group()` 的其它调用者（`ip_mc_up`、GRE、bridge、
+  IB CMA）没有错误通道，保留 void 是可辩护的最小范围；但 patch 注释
+  “下一次 IGMP query 会修复”**不成立**：`igmp_heard_query()` 只遍历已存在
+  的 device list，缺组不会被访问；只有新的 join/interface-up 才可能重建。
+- 上游：本地 `origin/master` 仍是 void 签名和 publish-before-inc；没找到
+  等价修复；lore 查询 403，不能证明“上游没有”。
+
+分类：**fault-injection-only 路径上的确认契约违反**（成功返回但无设备组，
+真实 0/4 投递），外加 cross-socket 误删的更强后果；不声称真实世界频率，
+也不声称内存破坏/安全影响。措辞修正见该文件 §6。
+
+### 12.6 阴性/弱阴性的边界
+
+- **orientdb 0/120** 仍是弱阴性：2 条物理 TCP 流；不能写 clean。
+- **gel 3/3 probe** 仍是未覆盖，不是阶梯。
+- **redis/pymongo/neo4j** 的 0 是本场景、本 pool 大小、单次取消下的阴性；
+  它们都观察到 pool 丢弃/重连或事务重置，是 clean self-heal 正例，不是
+  “所有池都安全”。
+- **aiohttp/curl-cffi** 的 0 是弱阴性：yields=1，cut 点分别只覆盖“已写出”
+  和“发送前”；curl 的 mid-flight probe 3/3 是补充观察，不是阶梯。
+- **modbus/pop/skytable** 的阳性都是“客户端 response association”族的
+  新实例，不是新的独立机制类别；Linux multicast 才是本轮新的独立类别。
+
+### 12.7 修正后的计数口径
+
+- **新的独立机制类别：1 个**——Linux multicast 的 void 辅助函数吞掉可失败
+  分配，成功返回但设备组不存在（真实 0/4 投递）。
+- **协议一致性候选（静默/错误效果，不等于已确认新根因）**：
+  skytable（已做修复对照的候选：原版 42/72，generated 84/120；修复
+  pooled 0/48，direct 18/24 显式 fail-closed）、modbus（候选，B2/B3/M1
+  各 2/2）、async-pop（候选但仅 2 个干净 retr M1 + 2/8 B2 + 6/8 B3；
+  login M1 unresolved）、mysql-connector（候选，M1 12/12）、psycopg
+  direct（契约缺口，M1 12/18）、asyncpg direct（有效 M1 9/9，见 §12.9）。
+- **合法 fail-fast / 契约缺口，不计协议根因**：aiomysql direct
+  （B2/B3/M1 全显式 `InterfaceError`；pool clean）。
+- **已知上游/已知族的新实例**：httpx（#2821/#726）、aiosmtplib（SMTP
+  响应关联）。
+- **clean/弱阴性**：redis、pymongo、neo4j、aiohttp、curl-cffi、orientdb
+  （弱）、gel（未覆盖）。
+- **执行次数不是根因数**：42/72、84/120、12/18、9/9、12/12、6/8 都是
+  plans/trials；不能相加成“多少个 bug”。
+
+### 12.8 对“预测”的措辞修正
+
+`ROUND3-PREDICTIONS.md` 是同一工作期的**工作记录**，不是预注册，也不是
+盲测；不能从同一 commit 的文档计算“预测准确率”。本节只把它当作搜索
+记录来反思：
+
+- 家族级“skytable/direct handle 可能有问题”被想到，且确实找到了；
+- 但具体到“bb8 validation 消费 stale reply”“mysql-connector 的
+  `unread_result` 在 socket read 之后才置位”“pop 的 `decode_needs`
+  不复位”，都不是预测出来的，而是源码审计/实验定位的；
+- Linux multicast 完全未被预测，是按“成功但没效果/可失败子步骤被忽略”
+  的广义形状做源码审计找到的；
+- 因此可以写“共性指导了搜索方向和观测清单”，不能写“我们准确预测了
+  下一个 bug”。
+
+### 12.9 asyncpg/psycopg 重跑与责任边界对照（有效 run `run.1HLY38`）
+
+**有效阶梯（修复 `OpResult`/诊断后）：**
+
+| 包/模式 | B1 | B2 | B3 | M1 |
+|---|---:|---:|---:|---:|
+| psycopg 3.3.6 direct | 0/18 | 0/18 | 0/18 | **12/18**（12 Neither，6 Post） |
+| psycopg 3.3.6 pool | 0/18 | 0/18 | 0/18 | 0/18（Pre 12，Post 6） |
+| asyncpg 0.32.0 direct | 0/9 | 0/9 | 0/9 | **9/9**（Neither） |
+| asyncpg 0.32.0 pool | 0/12 | 0/12 | 0/12 | 0/12（Pre 6，Post 6） |
+
+- asyncpg direct 的 9/9 是**有效**的：cut 后 `in_tx` 在 k1 报 `False`、
+  k2/k3 报 `True`，但 survivor write 都是 `Ok`、observer `[]`；k1 是
+  “`BEGIN` 还在队列里”的强样本。B2/B3 0 是因为 `same()` 确实成功（不是
+  旧 `_tx_write` 返回 `None` 的假阴性）；B2/B3 的 value 里可见状态，但
+  level 只看逃逸错误，语义盲。
+- asyncpg pool 0/12：M1 Pre/Post 合法；但 contrast 里有一次
+  `survivor acquire failed: timeout 2.0s`，所以“pool clean”只适用于
+  本阶梯/本场景，不写成普遍保证。
+- psycopg direct 12/18；B1-B3 0 也是语义盲：B2/B3 的值里已有
+  `status_after_acquire=INTRANS`，`same()` 却成功。pool 0/18，release
+  rollback INTRANS→IDLE。
+
+**责任边界/恢复对照（BOUNDARY 事件 + 真实 cut）：**
+
+- **手写 SQL、什么也不做**：psycopg k8–k11 留在 `INTRANS`，survivor
+  write `Ok`、observer `[]`（12/18 的 Neither 就是这个形状）；k12–k13
+  cut 在 COMMIT 之后，`IDLE`、observer 有 target+survivor（合法 Post）。
+  asyncpg k1 `in_tx=False` + observer `[]`（`BEGIN` 还未发出/在队列里），
+  k2/k3 `in_tx=True` + `[]`；k4 是 Post。
+- **显式 `rollback()`**：psycopg `INTRANS→IDLE`，observer 只有 survivor；
+  asyncpg `ROLLBACK` 同样恢复。**这是有效的应用层修复。**
+- **`reset()`**：asyncpg 的 `reset()` 在 k1（`in_tx` 字段 False、BEGIN
+  还在队列）**没有清掉**：`in_tx_after=True`、observer `[]`；k2/k3 能清。
+  所以“有 reset API”不等于“reset 覆盖所有 cut 点”，必须按状态采样点
+  分开报。
+- **官方 transaction context manager**：psycopg `cm_target`/`cm_retry`
+  的 k1/k2 仍是 `INTRANS` + observer `[]`；asyncpg `cm_retry` 的 k2/k3
+  仍是 `in_tx=True` + `[]`。**context manager 不是 cancellation 后的
+  自动恢复保证**；这与“用官方推荐写法就安全”的直觉相反，必须写成契约
+  缺口/调用方仍需检查。
+- **close+reconnect**：psycopg/asyncpg 都恢复（psycopg 新 backend pid；
+  asyncpg 新连接），observer 只有 survivor；这是最后的安全退路。
+- **时序**：`BOUNDARY` 记录 target acquire → BEGIN → cancel →
+  `server_at_cut`（`pg_stat_activity`）→ release → cut returned → survivor；
+  `in_tx` 字段与 server 查询是两次异步采样，**不是原子快照**。asyncpg
+  k1 的 `False` 是客户端字段；server 端在 cut 时已是 `idle in transaction`
+  或 BEGIN 刚发出，不能把“字段 False”直接推成“没有事务”，也不能把
+  “字段变了”直接判成 bug。
+
+**结论**：psycopg/asyncpg direct 是 **direct-handle 状态泄漏 + 契约缺口**：
+`same()` 可以成功但把后继写进未提交事务；M1 的 observer/concrete value
+才看见。pool 的 rollback/reconnect 是正例；但 context manager/reset 不是
+无条件修复。B2/B3 的 0 是语义盲，不是 clean；B2/B3 的报错也不自动等于
+协议缺陷（对照 aiomysql 的 fail-fast）。
+
 ## 附录 A：关键文件
 
 - 预测：[ROUND3-PREDICTIONS.md](ROUND3-PREDICTIONS.md)
@@ -800,9 +1070,19 @@ M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok
   `aggregate.csv`、`summary.csv`
 - Linux original/fixed：[fixed-orig](research/linux/logs/20261021-r4-fixed-orig)、
   [fixed-patched](research/linux/logs/20261021-r4-fixed-patched)
-- Linux 报告：[RESULTS-round4.md](research/linux/RESULTS-round4.md)
+- Linux 报告：[RESULTS-round4.md](research/linux/RESULTS-round4.md)、
+  [RESULTS-round4-multicast.md](research/linux/RESULTS-round4-multicast.md)
+- 适配器审计：[ADAPTER-AUDIT-ROUND3.md](ADAPTER-AUDIT-ROUND3.md)
+- 新增 Python：[pg-mysql RESULTS-FRAGMENT-round3b.md](python/pg-mysql/RESULTS-FRAGMENT-round3b.md)、
+  [redis RESULTS-FRAGMENT.md](python/redis/RESULTS-FRAGMENT.md)、
+  [mongo/neo4j RESULTS-FRAGMENT.md](python/mongo-neo4j/RESULTS-FRAGMENT.md)、
+  [http/smtp RESULTS-FRAGMENT-ROUND3-TARGETS.md](python/http-mongo-neo4j-smtp/RESULTS-FRAGMENT-ROUND3-TARGETS.md)
+- 新增 Rust：[modbus RESULTS-FRAGMENT.md](clients/modbus/RESULTS-FRAGMENT.md)、
+  [pop RESULTS-FRAGMENT.md](clients/pop/RESULTS-FRAGMENT.md)
 
 ## 附录 B：计数口径
+
+> 第一轮口径，保留；冲突以 §12.7 与附录 C 为准。
 
 - **独立根因类别**：按“同一个机制”计，不按 target/trigger/rep/客户端/管理器计。
 - 本轮的机制表：
@@ -810,11 +1090,11 @@ M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok
 | 机制 | 本轮状态 | 证据 | 计数 |
 |---|---|---|---|
 | void 辅助函数吞掉可失败分配 → success-without-effect | **新类别** | Linux `ip_add_membership` 5/5；original/fixed | **1 个新类别** |
-| direct handle 留下未提交事务 | 已知类（BOLT direct 历史）；新实例 | psycopg 12/18、asyncpg #2 6/9 | 同一类，不算 3 个 |
+| direct handle 留下未提交事务 | 已知类（BOLT direct 历史）；新实例 | psycopg 12/18、asyncpg M1 9/9（k2/k3 6/9 遗留；k1 3/9 queued BEGIN） | 同一类，不算 3 个 |
 | direct handle 的 queued BEGIN / 状态报告为 False | asyncpg #1 的子机制；比“遗留事务”更强 | asyncpg 3/9 | 归入 direct-handle 类，单列子机制 |
 | direct handle 的 sticky cancel flag / fail-fast | aiomysql 新实例；无静默写 | aiomysql 9/9 | 同一族的 fail-fast 变体 |
 | SMTP DATA/354/250 响应关联 | 已知族（async-smtp 第二轮）；新客户端 | aiosmtplib 12/12 | 同一类的新实例 |
-| 客户端 response association 被取消破坏 | 已知族（BOLT/SMTP）；新 Rust 客户端 + pool 不自治愈 | skytable 35/72 + generated 84/120 | 同一类的新实例 |
+| 客户端 response association 被取消破坏 | 已知族（BOLT/SMTP）；新 Rust 客户端 + pool 不自治愈 | skytable 原版 42/72 + generated 84/120；修复 pooled 0/48、direct 18/24 fail-closed | 同一类的新实例（已做修复对照） |
 | httpcore cancellation cleanup 窗口 | 已知上游相关（#2821/#726）；新源码定位 | httpx 3/18 | 同一类的新实例 |
 | 部分破坏性失败（mmap/mremap/mprotect） | 契约外 | 5/5、5/5、10/10 | **不是 bug**，不算根因 |
 | pool reset/rollback | clean 正例 | psycopg/asyncpg pool 0 | 不是 bug |
@@ -837,3 +1117,31 @@ M1 看不到的类别。skytable 还给出一个 B3 反例：B3 返回 stale `Ok
 - 弱阴性/未覆盖：orientdb 0/120（2 条物理流）、gel（probe only）、
   aiomysql pool/mysql-connector/pymongo/neo4j/curl-cffi（未跑）、
   modbus/async-pop（未开始）。这些都不计入“已确认 clean”。
+## 附录 C：二次校正后的计数（取代附录 B 的冲突项）
+
+> 附录 B 保留第一轮口径；与本节冲突时以本节为准。**执行次数不是根因数**。
+
+| 类别 | 对象 | 证据 | 计数 |
+|---|---|---|---|
+| 新的独立机制类别 | Linux `ip_add_membership`/SSM 的 void 辅助函数吞掉分配失败 | 真实 UDP：normal 4/4；stock N=2 **0/4**；fixed N=2 `-ENOBUFS` 0/4；cross-socket close 误删 | **1 类** |
+| 协议一致性（已做修复对照） | skytable 0.8.12 | 原版 pooled 27/48、direct 15/24；修复 pooled 0/48、direct 18/24 显式 fail-closed；35/72 与 42/72 是同一根因时序差异 | 范围内确认的客户端缺陷；upstream unknown |
+| 协议一致性候选 | tokio-modbus 0.17.0 | B2 2/2、B3 2/2、M1 2/2；stale txid；survivor 写已生效但报错 | 候选，契约外 |
+| 协议一致性候选 | async-pop 1.1.3 | B2 2/8、B3 6/8；M1 仅 2/2 retr 干净，6/6 login unresolved | 候选，部分 |
+| 协议一致性候选 | mysql-connector 26.7.0 | B2/B3 12/12 fail-fast；M1 12/12 Neither：6 丢写、3 误报、3 错位 | 候选 |
+| direct-handle 静默泄漏 | psycopg 3.3.6 direct | B1-B3 0/18；M1 12/18；`INTRANS` 在值里但 B2/B3 不看 | 契约缺口/实例 |
+| direct-handle 静默泄漏 | asyncpg 0.32.0 direct | 新 B1-B3 0/9、M1 9/9；k1 `in_tx=False` + observer []; B2/B3 语义盲 | 契约缺口/实例 |
+| 合法 fail-fast（不计协议根因） | aiomysql 0.3.2 direct | B2/B3/M1 全显式 `InterfaceError`；observer 空；无 stale success | 契约缺口 |
+| clean/self-heal 正例 | aiomysql pool、psycopg pool、redis、pymongo、neo4j | 0 违规；pool 丢弃/重连或 rollback/reset | 阴性，不是“绝对安全” |
+| 已知上游/已知族 | httpx、aiosmtplib | httpx #2821/#726；SMTP DATA/354/250 | 已知，不是新根因 |
+| 弱阴性/未覆盖 | orientdb、gel、aiohttp、curl-cffi、asyncpg pool | 2 条物理流/probe/yields=1/重跑中 | 不计 clean |
+
+- **协议一致性候选的“根因”数**：不能把 skytable/modbus/pop/mysql-connector/
+  psycopg/asyncpg 各算一个新根因；它们大多是 **response association /
+  direct-handle state** 两个已知族的新实例。真正新的独立类别仍只有
+  **Linux multicast 1 个**。
+- **执行次数**：skytable 35/72 + 84/120、psycopg 12/18、asyncpg 9/9、
+  mysql-connector 12/12、modbus 6 个 plan violations、pop 10 个 plan
+  violations、aiosmtplib 36、httpx 9 都是 trials/plans，不能相加成 bug 数。
+- **不把“B2/B3 报错”统一算违规**：aiomysql 的显式 `InterfaceError` 是
+  fail-fast；mysql-connector 的 M1 静默后果才算候选缺陷。
+
