@@ -1,0 +1,4 @@
+# Build artifacts of the exploration crates.
+target/
+# Local scratch output; the selected raw logs live in each client's logs/.
+*.log.tmp
