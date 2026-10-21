@@ -1,0 +1,8 @@
+case=pymongo mode=plain pymongo=4.19.0 python=3.13.13 host=127.0.0.1 port=57017 round=0 delay=0.05 bound=2.0
+DIAG setup pool={'conns': 1, 'active': 0, 'max': 1} ids={'ids': [140353816060432], 'active': 0}
+DIAG reuse after 3 pings=[{'ids': [140353816060432], 'active': 0}, {'ids': [140353816060432], 'active': 0}, {'ids': [140353816060432], 'active': 0}]
+DIAG pre={'survivor': ['ok', "OpResult(ok=True, stage='survivor', value={'write': ('ok', {'matched': 0, 'modified': 0, 'upserted': 'survivor', 'ack': True}), 'own': ('ok', {'_id': 'survivor', 'v': 7})}, error=None)"], 'observer': ['ok', "OpResult(ok=True, stage='observer', value={'docs': [['survivor', 7]]}, error=None)"]}
+DIAG post target=completed/2 result=OpResult(ok=True, stage='plain', value={'write': ('ok', {'matched': 0, 'modified': 0, 'upserted': 'target', 'ack': True})}, error=None) diag={'setup_pool': {'conns': 1, 'active': 0, 'max': 1}, 'setup_ids': {'ids': [140353816060432], 'active': 0}, 'survivor_start': {'state': 'n/a', 'pool': {'conns': 1, 'active': 0, 'max': 1}, 'ids': {'ids': [140353816060432], 'active': 0}}, 'after_target': {'pool': {'conns': 1, 'active': 0, 'max': 1}, 'ids': {'ids': [140353816060432], 'active': 0}}}
+DIAG post={'survivor': ['ok', "OpResult(ok=True, stage='survivor', value={'write': ('ok', {'matched': 1, 'modified': 1, 'upserted': None, 'ack': True}), 'own': ('ok', {'_id': 'survivor', 'v': 7})}, error=None)"], 'observer': ['ok', "OpResult(ok=True, stage='observer', value={'docs': [['survivor', 7], ['target', 1]]}, error=None)"]}
+DIAG pre==post False
+exit=0

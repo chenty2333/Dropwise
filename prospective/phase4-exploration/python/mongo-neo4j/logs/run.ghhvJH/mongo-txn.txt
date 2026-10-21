@@ -1,0 +1,73 @@
+case=pymongo mode=txn pymongo=4.19.0 python=3.13.13 host=127.0.0.1 port=57017 round=0 delay=0.05 bound=2.0
+case=pymongo level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=8.72
+  plan=pending#1 rep=1 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y11/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y5/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y5/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y5/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y6/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y6/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y6/realized=True verdict=- obs=None ok 
+verdicts={'-': 12}
+SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=8.72
+case=pymongo level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.25
+  plan=pending#1 rep=1 target=cancelled/y10/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': '0da3cbf125084d69b48c5fb19a4992d3', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'target'}]} ok 
+  plan=pending#1 rep=2 target=cancelled/y10/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': '37076d6c3eb74db38b36743440399cfc', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'target'}]} ok 
+  plan=pending#1 rep=3 target=cancelled/y10/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': 'ae8c317e60e34459b5eee479458bcab7', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'target'}]} ok 
+  plan=pending#2 rep=1 target=cancelled/y11/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': '72ed8fee07bd4d5aaec18a10676ebbe2', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'target'}]} ok 
+  plan=pending#2 rep=2 target=cancelled/y11/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': 'a11487d6637e456aa6391d4da2c53926', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'target'}]} ok 
+  plan=pending#2 rep=3 target=cancelled/y11/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': 'ddbfc940146a4b5f8b55f547b0fe6854', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'target'}]} ok 
+  plan=pending#3 rep=1 target=cancelled/y5/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': 'd525c7eff342484c8c9a21a9cd2dc73a', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#3 rep=2 target=cancelled/y5/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': '64d649176bf9460791075382b54263c1', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#3 rep=3 target=cancelled/y5/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': '8f1227fe01ca4494b5633aebc62a87d4', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#4 rep=1 target=cancelled/y6/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': '75a542202c46446e90534bb77f47ab01', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#4 rep=2 target=cancelled/y6/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': 'd748d1af3336496f86e345132fd6a4fb', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#4 rep=3 target=cancelled/y6/realized=True verdict=- obs={'commit': ['ok', None], 'session_id': '16f863f496a34d4aa07de8d11817ddb6', 'start_transaction': 'ok', 'state_after_begin': {'ended': False, 'in_tx': True, 'tx': 'STARTING'}, 'state_after_commit': {'ended': False, 'in_tx': False, 'tx': 'COMMITTED'}, 'state_after_write': {'ended': False, 'in_tx': True, 'tx': 'IN_PROGRESS'}, 'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+verdicts={'-': 12}
+SUMMARY level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.25
+case=pymongo level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.00
+  plan=pending#1 rep=1 target=cancelled/y10/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#1 rep=2 target=cancelled/y10/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#1 rep=3 target=cancelled/y10/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#2 rep=1 target=cancelled/y11/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#2 rep=2 target=cancelled/y11/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#2 rep=3 target=cancelled/y11/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#3 rep=1 target=cancelled/y5/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#3 rep=2 target=cancelled/y5/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#3 rep=3 target=cancelled/y5/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#4 rep=1 target=cancelled/y6/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#4 rep=2 target=cancelled/y6/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#4 rep=3 target=cancelled/y6/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+verdicts={'-': 12}
+SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.00
+case=pymongo level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=14.15
+pre=[{'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}}, {'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}}]
+post=[{'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}}, {'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}}]
+  plan=pending#1 rep=1 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}} ok 
+  plan=pending#1 rep=2 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}} ok 
+  plan=pending#1 rep=3 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}} ok 
+  plan=pending#2 rep=1 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}} ok 
+  plan=pending#2 rep=2 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}} ok 
+  plan=pending#2 rep=3 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}} ok 
+  plan=pending#3 rep=1 target=cancelled/y5/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#3 rep=2 target=cancelled/y5/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#3 rep=3 target=cancelled/y5/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#4 rep=1 target=cancelled/y6/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#4 rep=2 target=cancelled/y6/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#4 rep=3 target=cancelled/y6/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+verdicts={'Pre': 6, 'Post': 6}
+SUMMARY level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=14.15
+=== FINAL ===
+mode=txn SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=8.72
+violations_by_plan=[]
+mode=txn SUMMARY level=B2 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.25
+violations_by_plan=[]
+mode=txn SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=10.00
+violations_by_plan=[]
+mode=txn SUMMARY level=M1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=14.15
+violations_by_plan=[]
+exit=0

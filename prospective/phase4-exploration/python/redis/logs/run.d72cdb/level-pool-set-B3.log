@@ -1,0 +1,14 @@
+case=redis-py mode=pool unit=set redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=3 delay=0.05 bound=2.0
+DIAG mode=pool unit=set setup_id=('ok', 246) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=set setup_id=('ok', 248) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=set setup_id=('ok', 251) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=set setup_id=('ok', 254) surv_id=None changed=None pool=None conn=None tx_probe=None
+case=redis level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=3.36
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'incr': 1} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'incr': 1} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'incr': 1} ok 
+verdicts={'-': 3}
+SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=3.36
+=== FINAL ===
+unit=set mode=pool SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=3.36
+violations_by_plan=[]

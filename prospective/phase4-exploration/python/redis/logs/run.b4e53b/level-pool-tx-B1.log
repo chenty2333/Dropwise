@@ -1,0 +1,45 @@
+case=redis-py mode=pool unit=tx redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=3 delay=0.05 bound=2.0
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 520) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=watch target_failure=None setup_id=('ok', 522) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=watch target_failure=None setup_id=('ok', 524) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=watch target_failure=None setup_id=('ok', 526) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=read target_failure=None setup_id=('ok', 528) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=read target_failure=None setup_id=('ok', 531) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=read target_failure=None setup_id=('ok', 534) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 537) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 540) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 543) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 546) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 548) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 550) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+case=redis level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.30
+  plan=pending#1 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+verdicts={'-': 12}
+SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.30
+=== FINAL ===
+unit=tx mode=pool SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.30
+violations_by_plan=[]

@@ -1,0 +1,22 @@
+case=curl-cffi version=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 url=http://127.0.0.1:41029 reps=3 levels=['B1'] plans=None
+
+=== LEVEL B1 ===
+DIAG setup token=cc-405aa27ba635 proxy_port=45701 warm={'status': 200, 'body': {'conn': 1, 'ok': True}} health={'status': 200, 'body': {'conn': 2, 'ok': True, 'requests': 2}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+DIAG target token=cc-405aa27ba635 result={'status': 200, 'body': {'conn': 1, 'req': 'cc-405aa27ba635-target', 'stored': 'target'}}
+DIAG setup token=cc-046f9ad4a9da proxy_port=46377 warm={'status': 200, 'body': {'conn': 3, 'ok': True}} health={'status': 200, 'body': {'conn': 4, 'ok': True, 'requests': 5}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+DIAG setup token=cc-f58cc4ecaa12 proxy_port=41013 warm={'status': 200, 'body': {'conn': 5, 'ok': True}} health={'status': 200, 'body': {'conn': 6, 'ok': True, 'requests': 7}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+DIAG setup token=cc-d31b1dd32fca proxy_port=46289 warm={'status': 200, 'body': {'conn': 7, 'ok': True}} health={'status': 200, 'body': {'conn': 8, 'ok': True, 'requests': 9}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+case=curl-cffi level=B1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.52
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+verdicts={'-': 3}
+  target-detail plan=pending#1 rep=1 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=2 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=3 outcome=cancelled yields=1 realized=True detail=''
+SUMMARY level=B1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.52
+
+=== FINAL ===
+SUMMARY level=B1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.52
+violations_by_plan=[]
+unrealized_by_plan=[]

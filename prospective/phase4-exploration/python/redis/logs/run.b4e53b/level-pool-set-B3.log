@@ -1,0 +1,18 @@
+case=redis-py mode=pool unit=set redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=3 delay=0.05 bound=2.0
+DIAG mode=pool unit=set stage=set target_failure=None setup_id=('ok', 684) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=incr target_failure=None setup_id=('ok', 686) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=incr target_failure=None setup_id=('ok', 689) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=incr target_failure=None setup_id=('ok', 692) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+case=redis level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=3.35
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'incr': 1}, 'error': None} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'incr': 1}, 'error': None} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'incr': 1}, 'error': None} ok 
+verdicts={'-': 3}
+SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=3.35
+=== FINAL ===
+unit=set mode=pool SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=3.35
+violations_by_plan=[]

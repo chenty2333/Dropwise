@@ -1,0 +1,10 @@
+date_utc=2026-10-21T13:43:15.247628+00:00
+python=3.13.13 (/home/ava/dropwise-py-work-r3/venv-aiohttp313/bin/python)
+platform=Linux-7.2.11-200.fc44.x86_64-x86_64-with-glibc2.43
+venv=fresh 3.13 venv for this target (the shared venv-py313 was not modified)
+aiohttp=3.14.5 packages={"aiohappyeyeballs": "2.7.1", "aiohttp": "3.14.5", "aiosignal": "1.4.0", "attrs": "26.1.0", "frozenlist": "1.8.0", "idna": "3.20", "multidict": "7.1.0", "propcache": "0.5.4", "yarl": "1.25.1"}
+http_server=local asyncio HTTP/1.1 keep-alive process, 127.0.0.1:45013
+pending=research/python-retro/cases/common.py DelayProxy, delay=0.05 s per forwarded chunk (both directions)
+client=ClientSession(TCPConnector(limit=1, limit_per_host=1, force_close=False, enable_cleanup_closed=False)), auto_decompress=True, trust_env=False
+levels=B1,B2,B3,M1; M1 Expect.ATOMIC; pre/post 2 samples per side
+op_bound=2.0 s, engine_timeout=15.0 s, reps=3

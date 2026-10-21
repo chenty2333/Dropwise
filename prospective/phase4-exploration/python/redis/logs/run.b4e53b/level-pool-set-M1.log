@@ -1,0 +1,28 @@
+case=redis-py mode=pool unit=set redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=3 delay=0.05 bound=2.0
+DIAG mode=pool unit=set stage=set target_failure=None setup_id=('ok', 695) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=None target_failure=None setup_id=('ok', 697) surv_id=('ok', 697) changed=None pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=None target_failure=None setup_id=('ok', 699) surv_id=('ok', 699) changed=None pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=set target_failure=None setup_id=('ok', 701) surv_id=('ok', 701) changed=None pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=set target_failure=None setup_id=('ok', 703) surv_id=('ok', 703) changed=None pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=set target_failure=None setup_id=('ok', 705) surv_id=('ok', 706) changed=True pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=set target_failure=None setup_id=('ok', 708) surv_id=('ok', 709) changed=True pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=pool unit=set stage=set target_failure=None setup_id=('ok', 711) surv_id=('ok', 712) changed=True pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=set {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+case=redis level=M1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=8.82
+pre=[{'survivor': {'own': ['ok', 'survivor'], 'pre_read': ['ok', None], 'set': ['ok', True]}, 'observer': {'value': ['ok', 'survivor']}}, {'survivor': {'own': ['ok', 'survivor'], 'pre_read': ['ok', None], 'set': ['ok', True]}, 'observer': {'value': ['ok', 'survivor']}}]
+post=[{'survivor': {'own': ['ok', 'survivor'], 'pre_read': ['ok', 'target'], 'set': ['ok', True]}, 'observer': {'value': ['ok', 'survivor']}}, {'survivor': {'own': ['ok', 'survivor'], 'pre_read': ['ok', 'target'], 'set': ['ok', True]}, 'observer': {'value': ['ok', 'survivor']}}]
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=Post obs={'survivor': {'own': ['ok', 'survivor'], 'pre_read': ['ok', 'target'], 'set': ['ok', True]}, 'observer': {'value': ['ok', 'survivor']}} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=Post obs={'survivor': {'own': ['ok', 'survivor'], 'pre_read': ['ok', 'target'], 'set': ['ok', True]}, 'observer': {'value': ['ok', 'survivor']}} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=Post obs={'survivor': {'own': ['ok', 'survivor'], 'pre_read': ['ok', 'target'], 'set': ['ok', True]}, 'observer': {'value': ['ok', 'survivor']}} ok 
+verdicts={'Post': 3}
+SUMMARY level=M1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=8.82
+=== FINAL ===
+unit=set mode=pool SUMMARY level=M1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=8.82
+violations_by_plan=[]

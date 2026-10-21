@@ -1,0 +1,8 @@
+case=neo4j mode=plain neo4j=6.4.1 python=3.13.13 host=127.0.0.1 port=57687 auth=basic user=neo4j round=0 delay=0.05 bound=2.0
+DIAG setup pool={'in_use': 0, 'idle': 1, 'max': 1} ids={'ids': [139681902101520], 'addr': '127.0.0.1:42549'}
+DIAG reuse after 3 pings=[{'ids': [139681902101520], 'addr': '127.0.0.1:42549'}, {'ids': [139681902101520], 'addr': '127.0.0.1:42549'}, {'ids': [139681902101520], 'addr': '127.0.0.1:42549'}]
+DIAG pre={'survivor': ['ok', "OpResult(ok=True, stage='survivor', value={'write': ('ok', {'k': 'survivor'}), 'own': ('ok', {'v': 7})}, error=None)"], 'observer': ['ok', "OpResult(ok=True, stage='observer', value={'nodes': [['survivor', 7]]}, error=None)"]}
+DIAG post target=completed/2 result=OpResult(ok=True, stage='plain', value={'run': 'ok', 'record': ('ok', {'k': 'target'}), 'consume': ('ok', True), 'cleanup': {'session_close': ('ok', None)}}, error=None) diag={'setup_pool': {'in_use': 0, 'idle': 1, 'max': 1}, 'setup_ids': {'ids': [139681902101520], 'addr': '127.0.0.1:42549'}, 'survivor_start': {'pool': {'in_use': 0, 'idle': 1, 'max': 1}, 'ids': {'ids': [139681902101520], 'addr': '127.0.0.1:42549'}, 'tx': None, 'session_closed': None}, 'target_final': {'tx': None, 'pool': {'in_use': 0, 'idle': 1, 'max': 1}}, 'session_close': ('ok', None), 'after_target': {'pool': {'in_use': 0, 'idle': 1, 'max': 1}, 'ids': {'ids': [139681902101520], 'addr': '127.0.0.1:42549'}}}
+DIAG post={'survivor': ['ok', "OpResult(ok=True, stage='survivor', value={'write': ('ok', {'k': 'survivor'}), 'own': ('ok', {'v': 7})}, error=None)"], 'observer': ['ok', "OpResult(ok=True, stage='observer', value={'nodes': [['survivor', 7], ['target', 1]]}, error=None)"]}
+DIAG pre==post False
+exit=0

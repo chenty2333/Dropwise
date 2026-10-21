@@ -1,0 +1,45 @@
+case=redis-py mode=direct unit=tx redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=3 delay=0.05 bound=2.0
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 784) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 786) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 789) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 792) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 795) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 798) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 801) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 804) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 807) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 810) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 813) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 816) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 819) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+case=redis level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=17.93
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#3 rep=1 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#3 rep=2 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#3 rep=3 target=cancelled/y9/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#4 rep=1 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#4 rep=2 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+  plan=pending#4 rep=3 target=cancelled/y10/realized=True verdict=- obs={'ok': True, 'stage': 'different', 'value': {'exec': ['OK'], 'multi': 'OK', 'queue': False, 'watch': True}, 'error': None} ok 
+verdicts={'-': 12}
+SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=17.93
+=== FINAL ===
+unit=tx mode=direct SUMMARY level=B3 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=17.93
+violations_by_plan=[]

@@ -1,0 +1,10 @@
+== environment ==
+2026-10-21T13:48:26Z
+Python 3.13.13
+neo4j:5.26.0-community neo4j@sha256:5a015e53de1895e7eee1574ae0325cf8c4b89587222778108c594bdd45a474b5 id=sha256:5a015e53de1895e7eee1574ae0325cf8c4b89587222778108c594bdd45a474b5
+container=/dw-r3-py-neo4j-530669 image=neo4j:5.26.0-community id=sha256:5a015e53de1895e7eee1574ae0325cf8c4b89587222778108c594bdd45a474b5
+name, versions[0], edition
+"Neo4j Kernel", "5.26.0", "community"
+auth=basic neo4j/testpassword (NEO4J_AUTH set; not none)
+bolt=127.0.0.1:57687 http=127.0.0.1:57474 delay=0.05 bound=2.0 engine_timeout=12
+run=logs/run.xu9AhN

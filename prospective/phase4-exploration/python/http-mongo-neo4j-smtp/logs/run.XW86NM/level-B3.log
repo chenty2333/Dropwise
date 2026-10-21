@@ -1,0 +1,22 @@
+case=aiohttp version=3.14.5 url=http://127.0.0.1:45013 reps=3 levels=['B3'] plans=None
+
+=== LEVEL B3 ===
+DIAG setup token=ah-4ebf3800d1a0 proxy_port=45493 warm={'status': 200, 'body': {'conn': 20, 'ok': True}} health={'status': 200, 'body': {'conn': 21, 'ok': True, 'requests': 29}} connector=limit1/per_host1/force_close=False
+DIAG target token=ah-4ebf3800d1a0 result={'status': 200, 'body': {'conn': 20, 'req': 'ah-4ebf3800d1a0-target', 'stored': 'target'}}
+DIAG setup token=ah-053273b19a2d proxy_port=41137 warm={'status': 200, 'body': {'conn': 22, 'ok': True}} health={'status': 200, 'body': {'conn': 23, 'ok': True, 'requests': 32}} connector=limit1/per_host1/force_close=False
+DIAG setup token=ah-a8897cc9527a proxy_port=40953 warm={'status': 200, 'body': {'conn': 25, 'ok': True}} health={'status': 200, 'body': {'conn': 26, 'ok': True, 'requests': 36}} connector=limit1/per_host1/force_close=False
+DIAG setup token=ah-64f545fdfd7e proxy_port=45527 warm={'status': 200, 'body': {'conn': 28, 'ok': True}} health={'status': 200, 'body': {'conn': 29, 'ok': True, 'requests': 40}} connector=limit1/per_host1/force_close=False
+case=aiohttp level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.82
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 24, 'req': 'ah-053273b19a2d-b3', 'value': 'target'}, 'status': 200} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 27, 'req': 'ah-a8897cc9527a-b3', 'value': 'target'}, 'status': 200} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 30, 'req': 'ah-64f545fdfd7e-b3', 'value': 'target'}, 'status': 200} ok 
+verdicts={'-': 3}
+  target-detail plan=pending#1 rep=1 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=2 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=3 outcome=cancelled yields=1 realized=True detail=''
+SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.82
+
+=== FINAL ===
+SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.82
+violations_by_plan=[]
+unrealized_by_plan=[]

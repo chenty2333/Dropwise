@@ -1,0 +1,10 @@
+== environment ==
+2026-10-21T13:48:20Z
+Python 3.13.13
+mongo:7.0.21 mongo@sha256:3d715950d83061ff2fbc910d12d3703212538cacf6b3003e3736fa5c7f51a2e1 id=sha256:3d715950d83061ff2fbc910d12d3703212538cacf6b3003e3736fa5c7f51a2e1
+container=/dw-r3-py-mongo-530668 image=mongo:7.0.21 id=sha256:3d715950d83061ff2fbc910d12d3703212538cacf6b3003e3736fa5c7f51a2e1
+{"topologyVersion":{"processId":"6ad8c2a393e6e3626c6e5536","counter":{"low":6,"high":0,"unsigned":false}},"hosts":["127.0.0.1:57017"],"setName":"rs0","setVersion":1,"isWritablePrimary":true,"secondary":false,"primary":"127.0.0.1:57017","me":"127.0.0.1:57017","electionId":"7fffffff0000000000000001","lastWrite":{"opTime":{"ts":{"$timestamp":"7699117568325320727"},"t":{"low":1,"high":0,"unsigned":fal
+7.0.21
+replSet=rs0 single-node, mongod --bind_ip 127.0.0.1 --port 57017 (host network)
+port=57017 delay=0.05 bound=2.0 engine_timeout=12 python=3.13
+run=logs/run.Qhri8J

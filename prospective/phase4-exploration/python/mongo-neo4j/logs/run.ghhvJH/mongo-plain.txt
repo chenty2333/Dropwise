@@ -1,0 +1,49 @@
+case=pymongo mode=plain pymongo=4.19.0 python=3.13.13 host=127.0.0.1 port=57017 round=0 delay=0.05 bound=2.0
+case=pymongo level=B1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=3.95
+  plan=pending#1 rep=1 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+verdicts={'-': 6}
+SUMMARY level=B1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=3.95
+case=pymongo level=B2 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.57
+  plan=pending#1 rep=1 target=cancelled/y3/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#1 rep=2 target=cancelled/y3/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#1 rep=3 target=cancelled/y3/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#2 rep=1 target=cancelled/y4/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#2 rep=2 target=cancelled/y4/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+  plan=pending#2 rep=3 target=cancelled/y4/realized=True verdict=- obs={'write': ['ok', {'ack': True, 'matched': 1, 'modified': 1, 'upserted': None}]} ok 
+verdicts={'-': 6}
+SUMMARY level=B2 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.57
+case=pymongo level=B3 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.57
+  plan=pending#1 rep=1 target=cancelled/y3/realized=True verdict=- obs={'update': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#1 rep=2 target=cancelled/y3/realized=True verdict=- obs={'update': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#1 rep=3 target=cancelled/y3/realized=True verdict=- obs={'update': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#2 rep=1 target=cancelled/y4/realized=True verdict=- obs={'update': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#2 rep=2 target=cancelled/y4/realized=True verdict=- obs={'update': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+  plan=pending#2 rep=3 target=cancelled/y4/realized=True verdict=- obs={'update': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'b3'}]} ok 
+verdicts={'-': 6}
+SUMMARY level=B3 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.57
+case=pymongo level=M1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=7.90
+pre=[{'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}}, {'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7]], 'error': None}}]
+post=[{'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}}, {'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}}]
+  plan=pending#1 rep=1 target=cancelled/y3/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#1 rep=2 target=cancelled/y3/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#1 rep=3 target=cancelled/y3/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#2 rep=1 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#2 rep=2 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+  plan=pending#2 rep=3 target=cancelled/y4/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'_id': 'survivor', 'v': 7}], 'write': ['ok', {'ack': True, 'matched': 0, 'modified': 0, 'upserted': 'survivor'}]}, 'observer': {'docs': [['survivor', 7], ['target', 1]], 'error': None}} ok 
+verdicts={'Post': 6}
+SUMMARY level=M1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=7.90
+=== FINAL ===
+mode=plain SUMMARY level=B1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=3.95
+violations_by_plan=[]
+mode=plain SUMMARY level=B2 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.57
+violations_by_plan=[]
+mode=plain SUMMARY level=B3 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.57
+violations_by_plan=[]
+mode=plain SUMMARY level=M1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=7.90
+violations_by_plan=[]
+exit=0

@@ -1,0 +1,4 @@
+case=redis-py mode=direct unit=set redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=0 delay=0.05 bound=2.0
+RECOVER k=1 target=cancelled/y1 realized=True err=None rec={'discard': ('err', 'ResponseError: DISCARD without MULTI'), 'unwatch': ('ok', True), 'set_new': ('ok', True), 'get_new': ('ok', b'recover-1'), 'ping': ('ok', True), 'client_id': ('ok', 970)} observer_new=('ok', b'recover-1') diag={'setup_client_id': ('ok', 969), 'setup_pool': None, 'baseline': ('ok', None), 'stage': 'set'}
+DIAG mode=direct unit=set stage=set target_failure=None setup_id=('ok', 969) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=set {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}

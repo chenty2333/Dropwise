@@ -1,0 +1,10 @@
+=== adapter contract selftest (no service) ===
+B2 mode=opresult-fail violations=1 baseline_errors=0 yields=1 trials=1 PASS obs={'ok': False, 'stage': 'fake-exec', 'value': None, 'error': 'deliberate'}
+B2 mode=raise         violations=1 baseline_errors=0 yields=1 trials=1 PASS obs='ERR RuntimeError: deliberate retry raise'
+B2 mode=timeout       violations=1 baseline_errors=0 yields=1 trials=1 PASS obs='ERR TimeoutError: '
+B2 mode=ok            violations=0 baseline_errors=0 yields=1 trials=1 PASS obs={'ok': True, 'stage': 'fake-exec', 'value': {'ok': True}, 'error': None}
+B2 mode=silent-none   violations=0 baseline_errors=0 yields=1 trials=1 PASS obs=None
+B2 mode=target-fail   violations=0 baseline_errors=1 yields=1 trials=1 PASS obs={'ok': True, 'stage': 'fake-exec', 'value': {'ok': True}, 'error': None}
+B1 target-fail violations=0 baseline_errors=1 PASS ['uncancelled target: error RuntimeError: deliberate target failure']
+normalize/operation_failed failed={'ok': False, 'stage': 's', 'value': None, 'error': 'x'} good={'ok': True, 'stage': 's', 'value': {}, 'error': None} PASS
+=== OK ===

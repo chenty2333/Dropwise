@@ -1,0 +1,49 @@
+case=neo4j mode=plain neo4j=6.4.1 python=3.13.13 host=127.0.0.1 port=57687 auth=basic user=neo4j round=0 delay=0.05 bound=2.0
+case=neo4j level=B1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.06
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+verdicts={'-': 6}
+SUMMARY level=B1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.06
+case=neo4j level=B2 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=6.50
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc7900ee7b0>'], 'record': ['ok', {'k': 'target'}], 'run': 'ok'} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc7900fa970>'], 'record': ['ok', {'k': 'target'}], 'run': 'ok'} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a87dd0>'], 'record': ['ok', {'k': 'target'}], 'run': 'ok'} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a85190>'], 'record': ['ok', {'k': 'target'}], 'run': 'ok'} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a85a90>'], 'record': ['ok', {'k': 'target'}], 'run': 'ok'} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a853d0>'], 'record': ['ok', {'k': 'target'}], 'run': 'ok'} ok 
+verdicts={'-': 6}
+SUMMARY level=B2 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=6.50
+case=neo4j level=B3 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=6.64
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a85b50>'], 'record': ['ok', {'k': 'b3'}], 'run': 'ok'} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a87950>'], 'record': ['ok', {'k': 'b3'}], 'run': 'ok'} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a86f90>'], 'record': ['ok', {'k': 'b3'}], 'run': 'ok'} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a85f10>'], 'record': ['ok', {'k': 'b3'}], 'run': 'ok'} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a86f90>'], 'record': ['ok', {'k': 'b3'}], 'run': 'ok'} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs={'consume': ['ok', '<neo4j._work.summary.ResultSummary object at 0x7fc790a85b50>'], 'record': ['ok', {'k': 'b3'}], 'run': 'ok'} ok 
+verdicts={'-': 6}
+SUMMARY level=B3 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=6.64
+case=neo4j level=M1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=11.37
+pre=[{'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7]]}}, {'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7]]}}]
+post=[{'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7], ['target', 1]]}}, {'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7], ['target', 1]]}}]
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=Pre obs={'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=Post obs={'survivor': {'own': ['ok', {'v': 7}], 'write': ['ok', {'k': 'survivor'}]}, 'observer': {'error': None, 'nodes': [['survivor', 7], ['target', 1]]}} ok 
+verdicts={'Pre': 3, 'Post': 3}
+SUMMARY level=M1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=11.37
+=== FINAL ===
+mode=plain SUMMARY level=B1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=4.06
+violations_by_plan=[]
+mode=plain SUMMARY level=B2 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=6.50
+violations_by_plan=[]
+mode=plain SUMMARY level=B3 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=6.64
+violations_by_plan=[]
+mode=plain SUMMARY level=M1 yields=2 trials=6 violations=0 unknown=0 unrealized=0 seconds=11.37
+violations_by_plan=[]
+exit=0

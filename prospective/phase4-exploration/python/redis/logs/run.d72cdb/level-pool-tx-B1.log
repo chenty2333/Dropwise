@@ -1,0 +1,32 @@
+case=redis-py mode=pool unit=tx redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=3 delay=0.05 bound=2.0
+DIAG mode=pool unit=tx setup_id=('ok', 82) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 84) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 86) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 88) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 90) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 93) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 96) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 99) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 102) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 105) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 108) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 110) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG mode=pool unit=tx setup_id=('ok', 112) surv_id=None changed=None pool=None conn=None tx_probe=None
+case=redis level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.32
+  plan=pending#1 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y9/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y10/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+verdicts={'-': 12}
+SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.32
+=== FINAL ===
+unit=tx mode=pool SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=11.32
+violations_by_plan=[]

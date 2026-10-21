@@ -1,0 +1,22 @@
+case=curl-cffi version=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 url=http://127.0.0.1:41029 reps=3 levels=['B3'] plans=None
+
+=== LEVEL B3 ===
+DIAG setup token=cc-ae2a5acb9114 proxy_port=43781 warm={'status': 200, 'body': {'conn': 17, 'ok': True}} health={'status': 200, 'body': {'conn': 18, 'ok': True, 'requests': 23}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+DIAG target token=cc-ae2a5acb9114 result={'status': 200, 'body': {'conn': 17, 'req': 'cc-ae2a5acb9114-target', 'stored': 'target'}}
+DIAG setup token=cc-74278a86b90f proxy_port=45039 warm={'status': 200, 'body': {'conn': 19, 'ok': True}} health={'status': 200, 'body': {'conn': 20, 'ok': True, 'requests': 26}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+DIAG setup token=cc-ed071efbab56 proxy_port=39193 warm={'status': 200, 'body': {'conn': 21, 'ok': True}} health={'status': 200, 'body': {'conn': 22, 'ok': True, 'requests': 29}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+DIAG setup token=cc-96ef367059df proxy_port=38347 warm={'status': 200, 'body': {'conn': 23, 'ok': True}} health={'status': 200, 'body': {'conn': 24, 'ok': True, 'requests': 32}} curl_cffi=0.16.3 curl=libcurl/8.21.0-IMPERSONATE BoringSSL zlib/1.3.1 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.7 nghttp2/1.63.0 ngtcp2/1.20.0 nghttp3/1.15.0 max_clients=1 http_version=V1_1
+case=curl-cffi level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.82
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 19, 'req': 'cc-74278a86b90f-b3', 'value': None}, 'status': 200} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 21, 'req': 'cc-ed071efbab56-b3', 'value': None}, 'status': 200} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 23, 'req': 'cc-96ef367059df-b3', 'value': None}, 'status': 200} ok 
+verdicts={'-': 3}
+  target-detail plan=pending#1 rep=1 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=2 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=3 outcome=cancelled yields=1 realized=True detail=''
+SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.82
+
+=== FINAL ===
+SUMMARY level=B3 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.82
+violations_by_plan=[]
+unrealized_by_plan=[]

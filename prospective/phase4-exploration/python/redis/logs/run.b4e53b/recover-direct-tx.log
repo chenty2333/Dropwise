@@ -1,0 +1,13 @@
+case=redis-py mode=direct unit=tx redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=0 delay=0.05 bound=2.0
+RECOVER k=1 target=cancelled/y1 realized=True err=None rec={'discard': ('err', 'ResponseError: DISCARD without MULTI'), 'unwatch': ('ok', True), 'set_new': ('ok', True), 'get_new': ('ok', b'recover-1'), 'ping': ('ok', True), 'client_id': ('ok', 940)} observer_new=('ok', b'recover-1') diag={'setup_client_id': ('ok', 939), 'setup_pool': None, 'baseline': ('ok', None), 'stage': 'watch'}
+DIAG mode=direct unit=tx stage=watch target_failure=None setup_id=('ok', 939) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+RECOVER k=2 target=cancelled/y2 realized=True err=None rec={'discard': ('err', 'ResponseError: DISCARD without MULTI'), 'unwatch': ('ok', True), 'set_new': ('ok', True), 'get_new': ('ok', b'recover-2'), 'ping': ('ok', True), 'client_id': ('ok', 943)} observer_new=('ok', b'recover-2') diag={'setup_client_id': ('ok', 942), 'setup_pool': None, 'baseline': ('ok', None), 'stage': 'multi'}
+DIAG mode=direct unit=tx stage=multi target_failure=None setup_id=('ok', 942) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+RECOVER k=3 target=cancelled/y9 realized=True err=None rec={'discard': ('err', 'ResponseError: DISCARD without MULTI'), 'unwatch': ('ok', True), 'set_new': ('ok', True), 'get_new': ('ok', b'recover-3'), 'ping': ('ok', True), 'client_id': ('ok', 946)} observer_new=('ok', b'recover-3') diag={'setup_client_id': ('ok', 945), 'setup_pool': None, 'baseline': ('ok', None), 'stage': 'queue'}
+DIAG mode=direct unit=tx stage=queue target_failure=None setup_id=('ok', 945) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+RECOVER k=4 target=cancelled/y10 realized=True err=None rec={'discard': ('err', 'ResponseError: DISCARD without MULTI'), 'unwatch': ('ok', True), 'set_new': ('ok', True), 'get_new': ('ok', b'recover-4'), 'ping': ('ok', True), 'client_id': ('ok', 949)} observer_new=('ok', b'recover-4') diag={'setup_client_id': ('ok', 948), 'setup_pool': None, 'baseline': ('ok', None), 'stage': 'exec'}
+DIAG mode=direct unit=tx stage=exec target_failure=None setup_id=('ok', 948) surv_id=None changed=None pool=None conn=None tx_probe=None
+DIAG close mode=direct unit=tx {'client': 'ok', 'observer': 'ok', 'proxy': 'ok'}

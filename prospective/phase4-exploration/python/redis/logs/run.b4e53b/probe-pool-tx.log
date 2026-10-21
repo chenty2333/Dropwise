@@ -1,0 +1,25 @@
+case=redis-py mode=pool unit=tx redis=8.1.0 python=3.13.13 host=127.0.0.1 port=32851 round=0 delay=0.05 bound=2.0
+PROBE k=1 target=cancelled realized=True yields=2 err=None result=None
+      diag={'setup_client_id': ('ok', 928), 'setup_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'baseline': ('ok', None), 'stage': 'watch', 'tx_probe': ('ok', [True]), 'survivor_client_id': ('ok', 929), 'survivor_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'survivor_conn': None, 'client_id_changed': True}
+      survivor=('ok', {'pre_read': ('ok', None), 'set': ('ok', True), 'own': ('ok', b'survivor')})
+      observer=('ok', {'value': ('ok', b'survivor')}) seconds=0.81
+DIAG mode=pool unit=tx stage=watch target_failure=None setup_id=('ok', 928) surv_id=('ok', 929) changed=True pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+PROBE k=2 target=cancelled realized=True yields=9 err=None result=None
+      diag={'setup_client_id': ('ok', 931), 'setup_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'baseline': ('ok', None), 'stage': 'read', 'tx_probe': ('ok', [True]), 'survivor_client_id': ('ok', 932), 'survivor_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'survivor_conn': None, 'client_id_changed': True}
+      survivor=('ok', {'pre_read': ('ok', None), 'set': ('ok', True), 'own': ('ok', b'survivor')})
+      observer=('ok', {'value': ('ok', b'survivor')}) seconds=1.01
+DIAG mode=pool unit=tx stage=read target_failure=None setup_id=('ok', 931) surv_id=('ok', 932) changed=True pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+PROBE k=3 target=cancelled realized=True yields=10 err=None result=None
+      diag={'setup_client_id': ('ok', 934), 'setup_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'baseline': ('ok', None), 'stage': 'exec', 'tx_probe': ('ok', [True]), 'survivor_client_id': ('ok', 935), 'survivor_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'survivor_conn': None, 'client_id_changed': True}
+      survivor=('ok', {'pre_read': ('ok', b'target'), 'set': ('ok', True), 'own': ('ok', b'survivor')})
+      observer=('ok', {'value': ('ok', b'survivor')}) seconds=1.11
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 934) surv_id=('ok', 935) changed=True pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}
+PROBE k=4 target=cancelled realized=True yields=4 err=None result=None
+      diag={'setup_client_id': ('ok', 937), 'setup_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'baseline': ('ok', None), 'stage': 'exec', 'tx_probe': ('ok', [True]), 'survivor_client_id': ('ok', 937), 'survivor_pool': {'available': 1, 'in_use': 0, 'max': 1}, 'survivor_conn': None}
+      survivor=('ok', {'pre_read': ('ok', b'target'), 'set': ('ok', True), 'own': ('ok', b'survivor')})
+      observer=('ok', {'value': ('ok', b'survivor')}) seconds=0.81
+DIAG mode=pool unit=tx stage=exec target_failure=None setup_id=('ok', 937) surv_id=('ok', 937) changed=None pool={'available': 1, 'in_use': 0, 'max': 1} conn=None tx_probe=('ok', [True])
+DIAG close mode=pool unit=tx {'client': 'ok', 'pool': 'ok', 'observer': 'ok', 'proxy': 'ok'}

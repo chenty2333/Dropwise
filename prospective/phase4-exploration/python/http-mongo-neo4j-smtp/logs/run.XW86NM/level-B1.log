@@ -1,0 +1,22 @@
+case=aiohttp version=3.14.5 url=http://127.0.0.1:45013 reps=3 levels=['B1'] plans=None
+
+=== LEVEL B1 ===
+DIAG setup token=ah-92df41ed0727 proxy_port=40111 warm={'status': 200, 'body': {'conn': 1, 'ok': True}} health={'status': 200, 'body': {'conn': 2, 'ok': True, 'requests': 2}} connector=limit1/per_host1/force_close=False
+DIAG target token=ah-92df41ed0727 result={'status': 200, 'body': {'conn': 1, 'req': 'ah-92df41ed0727-target', 'stored': 'target'}}
+DIAG setup token=ah-f1644547b8a6 proxy_port=36953 warm={'status': 200, 'body': {'conn': 3, 'ok': True}} health={'status': 200, 'body': {'conn': 4, 'ok': True, 'requests': 5}} connector=limit1/per_host1/force_close=False
+DIAG setup token=ah-dfa17d6f8152 proxy_port=37033 warm={'status': 200, 'body': {'conn': 5, 'ok': True}} health={'status': 200, 'body': {'conn': 6, 'ok': True, 'requests': 8}} connector=limit1/per_host1/force_close=False
+DIAG setup token=ah-94f8d83086a4 proxy_port=42697 warm={'status': 200, 'body': {'conn': 7, 'ok': True}} health={'status': 200, 'body': {'conn': 8, 'ok': True, 'requests': 11}} connector=limit1/per_host1/force_close=False
+case=aiohttp level=B1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.66
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+verdicts={'-': 3}
+  target-detail plan=pending#1 rep=1 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=2 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=3 outcome=cancelled yields=1 realized=True detail=''
+SUMMARY level=B1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.66
+
+=== FINAL ===
+SUMMARY level=B1 yields=1 trials=3 violations=0 unknown=0 unrealized=0 seconds=0.66
+violations_by_plan=[]
+unrealized_by_plan=[]
