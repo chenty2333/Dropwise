@@ -1,0 +1,8 @@
+run,mode,target,mech,selftest_sites,sites,trials,misses,ok_pre,ok_post,ok_partial,ok_poisoned,violations,unknown,stable,elapsed_ms,wall_s,done,errors
+1,mass,mremap_fixed_dst,failnth,14,3,3,0,0,2,0,0,1,0,1,5,0.85,1,
+2,mass,mprotect_multi,failnth,14,3,3,0,0,1,0,0,2,0,1,4,0.90,1,
+3,mass,tmpfs_setxattr_replace,failnth,14,3,3,0,3,0,0,0,0,0,1,6,0.90,1,
+4,mass,tmpfs_rename_exchange,failnth,14,2,2,0,2,0,0,0,0,0,1,4,0.75,1,
+5,mass,tmpfs_fallocate,failnth,14,256,256,0,251,5,0,0,0,0,1,294,1.05,1,
+6,mass,pipe_set_size,failnth,14,1,1,0,1,0,0,0,0,0,1,3,0.75,1,
+7,mass,so_attach_filter,failnth,15,11,11,0,11,0,0,0,0,0,1,17,0.75,1,

@@ -51,8 +51,11 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <linux/filter.h>
 #include <linux/tls.h>
 #include <mqueue.h>
+#include <sys/prctl.h>
+#include <sys/sem.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -2844,11 +2847,1295 @@ static const struct target t_epwake_ep = {
 	.teardown = epwake_ep_teardown,
 };
 
+/* ================================================================== */
+/* round 4: VMA, tmpfs metadata, fd, socket and IPC targets            */
+/* ================================================================== */
+
+/* Read a whole (small) proc/sysfs file. */
+static int dw_read_file(const char *path, char *buf, size_t cap)
+{
+	int fd, n, off = 0;
+
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		return -1;
+	while (off < (int)cap - 1) {
+		n = read(fd, buf + off, cap - 1 - off);
+		if (n < 0) {
+			if (errno == EINTR)
+				continue;
+			close(fd);
+			return -1;
+		}
+		if (!n)
+			break;
+		off += n;
+	}
+	close(fd);
+	buf[off] = 0;
+	return off;
+}
+
+/* Is addr mapped?  If so also return the first byte.  The caller only uses
+ * this on PROT_READ|PROT_WRITE mappings, so the read cannot fault once
+ * mincore() has confirmed the VMA is there. */
+struct dw_map_state {
+	int mapped;
+	int err;
+	int byte;
+};
+
+static void dw_map_probe(unsigned long addr, size_t len, struct dw_map_state *st)
+{
+	unsigned char vec[2] = { 0, 0 };
+
+	st->mapped = 0;
+	st->err = 0;
+	st->byte = -1;
+	if (!addr || !len)
+		return;
+	if (mincore((void *)addr, len, vec)) {
+		st->err = errno;
+		return;
+	}
+	st->mapped = 1;
+	st->byte = *(volatile unsigned char *)addr;
+}
+
+/* Protection of the VMA containing addr, from /proc/self/maps ("rw-p"). */
+static int dw_maps_perms(unsigned long addr, char *perms, size_t cap)
+{
+	static char buf[131072];
+	char *line, *save = NULL;
+	int n;
+
+	perms[0] = 0;
+	n = dw_read_file("/proc/self/maps", buf, sizeof(buf));
+	if (n <= 0)
+		return -1;
+	for (line = strtok_r(buf, "\n", &save); line;
+	     line = strtok_r(NULL, "\n", &save)) {
+		unsigned long s, e;
+		char pm[16];
+
+		if (sscanf(line, "%lx-%lx %15s", &s, &e, pm) != 3)
+			continue;
+		if (addr >= s && addr < e) {
+			snprintf(perms, cap, "%s", pm);
+			return 0;
+		}
+	}
+	return -1;
+}
+
+/* ------------------------------------------------------------------ */
+/* target: mmap(MAP_FIXED) replacing a populated private mapping       */
+/*
+ * Contract: on success the range holds the new zero mapping.  On error the
+ * syscall must not silently destroy the caller's existing mapping (the
+ * default error-prefix rule); mmap(2) MAP_FIXED says overlapped mappings are
+ * discarded, so an error that leaves a gap is reported as contract-external,
+ * not as a confirmed bug.  Observer: mincore + content of the address.
+ */
+struct mmapfix_ctx {
+	unsigned long addr;
+	size_t len;
+	struct dw_map_state obs;
+};
+
+static int mmapfix_setup(void *p, char phase)
+{
+	struct mmapfix_ctx *c = p;
+	void *m;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->len = 4096;
+	m = mmap(NULL, c->len, PROT_READ | PROT_WRITE,
+		 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (m == MAP_FAILED)
+		return -1;
+	c->addr = (unsigned long)m;
+	*(volatile unsigned char *)m = 0xA5;
+	return 0;
+}
+
+static long mmapfix_p(void *p, int *err)
+{
+	struct mmapfix_ctx *c = p;
+	void *r;
+
+	errno = 0;
+	r = mmap((void *)c->addr, c->len, PROT_READ | PROT_WRITE,
+		 MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+	if (r == MAP_FAILED) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void mmapfix_survivor(void *p, int wfd)
+{
+	struct mmapfix_ctx *c = p;
+	struct dw_map_state st;
+
+	dw_map_probe(c->addr, c->len, &st);
+	report(wfd, st.mapped, st.err, st.byte, 0, 0, 0, 0);
+}
+
+static void mmapfix_observer(void *p, const struct kid_report *k,
+			     struct outcome *o, char *obs, size_t cap)
+{
+	struct mmapfix_ctx *c = p;
+
+	dw_map_probe(c->addr, c->len, &c->obs);
+	o->aux[0] = c->obs.mapped;
+	o->aux[1] = c->obs.byte;
+	app(obs, cap,
+	    "surv_mapped=%lld;surv_errno=%d;surv_byte=%lld|obs_mapped=%d;obs_errno=%d;obs_byte=%d",
+	    k->rc, k->err, k->v[0], c->obs.mapped, c->obs.err, c->obs.byte);
+}
+
+static void mmapfix_teardown(void *p)
+{
+	struct mmapfix_ctx *c = p;
+
+	if (c->addr)
+		munmap((void *)c->addr, c->len);
+}
+
+static const struct target t_mmapfix = {
+	.name = "mmap_fixed_replace",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = mmapfix_setup,
+	.p = mmapfix_p,
+	.survivor = mmapfix_survivor,
+	.observer = mmapfix_observer,
+	.teardown = mmapfix_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: mremap(MREMAP_FIXED) onto an existing populated mapping     */
+/*
+ * Contract: on success the source is moved to the destination.  On error the
+ * source must stay where it was; whether the destination survives is what is
+ * measured here (mremap(2) says a previous mapping at new_address "is
+ * unmapped", so losing it is contract-external, but it is a concrete
+ * counterexample to error-prefix atomicity).  Observer: both addresses.
+ */
+struct mremap4_ctx {
+	unsigned long src, dst;
+	size_t len;
+	struct dw_map_state s_obs, d_obs;
+};
+
+static int mremap4_setup(void *p, char phase)
+{
+	struct mremap4_ctx *c = p;
+	unsigned long base;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->len = 4096;
+	base = (unsigned long)mmap(NULL, 3 * c->len, PROT_READ | PROT_WRITE,
+				   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (base == (unsigned long)MAP_FAILED)
+		return -1;
+	c->src = base;
+	c->dst = base + 2 * c->len;
+	*(volatile unsigned char *)c->src = 0x5A;
+	*(volatile unsigned char *)c->dst = 0xC3;
+	if (mprotect((void *)(base + c->len), c->len, PROT_NONE))
+		return -1;
+	return 0;
+}
+
+static long mremap4_p(void *p, int *err)
+{
+	struct mremap4_ctx *c = p;
+	void *r;
+
+	errno = 0;
+	r = mremap((void *)c->src, c->len, c->len,
+		   MREMAP_MAYMOVE | MREMAP_FIXED, (void *)c->dst);
+	if (r == MAP_FAILED) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void mremap4_survivor(void *p, int wfd)
+{
+	struct mremap4_ctx *c = p;
+	struct dw_map_state s, d;
+
+	dw_map_probe(c->src, c->len, &s);
+	dw_map_probe(c->dst, c->len, &d);
+	report(wfd, s.mapped, s.err, s.byte, d.mapped, d.err, d.byte, 0);
+}
+
+static void mremap4_observer(void *p, const struct kid_report *k,
+			     struct outcome *o, char *obs, size_t cap)
+{
+	struct mremap4_ctx *c = p;
+
+	dw_map_probe(c->src, c->len, &c->s_obs);
+	dw_map_probe(c->dst, c->len, &c->d_obs);
+	o->aux[0] = c->s_obs.mapped;
+	o->aux[1] = c->s_obs.byte;
+	o->aux[2] = c->d_obs.mapped;
+	o->aux[3] = c->d_obs.byte;
+	app(obs, cap,
+	    "surv_src=%lld:%lld;dst=%lld:%lld|obs_src=%d:%d;dst=%d:%d",
+	    k->rc, k->v[0], k->v[1], k->v[3],
+	    c->s_obs.mapped, c->s_obs.byte, c->d_obs.mapped, c->d_obs.byte);
+}
+
+static void mremap4_teardown(void *p)
+{
+	struct mremap4_ctx *c = p;
+
+	if (c->src)
+		munmap((void *)c->src, c->len);
+	if (c->dst)
+		munmap((void *)c->dst, c->len);
+}
+
+static const struct target t_mremap4 = {
+	.name = "mremap_fixed_dst",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = mremap4_setup,
+	.p = mremap4_p,
+	.survivor = mremap4_survivor,
+	.observer = mremap4_observer,
+	.teardown = mremap4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: mprotect() across three VMAs                                */
+/*
+ * Three adjacent VMAs with different flags (private, shared, private), so a
+ * single mprotect() must change all three.  Failure on the third VMA (split
+ * allocation) leaves the first two changed: mprotect(2) documents ENOMEM for
+ * "internal kernel structures", and a maintainer states this partial update
+ * is not a bug, so a partial is contract-external.  Observer:
+ * /proc/self/maps protection of one page in each VMA.
+ */
+struct mprot4_ctx {
+	unsigned long base;
+	size_t len;
+	char p0[16], p1[16], p2[16];
+};
+
+static int mprot4_setup(void *p, char phase)
+{
+	struct mprot4_ctx *c = p;
+	void *m;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->len = 4096;
+	c->base = (unsigned long)mmap(NULL, 5 * c->len,
+				      PROT_READ | PROT_WRITE,
+				      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (c->base == (unsigned long)MAP_FAILED)
+		return -1;
+	*(volatile unsigned char *)c->base = 0x11;
+	*(volatile unsigned char *)(c->base + c->len) = 0x22;
+	*(volatile unsigned char *)(c->base + 2 * c->len) = 0x33;
+	m = mmap((void *)(c->base + c->len), c->len, PROT_READ | PROT_WRITE,
+		 MAP_SHARED | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+	if (m == MAP_FAILED)
+		return -1;
+	return 0;
+}
+
+static long mprot4_p(void *p, int *err)
+{
+	struct mprot4_ctx *c = p;
+	long r;
+
+	errno = 0;
+	r = mprotect((void *)c->base, 3 * c->len, PROT_READ);
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void mprot4_survivor(void *p, int wfd)
+{
+	struct mprot4_ctx *c = p;
+
+	(void)c;
+	report(wfd, 0, 0, 0, 0, 0, 0, 0);
+}
+
+static void mprot4_observer(void *p, const struct kid_report *k,
+			    struct outcome *o, char *obs, size_t cap)
+{
+	struct mprot4_ctx *c = p;
+
+	(void)k;
+	dw_maps_perms(c->base, c->p0, sizeof(c->p0));
+	dw_maps_perms(c->base + c->len, c->p1, sizeof(c->p1));
+	dw_maps_perms(c->base + 2 * c->len, c->p2, sizeof(c->p2));
+	o->aux[0] = c->p0[0];
+	o->aux[1] = c->p1[0];
+	o->aux[2] = c->p2[0];
+	app(obs, cap, "p0=%s;p1=%s;p2=%s", c->p0, c->p1, c->p2);
+}
+
+static void mprot4_teardown(void *p)
+{
+	struct mprot4_ctx *c = p;
+
+	if (c->base)
+		munmap((void *)c->base, 5 * c->len);
+}
+
+static const struct target t_mprot4 = {
+	.name = "mprotect_multi",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = mprot4_setup,
+	.p = mprot4_p,
+	.survivor = mprot4_survivor,
+	.observer = mprot4_observer,
+	.teardown = mprot4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: tmpfs setxattr replacing an existing value                  */
+/*
+ * Contract: the new value replaces the old one on success; on error the old
+ * value must survive.  Observer: a second independent open+getxattr.
+ */
+struct xattr4_ctx {
+	int fd;
+	char path[64];
+};
+
+static int xattr4_setup(void *p, char phase)
+{
+	struct xattr4_ctx *c = p;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->fd = -1;
+	snprintf(c->path, sizeof(c->path), "/tmp/dw_r4_xattr");
+	unlink(c->path);
+	c->fd = open(c->path, O_RDWR | O_CREAT | O_TRUNC, 0600);
+	if (c->fd < 0)
+		return -1;
+	if (write(c->fd, "hello", 5) != 5)
+		return -1;
+	if (fsetxattr(c->fd, "user.dw", "AAAA", 4, 0))
+		return -1;
+	return 0;
+}
+
+static long xattr4_p(void *p, int *err)
+{
+	struct xattr4_ctx *c = p;
+	long r;
+
+	errno = 0;
+	r = fsetxattr(c->fd, "user.dw", "BBBBBBBB", 8, 0);
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void xattr4_survivor(void *p, int wfd)
+{
+	struct xattr4_ctx *c = p;
+	char buf[32];
+	ssize_t n;
+
+	memset(buf, 0, sizeof(buf));
+	errno = 0;
+	n = fgetxattr(c->fd, "user.dw", buf, sizeof(buf));
+	report(wfd, n, n < 0 ? errno : 0, n > 0 ? (unsigned char)buf[0] : -1,
+	       n > 0 ? (unsigned char)buf[n - 1] : -1, 0, 0, 0);
+}
+
+static void xattr4_observer(void *p, const struct kid_report *k,
+			    struct outcome *o, char *obs, size_t cap)
+{
+	struct xattr4_ctx *c = p;
+	char buf[32];
+	ssize_t n;
+	int fd, err = 0;
+
+	memset(buf, 0, sizeof(buf));
+	fd = open(c->path, O_RDONLY);
+	errno = 0;
+	n = fd < 0 ? -1 : fgetxattr(fd, "user.dw", buf, sizeof(buf));
+	if (n < 0)
+		err = errno;
+	if (fd >= 0)
+		close(fd);
+	o->aux[0] = n;
+	app(obs, cap, "surv_len=%lld;surv_b0=%lld;surv_bl=%lld|obs_len=%zd;obs_b0=%d;obs_errno=%d",
+	    k->rc, k->v[0], k->v[1], n,
+	    n > 0 ? (unsigned char)buf[0] : -1, err);
+}
+
+static void xattr4_teardown(void *p)
+{
+	struct xattr4_ctx *c = p;
+
+	if (c->fd >= 0)
+		close(c->fd);
+	unlink(c->path);
+}
+
+static const struct target t_xattr4 = {
+	.name = "tmpfs_setxattr_replace",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = xattr4_setup,
+	.p = xattr4_p,
+	.survivor = xattr4_survivor,
+	.observer = xattr4_observer,
+	.teardown = xattr4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: tmpfs renameat2(RENAME_EXCHANGE)                            */
+/*
+ * Contract: on success the two names exchange contents; on error both names
+ * and contents must survive.  Observer: independent open+read of both names.
+ */
+struct rn4_ctx {
+	char a[64], b[64];
+};
+
+static int rn4_read(const char *path, char *buf, int cap, int *err)
+{
+	int fd, n;
+
+	memset(buf, 0, cap);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		*err = errno;
+		return -1;
+	}
+	n = read(fd, buf, cap);
+	*err = n < 0 ? errno : 0;
+	close(fd);
+	return n;
+}
+
+static int rn4_setup(void *p, char phase)
+{
+	struct rn4_ctx *c = p;
+	int fd;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	snprintf(c->a, sizeof(c->a), "/tmp/dw_r4_a");
+	snprintf(c->b, sizeof(c->b), "/tmp/dw_r4_b");
+	unlink(c->a);
+	unlink(c->b);
+	fd = open(c->a, O_RDWR | O_CREAT | O_TRUNC, 0600);
+	if (fd < 0)
+		return -1;
+	if (write(fd, "one", 3) != 3) {
+		close(fd);
+		return -1;
+	}
+	close(fd);
+	fd = open(c->b, O_RDWR | O_CREAT | O_TRUNC, 0600);
+	if (fd < 0)
+		return -1;
+	if (write(fd, "two", 3) != 3) {
+		close(fd);
+		return -1;
+	}
+	close(fd);
+	return 0;
+}
+
+static long rn4_p(void *p, int *err)
+{
+	struct rn4_ctx *c = p;
+	long r;
+
+	errno = 0;
+	r = syscall(SYS_renameat2, AT_FDCWD, c->a, AT_FDCWD, c->b,
+		    RENAME_EXCHANGE);
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void rn4_survivor(void *p, int wfd)
+{
+	struct rn4_ctx *c = p;
+	char ba[8], bb[8];
+	int ea = 0, eb = 0, na, nb;
+
+	na = rn4_read(c->a, ba, 4, &ea);
+	nb = rn4_read(c->b, bb, 4, &eb);
+	report(wfd, na, ea, ba[0], nb, eb, bb[0], 0);
+}
+
+static void rn4_observer(void *p, const struct kid_report *k,
+			 struct outcome *o, char *obs, size_t cap)
+{
+	struct rn4_ctx *c = p;
+	char ba[8], bb[8];
+	int ea = 0, eb = 0, na, nb;
+
+	na = rn4_read(c->a, ba, 4, &ea);
+	nb = rn4_read(c->b, bb, 4, &eb);
+	o->aux[0] = na;
+	o->aux[1] = nb;
+	app(obs, cap, "surv_a=%lld:%lld;b=%lld:%lld|obs_a=%d:%d:%d;b=%d:%d:%d",
+	    k->rc, k->v[0], k->v[2], k->v[3], na, ea,
+	    na > 0 ? (unsigned char)ba[0] : -1, nb, eb,
+	    nb > 0 ? (unsigned char)bb[0] : -1);
+}
+
+static void rn4_teardown(void *p)
+{
+	struct rn4_ctx *c = p;
+
+	unlink(c->a);
+	unlink(c->b);
+}
+
+static const struct target t_rn4 = {
+	.name = "tmpfs_rename_exchange",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = rn4_setup,
+	.p = rn4_p,
+	.survivor = rn4_survivor,
+	.observer = rn4_observer,
+	.teardown = rn4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: tmpfs fallocate() extending i_size by populating pages      */
+/*
+ * Contract: success preallocates the range and extends the size; on error the
+ * size must stay unchanged.  Shmem has an explicit undo path; this target
+ * checks it.  Observer: fstat size/blocks plus a byte at the end.
+ */
+struct fall4_ctx {
+	int fd;
+	char path[64];
+};
+
+static int fall4_setup(void *p, char phase)
+{
+	struct fall4_ctx *c = p;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->fd = -1;
+	snprintf(c->path, sizeof(c->path), "/tmp/dw_r4_falloc");
+	unlink(c->path);
+	c->fd = open(c->path, O_RDWR | O_CREAT | O_TRUNC, 0600);
+	if (c->fd < 0)
+		return -1;
+	return 0;
+}
+
+static long fall4_p(void *p, int *err)
+{
+	struct fall4_ctx *c = p;
+	long r;
+
+	errno = 0;
+	r = fallocate(c->fd, 0, 0, 65536);
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void fall4_survivor(void *p, int wfd)
+{
+	struct fall4_ctx *c = p;
+	long rc;
+
+	errno = 0;
+	rc = pwrite(c->fd, "S", 1, 0);
+	report(wfd, rc, rc < 0 ? errno : 0, 0, 0, 0, 0, 0);
+}
+
+static void fall4_observer(void *p, const struct kid_report *k,
+			   struct outcome *o, char *obs, size_t cap)
+{
+	struct fall4_ctx *c = p;
+	struct stat st;
+	char b0 = 0, be = 0;
+	ssize_t r0, re;
+	int fd;
+
+	memset(&st, 0, sizeof(st));
+	if (fstat(c->fd, &st))
+		return;
+	b0 = be = 0;
+	r0 = pread(c->fd, &b0, 1, 0);
+	re = pread(c->fd, &be, 1, 65535);
+	fd = open(c->path, O_RDONLY);
+	o->aux[0] = st.st_size;
+	app(obs, cap,
+	    "surv_w=%lld;surv_errno=%d|size=%lld;blocks=%lld;b0=%d;bend=%d;r0=%zd;rend=%zd;obs_fd=%d",
+	    k->rc, k->err, (long long)st.st_size, (long long)st.st_blocks,
+	    (unsigned char)b0, (unsigned char)be, r0, re, fd >= 0);
+	if (fd >= 0)
+		close(fd);
+}
+
+static void fall4_teardown(void *p)
+{
+	struct fall4_ctx *c = p;
+
+	if (c->fd >= 0)
+		close(c->fd);
+	unlink(c->path);
+}
+
+static const struct target t_fall4 = {
+	.name = "tmpfs_fallocate",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = fall4_setup,
+	.p = fall4_p,
+	.survivor = fall4_survivor,
+	.observer = fall4_observer,
+	.teardown = fall4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: fcntl(F_SETPIPE_SZ) replacing the pipe ring                 */
+/*
+ * Contract: success installs the new capacity and keeps the queued bytes; on
+ * error the old capacity and the bytes must survive.  Observer: F_GETPIPE_SZ,
+ * FIONREAD and the byte counts after draining.
+ */
+struct psz4_ctx {
+	int pfd[2];
+};
+
+static int psz4_setup(void *p, char phase)
+{
+	struct psz4_ctx *c = p;
+	char buf[4096];
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->pfd[0] = c->pfd[1] = -1;
+	if (pipe(c->pfd))
+		return -1;
+	if (fcntl(c->pfd[1], F_SETPIPE_SZ, 65536) < 0)
+		return -1;
+	memset(buf, 'P', sizeof(buf));
+	if (write(c->pfd[1], buf, sizeof(buf)) != (ssize_t)sizeof(buf))
+		return -1;
+	return 0;
+}
+
+static long psz4_p(void *p, int *err)
+{
+	struct psz4_ctx *c = p;
+	long r;
+
+	errno = 0;
+	r = fcntl(c->pfd[1], F_SETPIPE_SZ, 131072);
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void psz4_survivor(void *p, int wfd)
+{
+	struct psz4_ctx *c = p;
+	long r;
+
+	errno = 0;
+	r = write(c->pfd[1], "S", 1);
+	report(wfd, r, r < 0 ? errno : 0, 0, 0, 0, 0, 0);
+}
+
+static void psz4_observer(void *p, const struct kid_report *k,
+			  struct outcome *o, char *obs, size_t cap)
+{
+	struct psz4_ctx *c = p;
+	char buf[16384];
+	int fion = 0, np = 0, ns = 0, i;
+	long sz;
+	ssize_t n;
+
+	sz = fcntl(c->pfd[0], F_GETPIPE_SZ);
+	ioctl(c->pfd[0], FIONREAD, &fion);
+	n = read(c->pfd[0], buf, sizeof(buf));
+	for (i = 0; i < n; i++) {
+		if (buf[i] == 'P')
+			np++;
+		else if (buf[i] == 'S')
+			ns++;
+	}
+	o->aux[0] = sz;
+	o->aux[1] = np;
+	o->aux[2] = ns;
+	app(obs, cap, "surv_w=%lld;surv_errno=%d|size=%ld;fion=%d;np=%d;ns=%d;read=%zd",
+	    k->rc, k->err, sz, fion, np, ns, n);
+}
+
+static void psz4_teardown(void *p)
+{
+	struct psz4_ctx *c = p;
+
+	if (c->pfd[0] >= 0)
+		close(c->pfd[0]);
+	if (c->pfd[1] >= 0)
+		close(c->pfd[1]);
+}
+
+static const struct target t_psz4 = {
+	.name = "pipe_set_size",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = psz4_setup,
+	.p = psz4_p,
+	.survivor = psz4_survivor,
+	.observer = psz4_observer,
+	.teardown = psz4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: SO_ATTACH_FILTER replacing a classic BPF socket filter      */
+/*
+ * Contract: success replaces the filter; on error the old filter must keep
+ * deciding delivery.  Observer: peer bytes -- the survivor sends a datagram
+ * from the peer and the receiver's filter decides whether it is delivered.
+ */
+struct bpf4_ctx {
+	int sv[2];
+};
+
+static int bpf4_setup(void *p, char phase)
+{
+	struct bpf4_ctx *c = p;
+	struct sock_filter drop[] = { BPF_STMT(BPF_RET | BPF_K, 0) };
+	struct sock_fprog prog = { .len = 1, .filter = drop };
+	char q = 'Q';
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->sv[0] = c->sv[1] = -1;
+	if (socketpair(AF_UNIX, SOCK_DGRAM, 0, c->sv))
+		return -1;
+	if (setsockopt(c->sv[0], SOL_SOCKET, SO_ATTACH_FILTER, &prog,
+		       sizeof(prog)))
+		return -1;
+	/* This datagram is dropped by the pre filter. */
+	if (write(c->sv[1], &q, 1) != 1)
+		return -1;
+	return 0;
+}
+
+static long bpf4_p(void *p, int *err)
+{
+	struct bpf4_ctx *c = p;
+	struct sock_filter pass[] = {
+		BPF_STMT(BPF_RET | BPF_K, 0xffffffff)
+	};
+	struct sock_fprog prog = { .len = 1, .filter = pass };
+	long r;
+
+	errno = 0;
+	r = setsockopt(c->sv[0], SOL_SOCKET, SO_ATTACH_FILTER, &prog,
+		       sizeof(prog));
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void bpf4_survivor(void *p, int wfd)
+{
+	struct bpf4_ctx *c = p;
+	char b = 0;
+	long r;
+
+	errno = 0;
+	if (write(c->sv[1], "X", 1) != 1) {
+		report(wfd, -1, errno, -1, 0, 0, 0, 0);
+		return;
+	}
+	r = recv(c->sv[0], &b, 1, MSG_DONTWAIT);
+	report(wfd, r, r < 0 ? errno : 0, r > 0 ? (unsigned char)b : -1,
+	       0, 0, 0, 0);
+}
+
+static void bpf4_observer(void *p, const struct kid_report *k,
+			  struct outcome *o, char *obs, size_t cap)
+{
+	struct bpf4_ctx *c = p;
+	char b = 0;
+	int fion = 0;
+	long r2;
+
+	ioctl(c->sv[0], FIONREAD, &fion);
+	errno = 0;
+	r2 = recv(c->sv[0], &b, 1, MSG_DONTWAIT);
+	o->aux[0] = fion;
+	o->aux[1] = r2;
+	app(obs, cap,
+	    "surv_rc=%lld;surv_errno=%d;surv_byte=%lld|fion=%d;read2=%ld;read2_errno=%d",
+	    k->rc, k->err, k->v[0], fion, r2, r2 < 0 ? errno : 0);
+}
+
+static void bpf4_teardown(void *p)
+{
+	struct bpf4_ctx *c = p;
+
+	if (c->sv[0] >= 0)
+		close(c->sv[0]);
+	if (c->sv[1] >= 0)
+		close(c->sv[1]);
+}
+
+static const struct target t_bpf4 = {
+	.name = "so_attach_filter",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = bpf4_setup,
+	.p = bpf4_p,
+	.survivor = bpf4_survivor,
+	.observer = bpf4_observer,
+	.teardown = bpf4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: IP_ADD_MEMBERSHIP                                           */
+/*
+ * Contract: success joins the group, i.e. the socket's membership exists AND
+ * the interface has the group (IGMP report / delivery).  The socket-side list
+ * is created before ____ip_mc_inc_group(), whose kzalloc failure is ignored
+ * by the void return: success with only the socket-side half must be visible
+ * as a violation.  Observer: /proc/net/igmp for the device-side group and
+ * IP_MSFILTER for the socket-side membership.
+ */
+#define DW_MC_GROUP "239.1.2.3"
+#define DW_MC_HEX   "030201EF"	/* /proc/net/igmp prints the host-order %08X */
+
+struct mc4_ctx {
+	int fd;
+	struct ip_mreqn mreq;
+};
+
+static int mc4_setup(void *p, char phase)
+{
+	struct mc4_ctx *c = p;
+
+	(void)phase;
+	memset(c, 0, sizeof(*c));
+	c->fd = -1;
+	c->fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (c->fd < 0)
+		return -1;
+	inet_pton(AF_INET, DW_MC_GROUP, &c->mreq.imr_multiaddr);
+	inet_pton(AF_INET, "127.0.0.1", &c->mreq.imr_address);
+	c->mreq.imr_ifindex = 0;
+	return 0;
+}
+
+static long mc4_p(void *p, int *err)
+{
+	struct mc4_ctx *c = p;
+	long r;
+
+	errno = 0;
+	r = setsockopt(c->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &c->mreq,
+		       sizeof(c->mreq));
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+/* Socket-side membership probe: IP_MSFILTER only succeeds for a group that
+ * this socket has joined.  It does not modify any state. */
+static long mc4_sock_msf(int fd, int *err)
+{
+	struct ip_msfilter msf;
+	socklen_t len = IP_MSFILTER_SIZE(0);
+
+	memset(&msf, 0, sizeof(msf));
+	inet_pton(AF_INET, DW_MC_GROUP, &msf.imsf_multiaddr);
+	inet_pton(AF_INET, "127.0.0.1", &msf.imsf_interface);
+	msf.imsf_fmode = MCAST_INCLUDE;
+	msf.imsf_numsrc = 0;
+	errno = 0;
+	if (getsockopt(fd, IPPROTO_IP, IP_MSFILTER, &msf, &len) < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static int mc4_igmp_group(void)
+{
+	static char buf[16384];
+	int n;
+
+	n = dw_read_file("/proc/net/igmp", buf, sizeof(buf));
+	if (n <= 0)
+		return -1;
+	return strstr(buf, DW_MC_HEX) != NULL;
+}
+
+static void mc4_survivor(void *p, int wfd)
+{
+	struct mc4_ctx *c = p;
+	int err = 0;
+	long r;
+
+	r = mc4_sock_msf(c->fd, &err);
+	report(wfd, r, err, 0, 0, 0, 0, 0);
+}
+
+static void mc4_observer(void *p, const struct kid_report *k,
+			 struct outcome *o, char *obs, size_t cap)
+{
+	struct mc4_ctx *c = p;
+	int err = 0, igmp;
+	long r;
+
+	igmp = mc4_igmp_group();
+	r = mc4_sock_msf(c->fd, &err);
+	o->aux[0] = igmp;
+	o->aux[1] = r;
+	app(obs, cap,
+	    "surv_msf=%lld;surv_errno=%d|obs_msf=%ld;obs_errno=%d;igmp_group=%d",
+	    k->rc, k->err, r, err, igmp);
+}
+
+static void mc4_teardown(void *p)
+{
+	struct mc4_ctx *c = p;
+
+	if (c->fd >= 0)
+		close(c->fd);
+}
+
+static const struct target t_mc4 = {
+	.name = "ip_add_membership",
+	.full = 0,
+	.mechs = M_FAILNTH,
+	.setup = mc4_setup,
+	.p = mc4_p,
+	.survivor = mc4_survivor,
+	.observer = mc4_observer,
+	.teardown = mc4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: semtimedop() with two operations, interrupted               */
+/*
+ * POSIX atomicity: either all operations are performed or none.  The two-op
+ * set is arranged so op0 can run but op1 must block; a signal therefore has
+ * to return EINTR with BOTH semaphores unchanged.  Observer: GETVAL.
+ */
+union dw_semun {
+	int val;
+	struct semid_ds *buf;
+	unsigned short *array;
+	struct seminfo *__buf;
+};
+
+struct sem4_ctx {
+	int semid;
+};
+
+static int sem4_setup(void *p, char phase)
+{
+	struct sem4_ctx *c = p;
+	unsigned short vals[2];
+	union dw_semun u;
+
+	memset(c, 0, sizeof(*c));
+	c->semid = semget(IPC_PRIVATE, 2, IPC_CREAT | 0600);
+	if (c->semid < 0)
+		return -1;
+	vals[0] = 1;
+	vals[1] = (phase == 'O') ? 1 : 0;
+	memset(&u, 0, sizeof(u));
+	u.array = vals;
+	if (semctl(c->semid, 0, SETALL, u) < 0)
+		return -1;
+	return 0;
+}
+
+static long sem4_p(void *p, int *err)
+{
+	struct sem4_ctx *c = p;
+	struct sembuf sops[2];
+	struct timespec ts;
+	long r;
+
+	memset(sops, 0, sizeof(sops));
+	sops[0].sem_num = 0;
+	sops[0].sem_op = -1;
+	sops[1].sem_num = 1;
+	sops[1].sem_op = -1;
+	ts.tv_sec = 0;
+	ts.tv_nsec = 500000000;
+	errno = 0;
+	r = syscall(SYS_semtimedop, c->semid, sops, 2, &ts);
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void sem4_survivor(void *p, int wfd)
+{
+	struct sem4_ctx *c = p;
+	long v0, v1;
+
+	v0 = semctl(c->semid, 0, GETVAL);
+	v1 = semctl(c->semid, 1, GETVAL);
+	report(wfd, v0, 0, v1, 0, 0, 0, 0);
+}
+
+static void sem4_observer(void *p, const struct kid_report *k,
+			  struct outcome *o, char *obs, size_t cap)
+{
+	struct sem4_ctx *c = p;
+	long v0, v1;
+
+	v0 = semctl(c->semid, 0, GETVAL);
+	v1 = semctl(c->semid, 1, GETVAL);
+	o->aux[0] = v0;
+	o->aux[1] = v1;
+	app(obs, cap, "surv_s0=%lld;surv_s1=%lld|s0=%ld;s1=%ld",
+	    k->rc, k->v[0], v0, v1);
+}
+
+static void sem4_teardown(void *p)
+{
+	struct sem4_ctx *c = p;
+
+	if (c->semid >= 0)
+		semctl(c->semid, 0, IPC_RMID);
+}
+
+static const struct target t_sem4 = {
+	.name = "semtimedop_eintr",
+	.full = 0,
+	.mechs = M_SIGNAL,
+	.setup = sem4_setup,
+	.p = sem4_p,
+	.survivor = sem4_survivor,
+	.observer = sem4_observer,
+	.teardown = sem4_teardown,
+};
+
+/* ------------------------------------------------------------------ */
+/* target: fcntl(F_SETLKW) interrupted while waiting for a record lock */
+/*
+ * Contract: on EINTR the lock was not acquired; the process must look like it
+ * never called F_SETLKW.  The pre/post phases differ in whether an external
+ * holder exists, which makes "no lock" (pre) and "P holds the lock" (post)
+ * distinguishable.  The observer kills the external holder first, then the
+ * survivor (a different process, so POSIX locks are not inherited) tries a
+ * non-blocking lock: success means P left nothing behind.
+ */
+struct lkw4_ctx {
+	int fd;
+	char path[64];
+	int holder_pid;
+	int holder_killed;
+};
+
+static void lkw4_holder_die(int sig)
+{
+	(void)sig;
+	_exit(0);
+}
+
+static int lkw4_setup(void *p, char phase)
+{
+	struct lkw4_ctx *c = p;
+	struct flock fl;
+	int rp[2];
+	pid_t pid;
+	char b;
+
+	memset(c, 0, sizeof(*c));
+	c->fd = -1;
+	c->holder_pid = -1;
+	snprintf(c->path, sizeof(c->path), "/tmp/dw_r4_lkw");
+	unlink(c->path);
+	c->fd = open(c->path, O_RDWR | O_CREAT | O_TRUNC, 0600);
+	if (c->fd < 0)
+		return -1;
+	if (write(c->fd, "01234567", 8) != 8)
+		return -1;
+	if (phase != 'P' && phase != 'S')
+		return 0;
+	if (pipe(rp))
+		return -1;
+	pid = fork();
+	if (pid < 0)
+		return -1;
+	c->holder_pid = pid;
+	if (pid == 0) {
+		int fd2;
+
+		close(rp[0]);
+		signal(SIGUSR1, lkw4_holder_die);
+		prctl(PR_SET_PDEATHSIG, SIGKILL);
+		fd2 = open(c->path, O_RDWR);
+		if (fd2 < 0)
+			_exit(1);
+		memset(&fl, 0, sizeof(fl));
+		fl.l_type = F_WRLCK;
+		fl.l_whence = SEEK_SET;
+		if (fcntl(fd2, F_SETLK, &fl))
+			_exit(1);
+		b = 'R';
+		if (write(rp[1], &b, 1) != 1)
+			_exit(1);
+		for (;;)
+			pause();
+	}
+	close(rp[1]);
+	b = 0;
+	if (read(rp[0], &b, 1) != 1) {
+		close(rp[0]);
+		return -1;
+	}
+	close(rp[0]);
+	c->holder_pid = pid;
+	return 0;
+}
+
+static long lkw4_p(void *p, int *err)
+{
+	struct lkw4_ctx *c = p;
+	struct flock fl;
+	long r;
+
+	memset(&fl, 0, sizeof(fl));
+	fl.l_type = F_WRLCK;
+	fl.l_whence = SEEK_SET;
+	errno = 0;
+	r = fcntl(c->fd, F_SETLKW, &fl);
+	if (r < 0) {
+		*err = errno;
+		return -1;
+	}
+	return 0;
+}
+
+static void lkw4_before_survivor(void *p)
+{
+	struct lkw4_ctx *c = p;
+	int status;
+
+	if (c->holder_pid <= 0)
+		return;
+	kill(c->holder_pid, SIGKILL);
+	while (waitpid(c->holder_pid, &status, 0) < 0 && errno == EINTR)
+		;
+	c->holder_pid = -1;
+	c->holder_killed = 1;
+}
+
+static void lkw4_survivor(void *p, int wfd)
+{
+	struct lkw4_ctx *c = p;
+	struct flock fl;
+	int fd;
+	long r;
+
+	fd = open(c->path, O_RDWR);
+	if (fd < 0) {
+		report(wfd, -1, errno, 0, 0, 0, 0, 0);
+		return;
+	}
+	memset(&fl, 0, sizeof(fl));
+	fl.l_type = F_WRLCK;
+	fl.l_whence = SEEK_SET;
+	errno = 0;
+	r = fcntl(fd, F_SETLK, &fl);
+	report(wfd, r, r < 0 ? errno : 0, 0, 0, 0, 0, 0);
+	close(fd);
+}
+
+static void lkw4_observer(void *p, const struct kid_report *k,
+			  struct outcome *o, char *obs, size_t cap)
+{
+	struct lkw4_ctx *c = p;
+
+	o->aux[0] = c->holder_killed;
+	app(obs, cap, "holder_killed=%d;surv_lock_rc=%lld;surv_lock_errno=%d",
+	    c->holder_killed, k->rc, k->err);
+}
+
+static void lkw4_teardown(void *p)
+{
+	struct lkw4_ctx *c = p;
+	int status;
+
+	if (c->holder_pid > 0) {
+		kill(c->holder_pid, SIGKILL);
+		while (waitpid(c->holder_pid, &status, 0) < 0 &&
+		       errno == EINTR)
+			;
+		c->holder_pid = -1;
+	}
+	if (c->fd >= 0)
+		close(c->fd);
+	unlink(c->path);
+}
+
+static const struct target t_lkw4 = {
+	.name = "fcntl_setlkw_eintr",
+	.full = 0,
+	.mechs = M_SIGNAL,
+	.setup = lkw4_setup,
+	.p = lkw4_p,
+	.before_survivor = lkw4_before_survivor,
+	.survivor = lkw4_survivor,
+	.observer = lkw4_observer,
+	.teardown = lkw4_teardown,
+};
+
 static const struct target *all_targets[] = {
 	&t_scm, &t_pipe, &t_tmpfs, &t_epoll, &t_lock, &t_accept,
 	&t_tls_tx, &t_tls_rx, &t_ovl, &t_mq_send,
 	&t_pipe_sig_block, &t_pipe_sig_part,
-	&t_epwake_mod, &t_epwake_add, &t_epwake_ep, NULL
+	&t_epwake_mod, &t_epwake_add, &t_epwake_ep,
+	&t_mmapfix, &t_mremap4, &t_mprot4,
+	&t_xattr4, &t_rn4, &t_fall4, &t_psz4, &t_bpf4, &t_mc4,
+	&t_sem4, &t_lkw4, NULL
 };
 
 /* ------------------------------------------------------------------ */

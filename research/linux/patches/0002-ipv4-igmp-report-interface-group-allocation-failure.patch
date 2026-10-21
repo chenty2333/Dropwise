@@ -1,0 +1,112 @@
+Subject: [PATCH] ipv4: igmp: report interface group allocation failure on join
+
+setsockopt(IP_ADD_MEMBERSHIP) can return 0 while the group was never
+joined on the interface.  __ip_mc_join_group() publishes the socket-side
+ip_mc_socklist in inet->mc_list and then calls ____ip_mc_inc_group(),
+which returns void.  If its kzalloc() fails it returns silently, so the
+syscall reports success and IP_MSFILTER succeeds, but the interface has
+no ip_mc_list: no IGMP report is sent, the group is absent from
+/proc/net/igmp, and the socket cannot receive the group's traffic.  The
+socket-side and interface-side membership disagree until the socket is
+closed.
+
+____ip_mc_inc_group() exists because __ip_mc_join_group() needs to pass
+the multicast mode and the allocation flags (commit a1c4cd67840e, "net:
+fix __ip_mc_inc_group usage"), so it can also report the allocation
+failure.  Make it return -ENOBUFS, and have __ip_mc_join_group() call it
+before linking iml into inet->mc_list and free iml on failure.  The
+interface-up/init wrapper keeps its void API: those callers cannot
+report an error and a missing group is corrected by the next IGMP query.
+
+Everything runs under RTNL, so no other thread can observe the
+half-built membership.
+
+Reproduced with fail-nth on v6.19 and v7.3-rc2: n=1 fails
+sock_kmalloc() and returns -ENOBUFS cleanly; n=2 fails the kzalloc() in
+____ip_mc_inc_group() and the stock kernel returns 0 with no interface
+group; n>=3 hits later non-fatal allocations and joins normally.  With
+this change n=1 and n=2 both return -ENOBUFS and leave socket and
+interface untouched; n>=3 is unchanged.
+
+diffstat: net/ipv4/igmp.c | 35 ++++++++++++++++++++++++++---------
+
+diff --git a/net/ipv4/igmp.c b/net/ipv4/igmp.c
+index d56355aca797..eedbdb5334fc 100644
+--- a/net/ipv4/igmp.c
++++ b/net/ipv4/igmp.c
+@@ -1567,8 +1567,14 @@ static void inet_ifmcaddr_notify(struct net_device *dev,
+ /*
+  *	A socket has joined a multicast group on device dev.
+  */
+-static void ____ip_mc_inc_group(struct in_device *in_dev, __be32 addr,
+-				unsigned int mode, gfp_t gfp)
++/*
++ * Returns 0 if the interface now has a reference to the group, -ENOBUFS if
++ * the new group could not be allocated.  Callers that can report an error to
++ * userspace must check the result: a socket that reports a successful join
++ * while the interface has no group is unusable for multicast reception.
++ */
++static int ____ip_mc_inc_group(struct in_device *in_dev, __be32 addr,
++			       unsigned int mode, gfp_t gfp)
+ {
+ 	struct ip_mc_list __rcu **mc_hash;
+ 	struct ip_mc_list *im;
+@@ -1595,12 +1601,12 @@ static void ____ip_mc_inc_group(struct in_device *in_dev, __be32 addr,
+ 	if  (im) {
+ 		WRITE_ONCE(im->users, im->users + 1);
+ 		ip_mc_add_src(in_dev, &addr, mode, 0, NULL, 0);
+-		goto out;
++		return 0;
+ 	}
+ 
+ 	im = kzalloc_obj(*im, gfp);
+ 	if (!im)
+-		goto out;
++		return -ENOBUFS;
+ 
+ 	WRITE_ONCE(im->users, 1);
+ 	im->interface = in_dev;
+@@ -1630,13 +1636,16 @@ static void ____ip_mc_inc_group(struct in_device *in_dev, __be32 addr,
+ 	inet_ifmcaddr_notify(in_dev->dev, im, RTM_NEWMULTICAST);
+ 	if (!in_dev->dead)
+ 		ip_rt_multicast_event(in_dev);
+-out:
+-	return;
++	return 0;
+ }
+ 
+ void __ip_mc_inc_group(struct in_device *in_dev, __be32 addr, gfp_t gfp)
+ {
+-	____ip_mc_inc_group(in_dev, addr, MCAST_EXCLUDE, gfp);
++	/*
++	 * Cannot report an error here: callers are interface-up / init paths
++	 * where a missing group is corrected by the next IGMP query.
++	 */
++	(void)____ip_mc_inc_group(in_dev, addr, MCAST_EXCLUDE, gfp);
+ }
+ EXPORT_SYMBOL(__ip_mc_inc_group);
+ 
+@@ -2386,11 +2395,19 @@ static int __ip_mc_join_group(struct sock *sk, struct ip_mreqn *imr,
+ 		goto done;
+ 
+ 	memcpy(&iml->multi, imr, sizeof(*imr));
+-	iml->next_rcu = inet->mc_list;
+ 	iml->sflist = NULL;
+ 	iml->sfmode = mode;
++	/*
++	 * Make the interface group exist before publishing the socket's
++	 * membership: success must mean the group can actually receive.
++	 */
++	err = ____ip_mc_inc_group(in_dev, addr, mode, GFP_KERNEL);
++	if (err) {
++		sock_kfree_s(sk, iml, sizeof(*iml));
++		goto done;
++	}
++	iml->next_rcu = inet->mc_list;
+ 	rcu_assign_pointer(inet->mc_list, iml);
+-	____ip_mc_inc_group(in_dev, addr, mode, GFP_KERNEL);
+ 	err = 0;
+ done:
+ 	return err;
+-- 
+2.51.0

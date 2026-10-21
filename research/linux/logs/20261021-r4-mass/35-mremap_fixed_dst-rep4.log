@@ -1,0 +1,43 @@
+CMDLINE target=mremap_fixed_dst verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=mremap_fixed_dst full=0 mechs=1
+PROBE target=mremap_fixed_dst sample=1 ret=0 errno=0 calls=3 readback=997
+PROBE target=mremap_fixed_dst sample=2 ret=0 errno=0 calls=4 readback=996
+PROBE target=mremap_fixed_dst sample=3 ret=0 errno=0 calls=3 readback=997
+BASE target=mremap_fixed_dst side=pre sample=1 obs=surv_src=1:90;dst=1:195|obs_src=1:90;dst=1:195
+BASE target=mremap_fixed_dst side=pre sample=2 obs=surv_src=1:90;dst=1:195|obs_src=1:90;dst=1:195
+BASE target=mremap_fixed_dst side=post sample=1 ret=0 errno=0 obs=surv_src=0:-1;dst=1:90|obs_src=0:-1;dst=1:90
+BASE target=mremap_fixed_dst side=post sample=2 ret=0 errno=0 obs=surv_src=0:-1;dst=1:90|obs_src=0:-1;dst=1:90
+BASE_STABLE target=mremap_fixed_dst stable=1 pre=same post=same
+TRIAL target=mremap_fixed_dst mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=VIOL_MIXED obs=surv_src=1:90;dst=0:-1|obs_src=1:90;dst=0:-1
+TRIAL target=mremap_fixed_dst mech=failnth site=2 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_src=0:-1;dst=1:90|obs_src=0:-1;dst=1:90
+TRIAL target=mremap_fixed_dst mech=failnth site=3 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_src=0:-1;dst=1:90|obs_src=0:-1;dst=1:90
+TRIAL_END target=mremap_fixed_dst mech=failnth site=4 reason=no_injection readback=1 ret=0 errno=0
+SUMMARY target=mremap_fixed_dst mech=failnth sites=3 trials=3 misses=0 ok_pre=0 ok_post=2 ok_partial=0 ok_poisoned=0 violations=1 unknown=0 stable=1 elapsed_ms=1
+TARGET_END target=mremap_fixed_dst
+HARNESS_DONE
+[    0.541608] reboot: Power down

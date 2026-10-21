@@ -1,0 +1,5 @@
+run,mode,target,mech,selftest_sites,sites,trials,misses,ok_pre,ok_post,ok_partial,ok_poisoned,violations,unknown,stable,elapsed_ms,wall_s,done,errors
+1,mass,ip_add_membership,failnth,15,4,4,0,1,2,0,0,1,0,1,1,0.85,1,
+2,mass,mmap_fixed_replace,failnth,15,1,1,0,0,0,0,0,1,0,1,2,0.75,1,
+3,mass,fcntl_setlkw_eintr,signal,14,8,8,0,8,0,0,0,0,0,1,70,0.90,1,
+4,mass,semtimedop_eintr,signal,14,8,8,0,8,0,0,0,0,0,1,62,1.00,1,

@@ -1,0 +1,44 @@
+CMDLINE target=fcntl_setlkw_eintr verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=fcntl_setlkw_eintr full=0 mechs=2
+BASE target=fcntl_setlkw_eintr side=pre sample=1 obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+BASE target=fcntl_setlkw_eintr side=pre sample=2 obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+BASE target=fcntl_setlkw_eintr side=post sample=1 ret=0 errno=0 obs=holder_killed=0;surv_lock_rc=-1;surv_lock_errno=11
+BASE target=fcntl_setlkw_eintr side=post sample=2 ret=0 errno=0 obs=holder_killed=0;surv_lock_rc=-1;surv_lock_errno=11
+BASE_STABLE target=fcntl_setlkw_eintr stable=1 pre=same post=same
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+0us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+0us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+200us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+200us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+2000us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+2000us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+20000us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+TRIAL target=fcntl_setlkw_eintr mech=signal site=sig+20000us ret=-1 errno=4 injected=1 waited=1 readback=0 verdict=OK_PRE obs=holder_killed=1;surv_lock_rc=0;surv_lock_errno=0
+SUMMARY target=fcntl_setlkw_eintr mech=signal sites=8 trials=8 misses=0 ok_pre=8 ok_post=0 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=70
+TARGET_END target=fcntl_setlkw_eintr
+HARNESS_DONE
+[    0.574173] reboot: Power down

@@ -46,6 +46,18 @@ ALL_TARGETS = [
     "epoll_mod_wakeup",
     "epoll_add_wakeup",
     "epoll_mod_wakeup_ep",
+    # round 4
+    "mmap_fixed_replace",
+    "mremap_fixed_dst",
+    "mprotect_multi",
+    "tmpfs_setxattr_replace",
+    "tmpfs_rename_exchange",
+    "tmpfs_fallocate",
+    "pipe_set_size",
+    "so_attach_filter",
+    "ip_add_membership",
+    "semtimedop_eintr",
+    "fcntl_setlkw_eintr",
 ]
 
 QEMU = shutil.which("qemu-system-x86_64")

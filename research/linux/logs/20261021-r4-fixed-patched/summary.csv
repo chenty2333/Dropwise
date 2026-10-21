@@ -1,0 +1,6 @@
+run,mode,target,mech,selftest_sites,sites,trials,misses,ok_pre,ok_post,ok_partial,ok_poisoned,violations,unknown,stable,elapsed_ms,wall_s,done,errors
+1,mass,ip_add_membership,failnth,14,4,4,0,2,2,0,0,0,0,1,1,0.85,1,
+2,mass,ip_add_membership,failnth,14,4,4,0,2,2,0,0,0,0,1,1,0.75,1,
+3,mass,ip_add_membership,failnth,14,4,4,0,2,2,0,0,0,0,1,7,0.90,1,
+4,mass,ip_add_membership,failnth,14,4,4,0,2,2,0,0,0,0,1,1,0.90,1,
+5,mass,ip_add_membership,failnth,14,4,4,0,2,2,0,0,0,0,1,1,0.75,1,

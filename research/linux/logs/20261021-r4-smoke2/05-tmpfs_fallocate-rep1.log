@@ -1,0 +1,295 @@
+CMDLINE target=tmpfs_fallocate verbose=0
+FF_INJECTABLE entries=985
+FF_LIST __filemap_add_folio	ERRNO
+FF_LIST should_failslab	ERRNO
+FF_LIST should_fail_alloc_page	TRUE
+FF_LIST should_fail_bio	ERRNO
+FF_LIST should_fail_net_realloc_skb	TRUE
+FF_INJECTABLE nonsyscall=5
+FF_REGISTER func=__x64_sys_getpid retval=0xffffffffffffffea times=1
+FF_SELFTEST func=__x64_sys_getpid ret=-1 errno=22 times=0
+SELFTEST_SOCKETPAIR n=1 injected=1 ret=0 errno=0 readback=0
+SELFTEST_SOCKETPAIR n=2 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=3 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=4 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=5 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=6 injected=1 ret=-1 errno=23 readback=0
+SELFTEST_SOCKETPAIR n=7 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=8 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=9 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=10 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=11 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=12 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=13 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=14 injected=1 ret=-1 errno=12 readback=0
+SELFTEST_SOCKETPAIR n=15 injected=0 ret=0 errno=0 readback=1
+SELFTEST_OK socketpair_sites=14
+TARGET_BEGIN target=tmpfs_fallocate full=0 mechs=1
+PROBE target=tmpfs_fallocate sample=1 ret=0 errno=0 calls=261 readback=739
+PROBE target=tmpfs_fallocate sample=2 ret=0 errno=0 calls=261 readback=739
+PROBE target=tmpfs_fallocate sample=3 ret=0 errno=0 calls=261 readback=739
+BASE target=tmpfs_fallocate side=pre sample=1 obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+BASE target=tmpfs_fallocate side=pre sample=2 obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+BASE target=tmpfs_fallocate side=post sample=1 ret=0 errno=0 obs=surv_w=1;surv_errno=0|size=1048576;blocks=2048;b0=83;bend=0;r0=1;rend=1;obs_fd=1
+BASE target=tmpfs_fallocate side=post sample=2 ret=0 errno=0 obs=surv_w=1;surv_errno=0|size=1048576;blocks=2048;b0=83;bend=0;r0=1;rend=1;obs_fd=1
+BASE_STABLE target=tmpfs_fallocate stable=1 pre=same post=same
+TRIAL target=tmpfs_fallocate mech=failnth site=1 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=2 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=3 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_w=1;surv_errno=0|size=1048576;blocks=2048;b0=83;bend=0;r0=1;rend=1;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=4 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=5 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=6 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=7 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=8 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=9 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=10 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=11 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=12 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=13 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=14 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=15 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=16 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=17 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=18 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=19 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=20 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=21 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=22 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=23 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=24 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=25 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=26 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=27 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=28 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=29 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=30 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=31 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=32 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=33 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=34 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=35 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=36 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=37 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=38 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=39 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=40 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=41 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=42 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=43 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=44 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=45 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=46 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=47 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=48 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=49 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=50 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=51 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=52 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=53 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=54 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=55 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=56 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=57 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=58 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=59 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=60 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=61 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=62 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=63 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=64 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=65 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=66 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=67 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_w=1;surv_errno=0|size=1048576;blocks=2048;b0=83;bend=0;r0=1;rend=1;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=68 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_w=1;surv_errno=0|size=1048576;blocks=2048;b0=83;bend=0;r0=1;rend=1;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=69 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=70 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=71 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=72 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=73 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=74 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=75 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=76 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=77 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=78 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=79 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=80 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=81 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=82 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=83 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=84 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=85 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=86 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=87 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=88 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=89 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=90 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=91 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=92 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=93 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=94 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=95 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=96 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=97 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=98 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=99 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=100 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=101 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=102 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=103 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=104 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=105 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=106 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=107 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=108 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=109 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=110 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=111 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=112 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=113 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=114 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=115 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=116 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=117 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=118 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=119 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=120 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=121 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=122 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=123 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=124 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=125 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=126 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=127 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=128 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=129 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=130 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=131 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=132 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=133 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_w=1;surv_errno=0|size=1048576;blocks=2048;b0=83;bend=0;r0=1;rend=1;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=134 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=135 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=136 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=137 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=138 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=139 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=140 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=141 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=142 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=143 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=144 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=145 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=146 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=147 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=148 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=149 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=150 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=151 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=152 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=153 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=154 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=155 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=156 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=157 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=158 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=159 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=160 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=161 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=162 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=163 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=164 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=165 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=166 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=167 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=168 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=169 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=170 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=171 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=172 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=173 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=174 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=175 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=176 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=177 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=178 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=179 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=180 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=181 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=182 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=183 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=184 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=185 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=186 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=187 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=188 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=189 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=190 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=191 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=192 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=193 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=194 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=195 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=196 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=197 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=198 ret=0 errno=0 injected=1 readback=0 verdict=OK_POST obs=surv_w=1;surv_errno=0|size=1048576;blocks=2048;b0=83;bend=0;r0=1;rend=1;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=199 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=200 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=201 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=202 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=203 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=204 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=205 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=206 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=207 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=208 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=209 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=210 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=211 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=212 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=213 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=214 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=215 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=216 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=217 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=218 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=219 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=220 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=221 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=222 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=223 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=224 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=225 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=226 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=227 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=228 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=229 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=230 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=231 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=232 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=233 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=234 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=235 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=236 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=237 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=238 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=239 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=240 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=241 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=242 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=243 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=244 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=245 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=246 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=247 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=248 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=249 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=250 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=251 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=252 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=253 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=254 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=255 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+TRIAL target=tmpfs_fallocate mech=failnth site=256 ret=-1 errno=12 injected=1 readback=0 verdict=OK_PRE obs=surv_w=1;surv_errno=0|size=1;blocks=8;b0=83;bend=0;r0=1;rend=0;obs_fd=1
+SUMMARY target=tmpfs_fallocate mech=failnth sites=256 trials=256 misses=0 ok_pre=251 ok_post=5 ok_partial=0 ok_poisoned=0 violations=0 unknown=0 stable=1 elapsed_ms=294
+TARGET_END target=tmpfs_fallocate
+HARNESS_DONE
+[    0.761822] reboot: Power down
