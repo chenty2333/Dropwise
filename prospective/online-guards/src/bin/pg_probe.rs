@@ -242,6 +242,11 @@ impl RecoveryPolicy for RetirePolicy {
 struct ProbePolicy;
 impl RecoveryPolicy for ProbePolicy {
     fn choose(&self, s: &Suspect) -> Plan {
+        // A completed BEGIN returned to the pool is a standing obligation with
+        // no pending reply: a rollback is the whole cleanup.
+        if s.standing.is_some() && s.features.name("read") == Some("complete") {
+            return Plan::Run("rollback");
+        }
         // A complete write with no complete reply is a pending exchange: a
         // bounded probe is the action that can distinguish a delayed reply
         // from a dead or desynchronised connection.  A partial write is not
