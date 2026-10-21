@@ -15,3 +15,4 @@ mysql_async = "=0.37.1"
 clickhouse-arrow = { version = "=0.2.1", default-features = false, features = ["derive", "serde", "pool"] }
 futures-util = "0.3"
 tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time"] }
+serde = { version = "1", features = ["derive"] }

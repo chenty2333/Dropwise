@@ -23,49 +23,69 @@ use std::fmt;
 use std::time::Duration;
 
 use combine::{
-    Adapter, Case, CaseFuture, ObjectRelation, PayloadRelation, Shape, Slot, plan_cases,
-    replay_case, run_case, run_cases,
+    Adapter, Case, CaseFuture, Diagnostics, Param, ParamSlots, PayloadRelation, SlotRole,
+    SlotVisitor, plan_cases, replay_case, run_case, run_cases_with,
 };
 use dropwise::net::{Proxy, ProxyOptions};
 use dropwise::{Config, Ctx, Expect, Flavor, Race, Settle};
-use mysql_async::prelude::Queryable;
 use mysql_async::Conn;
+use mysql_async::prelude::Queryable;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum TargetOp {
-    Select { value: i64 },
+    Select { value: Param<i64> },
 }
 
 impl fmt::Display for TargetOp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TargetOp::Select { value } => write!(f, "select({value})"),
+            TargetOp::Select { value } => write!(f, "select({})", value.value),
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum SuccessorOp {
-    Query { value: i64 },
-    QueryThenInsert { value: i64, row: i32 },
-    Insert { row: i32 },
+    Query { value: Param<i64> },
+    QueryThenInsert { value: Param<i64>, row: Param<i32> },
+    Insert { row: Param<i32> },
 }
 
 impl fmt::Display for SuccessorOp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SuccessorOp::Query { value } => write!(f, "query({value})"),
+            SuccessorOp::Query { value } => write!(f, "query({})", value.value),
             SuccessorOp::QueryThenInsert { value, row } => {
-                write!(f, "query+insert({value},row={row})")
+                write!(f, "query+insert({},row={})", value.value, row.value)
             }
-            SuccessorOp::Insert { row } => write!(f, "insert(row={row})"),
+            SuccessorOp::Insert { row } => write!(f, "insert(row={})", row.value),
+        }
+    }
+}
+
+impl ParamSlots for TargetOp {
+    fn visit_slots<V: SlotVisitor>(&mut self, visitor: &mut V) -> Result<(), String> {
+        match self {
+            TargetOp::Select { value } => visitor.visit(SlotRole::Payload, value),
+        }
+    }
+}
+
+impl ParamSlots for SuccessorOp {
+    fn visit_slots<V: SlotVisitor>(&mut self, visitor: &mut V) -> Result<(), String> {
+        match self {
+            // `row` in QueryThenInsert is a fixed step, not a compared dimension.
+            SuccessorOp::Query { value } | SuccessorOp::QueryThenInsert { value, .. } => {
+                visitor.visit(SlotRole::Payload, value)
+            }
+            SuccessorOp::Insert { row } => visitor.visit(SlotRole::Payload, row),
         }
     }
 }
 
 /// Concrete successor returns and independent effects. The target's
 /// completed/cancelled control result is deliberately not part of this value.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 struct Obs {
     /// The successor's own read, when it performs one.
     own: Option<Result<i64, String>>,
@@ -87,7 +107,9 @@ impl Env {
     async fn new(url: &str) -> Result<Self, String> {
         let proxy = Proxy::start_with(
             primitives::upstream(url)?,
-            ProxyOptions { reply_delay: primitives::REPLY_DELAY },
+            ProxyOptions {
+                reply_delay: primitives::REPLY_DELAY,
+            },
         )
         .await
         .map_err(primitives::e)?;
@@ -114,22 +136,34 @@ impl Env {
         match op {
             SuccessorOp::Query { value } => {
                 let conn = self.conn.as_mut().expect("direct Conn scenario");
-                Obs { own: Some(primitives::select_value(conn, *value).await), write: None, visible: None }
+                Obs {
+                    own: Some(primitives::select_value(conn, value.value).await),
+                    write: None,
+                    visible: None,
+                }
             }
             SuccessorOp::QueryThenInsert { value, row } => {
                 let table = self.table.clone();
                 let conn = self.conn.as_mut().expect("direct Conn scenario");
-                let own = primitives::select_value(conn, *value).await;
-                let write = primitives::insert_row(conn, &table, *row).await;
+                let own = primitives::select_value(conn, value.value).await;
+                let write = primitives::insert_row(conn, &table, row.value).await;
                 let visible = primitives::count_rows(&mut self.observer, &table).await;
-                Obs { own: Some(own), write: Some(write), visible: Some(visible) }
+                Obs {
+                    own: Some(own),
+                    write: Some(write),
+                    visible: Some(visible),
+                }
             }
             SuccessorOp::Insert { row } => {
                 let table = self.table.clone();
                 let conn = self.conn.as_mut().expect("direct Conn scenario");
-                let write = primitives::insert_row(conn, &table, *row).await;
+                let write = primitives::insert_row(conn, &table, row.value).await;
                 let visible = primitives::count_rows(&mut self.observer, &table).await;
-                Obs { own: None, write: Some(write), visible: Some(visible) }
+                Obs {
+                    own: None,
+                    write: Some(write),
+                    visible: Some(visible),
+                }
             }
         }
     }
@@ -158,14 +192,17 @@ impl MyAdapter {
     }
 }
 
-fn payload(value: i64) -> Slot {
-    Slot::new("mysql/query-value", value.to_string())
+const TARGET_VALUE: i64 = 12345;
+const QUERY_VALUE: i64 = 67890;
+const INSERT_ROW: i32 = 1;
+const OTHER_ROW: i32 = 2;
+
+fn query_value(value: i64) -> Param<i64> {
+    Param::new("mysql/query-value", value)
 }
 
-fn target_value(target: &TargetOp) -> i64 {
-    match target {
-        TargetOp::Select { value } => *value,
-    }
+fn row_value(value: i32) -> Param<i32> {
+    Param::new("mysql/row-value", value)
 }
 
 impl Adapter for MyAdapter {
@@ -174,90 +211,52 @@ impl Adapter for MyAdapter {
     type Obs = Obs;
 
     fn targets(&self) -> Vec<Self::Target> {
-        vec![TargetOp::Select { value: 12345 }]
+        vec![TargetOp::Select {
+            value: query_value(TARGET_VALUE),
+        }]
     }
 
     fn successors(&self) -> Vec<Self::Successor> {
         vec![
-            SuccessorOp::Query { value: 67890 },
-            SuccessorOp::QueryThenInsert { value: 67890, row: 1 },
-            SuccessorOp::Insert { row: 2 },
+            SuccessorOp::Query {
+                value: query_value(QUERY_VALUE).with_alternatives([TARGET_VALUE]),
+            },
+            SuccessorOp::QueryThenInsert {
+                value: query_value(QUERY_VALUE).with_alternatives([TARGET_VALUE]),
+                row: row_value(INSERT_ROW),
+            },
+            SuccessorOp::Insert {
+                row: row_value(OTHER_ROW).with_alternatives([INSERT_ROW]),
+            },
         ]
-    }
-
-    fn target_shape(&self, target: &Self::Target) -> Shape {
-        Shape { object: None, payload: Some(payload(target_value(target))) }
-    }
-
-    fn successor_shape(&self, successor: &Self::Successor) -> Shape {
-        match successor {
-            SuccessorOp::Query { value } | SuccessorOp::QueryThenInsert { value, .. } => {
-                Shape { object: None, payload: Some(payload(*value)) }
-            }
-            SuccessorOp::Insert { row } => Shape {
-                object: None,
-                payload: Some(Slot::new("mysql/row-value", row.to_string())),
-            },
-        }
-    }
-
-    fn realize(
-        &self,
-        target: &Self::Target,
-        successor: &Self::Successor,
-        object: Option<ObjectRelation>,
-        relation: Option<PayloadRelation>,
-    ) -> Result<Self::Successor, String> {
-        if object.is_some() {
-            return Err("this target has no business object".into());
-        }
-        let target_value = target_value(target);
-        match successor {
-            SuccessorOp::Query { value } => Ok(SuccessorOp::Query {
-                value: match relation {
-                    Some(PayloadRelation::Same) => target_value,
-                    Some(PayloadRelation::Different) => *value,
-                    None => *value,
-                },
-            }),
-            SuccessorOp::QueryThenInsert { value, row } => Ok(SuccessorOp::QueryThenInsert {
-                value: match relation {
-                    Some(PayloadRelation::Same) => target_value,
-                    Some(PayloadRelation::Different) => *value,
-                    None => *value,
-                },
-                row: *row,
-            }),
-            SuccessorOp::Insert { row } => match relation {
-                Some(_) => Err("the insert row value is not comparable to the query value".into()),
-                None => Ok(SuccessorOp::Insert { row: *row }),
-            },
-        }
     }
 
     fn expect(&self, _case: &Case<Self::Target, Self::Successor>) -> Expect {
         Expect::Atomic
     }
 
-    fn scenario(&self, ctx: Ctx, case: Case<Self::Target, Self::Successor>) -> CaseFuture<Self::Obs> {
+    fn scenario(
+        &self,
+        ctx: Ctx,
+        case: Case<Self::Target, Self::Successor>,
+    ) -> CaseFuture<Self::Obs> {
         let url = self.direct_url.clone();
         let guard = self.guard;
         Box::pin(async move {
             let mut env = Env::new(&url).await?;
-            let value = target_value(&case.target);
+            let TargetOp::Select { value } = &case.target;
             let completed = {
                 let conn = env.conn.as_mut().expect("direct Conn scenario");
-                ctx.target(primitives::select_value(conn, value)).await
+                ctx.target(primitives::select_value(conn, value.value))
+                    .await
             };
             if let Some(Err(err)) = completed {
                 env.cleanup().await;
                 return Err(format!("completed target failed: {err}"));
             }
-            if guard {
-                if let Err(err) = env.recover().await {
-                    env.cleanup().await;
-                    return Err(err);
-                }
+            if guard && let Err(err) = env.recover().await {
+                env.cleanup().await;
+                return Err(err);
             }
             let obs = env.successor(&case.successor).await;
             env.cleanup().await;
@@ -272,9 +271,55 @@ fn config() -> Config {
         races: vec![Race::Immediate, Race::AfterWake],
         max_runs: 32,
         scenario_timeout: Duration::from_secs(20),
-        settle: Settle { tokio_time: Duration::ZERO, ..Settle::default() },
+        settle: Settle {
+            tokio_time: Duration::ZERO,
+            ..Settle::default()
+        },
         ..Config::default()
     }
+}
+
+#[test]
+fn mysql_plan_without_service() {
+    let adapter = MyAdapter {
+        direct_url: String::new(),
+        guard: false,
+    };
+    let plan = plan_cases(&adapter, 8);
+    let labels: Vec<String> = plan.cases.iter().map(Case::label).collect();
+    assert_eq!(
+        labels,
+        vec![
+            format!(
+                "target=select({TARGET_VALUE}) -> successor=query({TARGET_VALUE}) [object=n/a, payload=same]"
+            ),
+            format!(
+                "target=select({TARGET_VALUE}) -> successor=query({QUERY_VALUE}) [object=n/a, payload=different]"
+            ),
+            format!(
+                "target=select({TARGET_VALUE}) -> successor=query+insert({TARGET_VALUE},row={INSERT_ROW}) [object=n/a, payload=same]"
+            ),
+            format!(
+                "target=select({TARGET_VALUE}) -> successor=query+insert({QUERY_VALUE},row={INSERT_ROW}) [object=n/a, payload=different]"
+            ),
+            format!(
+                "target=select({TARGET_VALUE}) -> successor=insert(row={OTHER_ROW}) [object=n/a, payload=n/a]"
+            ),
+        ]
+    );
+    assert_eq!(plan.cases.len(), 5);
+    assert!(plan.skipped.is_empty());
+    assert!(plan.unrun.is_empty());
+    assert_eq!(
+        plan.cases
+            .iter()
+            .filter(|case| case.payload == Some(PayloadRelation::Different))
+            .count(),
+        2
+    );
+    assert!(plan.notes.iter().any(|note| {
+        note.contains("target kind mysql/query-value != successor kind mysql/row-value")
+    }));
 }
 
 #[test]
@@ -287,7 +332,7 @@ fn generated_my2_cases() {
         primitives::REPLY_DELAY,
         adapter.direct_url
     );
-    let runs = run_cases(&adapter, &config(), 8);
+    let runs = run_cases_with(&adapter, &config(), 8, Diagnostics::On);
     runs.print();
 
     // The registered target has no object key; the two query successors should
@@ -319,8 +364,10 @@ fn replay_generated_my2_case() {
         .cases
         .iter()
         .find(|case| {
-            case.successor == SuccessorOp::Query { value: 67890 }
-                && case.payload == Some(PayloadRelation::Different)
+            matches!(
+                &case.successor,
+                SuccessorOp::Query { value } if value.value == QUERY_VALUE
+            ) && case.payload == Some(PayloadRelation::Different)
                 && case.object.is_none()
         })
         .expect("the different-value query case was not generated")
@@ -342,7 +389,11 @@ fn replay_generated_my2_case() {
     let replay = replay_case(&adapter, &config, &case, &replay_plan)
         .expect("replay rejected the generated case's plan");
     println!("MYSQL-REPLAY {}", replay.summary());
-    let trial = replay.report.trials.first().expect("replay produced no trial");
+    let trial = replay
+        .report
+        .trials
+        .first()
+        .expect("replay produced no trial");
     println!(
         "MYSQL-REPLAY plan={} realized={} verdict={:?} comparison={:?} invariant={:?}",
         trial.plan_label(),

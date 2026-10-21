@@ -19,8 +19,9 @@
 
 use crate::bolt::*;
 use crate::combine::{
-    Adapter, Case, CaseFuture, ObjectRelation, PayloadRelation, Shape, Slot, plan_cases,
-    replay_case, run_case, run_cases,
+    Adapter, Case, CaseFuture, Diagnostics, IdentityBinding, IdentityMatch, ObjectRelation, Param,
+    ParamSlots, PayloadRelation, SlotRole, SlotVisitor, plan_cases, replay_case, run_case,
+    run_cases_with,
 };
 
 use std::fmt;
@@ -41,6 +42,15 @@ impl NodeRole {
         }
     }
 
+    /// The stable identity left after `env.tag` strips its per-run prefix.
+    /// This must stay aligned with the adapter's explicit normalization rule.
+    fn normalized_tag(self) -> &'static str {
+        match self {
+            NodeRole::Primary => "-primary",
+            NodeRole::Alternate => "-alternate",
+        }
+    }
+
     fn other(self) -> Self {
         match self {
             NodeRole::Primary => NodeRole::Alternate,
@@ -58,23 +68,45 @@ impl fmt::Display for NodeRole {
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum TargetOp {
     Checkout,
-    Write { node: NodeRole, value: i64 },
+    Write {
+        node: Param<NodeRole>,
+        value: Param<i64>,
+    },
+}
+
+impl TargetOp {
+    fn node(&self) -> Option<NodeRole> {
+        match self {
+            TargetOp::Checkout => None,
+            TargetOp::Write { node, .. } => Some(node.value),
+        }
+    }
 }
 
 impl fmt::Display for TargetOp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TargetOp::Checkout => f.write_str("checkout"),
-            TargetOp::Write { node, value } => write!(f, "write({node},{value})"),
+            TargetOp::Write { node, value } => {
+                write!(f, "write({},{})", node.value, value.value)
+            }
         }
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum SuccessorOp {
-    Write { node: NodeRole, value: i64 },
-    WriteRead { node: NodeRole, value: i64 },
-    ReadTag { node: NodeRole },
+    Write {
+        node: Param<NodeRole>,
+        value: Param<i64>,
+    },
+    WriteRead {
+        node: Param<NodeRole>,
+        value: Param<i64>,
+    },
+    ReadTag {
+        node: Param<NodeRole>,
+    },
 }
 
 impl SuccessorOp {
@@ -82,7 +114,7 @@ impl SuccessorOp {
         match self {
             SuccessorOp::Write { node, .. }
             | SuccessorOp::WriteRead { node, .. }
-            | SuccessorOp::ReadTag { node } => *node,
+            | SuccessorOp::ReadTag { node } => node.value,
         }
     }
 }
@@ -90,9 +122,37 @@ impl SuccessorOp {
 impl fmt::Display for SuccessorOp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SuccessorOp::Write { node, value } => write!(f, "write({node},{value})"),
-            SuccessorOp::WriteRead { node, value } => write!(f, "write+read({node},{value})"),
-            SuccessorOp::ReadTag { node } => write!(f, "read-tag({node})"),
+            SuccessorOp::Write { node, value } => {
+                write!(f, "write({},{})", node.value, value.value)
+            }
+            SuccessorOp::WriteRead { node, value } => {
+                write!(f, "write+read({},{})", node.value, value.value)
+            }
+            SuccessorOp::ReadTag { node } => write!(f, "read-tag({})", node.value),
+        }
+    }
+}
+
+impl ParamSlots for TargetOp {
+    fn visit_slots<V: SlotVisitor>(&mut self, visitor: &mut V) -> Result<(), String> {
+        match self {
+            TargetOp::Checkout => Ok(()),
+            TargetOp::Write { node, value } => {
+                visitor.visit(SlotRole::Object, node)?;
+                visitor.visit(SlotRole::Payload, value)
+            }
+        }
+    }
+}
+
+impl ParamSlots for SuccessorOp {
+    fn visit_slots<V: SlotVisitor>(&mut self, visitor: &mut V) -> Result<(), String> {
+        match self {
+            SuccessorOp::Write { node, value } | SuccessorOp::WriteRead { node, value } => {
+                visitor.visit(SlotRole::Object, node)?;
+                visitor.visit(SlotRole::Payload, value)
+            }
+            SuccessorOp::ReadTag { node } => visitor.visit(SlotRole::Object, node),
         }
     }
 }
@@ -100,7 +160,7 @@ impl fmt::Display for SuccessorOp {
 /// Concrete successor returns and independent effects. The cancelled target's
 /// completed/cancelled control result is not included. Tags are normalized by
 /// the adapter's explicit rule, which preserves primary/alternate identity.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 struct Obs {
     own_write: Option<Result<i64, String>>,
     own_read: Option<Result<i64, String>>,
@@ -109,41 +169,20 @@ struct Obs {
     visible_tag: Option<Result<String, String>>,
 }
 
-fn target_shape(target: &TargetOp) -> Shape {
-    match target {
-        TargetOp::Checkout => Shape::default(),
-        TargetOp::Write { node, value } => Shape {
-            object: Some(Slot::new("bolt/node", node.as_str())),
-            payload: Some(Slot::new("bolt/write-value", value.to_string())),
-        },
-    }
+fn node_param(role: NodeRole) -> Param<NodeRole> {
+    Param::new("bolt/node", role)
 }
 
-fn successor_shape(successor: &SuccessorOp) -> Shape {
-    match successor {
-        SuccessorOp::Write { node, value } | SuccessorOp::WriteRead { node, value } => Shape {
-            object: Some(Slot::new("bolt/node", node.as_str())),
-            payload: Some(Slot::new("bolt/write-value", value.to_string())),
-        },
-        SuccessorOp::ReadTag { node } => Shape {
-            object: Some(Slot::new("bolt/node", node.as_str())),
-            payload: None,
-        },
-    }
+fn successor_node_param(role: NodeRole) -> Param<NodeRole> {
+    Param::new("bolt/node", role).with_alternatives([role.other()])
 }
 
-fn target_node(target: &TargetOp) -> Option<NodeRole> {
-    match target {
-        TargetOp::Checkout => None,
-        TargetOp::Write { node, .. } => Some(*node),
-    }
+fn value_param(value: i64) -> Param<i64> {
+    Param::new("bolt/write-value", value)
 }
 
-fn target_value(target: &TargetOp) -> Option<i64> {
-    match target {
-        TargetOp::Checkout => None,
-        TargetOp::Write { value, .. } => Some(*value),
-    }
+fn successor_value_param() -> Param<i64> {
+    value_param(SURVIVOR_V).with_alternatives([TARGET_V])
 }
 
 struct BoltAdapter {
@@ -154,6 +193,25 @@ impl BoltAdapter {
     fn from_env() -> Result<Self, String> {
         Ok(Self { direct_url: url()? })
     }
+
+    fn identity_bindings(
+        &self,
+        case: &Case<TargetOp, SuccessorOp>,
+        observed: &Obs,
+    ) -> Vec<IdentityBinding> {
+        let target = case.target.node().map(NodeRole::normalized_tag);
+        let successor = Some(case.successor.node().normalized_tag());
+        let mut bindings = Vec::new();
+        for (field, value) in [
+            ("tag", &observed.tag),
+            ("visible_tag", &observed.visible_tag),
+        ] {
+            if let Some(Ok(value)) = value {
+                bindings.push(IdentityBinding::new(field, value, target, successor));
+            }
+        }
+        bindings
+    }
 }
 
 impl Adapter for BoltAdapter {
@@ -163,67 +221,36 @@ impl Adapter for BoltAdapter {
 
     fn targets(&self) -> Vec<Self::Target> {
         vec![
-            TargetOp::Write { node: NodeRole::Primary, value: TARGET_V },
+            TargetOp::Write {
+                node: node_param(NodeRole::Primary),
+                value: value_param(TARGET_V),
+            },
             TargetOp::Checkout,
         ]
     }
 
     fn successors(&self) -> Vec<Self::Successor> {
         vec![
-            SuccessorOp::Write { node: NodeRole::Primary, value: SURVIVOR_V },
-            SuccessorOp::WriteRead { node: NodeRole::Primary, value: SURVIVOR_V },
-            SuccessorOp::ReadTag { node: NodeRole::Primary },
+            SuccessorOp::Write {
+                node: successor_node_param(NodeRole::Primary),
+                value: successor_value_param(),
+            },
+            SuccessorOp::WriteRead {
+                node: successor_node_param(NodeRole::Primary),
+                value: successor_value_param(),
+            },
+            SuccessorOp::ReadTag {
+                node: successor_node_param(NodeRole::Primary),
+            },
         ]
     }
 
-    fn target_shape(&self, target: &Self::Target) -> Shape {
-        target_shape(target)
-    }
-
-    fn successor_shape(&self, successor: &Self::Successor) -> Shape {
-        successor_shape(successor)
-    }
-
-    fn realize(
+    fn identities(
         &self,
-        target: &Self::Target,
-        successor: &Self::Successor,
-        object: Option<ObjectRelation>,
-        payload: Option<PayloadRelation>,
-    ) -> Result<Self::Successor, String> {
-        let node_for = |base: NodeRole| -> Result<NodeRole, String> {
-            match object {
-                Some(ObjectRelation::Same) => target_node(target)
-                    .ok_or_else(|| "target has no business object to reuse".to_string()),
-                Some(ObjectRelation::Different) => target_node(target)
-                    .map(NodeRole::other)
-                    .ok_or_else(|| "target has no business object to differ from".to_string()),
-                None => Ok(base),
-            }
-        };
-        let value_for = |base: i64| -> Result<i64, String> {
-            match payload {
-                Some(PayloadRelation::Same) => target_value(target)
-                    .ok_or_else(|| "target has no payload to reuse".to_string()),
-                Some(PayloadRelation::Different) => Ok(base),
-                None => Ok(base),
-            }
-        };
-        match successor {
-            SuccessorOp::Write { node, value } => {
-                Ok(SuccessorOp::Write { node: node_for(*node)?, value: value_for(*value)? })
-            }
-            SuccessorOp::WriteRead { node, value } => Ok(SuccessorOp::WriteRead {
-                node: node_for(*node)?,
-                value: value_for(*value)?,
-            }),
-            SuccessorOp::ReadTag { node } => {
-                if payload.is_some() {
-                    return Err("read-tag has no comparable payload".into());
-                }
-                Ok(SuccessorOp::ReadTag { node: node_for(*node)? })
-            }
-        }
+        case: &Case<Self::Target, Self::Successor>,
+        observed: &Self::Obs,
+    ) -> Vec<IdentityBinding> {
+        self.identity_bindings(case, observed)
     }
 
     fn expect(&self, _case: &Case<Self::Target, Self::Successor>) -> Expect {
@@ -232,17 +259,23 @@ impl Adapter for BoltAdapter {
         Expect::Atomic
     }
 
-    fn scenario(&self, ctx: Ctx, case: Case<Self::Target, Self::Successor>) -> CaseFuture<Self::Obs> {
+    fn scenario(
+        &self,
+        ctx: Ctx,
+        case: Case<Self::Target, Self::Successor>,
+    ) -> CaseFuture<Self::Obs> {
         Box::pin(async move {
             let mut env = setup_nodes("gen", &["primary", "alternate"]).await?;
             let target_done: Option<Result<(), String>> = match &case.target {
                 TargetOp::Checkout => ctx.target(env.checkout()).await,
                 TargetOp::Write { node, value } => {
                     let node = env
-                        .node(node.as_str())
-                        .ok_or_else(|| format!("setup did not create node {node}"))?
+                        .node(node.value.as_str())
+                        .ok_or_else(|| format!("setup did not create node {}", node.value))?
                         .clone();
-                    ctx.target(env.write_node(&node, *value)).await.map(|result| result.map(|_| ()))
+                    ctx.target(env.write_node(&node, value.value))
+                        .await
+                        .map(|result| result.map(|_| ()))
                 }
             };
             if let Some(Err(err)) = target_done {
@@ -270,9 +303,12 @@ async fn successor_observation(env: &mut Env, successor: &SuccessorOp) -> Obs {
     let node = node_of(env, successor.node());
     match successor {
         SuccessorOp::Write { value, .. } => {
-            let own_write = bounded("successor write", env.write_node(&node, *value)).await;
-            let visible_value =
-                bounded("observer value after successor", env.observer_value_node(&node)).await;
+            let own_write = bounded("successor write", env.write_node(&node, value.value)).await;
+            let visible_value = bounded(
+                "observer value after successor",
+                env.observer_value_node(&node),
+            )
+            .await;
             let visible_tag =
                 bounded("observer tag after successor", env.observer_tag_node(&node)).await;
             Obs {
@@ -284,11 +320,14 @@ async fn successor_observation(env: &mut Env, successor: &SuccessorOp) -> Obs {
             }
         }
         SuccessorOp::WriteRead { value, .. } => {
-            let own_write = bounded("successor write", env.write_node(&node, *value)).await;
+            let own_write = bounded("successor write", env.write_node(&node, value.value)).await;
             let own_read = bounded("successor read-back", env.read_node(&node)).await;
             let tag = bounded("successor tag read", env.read_node_tag(&node)).await;
-            let visible_value =
-                bounded("observer value after successor", env.observer_value_node(&node)).await;
+            let visible_value = bounded(
+                "observer value after successor",
+                env.observer_value_node(&node),
+            )
+            .await;
             let visible_tag =
                 bounded("observer tag after successor", env.observer_tag_node(&node)).await;
             Obs {
@@ -315,7 +354,128 @@ async fn successor_observation(env: &mut Env, successor: &SuccessorOp) -> Obs {
 }
 
 fn gen_config() -> Config {
-    Config { max_runs: 24, ..config() }
+    Config {
+        max_runs: 24,
+        ..config()
+    }
+}
+
+#[test]
+fn bolt_plan_without_service() {
+    let adapter = BoltAdapter {
+        direct_url: String::new(),
+    };
+    let plan = plan_cases(&adapter, 16);
+    let labels: Vec<String> = plan.cases.iter().map(Case::label).collect();
+    assert_eq!(
+        labels,
+        vec![
+            "target=write(primary,1) -> successor=write(primary,1) [object=same, payload=same]",
+            "target=write(primary,1) -> successor=write(primary,7) [object=same, payload=different]",
+            "target=write(primary,1) -> successor=write(alternate,1) [object=different, payload=same]",
+            "target=write(primary,1) -> successor=write(alternate,7) [object=different, payload=different]",
+            "target=write(primary,1) -> successor=write+read(primary,1) [object=same, payload=same]",
+            "target=write(primary,1) -> successor=write+read(primary,7) [object=same, payload=different]",
+            "target=write(primary,1) -> successor=write+read(alternate,1) [object=different, payload=same]",
+            "target=write(primary,1) -> successor=write+read(alternate,7) [object=different, payload=different]",
+            "target=write(primary,1) -> successor=read-tag(primary) [object=same, payload=n/a]",
+            "target=write(primary,1) -> successor=read-tag(alternate) [object=different, payload=n/a]",
+            "target=checkout -> successor=write(primary,7) [object=n/a, payload=n/a]",
+            "target=checkout -> successor=write+read(primary,7) [object=n/a, payload=n/a]",
+            "target=checkout -> successor=read-tag(primary) [object=n/a, payload=n/a]",
+        ]
+    );
+    assert_eq!(plan.cases.len(), 13);
+    assert!(plan.skipped.is_empty());
+    assert!(plan.unrun.is_empty());
+    let count_object = |relation: ObjectRelation| {
+        plan.cases
+            .iter()
+            .filter(|case| case.object == Some(relation))
+            .count()
+    };
+    let count_payload = |relation: PayloadRelation| {
+        plan.cases
+            .iter()
+            .filter(|case| case.payload == Some(relation))
+            .count()
+    };
+    assert_eq!(count_object(ObjectRelation::Same), 5);
+    assert_eq!(count_object(ObjectRelation::Different), 5);
+    assert_eq!(count_payload(PayloadRelation::Same), 4);
+    assert_eq!(count_payload(PayloadRelation::Different), 4);
+    assert!(
+        plan.notes.iter().any(|note| {
+            note.contains("target has no business object; successor kind bolt/node")
+        })
+    );
+}
+
+#[test]
+fn same_object_identity_ambiguity_is_visible() {
+    let adapter = BoltAdapter {
+        direct_url: String::new(),
+    };
+    let plan = plan_cases(&adapter, 16);
+    let same = plan
+        .cases
+        .iter()
+        .find(|case| {
+            case.target
+                == TargetOp::Write {
+                    node: node_param(NodeRole::Primary),
+                    value: value_param(TARGET_V),
+                }
+                && case.successor
+                    == SuccessorOp::Write {
+                        node: successor_node_param(NodeRole::Primary),
+                        value: successor_value_param(),
+                    }
+                && case.object == Some(ObjectRelation::Same)
+        })
+        .expect("same-object write case missing")
+        .clone();
+    let observed = Obs {
+        own_write: Some(Ok(TARGET_V)),
+        own_read: None,
+        tag: None,
+        visible_value: Some(Ok(TARGET_V)),
+        visible_tag: Some(Ok("-primary".into())),
+    };
+    let bindings = adapter.identity_bindings(&same, &observed);
+    assert_eq!(bindings.len(), 1);
+    assert_eq!(bindings[0].field, "visible_tag");
+    assert_eq!(bindings[0].observed, "-primary");
+    assert_eq!(bindings[0].target.as_deref(), Some("-primary"));
+    assert_eq!(bindings[0].successor.as_deref(), Some("-primary"));
+    assert_eq!(bindings[0].matched, IdentityMatch::MatchesBoth);
+
+    let different = plan
+        .cases
+        .iter()
+        .find(|case| case.object == Some(ObjectRelation::Different))
+        .expect("different-object case missing")
+        .clone();
+    let observed = Obs {
+        own_write: Some(Ok(SURVIVOR_V)),
+        own_read: None,
+        tag: None,
+        visible_value: Some(Ok(SURVIVOR_V)),
+        visible_tag: Some(Ok("-alternate".into())),
+    };
+    let bindings = adapter.identity_bindings(&different, &observed);
+    assert_eq!(bindings.len(), 1);
+    assert_eq!(bindings[0].matched, IdentityMatch::MatchesSuccessor);
+
+    let observed = Obs {
+        own_write: None,
+        own_read: None,
+        tag: None,
+        visible_value: None,
+        visible_tag: Some(Ok("ghost".into())),
+    };
+    let bindings = adapter.identity_bindings(&different, &observed);
+    assert_eq!(bindings[0].matched, IdentityMatch::Unmatched);
 }
 
 #[test]
@@ -326,7 +486,7 @@ fn generated_bolt_cases() {
         "R2-GEN variant={VARIANT} reply_delay={REPLY_DELAY:?} url={}",
         adapter.direct_url
     );
-    let runs = run_cases(&adapter, &gen_config(), 16);
+    let runs = run_cases_with(&adapter, &gen_config(), 16, Diagnostics::On);
     runs.print();
 
     assert_eq!(runs.plan.cases.len(), 13, "{}", runs.plan.notes.join(" | "));
@@ -350,9 +510,11 @@ fn generated_bolt_cases() {
     assert_eq!(count_object(ObjectRelation::Different), 5);
     assert_eq!(count_payload(PayloadRelation::Same), 4);
     assert_eq!(count_payload(PayloadRelation::Different), 4);
-    assert!(runs.plan.notes.iter().any(|note| {
-        note.contains("target has no business object; successor kind bolt/node")
-    }));
+    assert!(
+        runs.plan.notes.iter().any(|note| {
+            note.contains("target has no business object; successor kind bolt/node")
+        })
+    );
     for result in &runs.results {
         assert!(
             !result.report.trials.is_empty(),
@@ -372,7 +534,9 @@ fn replay_generated_bolt_checkout_case() {
     let case = plan
         .cases
         .iter()
-        .find(|case| case.target == TargetOp::Checkout && matches!(case.successor, SuccessorOp::Write { .. }))
+        .find(|case| {
+            case.target == TargetOp::Checkout && matches!(case.successor, SuccessorOp::Write { .. })
+        })
         .expect("checkout -> write case was not generated")
         .clone();
     let run = run_case(&adapter, &config, &case);
@@ -393,7 +557,11 @@ fn replay_generated_bolt_checkout_case() {
     let replay = replay_case(&adapter, &config, &case, &replay_plan)
         .expect("replay rejected the generated case's plan");
     println!("R2-GEN-REPLAY {}", replay.summary());
-    let trial = replay.report.trials.first().expect("replay produced no trial");
+    let trial = replay
+        .report
+        .trials
+        .first()
+        .expect("replay produced no trial");
     println!(
         "R2-GEN-REPLAY plan={} realized={} verdict={:?} comparison={:?} invariant={:?}",
         trial.plan_label(),

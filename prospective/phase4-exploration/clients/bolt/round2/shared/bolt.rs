@@ -196,36 +196,36 @@ impl Env {
     pub async fn write(&mut self, value: i64) -> Result<i64, String> {
         let id = self.id.clone();
         let mut conn = self.pool.get().await.map_err(e)?;
-        write_on(&mut *conn, &id, value).await
+        write_on(&mut conn, &id, value).await
     }
 
     pub async fn read(&mut self) -> Result<i64, String> {
         let id = self.id.clone();
         let mut conn = self.pool.get().await.map_err(e)?;
-        read_on(&mut *conn, &id).await
+        read_on(&mut conn, &id).await
     }
 
     pub async fn read_tag(&mut self, tag: &str) -> Result<String, String> {
         let mut conn = self.pool.get().await.map_err(e)?;
-        tag_on(&mut *conn, tag).await
+        tag_on(&mut conn, tag).await
     }
 
     pub async fn write_node(&mut self, node: &Node, value: i64) -> Result<i64, String> {
         let id = node.id.clone();
         let mut conn = self.pool.get().await.map_err(e)?;
-        write_on(&mut *conn, &id, value).await
+        write_on(&mut conn, &id, value).await
     }
 
     pub async fn read_node(&mut self, node: &Node) -> Result<i64, String> {
         let id = node.id.clone();
         let mut conn = self.pool.get().await.map_err(e)?;
-        read_on(&mut *conn, &id).await
+        read_on(&mut conn, &id).await
     }
 
     pub async fn read_node_tag(&mut self, node: &Node) -> Result<String, String> {
         let id = node.id.clone();
         let mut conn = self.pool.get().await.map_err(e)?;
-        node_tag_on(&mut *conn, &id).await
+        node_tag_on(&mut conn, &id).await
     }
 
     pub async fn observer_value(&mut self) -> Result<i64, String> {

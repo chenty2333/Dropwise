@@ -207,7 +207,7 @@ AsyncDrop 也不是银弹：清理本身可能在坏网络上卡住，隐式的�
 - 核实第 6 节中标为待核实的条目。
 - **已完成的第二领域证据：** Python asyncio 回溯及最终分诊见 [python-retro/RESULTS.md](../python-retro/RESULTS.md) §5.6：redis 非 pipeline 和 SQLAlchemy 的已知问题有修复对照；pipeline 未复现、aiohttp 指定修复未被取消场景覆盖，不能统称全部成功复现。P1/P2 属于已修复 #6652，非新发现。Linux 第三轮/v2 验证已完成，epoll 补丁已于 2026-10-19 发送；发送不等于维护者接受（[linux/RESULTS-round3.md](../linux/RESULTS-round3.md)）。
 - **Phase 4 的状态：** 主计划、三分支名单和指南仍是不冻结的草稿，尚未按正式协议执行；[phase4-exploration](../../prospective/phase4-exploration/RESULTS.md) 是在它之外做的首次接触，已产生 SMTP/IMAP/BOLT 结果，不能并入正式 Phase 4，也不能当作 Phase 4 的 Q1/Q2/Q3 数据。执行前确认预算、版本和条件目标可行性；不重复 Python 回溯或现有名单筛选。
-- **方法沉淀：** 把后继组合、三类观察字段、立即复用/清理时序、身份/关联、动态值规范化、中间效果模板写成可复用的场景选择规则；本轮已写入 [docs/writing-scenarios.md](../../docs/writing-scenarios.md) §2.5 和 [docs/choosing-targets.md](../../docs/choosing-targets.md)，自动化仍是后续工作。
+- **方法沉淀：** 把后继组合、三类观察字段、立即复用/清理时序、身份/关联、动态值规范化、中间效果模板写成可复用的场景选择规则；本轮已写入 [docs/writing-scenarios.md](../../docs/writing-scenarios.md) §2.5 和 [docs/choosing-targets.md](../../docs/choosing-targets.md)；实验侧已有[后继组合生成器](../../prospective/support/README.md)，单一强类型槽位声明和只读字段级诊断已落地，自动观察/规范化尚未实现。
 - 整合架构和解耦架构的对比：把测过的目标按“驱动和池由同一团队整合”“独立驱动配通用池”分组，统计问题率。
 
 **证据边界：** 这里给的是解释框架和少量可复现案例，不是完备性定理。它不保证覆盖所有输入、所有调度或所有共享状态；一个干净报告只覆盖实际标记、实际取消和实际观察到的范围。

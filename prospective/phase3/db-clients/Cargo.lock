@@ -2105,6 +2105,7 @@ dependencies = [
  "futures-util",
  "mongodb",
  "mysql_async",
+ "serde",
  "tokio",
 ]
 
