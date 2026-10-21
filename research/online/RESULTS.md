@@ -430,7 +430,12 @@ starts a new generation.  Tests cover:
   cross-object/stale witnesses, and a handoff during an in-flight operation
   being refused until the operation settles or is abandoned;
 - the pool parking a returned session with a live sub-owner, reaping it when
-  the claim is released, and never counting it as a clean return.
+  the claim is released, and never counting it as a clean return;
+- a waiting `acquire()` waking after the owner releases, without another
+  caller arriving: a bounded reaper re-checks parked sessions at
+  `min(25 ms, grace deadline)` while the queue is non-empty and exits when it
+  empties.  This is a liveness test, not a safety proof; the 25 ms tick is a
+  local scheduling constant, not a measured production latency.
 
 The measured part is the decision path and the pool bookkeeping (unit and
 integration tests with a fake session).  The protocol adapters do not yet

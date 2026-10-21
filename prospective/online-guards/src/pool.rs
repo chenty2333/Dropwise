@@ -205,6 +205,7 @@ struct Inner<S, M> {
     state: Mutex<State<S>>,
     closed: AtomicBool,
     idle_notify: Notify,
+    reaper_started: AtomicBool,
     worker_notify: Notify,
     worker_idle: Notify,
     shutdown_tx: watch::Sender<bool>,
@@ -407,7 +408,26 @@ impl<S: GuardedSession, M: Manager<S>> Inner<S, M> {
         self.counters
             .deferred_returns
             .fetch_add(1, Ordering::Relaxed);
+        self.ensure_defer_reaper();
         self.idle_notify.notify_waiters();
+    }
+
+    /// Start the bounded reaper that notices a released owner even when no new
+    /// acquisition arrives.  Without it, a waiter would sleep until its own
+    /// acquisition timeout after the owner relinquished the object.
+    fn ensure_defer_reaper(self: &Arc<Self>) {
+        if self.reaper_started.swap(true, Ordering::AcqRel) {
+            return;
+        }
+        match tokio::runtime::Handle::try_current() {
+            Ok(handle) => {
+                let inner = self.clone();
+                handle.spawn(deferred_reaper(inner));
+            }
+            Err(_) => {
+                self.reaper_started.store(false, Ordering::Release);
+            }
+        }
     }
 
     /// Complete deferred returns whose owner has released, and retire those
@@ -521,6 +541,7 @@ impl<S: GuardedSession, M: Manager<S>> Pool<S, M> {
                 }),
                 closed: AtomicBool::new(false),
                 idle_notify: Notify::new(),
+                reaper_started: AtomicBool::new(false),
                 worker_notify: Notify::new(),
                 worker_idle: Notify::new(),
                 shutdown_tx,
@@ -988,6 +1009,48 @@ enum JobEnd<S> {
     Idle(S),
     Requeue(S),
     Done,
+}
+
+async fn deferred_reaper<S: GuardedSession, M: Manager<S>>(inner: Arc<Inner<S, M>>) {
+    loop {
+        inner.reap_deferred();
+        let (empty, closed, next) = {
+            let st = inner.state.lock().unwrap();
+            (
+                st.deferred.is_empty(),
+                inner.closed(),
+                st.deferred.iter().map(|entry| entry.deadline).min(),
+            )
+        };
+        if closed {
+            inner.reaper_started.store(false, Ordering::Release);
+            return;
+        }
+        if empty {
+            // Publish "not running" before the second check, so an entry that
+            // arrives in between starts a fresh reaper rather than being
+            // stranded.
+            inner.reaper_started.store(false, Ordering::Release);
+            if inner.state.lock().unwrap().deferred.is_empty() {
+                return;
+            }
+            if inner.reaper_started.swap(true, Ordering::AcqRel) {
+                // A deferral raced with the flag release and started its own
+                // reaper; let that one take over.
+                return;
+            }
+            continue;
+        }
+        let wait = next
+            .map(|deadline| {
+                deadline
+                    .saturating_duration_since(Instant::now())
+                    .min(Duration::from_millis(25))
+            })
+            .unwrap_or(Duration::from_millis(10))
+            .max(Duration::from_millis(1));
+        tokio::time::sleep(wait).await;
+    }
 }
 
 async fn worker_loop<S: GuardedSession, M: Manager<S>>(inner: Arc<Inner<S, M>>) {
@@ -1938,5 +2001,33 @@ mod tests {
         assert_eq!(guard.live_owner_count(), 1);
         owner.release();
         assert_eq!(guard.live_owner_count(), 0);
+    }
+    #[tokio::test]
+    async fn a_waiting_acquire_wakes_when_the_live_owner_releases() {
+        let m = FakeMgr::new(vec![]);
+        let mut c = cfg();
+        c.max_size = 1;
+        c.ownership_grace = Duration::from_secs(1);
+        c.acquire_timeout = Some(Duration::from_secs(1));
+        let pool = Pool::new(m, c);
+        let lease = pool.acquire().await.unwrap();
+        let obj = lease.obj();
+        let guard = lease.guard().clone();
+        let owner = guard.claim_owner("transaction").unwrap();
+        drop(lease);
+
+        let acquire = pool.acquire();
+        tokio::pin!(acquire);
+        tokio::select! {
+            _ = &mut acquire => panic!("the deferred object must not be handed out"),
+            _ = tokio::time::sleep(Duration::from_millis(30)) => {}
+        }
+        owner.release();
+        let lease = tokio::time::timeout(Duration::from_millis(500), acquire)
+            .await
+            .expect("the release must wake the waiting acquisition")
+            .unwrap();
+        assert_eq!(lease.obj(), obj);
+        assert_eq!(pool.snapshot().deferred_released, 1);
     }
 }

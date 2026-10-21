@@ -83,8 +83,11 @@ with `Refusal::Owned`.
 The pool does not claim a root owner for a checked-out lease: the lease itself
 is the borrower, and a root claim would mask the protocol's `Clean`
 qualification.  Instead, a returned session with a live sub-owner is parked in
-a deferred queue; the next acquisition reaps it if the owner released, or
-retires it after the grace.  This is deliberately a local, in-process witness.
+a deferred queue; a bounded reaper re-checks it while the queue is non-empty
+(at most every 25 ms), and the next acquisition also reaps it.  A release or
+expiry therefore wakes a waiter without requiring a new caller; an expired
+entry is retired after the grace.  The reaper exits when the queue empties and
+does not keep the pool alive.  This is deliberately a local, in-process witness.
 It does not observe an owner in another process or a task killed without
 unwinding, and it is not a kernel or runtime hook.  Those cases stay
 conservative: the object is not reused without an explicit protocol witness.
