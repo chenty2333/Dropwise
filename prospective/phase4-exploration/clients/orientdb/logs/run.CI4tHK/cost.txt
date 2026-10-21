@@ -1,0 +1,5 @@
+wall_seconds=88
+levels=3 reps x (B1 B2 B3 M1 + S-B1 S-B2 S-B3 S-M1) = 24 level runs
+diagnostics=preflight,reuse,recovery_contrast
+generated_cases=13 (one run)
+status=0

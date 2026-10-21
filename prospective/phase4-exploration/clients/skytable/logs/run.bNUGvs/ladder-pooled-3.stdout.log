@@ -1,0 +1,10 @@
+SKY-LADDER-BEGIN variant=pooled rep=3 config=max_runs:64,races:[Immediate,AfterWake],max_cancellations:1,scenario_timeout:20s,settle:0/0,workers:1
+LADDER B1 pooled/B1 [skytable]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0
+LADDER-ERROR B1 pooled/B1 [skytable]: io error: Connection reset by peer (os error 104)
+LADDER B2 pooled/B2 [skytable]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0
+LADDER-ERROR B2 pooled/B2 [skytable]: io error: Connection reset by peer (os error 104)
+LADDER B3 pooled/B3 [skytable]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0
+LADDER-ERROR B3 pooled/B3 [skytable]: io error: Connection reset by peer (os error 104)
+LADDER M1 pooled/M1 [skytable]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0 pre=0 post=0 mixed=0 neither=0 unknown=0
+LADDER-ERROR M1 pooled/M1 [skytable]: io error: Connection reset by peer (os error 104)
+SKY-LADDER-END variant=pooled rep=3 total_plans=0 total_violations=0

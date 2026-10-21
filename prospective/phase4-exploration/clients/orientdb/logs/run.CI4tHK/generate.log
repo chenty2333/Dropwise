@@ -1,0 +1,46 @@
+===== generated cases =====
+warning: method `record` is never used
+  --> tests/support/generate_adapter.rs:54:8
+   |
+53 | impl TargetOp {
+   | ------------- method in this implementation
+54 |     fn record(&self) -> Option<RecordRole> {
+   |        ^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `p4e-orientdb` (test "generate") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/generate.rs (target/debug/deps/generate-6d053e9d98dcb8cb)
+
+running 1 test
+test generated_orientdb_cases ... GEN environment db=dw_r3_433583_125230 port=32841 reply_delay=50ms
+CASE-GEN cases=13 skipped=0 unrun=0 applicable=13 limit=16
+CASE-NOTE payload relation not expanded: successor has no payload; target kind orientdb/write-value
+CASE-NOTE object relation not expanded: target has no business object; successor kind orientdb/record
+CASE-NOTE payload relation not expanded: target has no payload; successor kind orientdb/write-value
+CASE target=update(primary,1) -> successor=update(primary,1) [object=same, payload=same] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=update(primary,7) [object=same, payload=different] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=update(alternate,1) [object=different, payload=same] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=update(alternate,7) [object=different, payload=different] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=update+read(primary,1) [object=same, payload=same] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=update+read(primary,7) [object=same, payload=different] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=update+read(alternate,1) [object=different, payload=same] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=update+read(alternate,7) [object=different, payload=different] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=8 post=2 mixed=0 neither=0 unknown=0 gaps=0
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.own_read.Ok[0] observed="0" reference="1"
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.own_read.Ok[1] observed="\"seed\"" reference="\"target\""
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.visible.Ok[0] observed="0" reference="1"
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.visible.Ok[1] observed="\"seed\"" reference="\"target\""
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.own_read.Ok[0] observed="1" reference="0"
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.own_read.Ok[1] observed="\"target\"" reference="\"seed\""
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.visible.Ok[0] observed="1" reference="0"
+CASE-DIAG target=update(primary,1) -> successor=read(primary) [object=same, payload=n/a] path=$.visible.Ok[1] observed="\"target\"" reference="\"seed\""
+CASE target=update(primary,1) -> successor=read(alternate) [object=different, payload=n/a] expect=Atomic plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=10 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=checkout -> successor=update(primary,7) [object=n/a, payload=n/a] expect=Atomic plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=8 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=checkout -> successor=update+read(primary,7) [object=n/a, payload=n/a] expect=Atomic plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=8 mixed=0 neither=0 unknown=0 gaps=0
+CASE target=checkout -> successor=read(primary) [object=n/a, payload=n/a] expect=Atomic plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=0 post=8 mixed=0 neither=0 unknown=0 gaps=0
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 42.61s
+

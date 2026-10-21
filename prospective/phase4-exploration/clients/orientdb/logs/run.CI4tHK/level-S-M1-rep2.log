@@ -1,0 +1,24 @@
+===== binary=session test=m1_session tag=S-M1-rep2 =====
+command: cargo test --offline --test session -- --exact m1_session --nocapture --test-threads=1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/session.rs (target/debug/deps/session-8c68f01e55175d68)
+
+running 1 test
+test m1_session ... R3-ORI-SESSION-TARGET-DONE reply=(1, "target")
+R3-ORI-SESSION-OBS before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 0, 1, 1) proxy_connections=2
+R3-ORI-SESSION-OBS before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 0, 1, 1) proxy_connections=1
+R3-ORI-SESSION-OBS before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 0, 1, 1) proxy_connections=1
+R3-ORI-SESSION-OBS before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 0, 1, 1) proxy_connections=1
+R3-ORI-SESSION-TARGET-DONE reply=(1, "target")
+R3-ORI-SESSION-OBS before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 0, 1, 1) proxy_connections=1
+R3-ORI-SESSION-TARGET-DONE reply=(1, "target")
+R3-ORI-SESSION-OBS before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 0, 1, 1) proxy_connections=1
+R3-ORI-SESSION-OBS before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 0, 1, 1) proxy_connections=1
+LADDER S-M1 session [release]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=1 post=1 mixed=0 neither=0 unknown=0
+R3-ORI-SESSION-RESULT level=S-M1 plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true pre=1 post=1 mixed=0 neither=0 unknown=0
+R3-ORI-SESSION-TRIAL level=S-M1 plan=#0@1:Immediate verdict=Some(Pre) realized=true invariant=Ok(())
+R3-ORI-SESSION-TRIAL level=S-M1 plan=#0@1:AfterWake verdict=Some(Post) realized=true invariant=Ok(())
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 1.85s
+

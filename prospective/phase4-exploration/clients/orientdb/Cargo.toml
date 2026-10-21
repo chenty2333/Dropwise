@@ -1,0 +1,12 @@
+[package]
+name = "p4e-orientdb"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../../../..", features = ["net"] }
+orientdb-client = { version = "=0.6.0", features = ["tokio-runtime"] }
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
+futures = "0.3"
+serde = { version = "1", features = ["derive"] }

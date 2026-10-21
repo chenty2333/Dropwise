@@ -1,0 +1,13 @@
+date_utc=2026-10-21T12:54:45Z
+image=geldata/gel:7
+image_id=sha256:b7270b0973da6950d01ae0d578c6d38cd8d87fabdd6c4b75a09b74291ad6f3a8
+image_digest=geldata/gel@sha256:b7270b0973da6950d01ae0d578c6d38cd8d87fabdd6c4b75a09b74291ad6f3a8
+server=starting Gel server 7.1+08db576,
+container=dw-r3-gel-424033
+port=32840
+security=insecure_dev_mode (Trust auth, self-signed TLS, tls_security=Insecure)
+max_concurrency=1
+rustc=rustc 1.98.0 (88d9e12ae 2026-08-18)
+name = "gel-tokio"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"

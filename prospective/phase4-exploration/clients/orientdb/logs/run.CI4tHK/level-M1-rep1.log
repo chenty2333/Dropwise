@@ -1,0 +1,40 @@
+===== binary=orientdb test=m1_pooled tag=M1-rep1 =====
+command: cargo test --offline --test orientdb -- --exact m1_pooled --nocapture --test-threads=1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/orientdb.rs (target/debug/deps/orientdb-e6a7aff8756cfcb0)
+
+running 1 test
+test m1_pooled ... R3-ORI-TARGET-DONE reply=(1, "target")
+R3-ORI-OBS level=M1 before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=2
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-TARGET-DONE reply=(1, "target")
+R3-ORI-OBS level=M1 before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-TARGET-DONE reply=(1, "target")
+R3-ORI-OBS level=M1 before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=2
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=2
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=3
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=2
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=2
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-OBS level=M1 before=Ok((0, "seed")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+R3-ORI-OBS level=M1 before=Ok((1, "target")) write=Ok((7, "survivor")) own=Ok((7, "survivor")) visible=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=1
+LADDER M1 pooled [release]: plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=9 post=1 mixed=0 neither=0 unknown=0
+R3-ORI-RESULT level=M1 plans=10 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true truncated=false pre=9 post=1 mixed=0 neither=0 unknown=0
+R3-ORI-TRIAL level=M1 plan=#0@1:Immediate sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@1:AfterWake sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@2:Immediate sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@2:AfterWake sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@3:Immediate sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@3:AfterWake sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@4:Immediate sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@4:AfterWake sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@5:Immediate sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Pre) settled=true realized=true invariant=Ok(())
+R3-ORI-TRIAL level=M1 plan=#0@5:AfterWake sites=[Some(Location { file: "tests/orientdb.rs", line: 41, column: 10 })] outcomes=[Cancelled] cancelled=1 verdict=Some(Post) settled=true realized=true invariant=Ok(())
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 3.92s
+

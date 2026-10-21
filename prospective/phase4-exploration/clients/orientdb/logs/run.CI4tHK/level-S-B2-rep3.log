@@ -1,0 +1,17 @@
+===== binary=session test=b2_session tag=S-B2-rep3 =====
+command: cargo test --offline --test session -- --exact b2_session --nocapture --test-threads=1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/session.rs (target/debug/deps/session-8c68f01e55175d68)
+
+running 1 test
+test b2_session ... R3-ORI-SESSION-TARGET-DONE reply=(1, "target")
+R3-ORI-SESSION-VALUE level=S-B2 retry=Ok((1, "target"))
+R3-ORI-SESSION-VALUE level=S-B2 retry=Ok((1, "target"))
+LADDER S-B2 session [release]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+R3-ORI-SESSION-RESULT level=S-B2 plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 calibration_errors=0 exhaustive=true pre=0 post=0 mixed=0 neither=0 unknown=0
+R3-ORI-SESSION-TRIAL level=S-B2 plan=#0@1:Immediate verdict=None realized=true invariant=Ok(())
+R3-ORI-SESSION-TRIAL level=S-B2 plan=#0@1:AfterWake verdict=None realized=true invariant=Ok(())
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.60s
+

@@ -1,0 +1,15 @@
+===== diagnostic=reuse =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/orientdb.rs (target/debug/deps/orientdb-e6a7aff8756cfcb0)
+
+running 1 test
+test reuse ... R3-ORI-REUSE after_setup proxy_connections=0 pool=(0, 0, 0, 1)
+R3-ORI-REUSE step=0 reply=(0, "reuse") session_id=389 proxy_connections=2 pool=(1, 0, 1, 1)
+R3-ORI-REUSE step=1 reply=(1, "reuse") session_id=389 proxy_connections=2 pool=(1, 0, 1, 1)
+R3-ORI-REUSE step=2 reply=(2, "reuse") session_id=389 proxy_connections=2 pool=(1, 0, 1, 1)
+R3-ORI-REUSE step=3 reply=(3, "reuse") session_id=389 proxy_connections=2 pool=(1, 0, 1, 1)
+R3-ORI-REUSE step=4 reply=(4, "reuse") session_id=389 proxy_connections=2 pool=(1, 0, 1, 1)
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.43s
+

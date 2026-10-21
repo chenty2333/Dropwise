@@ -1,0 +1,12 @@
+[package]
+name = "p4e-skytable"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../../../..", features = ["net"] }
+skytable = "=0.8.12"
+bb8 = "=0.9.1"
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "time", "io-util"] }
+serde = { version = "1", features = ["derive"] }

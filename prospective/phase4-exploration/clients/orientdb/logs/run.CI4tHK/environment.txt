@@ -1,0 +1,15 @@
+date_utc=2026-10-21T12:52:33Z
+rustc=rustc 1.98.0 (88d9e12ae 2026-08-18)
+cargo=cargo 1.98.0 (797e8a9bc 2026-08-05)
+image=orientdb:3.0.23
+image_id=sha256:bea416ec004e609c4a44609808f70a355cb61193c01f65e3ac1f73d1a692d668
+image_digest=orientdb@sha256:bea416ec004e609c4a44609808f70a355cb61193c01f65e3ac1f73d1a692d668
+container=dw-r3-ori-433583
+http_port=32842
+binary_port=32841
+db=dw_r3_433583_125230
+orientdb={"@type":"d","@version":0,"databases":["dw_r3_433583_125230"]}
+--- resolved versions ---
+name = "dropwise" version = "0.1.0"
+name = "mobc" version = "0.7.3"
+name = "orientdb-client" version = "0.6.0"

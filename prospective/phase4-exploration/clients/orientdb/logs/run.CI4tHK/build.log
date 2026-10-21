@@ -1,0 +1,18 @@
+   Compiling p4e-orientdb v0.0.0 (/home/ava/Desktop/Dropwise/prospective/phase4-exploration/clients/orientdb)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.73s
+  Executable tests/orientdb.rs (target/debug/deps/orientdb-e6a7aff8756cfcb0)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+  Executable tests/session.rs (target/debug/deps/session-8c68f01e55175d68)
+warning: method `record` is never used
+  --> tests/support/generate_adapter.rs:54:8
+   |
+53 | impl TargetOp {
+   | ------------- method in this implementation
+54 |     fn record(&self) -> Option<RecordRole> {
+   |        ^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `p4e-orientdb` (test "generate") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+  Executable tests/generate.rs (target/debug/deps/generate-6d053e9d98dcb8cb)

@@ -1,0 +1,11 @@
+date=2026-10-21T21:54:46+09:00
+repo=/home/ava/Desktop/Dropwise
+container=dw-r3-sky-465837
+image=skytable/skytable:v0.8.4
+image_id=sha256:823e1a390a55ddcc5579e27af58cf6f92d92a7735c5fd4fc3551673b22d08f41
+repo_digest=skytable/skytable@sha256:823e1a390a55ddcc5579e27af58cf6f92d92a7735c5fd4fc3551673b22d08f41
+port=127.0.0.1:32848
+skytable_client=0.8.12 bb8=0.9.1
+server_password_source=docker logs 'Generated Password'
+proxy=dropwise::net::Proxy reply_delay=50ms
+config=max_runs=64 races=Immediate,AfterWake max_cancellations=1 scenario_timeout=20s settle=0/0 workers=1

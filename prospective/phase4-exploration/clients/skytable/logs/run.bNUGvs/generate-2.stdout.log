@@ -1,0 +1,33 @@
+CASE-GEN cases=10 skipped=0 unrun=0 applicable=10 limit=10
+CASE-NOTE payload relation not expanded: successor has no payload; target kind sky/value
+CASE target=update(k,1) -> successor=update(k,1) [object=same, payload=same] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update(k,1) [object=same, payload=same] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update(k,1) [object=same, payload=same] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=update(k,7) [object=same, payload=different] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update(k,7) [object=same, payload=different] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update(k,7) [object=same, payload=different] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=update(alt,1) [object=different, payload=same] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update(alt,1) [object=different, payload=same] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update(alt,1) [object=different, payload=same] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=update(alt,7) [object=different, payload=different] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update(alt,7) [object=different, payload=different] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update(alt,7) [object=different, payload=different] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=update+read(k,1) [object=same, payload=same] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update+read(k,1) [object=same, payload=same] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update+read(k,1) [object=same, payload=same] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=update+read(k,7) [object=same, payload=different] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update+read(k,7) [object=same, payload=different] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update+read(k,7) [object=same, payload=different] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=update+read(alt,1) [object=different, payload=same] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update+read(alt,1) [object=different, payload=same] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update+read(alt,1) [object=different, payload=same] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=update+read(alt,7) [object=different, payload=different] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=update+read(alt,7) [object=different, payload=different] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=update+read(alt,7) [object=different, payload=different] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=select(k) [object=same, payload=n/a] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=select(k) [object=same, payload=n/a] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=select(k) [object=same, payload=n/a] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE target=update(k,1) -> successor=select(alt) [object=different, payload=n/a] expect=Atomic plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 calibration_errors=0 exhaustive=false truncated=false pre=0 post=0 mixed=0 neither=0 unknown=0 gaps=1
+CASE-BASELINE-ERROR target=update(k,1) -> successor=select(alt) [object=different, payload=n/a] io error: Connection reset by peer (os error 104)
+CASE-COVERAGE target=update(k,1) -> successor=select(alt) [object=different, payload=n/a] no target was marked with Ctx::target/Ctx::race: nothing was explored
+CASE-END rep=2 cases=10 violations=0

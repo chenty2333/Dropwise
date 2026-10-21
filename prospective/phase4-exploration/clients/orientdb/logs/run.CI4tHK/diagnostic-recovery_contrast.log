@@ -1,0 +1,18 @@
+===== diagnostic=recovery_contrast =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/orientdb.rs (target/debug/deps/orientdb-e6a7aff8756cfcb0)
+
+running 1 test
+test recovery_contrast ... R3-ORI-RECOVERY rep=0 phase=cancelled cancelled=true observer=Ok((0, "seed")) pool=(0, 0, 0, 1) proxy_connections=1
+R3-ORI-RECOVERY rep=0 stale_survivor=Ok((7, "survivor")) observer=Ok((7, "survivor"))
+R3-ORI-RECOVERY rep=0 fresh_survivor=Ok((7, "survivor")) observer=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=5
+R3-ORI-RECOVERY rep=1 phase=cancelled cancelled=true observer=Ok((0, "seed")) pool=(0, 0, 0, 1) proxy_connections=1
+R3-ORI-RECOVERY rep=1 stale_survivor=Ok((7, "survivor")) observer=Ok((7, "survivor"))
+R3-ORI-RECOVERY rep=1 fresh_survivor=Ok((7, "survivor")) observer=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=5
+R3-ORI-RECOVERY rep=2 phase=cancelled cancelled=true observer=Ok((0, "seed")) pool=(0, 0, 0, 1) proxy_connections=1
+R3-ORI-RECOVERY rep=2 stale_survivor=Ok((7, "survivor")) observer=Ok((7, "survivor"))
+R3-ORI-RECOVERY rep=2 fresh_survivor=Ok((7, "survivor")) observer=Ok((7, "survivor")) pool=(1, 1, 0, 1) proxy_connections=5
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 1.30s
+

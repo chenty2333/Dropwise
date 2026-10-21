@@ -1,0 +1,13 @@
+preflight-pooled rc=0 seconds=7
+ladder-pooled-1 rc=0 seconds=22
+ladder-pooled-2 rc=0 seconds=21
+ladder-pooled-3 rc=0 seconds=21
+recovery-pooled rc=0 seconds=1
+preflight-direct rc=0 seconds=5
+ladder-direct-1 rc=0 seconds=11
+ladder-direct-2 rc=0 seconds=10
+ladder-direct-3 rc=0 seconds=10
+recovery-direct rc=0 seconds=1
+generate-1 rc=0 seconds=69
+generate-2 rc=0 seconds=69
+generate-3 rc=0 seconds=68
