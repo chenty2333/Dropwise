@@ -53,6 +53,26 @@ class Verdict(enum.Enum):
 
 
 @dataclasses.dataclass
+class OpResult:
+    """A structured success/failure value for one ladder operation.
+
+    Adapters must not encode failure only in a human-readable string and must
+    not return ``None`` after a failed stage: either return ``OpResult`` or
+    raise.  ``level_retry`` checks ``ok`` directly, so a failed stage can never
+    be counted as a successful retry.
+    """
+
+    ok: bool
+    stage: str
+    value: Any = None
+    error: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.ok and self.error is None:
+            self.error = f"{self.stage} failed"
+
+
+@dataclasses.dataclass
 class TargetRun:
     outcome: str                 # completed | cancelled | error | timeout
     result: Any = None
@@ -129,6 +149,13 @@ async def _await_target(
 
 def normalize(value: Any) -> Any:
     """Make observations comparable and printable without losing shape."""
+    if isinstance(value, OpResult):
+        return {
+            "ok": value.ok,
+            "stage": value.stage,
+            "value": normalize(value.value),
+            "error": value.error,
+        }
     if isinstance(value, bytes):
         return value.decode("utf-8", "backslashreplace")
     if isinstance(value, (str, int, float, bool)) or value is None:
@@ -142,6 +169,21 @@ def normalize(value: Any) -> Any:
 
 def err(exc: BaseException) -> str:
     return f"ERR {type(exc).__name__}: {exc}"
+
+
+def operation_failed(value: Any) -> bool:
+    """Return True iff an adapter reported a failed operation.
+
+    New adapters return ``OpResult`` (or a dict with an explicit boolean
+    ``ok`` field) or raise.  The ``ERR ...`` string is retained only for
+    historical cases that predate the structured interface; it is not the
+    contract for new adapters.
+    """
+    if isinstance(value, OpResult):
+        return not value.ok
+    if isinstance(value, dict) and isinstance(value.get("ok"), bool):
+        return not value["ok"]
+    return isinstance(value, str) and value.startswith("ERR ")
 
 
 class Scenario:
@@ -408,8 +450,8 @@ async def level_retry(
             trial = Trial(
                 plan=f"pending#{k}", rep=rep, target=tr, observation=value, seconds=secs
             )
-            if isinstance(value, str) and value.startswith("ERR "):
-                trial.violation = f"after {plan(k)}: {value}"
+            if operation_failed(value):
+                trial.violation = f"after {plan(k)}: {value!r}"
             report.trials.append(trial)
     report.seconds = time.monotonic() - started
     return report
