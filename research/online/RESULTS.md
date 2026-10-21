@@ -384,7 +384,78 @@ Remaining measurement qualifications:
   the integration changes described above; tests exercise the exact handoff
   boundaries. This is not a formal concurrency proof.
 
-## 8. Limits
+## 8. Upstream baseline and live ownership (2026-10-22)
+
+### 8.1 A mature upstream stack on the same fault shape
+
+`prospective/upstream-pg-baseline` pins tokio-postgres 0.7.18 + bb8 0.9.1 +
+bb8-postgres 0.9.0 and puts a loopback byte proxy between the client and a real
+`postgres:18-alpine`; an independent connection reads `pg_stat_activity` and
+row state.  The four modes hold a selected reply and cancel the client future.
+Fresh measured output is in that directory's README.
+
+| case | upstream observation | reading |
+|---|---|---|
+| typed `BEGIN` reply held, transaction future cancelled, then released | server `idle`, `query=ROLLBACK`; same backend, successor `SELECT 1` OK | the typed API already cleans up at this boundary; the guard does not claim this as new |
+| same, reply held forever, pooled connection returned, `bb8` max_size=1, timeout=700 ms | `get #1` TimedOut 701.8 ms, `get #2` TimedOut 701.3 ms; pool `connections=1 idle=1`; one proxy connection | a half-open connection is not detected; the pool re-hands the wedged object instead of replacing it |
+| COMMIT reply held, `tx.commit()` cancelled | server committed; independent observer sees 1 row | commit-in-doubt: cancellation is not rollback |
+| manual `BEGIN`, connection returned, next checkout | `is_valid` succeeds in ~512 us; successor query runs inside the transaction | bb8-postgres validation is status-blind; checkout is not a cleanliness witness |
+
+This is a **strong baseline**, not a straw man: at the BEGIN boundary the
+upstream typed transaction passes, and a client-side "we sent a rollback" claim
+would be false.  The failure class is different: after a mid-message cut the
+client cannot distinguish a dead peer from a slow one, `is_closed()` stays
+false, and bb8's timeout path returns the same connection to idle.  The
+repository's own pool does not validate or reuse a suspect object; it
+quarantines it for an explicit recovery witness or retires it.  The exact
+half-open case has not yet been replayed against the guard pool end to end;
+the pool's deadline/retirement behaviour is covered by deterministic tests,
+not by this proxy run.  That gap is listed in the limits.
+
+### 8.2 What the ownership witness adds, and what it does not
+
+The guard now has live owner claims (`guard.rs`, `OwnerClaim`).  A claim is
+RAII: its drop is positive evidence that the owner relinquished authority.
+Nested claims are legitimate (outer transaction, inner savepoint), releasing
+one does not release the others, and a handoff replaces the whole cohort and
+starts a new generation.  Tests cover:
+
+- a watchdog refused with `Owned` while a live transaction exists, then
+  allowed only after every claim is released;
+- an owner-authorised recovery, so a live owner is not forced to choose
+  between "the watchdog cleans behind my back" and "nothing can clean";
+- a forgotten claim (`mem::forget`) that keeps blocking; it is not inferred
+  dead, and the pool defers then retires the object after its ownership grace;
+- a second cancellation during recovery, retirement while an owner is live,
+  cross-object/stale witnesses, and a handoff during an in-flight operation
+  being refused until the operation settles or is abandoned;
+- the pool parking a returned session with a live sub-owner, reaping it when
+  the claim is released, and never counting it as a clean return.
+
+The measured part is the decision path and the pool bookkeeping (unit and
+integration tests with a fake session).  The protocol adapters do not yet
+create claims for their own transactions, and there is no kernel/runtime hook:
+a claim held by another process, or a task killed without unwinding, is not
+observed.  The design therefore treats an absent claim as *unknown*, not as
+"no owner": a session with an obligation and no claim is cleaned only by an
+explicit recovery plan, and a leaked claim costs the object after a bounded
+grace.
+
+### 8.3 The synchronous Python contrast, briefly
+
+The committed synchronous `psycopg` study remains the real-target evidence for
+why server state is not an ownership witness: after an interrupted entry the
+server is `idle in transaction` and a retry can silently nest as a savepoint
+(60 trials: 21 clean, 12 D, 9 C, 18 B; all non-clean runs lost the write).  A
+fresh rerun reproduced the committed contrast and field records, with only
+xid/line drift.  A scratch probe showed that a dropped `transaction()` context
+manager is still a live generator that can send `ROLLBACK`, and that GC timing
+changes during exception handling; a weakref/GC liveness witness is therefore
+not authority.  The Python repair was not re-implemented with owner tokens in
+this round; the Rust RAII claims are the implementation of that idea.
+
+## 9. Limits
+
 
 - Faults are injected by a local proxy or exact byte cuts; natural
   cancellation rates are not measured.

@@ -62,6 +62,33 @@ The guard records three independent facts:
 A timeout, an unparsed byte, or a missing observation is `Unresolved` or
 `Failed`, never `Recovered`.
 
+## Ownership and liveness
+
+The guard's phase and epoch answer "what did the protocol do?"; they do not
+answer "is anyone still responsible for this object?".  A clean wire state and
+an abandoned transaction can look identical, and a missing `Suspect` report is
+not proof that no owner exists.
+
+`OwnerClaim` is an RAII claim on one guard.  Its existence is positive,
+in-process evidence that an owner is live; dropping it is the positive evidence
+that authority was relinquished.  Claims may nest (an outer transaction and an
+inner savepoint), and releasing one does not release the others.  A handoff is
+all-or-nothing: it replaces the cohort and starts a new owner generation, so
+older witnesses cannot authorise, block or release the new owner.  A leaked
+claim is not inferred dead; it blocks recovery/reuse until the pool's ownership
+grace expires and the object is retired.  A live owner can recover its own
+object through `OwnerClaim::claim_recovery`; an unowned watchdog is refused
+with `Refusal::Owned`.
+
+The pool does not claim a root owner for a checked-out lease: the lease itself
+is the borrower, and a root claim would mask the protocol's `Clean`
+qualification.  Instead, a returned session with a live sub-owner is parked in
+a deferred queue; the next acquisition reaps it if the owner released, or
+retires it after the grace.  This is deliberately a local, in-process witness.
+It does not observe an owner in another process or a task killed without
+unwinding, and it is not a kernel or runtime hook.  Those cases stay
+conservative: the object is not reused without an explicit protocol witness.
+
 ## Pool lifecycle
 
 - The return path is unconditional: a dropped lease returns the session to
@@ -135,7 +162,9 @@ into success: the adapter either observes the server's `CommandComplete`/
 Implemented and exercised against real servers: guard ledger, tickets,
 discharge/witness checks, quarantine, recovery worker, retry, shutdown, the
 Skytable and PostgreSQL adapters, the B0/B1/B2/B3/B3f labs, the rule-lab
-action harness.
+action harness.  Ownership claims and the pool's deferred-return path are
+implemented and covered by unit/integration tests with a fake session; they are
+not yet created by the protocol adapters themselves.
 
 Model-only: the claim that a per-stream guard composes with a connection
 guard under multiplexing; the exact cost model for choosing between
@@ -143,5 +172,6 @@ guard under multiplexing; the exact cost model for choosing between
 states actually executed.
 
 Proposal: a multiplexed adapter with per-stream generations and a
-connection-level framing guard; a kernel/runtime-assisted hand-off witness;
-a policy that consumes a calibrated cost model instead of a fixed timeout.
+connection-level framing guard; a kernel/runtime-assisted hand-off witness for
+owners in another process or after a non-unwinding kill; a policy that consumes
+a calibrated cost model instead of a fixed timeout.
