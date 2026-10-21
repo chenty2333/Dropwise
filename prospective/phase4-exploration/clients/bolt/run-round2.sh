@@ -5,6 +5,7 @@
 #   round2/original  registry bb8 0.8.6
 #   round2/fixed     path patch: vendor/bb8-0.8.6 with the
 #                    invalid-until-validated change in Pool::get
+# MODE=generate runs the registered target/successor cases only.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,6 +13,7 @@ NAME="dw-p4e-bolt-r2-$$"
 IMAGE="neo4j:5.26.0-community"
 source "$HERE/../runner-common.sh"
 new_logdir "$HERE"
+MODE=${MODE:-round2}
 
 cleanup() {
   docker rm -f "$NAME" >/dev/null 2>&1 || true
@@ -72,6 +74,22 @@ export DW_DIAG=1
   cd "$HERE/round2/fixed"
   cargo test --offline --no-run
 ) > "$LOGS/round2-build-fixed.log" 2>&1
+
+if [[ $MODE == generate ]]; then
+  status=0
+  for variant in original fixed; do
+    log="$LOGS/generate-$variant.log"
+    : > "$log"
+    echo "=== generated cases, variant=$variant ===" >> "$log"
+    echo "command: cargo test --offline --test generate -- --nocapture --test-threads=1" >> "$log"
+    if ! ( cd "$HERE/round2/$variant" && \
+      cargo test --offline --test generate -- --nocapture --test-threads=1 ) >> "$log" 2>&1; then
+      echo "FAILED: variant=$variant test=generate" | tee -a "$log" >&2
+      status=1
+    fi
+  done
+  exit "$status"
+fi
 
 LEVELS=(normal_checkout is_valid_failure checkout_only pooled_b2 pooled_b3 pooled_m)
 

@@ -21,56 +21,17 @@
 
 #[path = "../../../support/ladder.rs"]
 mod ladder;
+#[path = "support/mysql_primitives.rs"]
+mod primitives;
 
 use std::net::SocketAddr;
-use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 use std::time::Duration;
 
 use dropwise::net::{Proxy, ProxyOptions};
 use dropwise::{explore, explore_observed, Config, Expect, Flavor, Race, Settle};
 use mysql_async::prelude::Queryable;
-use mysql_async::{Conn, Opts, Pool, TxOpts};
-
-static NEXT: AtomicUsize = AtomicUsize::new(0);
-
-/// Real time the proxy holds every server->client chunk.
-const REPLY_DELAY: Duration = Duration::from_millis(50);
-
-/// How long B2/B3 and the survivor wait before giving up.
-const BOUND: Duration = Duration::from_secs(3);
-
-fn e(err: impl std::fmt::Display) -> String {
-    err.to_string()
-}
-
-fn url() -> Result<String, String> {
-    std::env::var("DW_MYSQL_URL").map_err(|err| format!("DW_MYSQL_URL is required: {err}"))
-}
-
-/// The host:port after the last '@'.
-fn authority(rest: &str) -> &str {
-    let end = rest.find('/').unwrap_or(rest.len());
-    &rest[..end]
-}
-
-fn upstream(url: &str) -> Result<SocketAddr, String> {
-    let (_, rest) = url.rsplit_once('@').ok_or_else(|| format!("DW_MYSQL_URL has no '@': {url}"))?;
-    authority(rest).parse().map_err(e)
-}
-
-/// The same URL with host:port after the last '@' replaced by the proxy.
-fn through(url: &str, proxy: SocketAddr) -> Result<String, String> {
-    let (head, rest) = url.rsplit_once('@').ok_or_else(|| format!("DW_MYSQL_URL has no '@': {url}"))?;
-    let tail = &rest[authority(rest).len()..];
-    Ok(format!("{head}@{proxy}{tail}"))
-}
-
-/// A pool of exactly one connection above the proxy URL.
-fn one_conn_pool(url: &str) -> Result<Pool, String> {
-    let separator = if url.contains('?') { '&' } else { '?' };
-    let opts = Opts::from_url(&format!("{url}{separator}pool_min=1&pool_max=1")).map_err(e)?;
-    Ok(Pool::new(opts))
-}
+use mysql_async::{Conn, Pool, TxOpts};
+use primitives::{BOUND, REPLY_DELAY, e, known, one_conn_pool, through, upstream, url};
 
 /// What the M survivor sees.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -96,7 +57,7 @@ struct Env {
 
 impl Env {
     fn insert(&self, n: i32) -> String {
-        format!("INSERT INTO {} VALUES ({n})", self.table)
+        primitives::insert_sql(&self.table, n)
     }
 
     /// The usage contrast for a directly held `Conn`: a cancelled operation
@@ -107,56 +68,36 @@ impl Env {
         if self.pool.is_some() {
             return Ok(false);
         }
-        let broken = self.conn.as_ref().map(Conn::is_disconnected).unwrap_or(false);
-        if !broken {
-            return Ok(false);
-        }
-        self.conn.take();
         let url = self
             .direct_url
             .as_ref()
             .ok_or_else(|| "no direct URL for reconnect".to_string())?;
-        self.conn = Some(Conn::new(Opts::from_url(url).map_err(e)?).await.map_err(e)?);
-        Ok(true)
+        primitives::recover_direct(&mut self.conn, url).await
     }
 
     /// Survivor: a known-value read and a side-effecting write through the
     /// scenario's shared object, counted by the independent connection.
     async fn survive(mut self, residue: Option<usize>) -> Result<Obs, String> {
-        let insert = self.insert(1);
         let (own, write) = if let Some(pool) = &self.pool {
             let mut conn = pool.get_conn().await.map_err(e)?;
-            let own = conn
-                .query_first::<i64, _>("SELECT 67890")
-                .await
-                .map_err(e)
-                .and_then(|row| row.ok_or_else(|| "own query returned no row".to_string()));
-            let write = conn.query_drop(&insert).await.map_err(e);
+            let own = primitives::select_value(&mut conn, 67890).await;
+            let write = primitives::insert_row(&mut conn, &self.table, 1).await;
             (own, write)
         } else {
             let conn = self.conn.as_mut().expect("direct Conn scenario");
-            let own = conn
-                .query_first::<i64, _>("SELECT 67890")
-                .await
-                .map_err(e)
-                .and_then(|row| row.ok_or_else(|| "own query returned no row".to_string()));
-            let write = conn.query_drop(&insert).await.map_err(e);
+            let own = primitives::select_value(conn, 67890).await;
+            let write = primitives::insert_row(conn, &self.table, 1).await;
             (own, write)
         };
         let visible = match write {
-            Ok(()) => self
-                .observer
-                .query_first::<i64, _>(format!("SELECT COUNT(*) FROM {}", self.table))
-                .await
-                .map_err(e)
-                .and_then(|row| row.ok_or_else(|| "count returned no row".to_string())),
+            Ok(()) => primitives::count_rows(&mut self.observer, &self.table).await,
             Err(err) => Err(format!("write: {err}")),
         };
         if let Some(pool) = self.pool.take() {
             let _ = tokio::time::timeout(BOUND, pool.disconnect()).await;
         }
         self.conn.take();
-        let _ = tokio::time::timeout(BOUND, self.observer.query_drop(format!("DROP TABLE {}", self.table)))
+        let _ = tokio::time::timeout(BOUND, primitives::drop_table(&mut self.observer, &self.table))
             .await;
         Ok(Obs { own, visible, residue })
     }
@@ -165,14 +106,11 @@ impl Env {
 /// Open the observer directly, create the table, and open the shared object
 /// through the held-reply proxy. `direct` chooses pool (MY1) or `Conn` (MY2).
 async fn setup(direct: bool, url: &str, pooled: &str, proxy: Proxy) -> Result<Env, String> {
-    let mut observer = Conn::new(Opts::from_url(url).map_err(e)?).await.map_err(e)?;
-    let table = format!("dw_p3_my_{}_{}", std::process::id(), NEXT.fetch_add(1, SeqCst));
-    observer
-        .query_drop(format!("CREATE TABLE {table} (n INT NOT NULL) ENGINE=InnoDB"))
-        .await
-        .map_err(e)?;
+    let mut observer = primitives::connect(url).await?;
+    let table = primitives::table_name();
+    primitives::create_table(&mut observer, &table).await?;
     let env = if direct {
-        let mut conn = Conn::new(Opts::from_url(pooled).map_err(e)?).await.map_err(e)?;
+        let mut conn = primitives::connect(pooled).await?;
         conn.query_drop("SELECT 1").await.map_err(e)?;
         Env { pool: None, conn: Some(conn), observer, table, proxy, direct_url: Some(url.to_string()) }
     } else {
@@ -211,12 +149,6 @@ fn config() -> Config {
 async fn begin(pool: &Pool) -> Result<(), String> {
     let tx = pool.start_transaction(TxOpts::default()).await.map_err(e)?;
     tx.rollback().await.map_err(e)
-}
-
-/// MY2's cancelled operation: a known-value query on the directly held `Conn`.
-async fn known(conn: &mut Conn) -> Result<i64, String> {
-    let rows: Vec<i64> = conn.query("SELECT 12345").await.map_err(e)?;
-    rows.into_iter().next().ok_or_else(|| "query returned no row".to_string())
 }
 
 /// B1: setup and the cancellation, nothing after it. A completed target is

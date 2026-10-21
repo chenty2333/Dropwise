@@ -10,6 +10,7 @@
 #   bash prospective/phase3/run-db.sh                    # all targets, release
 #   VARIANT=patched bash prospective/phase3/run-db.sh    # patch/usage contrast
 #   TARGETS=mysql_async REPS=1 bash ...                  # one target
+#   TARGETS=mysql_generate REPS=1 bash ...               # generated MY2 cases
 #
 # Environment: REPS (default 3), VARIANT=release|patched (default release),
 # TARGETS (default "mysql_async mongodb clickhouse"), TIMEOUT (per test
@@ -138,7 +139,7 @@ fixed_scenario_copy() { # target -> manifest dir
         sed "s#@WORK@#$WORK#g" "$CRATE/patches/$target/Cargo.patch.toml" >> "$dest/Cargo.toml"
     fi
     mkdir -p "$WORK/support"
-    cp -r "$ROOT/prospective/support" "$WORK/support"
+    cp -r "$ROOT/prospective/support/." "$WORK/support/"
     echo "$dest"
 }
 
@@ -162,7 +163,8 @@ run_one() { # target, crate dir, test name, extra env...
     done
 }
 
-mysql() {
+mysql_run() { # target, test
+    local target=$1 test=$2
     start_container "dw-p3-mysql-$$" "$MARIADB_IMAGE" \
         -p 127.0.0.1::3306 \
         -e MARIADB_ROOT_PASSWORD=dropwise -e MARIADB_DATABASE=dropwise \
@@ -183,7 +185,15 @@ mysql() {
         guard="DW_MYSQL_GUARD=1"
     fi
     mkdir -p "$WORK/phase3"
-    run_one mysql_async "$dir" mysql_async DW_MYSQL_URL="$url" ${guard:+"$guard"}
+    run_one "$target" "$dir" "$test" DW_MYSQL_URL="$url" ${guard:+"$guard"}
+}
+
+mysql() {
+    mysql_run mysql_async mysql_async
+}
+
+mysql_generate() {
+    mysql_run mysql_generate mysql_generate
 }
 
 mongodb() {
@@ -229,6 +239,7 @@ echo "phase3 db-clients: variant=$VARIANT reps=$REPS targets=$TARGETS"
 for target in $TARGETS; do
     case $target in
         mysql_async) mysql ;;
+        mysql_generate) mysql_generate ;;
         mongodb) mongodb ;;
         clickhouse) clickhouse ;;
         *) echo "unknown target: $target" >&2; exit 2 ;;

@@ -10,262 +10,20 @@
 // contain both clean and dirty runs.
 
 use std::io;
-use std::net::SocketAddr;
-use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 use std::sync::Arc;
-use std::time::Duration;
+use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
 
 use async_trait::async_trait;
-use bb8_bolt::bb8::{ManageConnection, Pool};
 use bb8_bolt::Manager;
-use bolt_client::bolt_proto::message::Success;
+use bb8_bolt::bb8::{ManageConnection, Pool};
+use bolt_client::bolt_proto::Value;
 use bolt_client::bolt_proto::version::*;
-use bolt_client::bolt_proto::{Message, Value};
 use bolt_client::error::{CommunicationError, Error as ClientError};
-use bolt_client::{Client, Metadata, Params, Stream};
+use bolt_client::Params;
 use dropwise::net::{Proxy, ProxyOptions};
-use dropwise::{
-    explore, explore_observed, replay_observed, Config, Ctx, Expect, Flavor, Race, Report,
-    Settle, Verdict,
-};
-use tokio::io::BufStream;
-use tokio_util::compat::{Compat, TokioAsyncReadCompatExt};
+use dropwise::{Ctx, Expect, Report, Verdict, explore, explore_observed, replay_observed};
 
-const VARIANT: &str = env!("CARGO_PKG_NAME");
-static NEXT: AtomicUsize = AtomicUsize::new(0);
-static RUN: AtomicUsize = AtomicUsize::new(0);
-const REPLY_DELAY: Duration = Duration::from_millis(50);
-const BOUND: Duration = Duration::from_secs(5);
-const TARGET_V: i64 = 1;
-const SURVIVOR_V: i64 = 7;
-
-type DirectClient = Client<Compat<BufStream<Stream>>>;
-type BoltPool = Pool<Manager>;
-
-fn e(err: impl std::fmt::Display) -> String {
-    err.to_string()
-}
-
-fn url() -> Result<String, String> {
-    std::env::var("DW_NEO4J_URL").map_err(|err| format!("DW_NEO4J_URL is required: {err}"))
-}
-
-fn upstream(url: &str) -> Result<SocketAddr, String> {
-    url.strip_prefix("bolt://")
-        .unwrap_or(url)
-        .trim_end_matches('/')
-        .parse()
-        .map_err(e)
-}
-
-fn meta() -> Metadata {
-    let user = std::env::var("DW_NEO4J_USER").unwrap_or_else(|_| "neo4j".into());
-    let password = std::env::var("DW_NEO4J_PASSWORD").unwrap_or_else(|_| "dropwise".into());
-    Metadata::from_iter(vec![
-        ("user_agent", "dropwise-p4e-r2/0.1"),
-        ("scheme", "basic"),
-        ("principal", user.as_str()),
-        ("credentials", password.as_str()),
-    ])
-}
-
-async fn connect_direct(addr: &str) -> Result<DirectClient, String> {
-    let addr = addr.strip_prefix("bolt://").unwrap_or(addr).trim_end_matches('/');
-    let stream = Stream::connect(addr, None::<&str>).await.map_err(e)?;
-    let stream = BufStream::new(stream).compat();
-    let mut client = Client::new(stream, &[V4_4, V4_3, 0, 0]).await.map_err(e)?;
-    let hello = client.hello(meta()).await.map_err(e)?;
-    Success::try_from(hello).map_err(|m| format!("HELLO failed: {m:?}"))?;
-    Ok(client)
-}
-
-async fn connect_pooled(addr: &str) -> Result<BoltPool, String> {
-    let manager = Manager::new(addr.to_string(), None::<String>, [V4_4, V4_3, 0, 0], meta())
-        .await
-        .map_err(e)?;
-    Pool::builder()
-        .max_size(1)
-        .test_on_check_out(true)
-        .build(manager)
-        .await
-        .map_err(e)
-}
-
-fn first_int(values: Vec<Value>) -> Result<i64, String> {
-    match values.into_iter().next() {
-        Some(Value::Integer(value)) => Ok(value),
-        Some(other) => Err(format!("expected integer, got {other:?}")),
-        None => Err("query returned no row".into()),
-    }
-}
-
-fn first_string(values: Vec<Value>) -> Result<String, String> {
-    match values.into_iter().next() {
-        Some(Value::String(value)) => Ok(value),
-        Some(other) => Err(format!("expected string, got {other:?}")),
-        None => Err("query returned no row".into()),
-    }
-}
-
-async fn run_pull(
-    client: &mut DirectClient,
-    query: &str,
-    params: Option<Params>,
-) -> Result<Vec<Value>, String> {
-    let response: Message = client.run(query, params, None).await.map_err(e)?;
-    Success::try_from(response).map_err(|m| format!("RUN failed: {m:?}"))?;
-    let (records, summary) = client
-        .pull(Some(Metadata::from_iter(vec![("n", -1)])))
-        .await
-        .map_err(e)?;
-    Success::try_from(summary).map_err(|m| format!("PULL failed: {m:?}"))?;
-    Ok(records
-        .into_iter()
-        .map(|record| record.fields()[0].clone())
-        .collect())
-}
-
-async fn write_on(client: &mut DirectClient, id: &str, value: i64) -> Result<i64, String> {
-    let params = Params::from_iter(vec![
-        ("id", Value::from(id)),
-        ("v", Value::from(value)),
-    ]);
-    let rows = run_pull(
-        client,
-        "MERGE (k:DwBolt {id: $id}) SET k.v = $v RETURN k.v AS v",
-        Some(params),
-    )
-    .await?;
-    first_int(rows)
-}
-
-async fn read_on(client: &mut DirectClient, id: &str) -> Result<i64, String> {
-    let params = Params::from_iter(vec![("id", Value::from(id))]);
-    let rows = run_pull(
-        client,
-        "MATCH (k:DwBolt {id: $id}) RETURN k.v AS v",
-        Some(params),
-    )
-    .await?;
-    first_int(rows)
-}
-
-async fn tag_on(client: &mut DirectClient, tag: &str) -> Result<String, String> {
-    let params = Params::from_iter(vec![("tag", Value::from(tag))]);
-    let rows = run_pull(client, "RETURN $tag AS t", Some(params)).await?;
-    first_string(rows)
-}
-
-struct Env {
-    pool: BoltPool,
-    observer: DirectClient,
-    id: String,
-    tag: String,
-    proxy: Proxy,
-    level: &'static str,
-    run: usize,
-}
-
-impl Env {
-    async fn write(&mut self, value: i64) -> Result<i64, String> {
-        let id = self.id.clone();
-        let mut conn = self.pool.get().await.map_err(e)?;
-        write_on(&mut *conn, &id, value).await
-    }
-
-    async fn read(&mut self) -> Result<i64, String> {
-        let id = self.id.clone();
-        let mut conn = self.pool.get().await.map_err(e)?;
-        read_on(&mut *conn, &id).await
-    }
-
-    async fn read_tag(&mut self, tag: &str) -> Result<String, String> {
-        let mut conn = self.pool.get().await.map_err(e)?;
-        tag_on(&mut *conn, tag).await
-    }
-
-    async fn observer_value(&mut self) -> Result<i64, String> {
-        let id = self.id.clone();
-        read_on(&mut self.observer, &id).await
-    }
-
-    async fn checkout(&mut self) -> Result<(), String> {
-        let conn = self.pool.get().await.map_err(e)?;
-        drop(conn);
-        Ok(())
-    }
-
-    async fn cleanup(&mut self) -> Result<(), String> {
-        let id = self.id.clone();
-        let params = Params::from_iter(vec![("id", Value::from(id))]);
-        run_pull(
-            &mut self.observer,
-            "MATCH (k:DwBolt {id: $id}) DETACH DELETE k",
-            Some(params),
-        )
-        .await
-        .map(|_| ())
-    }
-
-    fn snapshot(&self, phase: &str) {
-        let state = format!("{:?}", self.pool.state());
-        let conns = self.proxy.connections();
-        let clients: Vec<String> = conns
-            .iter()
-            .map(|c| format!("{}:{}/{}", c.client, c.to_upstream, c.to_client))
-            .collect();
-        println!(
-            "R2-SNAPSHOT variant={VARIANT} level={} run={} phase={phase} state={state} \
-             proxy_connections={} proxy_client_bytes={clients:?}",
-            self.level,
-            self.run,
-            conns.len()
-        );
-    }
-}
-
-async fn setup(level: &'static str) -> Result<Env, String> {
-    let direct = url()?;
-    let proxy = Proxy::start_with(
-        upstream(&direct)?,
-        ProxyOptions { reply_delay: REPLY_DELAY },
-    )
-    .await
-    .map_err(e)?;
-    let mut observer = connect_direct(&direct).await?;
-    let n = NEXT.fetch_add(1, SeqCst);
-    let run = RUN.fetch_add(1, SeqCst);
-    println!("R2-RUN variant={VARIANT} level={level} run={run} n={n}");
-    let id = format!("dw-p4e-bolt-r2-{}-{n}", std::process::id());
-    let tag = format!("p4e-r2-tag-{}-{n}", std::process::id());
-    let params = Params::from_iter(vec![
-        ("id", Value::from(id.as_str())),
-        ("v", Value::from(0)),
-    ]);
-    run_pull(
-        &mut observer,
-        "CREATE (k:DwBolt {id: $id}) SET k.v = $v",
-        Some(params),
-    )
-    .await?;
-    let pool = connect_pooled(&proxy.addr().to_string()).await?;
-    let mut env = Env { pool, observer, id, tag, proxy, level, run };
-    // Warm-up: consume connection setup/HELLO and make the first target
-    // Pending its own exchange, exactly as in round 1.
-    env.write(0).await?;
-    Ok(env)
-}
-
-fn config() -> Config {
-    Config {
-        flavor: Flavor::MultiThread { workers: 1 },
-        races: vec![Race::Immediate, Race::AfterWake],
-        max_runs: 64,
-        scenario_timeout: Duration::from_secs(20),
-        settle: Settle { tokio_time: Duration::ZERO, ..Settle::default() },
-        ..Config::default()
-    }
-}
+use crate::bolt::*;
 
 async fn cut(ctx: &Ctx, env: &mut Env) -> Result<bool, String> {
     let cancelled = match ctx.target(env.write(TARGET_V)).await {
@@ -282,16 +40,6 @@ async fn cut(ctx: &Ctx, env: &mut Env) -> Result<bool, String> {
     Ok(cancelled)
 }
 
-async fn bounded<T>(
-    label: &str,
-    future: impl std::future::Future<Output = Result<T, String>>,
-) -> Result<T, String> {
-    match tokio::time::timeout(BOUND, future).await {
-        Ok(result) => result,
-        Err(_) => Err(format!("{label} timed out after {BOUND:?}")),
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Obs {
     before: Result<i64, String>,
@@ -299,10 +47,6 @@ struct Obs {
     own: Result<i64, String>,
     tag: Result<String, String>,
     visible: Result<i64, String>,
-}
-
-fn normalize(tag: &str, value: &str) -> String {
-    value.strip_prefix(tag).unwrap_or(value).to_string()
 }
 
 async fn observed_after_cut(env: &mut Env) -> Result<Obs, String> {
