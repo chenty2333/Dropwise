@@ -1,0 +1,4 @@
+POP-SNAPSHOT run=0 stage=preflight_setup proxy_connections=1 conn=[127.0.0.1:36804/6/45]
+POP-SNAPSHOT run=0 stage=preflight_after proxy_connections=1 conn=[127.0.0.1:36804/71/436]
+PREFLIGHT login=Ok(()) retr_len=157 stat=1/159 second_len=157 before=(1, true) visible=(1, true) proxy_connections=1
+PREFLIGHT-OK same_handle=reused proxy_connections=1 observer_unchanged=true

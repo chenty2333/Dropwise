@@ -1,0 +1,4 @@
+POP-SNAPSHOT run=0 stage=after_stat proxy_connections=1 conn=[127.0.0.1:52490/63/258]
+POP-SNAPSHOT run=0 stage=after_retr proxy_connections=1 conn=[127.0.0.1:52490/71/436]
+POP-OBS run=0 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-CAL login=true retr=true obs=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }

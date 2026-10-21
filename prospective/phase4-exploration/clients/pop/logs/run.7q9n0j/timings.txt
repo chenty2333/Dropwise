@@ -1,0 +1,8 @@
+preflight rc=1 seconds=2
+calibrate-pre-1 rc=0 seconds=1
+calibrate-pre-2 rc=0 seconds=0
+calibrate-post-1 rc=1 seconds=30
+calibrate-post-2 rc=1 seconds=31
+ladder-1 rc=143 seconds=115
+ladder-2 rc=0 seconds=0
+ladder-3 rc=0 seconds=0

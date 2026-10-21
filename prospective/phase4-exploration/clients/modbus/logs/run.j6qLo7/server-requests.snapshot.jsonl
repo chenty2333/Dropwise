@@ -1,0 +1,372 @@
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 0, "t": 28586.089364, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 1, "t": 28586.089849, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 2, "t": 28586.141204, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 3, "t": 28586.192716, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 4, "t": 28586.19289, "txid": 2, "unit": 255, "values": [100, 1]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 5, "t": 28586.244438, "txid": 3, "unit": 255, "values": [100, 1]}
+{"peer": "('127.0.0.1', 37626)", "result": "closed", "seq": 6, "t": 28586.296057}
+{"peer": "('127.0.0.1', 37632)", "result": "closed", "seq": 7, "t": 28586.296192}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 8, "t": 28586.299137, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 9, "t": 28586.299485, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 10, "t": 28586.350819, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 11, "t": 28586.350989, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 12, "t": 28586.402348, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 13, "t": 28586.454079, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37644)", "result": "closed", "seq": 14, "t": 28586.454584}
+{"peer": "('127.0.0.1', 37660)", "result": "closed", "seq": 15, "t": 28586.454738}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 16, "t": 28586.458527, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 17, "t": 28586.458884, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 18, "t": 28586.51019, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 19, "t": 28586.510431, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 20, "t": 28586.562191, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 21, "t": 28586.613846, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37674)", "result": "closed", "seq": 22, "t": 28586.614207}
+{"peer": "('127.0.0.1', 37678)", "result": "closed", "seq": 23, "t": 28586.614303}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 24, "t": 28586.618589, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 25, "t": 28586.618956, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 26, "t": 28586.670504, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 27, "t": 28586.722096, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 28, "t": 28586.722252, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 29, "t": 28586.773852, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 30, "t": 28586.825361, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37680)", "result": "closed", "seq": 31, "t": 28586.825685}
+{"peer": "('127.0.0.1', 37690)", "result": "closed", "seq": 32, "t": 28586.825804}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 33, "t": 28586.829321, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 34, "t": 28586.829734, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 35, "t": 28586.881233, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 36, "t": 28586.932894, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 37, "t": 28586.933182, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 38, "t": 28586.984621, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 39, "t": 28587.036143, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37696)", "result": "closed", "seq": 40, "t": 28587.036607}
+{"peer": "('127.0.0.1', 37704)", "result": "closed", "seq": 41, "t": 28587.036698}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 42, "t": 28587.040064, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 43, "t": 28587.040659, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 44, "t": 28587.092269, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 37712)", "result": "closed", "seq": 45, "t": 28587.143894}
+{"peer": "('127.0.0.1', 37724)", "result": "closed", "seq": 46, "t": 28587.144072}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 47, "t": 28587.145287, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 48, "t": 28587.145826, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 49, "t": 28587.197419, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 37736)", "result": "closed", "seq": 50, "t": 28587.19766}
+{"peer": "('127.0.0.1', 37750)", "result": "closed", "seq": 51, "t": 28587.197725}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 52, "t": 28587.198916, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 53, "t": 28587.199218, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 54, "t": 28587.250643, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 37752)", "result": "closed", "seq": 55, "t": 28587.302208}
+{"peer": "('127.0.0.1', 37754)", "result": "closed", "seq": 56, "t": 28587.302343}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 57, "t": 28587.30397, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 58, "t": 28587.304578, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 59, "t": 28587.356145, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 37760)", "result": "closed", "seq": 60, "t": 28587.408173}
+{"peer": "('127.0.0.1', 37768)", "result": "closed", "seq": 61, "t": 28587.408398}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 62, "t": 28587.409756, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 63, "t": 28587.410129, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 64, "t": 28587.461412, "txid": 1, "unit": 255, "value": 1}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 65, "t": 28587.461531, "txid": 2, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 37778)", "result": "closed", "seq": 66, "t": 28587.512974}
+{"peer": "('127.0.0.1', 37794)", "result": "closed", "seq": 67, "t": 28587.513094}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 68, "t": 28587.514562, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 69, "t": 28587.515084, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 70, "t": 28587.566451, "txid": 1, "unit": 255, "value": 1}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 71, "t": 28587.618006, "txid": 2, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 37804)", "result": "closed", "seq": 72, "t": 28587.618281}
+{"peer": "('127.0.0.1', 37814)", "result": "closed", "seq": 73, "t": 28587.618367}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 74, "t": 28587.619565, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 75, "t": 28587.619913, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 76, "t": 28587.671282, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 37826)", "result": "closed", "seq": 77, "t": 28587.723311}
+{"peer": "('127.0.0.1', 37838)", "result": "closed", "seq": 78, "t": 28587.723515}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 79, "t": 28587.725078, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 80, "t": 28587.7257, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 81, "t": 28587.777299, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 82, "t": 28587.77755, "txid": 2, "unit": 255, "values": [100, 1]}
+{"peer": "('127.0.0.1', 37840)", "result": "closed", "seq": 83, "t": 28587.829311}
+{"peer": "('127.0.0.1', 37850)", "result": "closed", "seq": 84, "t": 28587.829491}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 85, "t": 28587.830947, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 86, "t": 28587.831326, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 87, "t": 28587.88287, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 88, "t": 28587.934734, "txid": 2, "unit": 255, "values": [100, 1]}
+{"peer": "('127.0.0.1', 37864)", "result": "closed", "seq": 89, "t": 28587.935222}
+{"peer": "('127.0.0.1', 37872)", "result": "closed", "seq": 90, "t": 28587.935322}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 91, "t": 28587.936557, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 92, "t": 28587.936921, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 93, "t": 28587.988287, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 94, "t": 28588.040225, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 95, "t": 28588.040577, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 96, "t": 28588.092235, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 97, "t": 28588.143849, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37874)", "result": "closed", "seq": 98, "t": 28588.144143}
+{"peer": "('127.0.0.1', 37890)", "result": "closed", "seq": 99, "t": 28588.144238}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 100, "t": 28588.145694, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 101, "t": 28588.145977, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 102, "t": 28588.197381, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 103, "t": 28588.197522, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 104, "t": 28588.197606, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 105, "t": 28588.249027, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 106, "t": 28588.300461, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37902)", "result": "closed", "seq": 107, "t": 28588.300733}
+{"peer": "('127.0.0.1', 37918)", "result": "closed", "seq": 108, "t": 28588.30083}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 109, "t": 28588.302344, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 110, "t": 28588.302743, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 111, "t": 28588.354091, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 112, "t": 28588.35425, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 113, "t": 28588.405795, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 114, "t": 28588.456404, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37934)", "result": "closed", "seq": 115, "t": 28588.457025}
+{"peer": "('127.0.0.1', 37940)", "result": "closed", "seq": 116, "t": 28588.4572}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 117, "t": 28588.45889, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 118, "t": 28588.459422, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 119, "t": 28588.510968, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 120, "t": 28588.511258, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 121, "t": 28588.562054, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 122, "t": 28588.612782, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37956)", "result": "closed", "seq": 123, "t": 28588.613159}
+{"peer": "('127.0.0.1', 37958)", "result": "closed", "seq": 124, "t": 28588.613273}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 125, "t": 28588.614776, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 126, "t": 28588.615181, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 127, "t": 28588.666558, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 128, "t": 28588.718019, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 129, "t": 28588.718215, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 130, "t": 28588.769864, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 131, "t": 28588.821512, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37968)", "result": "closed", "seq": 132, "t": 28588.82192}
+{"peer": "('127.0.0.1', 37976)", "result": "closed", "seq": 133, "t": 28588.822032}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 134, "t": 28588.823524, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 135, "t": 28588.823827, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 136, "t": 28588.875338, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 137, "t": 28588.927134, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 138, "t": 28588.927482, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 139, "t": 28588.979521, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 140, "t": 28589.031197, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 37982)", "result": "closed", "seq": 141, "t": 28589.031414}
+{"peer": "('127.0.0.1', 37998)", "result": "closed", "seq": 142, "t": 28589.031475}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 143, "t": 28589.032972, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 144, "t": 28589.033661, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 145, "t": 28589.08516, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 146, "t": 28589.136793, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 147, "t": 28589.136953, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 148, "t": 28589.137028, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 149, "t": 28589.188428, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38012)", "result": "closed", "seq": 150, "t": 28589.188678}
+{"peer": "('127.0.0.1', 38022)", "result": "closed", "seq": 151, "t": 28589.188753}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 152, "t": 28589.192863, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 153, "t": 28589.193202, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 154, "t": 28589.244532, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38028)", "result": "closed", "seq": 155, "t": 28589.296163}
+{"peer": "('127.0.0.1', 38040)", "result": "closed", "seq": 156, "t": 28589.296347}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 157, "t": 28589.297633, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 158, "t": 28589.298315, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 159, "t": 28589.349801, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38056)", "result": "closed", "seq": 160, "t": 28589.350109}
+{"peer": "('127.0.0.1', 38048)", "result": "closed", "seq": 161, "t": 28589.350162}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 162, "t": 28589.351719, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 163, "t": 28589.352099, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 164, "t": 28589.403542, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38064)", "result": "closed", "seq": 165, "t": 28589.455135}
+{"peer": "('127.0.0.1', 38078)", "result": "closed", "seq": 166, "t": 28589.455248}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 167, "t": 28589.456754, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 168, "t": 28589.45709, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 169, "t": 28589.508519, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38094)", "result": "closed", "seq": 170, "t": 28589.560523}
+{"peer": "('127.0.0.1', 38108)", "result": "closed", "seq": 171, "t": 28589.56064}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 172, "t": 28589.56216, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 173, "t": 28589.56279, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 174, "t": 28589.614378, "txid": 1, "unit": 255, "value": 1}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 175, "t": 28589.614495, "txid": 2, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38110)", "result": "closed", "seq": 176, "t": 28589.666203}
+{"peer": "('127.0.0.1', 38114)", "result": "closed", "seq": 177, "t": 28589.666268}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 178, "t": 28589.667891, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 179, "t": 28589.66844, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 180, "t": 28589.719843, "txid": 1, "unit": 255, "value": 1}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 181, "t": 28589.771846, "txid": 2, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38126)", "result": "closed", "seq": 182, "t": 28589.772155}
+{"peer": "('127.0.0.1', 38132)", "result": "closed", "seq": 183, "t": 28589.772205}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 184, "t": 28589.773467, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 185, "t": 28589.773855, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 186, "t": 28589.825099, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38136)", "result": "closed", "seq": 187, "t": 28589.876814}
+{"peer": "('127.0.0.1', 38148)", "result": "closed", "seq": 188, "t": 28589.876938}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 189, "t": 28589.878391, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 190, "t": 28589.878772, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 191, "t": 28589.930168, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 192, "t": 28589.930317, "txid": 2, "unit": 255, "values": [100, 1]}
+{"peer": "('127.0.0.1', 38164)", "result": "closed", "seq": 193, "t": 28589.98216}
+{"peer": "('127.0.0.1', 38166)", "result": "closed", "seq": 194, "t": 28589.98229}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 195, "t": 28589.983809, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 196, "t": 28589.984505, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 197, "t": 28590.036136, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 198, "t": 28590.08704, "txid": 2, "unit": 255, "values": [100, 1]}
+{"peer": "('127.0.0.1', 38184)", "result": "closed", "seq": 199, "t": 28590.087339}
+{"peer": "('127.0.0.1', 38172)", "result": "closed", "seq": 200, "t": 28590.087379}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 201, "t": 28590.088593, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 202, "t": 28590.089047, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 203, "t": 28590.14032, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 204, "t": 28590.191836, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 205, "t": 28590.192166, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 206, "t": 28590.242655, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 207, "t": 28590.294161, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38188)", "result": "closed", "seq": 208, "t": 28590.294414}
+{"peer": "('127.0.0.1', 38192)", "result": "closed", "seq": 209, "t": 28590.294489}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 210, "t": 28590.29624, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 211, "t": 28590.296665, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 212, "t": 28590.348211, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 213, "t": 28590.348344, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 214, "t": 28590.348432, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 215, "t": 28590.399975, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 216, "t": 28590.450873, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38196)", "result": "closed", "seq": 217, "t": 28590.45127}
+{"peer": "('127.0.0.1', 38202)", "result": "closed", "seq": 218, "t": 28590.451415}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 219, "t": 28590.453037, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 220, "t": 28590.453326, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 221, "t": 28590.504606, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 222, "t": 28590.504752, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 223, "t": 28590.55643, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 224, "t": 28590.60704, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38216)", "result": "closed", "seq": 225, "t": 28590.607422}
+{"peer": "('127.0.0.1', 38222)", "result": "closed", "seq": 226, "t": 28590.607539}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 227, "t": 28590.609048, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 228, "t": 28590.609307, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 229, "t": 28590.660778, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 230, "t": 28590.661024, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 231, "t": 28590.71243, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 232, "t": 28590.763812, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38228)", "result": "closed", "seq": 233, "t": 28590.764083}
+{"peer": "('127.0.0.1', 38230)", "result": "closed", "seq": 234, "t": 28590.764188}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 235, "t": 28590.765607, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 236, "t": 28590.766031, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 237, "t": 28590.817331, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 238, "t": 28590.868714, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 239, "t": 28590.868865, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 240, "t": 28590.920295, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 241, "t": 28590.971885, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38238)", "result": "closed", "seq": 242, "t": 28590.972277}
+{"peer": "('127.0.0.1', 38252)", "result": "closed", "seq": 243, "t": 28590.972398}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 244, "t": 28590.973882, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 245, "t": 28590.974318, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 246, "t": 28591.025618, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 247, "t": 28591.077267, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 248, "t": 28591.077532, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 249, "t": 28591.129134, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 250, "t": 28591.180577, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38258)", "result": "closed", "seq": 251, "t": 28591.180888}
+{"peer": "('127.0.0.1', 38262)", "result": "closed", "seq": 252, "t": 28591.180997}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 253, "t": 28591.182466, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 254, "t": 28591.182881, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 255, "t": 28591.234227, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 256, "t": 28591.28581, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 257, "t": 28591.286128, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 258, "t": 28591.286208, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 259, "t": 28591.33762, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38272)", "result": "closed", "seq": 260, "t": 28591.337983}
+{"peer": "('127.0.0.1', 38278)", "result": "closed", "seq": 261, "t": 28591.338105}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 262, "t": 28591.342803, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 263, "t": 28591.343184, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 264, "t": 28591.394551, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38288)", "result": "closed", "seq": 265, "t": 28591.446244}
+{"peer": "('127.0.0.1', 38290)", "result": "closed", "seq": 266, "t": 28591.446431}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 267, "t": 28591.447706, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 268, "t": 28591.44842, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 269, "t": 28591.500082, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38304)", "result": "closed", "seq": 270, "t": 28591.500368}
+{"peer": "('127.0.0.1', 38314)", "result": "closed", "seq": 271, "t": 28591.500432}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 272, "t": 28591.501406, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 273, "t": 28591.501752, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 274, "t": 28591.553093, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38322)", "result": "closed", "seq": 275, "t": 28591.604808}
+{"peer": "('127.0.0.1', 38330)", "result": "closed", "seq": 276, "t": 28591.60502}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 277, "t": 28591.606261, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 278, "t": 28591.606709, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 279, "t": 28591.658075, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38338)", "result": "closed", "seq": 280, "t": 28591.709711}
+{"peer": "('127.0.0.1', 38344)", "result": "closed", "seq": 281, "t": 28591.709841}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 282, "t": 28591.711193, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 283, "t": 28591.711608, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 284, "t": 28591.762899, "txid": 1, "unit": 255, "value": 1}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 285, "t": 28591.763028, "txid": 2, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38352)", "result": "closed", "seq": 286, "t": 28591.814675}
+{"peer": "('127.0.0.1', 38368)", "result": "closed", "seq": 287, "t": 28591.814876}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 288, "t": 28591.816218, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 289, "t": 28591.816687, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 290, "t": 28591.867961, "txid": 1, "unit": 255, "value": 1}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 291, "t": 28591.91958, "txid": 2, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38370)", "result": "closed", "seq": 292, "t": 28591.919902}
+{"peer": "('127.0.0.1', 38372)", "result": "closed", "seq": 293, "t": 28591.919974}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 294, "t": 28591.921384, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 295, "t": 28591.921814, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 296, "t": 28591.973225, "txid": 1, "unit": 255, "value": 1}
+{"peer": "('127.0.0.1', 38384)", "result": "closed", "seq": 297, "t": 28592.025039}
+{"peer": "('127.0.0.1', 38396)", "result": "closed", "seq": 298, "t": 28592.025228}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 299, "t": 28592.026598, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 300, "t": 28592.027051, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 301, "t": 28592.078347, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 302, "t": 28592.078498, "txid": 2, "unit": 255, "values": [100, 1]}
+{"peer": "('127.0.0.1', 38400)", "result": "closed", "seq": 303, "t": 28592.130048}
+{"peer": "('127.0.0.1', 38408)", "result": "closed", "seq": 304, "t": 28592.13018}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 305, "t": 28592.131834, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 306, "t": 28592.132173, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 307, "t": 28592.183579, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 308, "t": 28592.235243, "txid": 2, "unit": 255, "values": [100, 1]}
+{"peer": "('127.0.0.1', 38432)", "result": "closed", "seq": 309, "t": 28592.235613}
+{"peer": "('127.0.0.1', 38418)", "result": "closed", "seq": 310, "t": 28592.23566}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 311, "t": 28592.236773, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 312, "t": 28592.237036, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 313, "t": 28592.28838, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 314, "t": 28592.339927, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 315, "t": 28592.3401, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 316, "t": 28592.391598, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 317, "t": 28592.443189, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38436)", "result": "closed", "seq": 318, "t": 28592.443489}
+{"peer": "('127.0.0.1', 38448)", "result": "closed", "seq": 319, "t": 28592.443592}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 320, "t": 28592.443859, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 321, "t": 28592.444211, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 322, "t": 28592.496072, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 323, "t": 28592.496338, "txid": 1, "unit": 255, "value": 1}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 324, "t": 28592.496422, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 325, "t": 28592.547359, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 326, "t": 28592.598186, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38458)", "result": "closed", "seq": 327, "t": 28592.598678}
+{"peer": "('127.0.0.1', 38468)", "result": "closed", "seq": 328, "t": 28592.598829}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 329, "t": 28592.600497, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 330, "t": 28592.601018, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 331, "t": 28592.652603, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 332, "t": 28592.652881, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 333, "t": 28592.704978, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 334, "t": 28592.756765, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38484)", "result": "closed", "seq": 335, "t": 28592.757314}
+{"peer": "('127.0.0.1', 38492)", "result": "closed", "seq": 336, "t": 28592.757435}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 337, "t": 28592.759082, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 338, "t": 28592.759681, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 339, "t": 28592.811379, "txid": 1, "unit": 255, "values": [100, 0]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 340, "t": 28592.81179, "txid": 1, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 341, "t": 28592.863358, "txid": 2, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 342, "t": 28592.915298, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 38508)", "result": "closed", "seq": 343, "t": 28592.916029}
+{"peer": "('127.0.0.1', 38520)", "result": "closed", "seq": 344, "t": 28592.916148}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 345, "t": 28592.917691, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 346, "t": 28592.918215, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 347, "t": 28592.970372, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 348, "t": 28593.022568, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 349, "t": 28593.023025, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 350, "t": 28593.073936, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 351, "t": 28593.124765, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 51788)", "result": "closed", "seq": 352, "t": 28593.125295}
+{"peer": "('127.0.0.1', 51792)", "result": "closed", "seq": 353, "t": 28593.125415}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 354, "t": 28593.125902, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 355, "t": 28593.126428, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 356, "t": 28593.177952, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 357, "t": 28593.229778, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 358, "t": 28593.230179, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 359, "t": 28593.281895, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 360, "t": 28593.333445, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 51800)", "result": "closed", "seq": 361, "t": 28593.333808}
+{"peer": "('127.0.0.1', 51810)", "result": "closed", "seq": 362, "t": 28593.333917}
+{"addr": 0, "func": 16, "nbytes": 8, "qty": 4, "result": "ok", "seq": 363, "t": 28593.335524, "txid": 0, "unit": 255, "values": [100, 0, 0, 0]}
+{"addr": 0, "func": 3, "qty": 1, "result": "ok", "seq": 364, "t": 28593.335964, "txid": 0, "unit": 255, "values": [100]}
+{"addr": 1, "applied": 1, "func": 6, "result": "ok", "seq": 365, "t": 28593.387548, "txid": 1, "unit": 255, "value": 1}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 366, "t": 28593.439169, "txid": 1, "unit": 255, "values": [100, 1]}
+{"addr": 1, "applied": 7, "func": 6, "result": "ok", "seq": 367, "t": 28593.439361, "txid": 2, "unit": 255, "value": 7}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 368, "t": 28593.439436, "txid": 3, "unit": 255, "values": [100, 7]}
+{"addr": 0, "func": 3, "qty": 2, "result": "ok", "seq": 369, "t": 28593.490905, "txid": 2, "unit": 255, "values": [100, 7]}
+{"peer": "('127.0.0.1', 51818)", "result": "closed", "seq": 370, "t": 28593.491357}
+{"peer": "('127.0.0.1', 51830)", "result": "closed", "seq": 371, "t": 28593.491498}

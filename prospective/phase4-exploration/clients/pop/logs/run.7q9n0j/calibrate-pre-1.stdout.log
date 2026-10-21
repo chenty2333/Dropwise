@@ -1,0 +1,4 @@
+POP-SNAPSHOT run=0 stage=after_stat proxy_connections=1 conn=[127.0.0.1:41732/12/114]
+POP-SNAPSHOT run=0 stage=after_retr proxy_connections=1 conn=[127.0.0.1:41732/20/153]
+POP-OBS run=0 before=Ok((1, true)) stat=Err("Server error") retr=Err("Server error") visible=Ok((1, true))
+POP-CAL login=false retr=false obs=Obs { before: Ok((1, true)), stat: Err("Server error"), retr: Err("Server error"), visible: Ok((1, true)) }

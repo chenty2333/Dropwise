@@ -1,0 +1,835 @@
+{"cmd": "<closed>", "result": "closed", "session": 1, "t": 28775.421563}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 2, "t": 28775.54574}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 2, "t": 28775.597657}
+{"cmd": "PASS pass", "result": "+OK", "session": 2, "t": 28775.6892}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 2, "t": 28775.740619}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 2, "t": 28775.833158}
+{"cmd": "STAT", "result": "+OK", "session": 2, "t": 28775.925169}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 2, "t": 28776.017299}
+{"cmd": "<closed>", "result": "closed", "session": 2, "t": 28776.069527}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 3, "t": 28776.124408}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 3, "t": 28776.176318}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 3, "t": 28776.268251}
+{"cmd": "<closed>", "result": "closed", "session": 3, "t": 28776.319979}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 4, "t": 28776.374465}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 4, "t": 28776.467185}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 4, "t": 28776.560226}
+{"cmd": "<closed>", "result": "closed", "session": 4, "t": 28776.611981}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 5, "t": 28776.667114}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 5, "t": 28776.718481}
+{"cmd": "PASS pass", "result": "+OK", "session": 5, "t": 28776.769971}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 5, "t": 28776.821471}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 5, "t": 28776.91437}
+{"cmd": "STAT", "result": "+OK", "session": 5, "t": 28776.966818}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 5, "t": 28777.059197}
+{"cmd": "<closed>", "result": "closed", "session": 5, "t": 28777.111144}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 6, "t": 28777.166635}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 6, "t": 28777.258171}
+{"cmd": "PASS pass", "result": "+OK", "session": 6, "t": 28777.350372}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 6, "t": 28777.442132}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 6, "t": 28777.535205}
+{"cmd": "STAT", "result": "+OK", "session": 6, "t": 28777.628287}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 6, "t": 28777.721111}
+{"cmd": "<closed>", "result": "closed", "session": 6, "t": 28777.773137}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 7, "t": 28777.8288}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 7, "t": 28777.921248}
+{"cmd": "PASS pass", "result": "+OK", "session": 7, "t": 28777.972821}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 7, "t": 28778.065402}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 7, "t": 28778.158196}
+{"cmd": "<closed>", "result": "closed", "session": 7, "t": 28778.209766}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 8, "t": 28778.262816}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 8, "t": 28778.314165}
+{"cmd": "<closed>", "result": "closed", "session": 8, "t": 28778.314391}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 9, "t": 28778.367244}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 9, "t": 28778.459243}
+{"cmd": "<closed>", "result": "closed", "session": 9, "t": 28778.509865}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 10, "t": 28778.563312}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 10, "t": 28778.615138}
+{"cmd": "PASS pass", "result": "+OK", "session": 10, "t": 28778.66687}
+{"cmd": "<closed>", "result": "closed", "session": 10, "t": 28778.667036}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 11, "t": 28778.719861}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 11, "t": 28778.771511}
+{"cmd": "PASS pass", "result": "+OK", "session": 11, "t": 28778.822978}
+{"cmd": "<closed>", "result": "closed", "session": 11, "t": 28778.874487}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 12, "t": 28778.928019}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 12, "t": 28779.020192}
+{"cmd": "PASS pass", "result": "+OK", "session": 12, "t": 28779.112281}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 12, "t": 28779.163931}
+{"cmd": "<closed>", "result": "closed", "session": 12, "t": 28779.164102}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 13, "t": 28779.217394}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 13, "t": 28779.268884}
+{"cmd": "PASS pass", "result": "+OK", "session": 13, "t": 28779.320354}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 13, "t": 28779.372064}
+{"cmd": "<closed>", "result": "closed", "session": 13, "t": 28779.423668}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 14, "t": 28779.478149}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 14, "t": 28779.529744}
+{"cmd": "PASS pass", "result": "+OK", "session": 14, "t": 28779.621211}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 14, "t": 28779.713224}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 14, "t": 28779.764705}
+{"cmd": "<closed>", "result": "closed", "session": 14, "t": 28779.764963}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 15, "t": 28779.818119}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 15, "t": 28779.909137}
+{"cmd": "PASS pass", "result": "+OK", "session": 15, "t": 28780.001177}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 15, "t": 28780.093136}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 15, "t": 28780.18629}
+{"cmd": "<closed>", "result": "closed", "session": 15, "t": 28780.238044}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 16, "t": 28780.290961}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 16, "t": 28780.383226}
+{"cmd": "PASS pass", "result": "+OK", "session": 16, "t": 28780.434567}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 16, "t": 28780.526128}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 16, "t": 28780.619304}
+{"cmd": "<closed>", "result": "closed", "session": 16, "t": 28780.670743}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 17, "t": 28780.723654}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 17, "t": 28780.816145}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 17, "t": 28780.816285}
+{"cmd": "PASS pass", "result": "+OK", "session": 17, "t": 28780.90938}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 17, "t": 28780.918807}
+{"cmd": "<closed>", "result": "closed", "session": 17, "t": 28780.969242}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 18, "t": 28781.02247}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 18, "t": 28781.073877}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 18, "t": 28781.125403}
+{"cmd": "PASS pass", "result": "+OK", "session": 18, "t": 28781.125572}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 18, "t": 28781.177081}
+{"cmd": "<closed>", "result": "closed", "session": 18, "t": 28781.228584}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 19, "t": 28781.281776}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 19, "t": 28781.333418}
+{"cmd": "PASS pass", "result": "+OK", "session": 19, "t": 28781.385141}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 19, "t": 28781.385311}
+{"cmd": "PASS pass", "result": "+OK", "session": 19, "t": 28781.436708}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 19, "t": 28781.528224}
+{"cmd": "<closed>", "result": "closed", "session": 19, "t": 28781.538522}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 20, "t": 28781.591843}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 20, "t": 28781.643486}
+{"cmd": "PASS pass", "result": "+OK", "session": 20, "t": 28781.695022}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 20, "t": 28781.746662}
+{"cmd": "PASS pass", "result": "+OK", "session": 20, "t": 28781.746812}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 20, "t": 28781.797311}
+{"cmd": "<closed>", "result": "closed", "session": 20, "t": 28781.848665}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 21, "t": 28781.901457}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 21, "t": 28781.952935}
+{"cmd": "PASS pass", "result": "+OK", "session": 21, "t": 28782.045168}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 21, "t": 28782.096566}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 21, "t": 28782.096711}
+{"cmd": "PASS pass", "result": "+OK", "session": 21, "t": 28782.147122}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 21, "t": 28782.239221}
+{"cmd": "<closed>", "result": "closed", "session": 21, "t": 28782.249728}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 22, "t": 28782.302799}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 22, "t": 28782.394307}
+{"cmd": "PASS pass", "result": "+OK", "session": 22, "t": 28782.445667}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 22, "t": 28782.538221}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 22, "t": 28782.589699}
+{"cmd": "PASS pass", "result": "+OK", "session": 22, "t": 28782.589845}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 22, "t": 28782.640441}
+{"cmd": "<closed>", "result": "closed", "session": 22, "t": 28782.691866}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 23, "t": 28782.744735}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 23, "t": 28782.796248}
+{"cmd": "PASS pass", "result": "+OK", "session": 23, "t": 28782.888207}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 23, "t": 28782.939584}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 23, "t": 28783.032232}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 23, "t": 28783.03241}
+{"cmd": "<closed>", "result": "closed", "session": 23, "t": 28783.08404}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 24, "t": 28783.137119}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 24, "t": 28783.187598}
+{"cmd": "PASS pass", "result": "+OK", "session": 24, "t": 28783.239489}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 24, "t": 28783.290907}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 24, "t": 28783.342342}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 24, "t": 28783.393882}
+{"cmd": "<closed>", "result": "closed", "session": 24, "t": 28783.394093}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 25, "t": 28783.446967}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 25, "t": 28783.498365}
+{"cmd": "PASS pass", "result": "+OK", "session": 25, "t": 28783.550142}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 25, "t": 28783.601576}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 25, "t": 28783.653038}
+{"cmd": "<closed>", "result": "closed", "session": 25, "t": 28783.704535}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 26, "t": 28783.757312}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 26, "t": 28783.849168}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 26, "t": 28783.849319}
+{"cmd": "<closed>", "result": "closed", "session": 26, "t": 28783.900984}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 27, "t": 28783.954369}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 27, "t": 28784.005908}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 27, "t": 28784.057443}
+{"cmd": "<closed>", "result": "closed", "session": 27, "t": 28784.057625}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 28, "t": 28784.111082}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 28, "t": 28784.203202}
+{"cmd": "PASS pass", "result": "+OK", "session": 28, "t": 28784.254635}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 28, "t": 28784.254775}
+{"cmd": "<closed>", "result": "closed", "session": 28, "t": 28784.305462}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 29, "t": 28784.358556}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 29, "t": 28784.410119}
+{"cmd": "PASS pass", "result": "+OK", "session": 29, "t": 28784.461451}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 29, "t": 28784.513129}
+{"cmd": "<closed>", "result": "closed", "session": 29, "t": 28784.513306}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 30, "t": 28784.566148}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 30, "t": 28784.616803}
+{"cmd": "PASS pass", "result": "+OK", "session": 30, "t": 28784.710275}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 30, "t": 28784.76175}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 30, "t": 28784.76192}
+{"cmd": "<closed>", "result": "closed", "session": 30, "t": 28784.813971}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 31, "t": 28784.867173}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 31, "t": 28784.918733}
+{"cmd": "PASS pass", "result": "+OK", "session": 31, "t": 28784.970251}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 31, "t": 28785.062306}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 31, "t": 28785.114197}
+{"cmd": "<closed>", "result": "closed", "session": 31, "t": 28785.114435}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 32, "t": 28785.167596}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 32, "t": 28785.219058}
+{"cmd": "PASS pass", "result": "+OK", "session": 32, "t": 28785.27069}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 32, "t": 28785.322319}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 32, "t": 28785.373864}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 32, "t": 28785.37401}
+{"cmd": "<closed>", "result": "closed", "session": 32, "t": 28785.425582}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 33, "t": 28785.478657}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 33, "t": 28785.530252}
+{"cmd": "PASS pass", "result": "+OK", "session": 33, "t": 28785.581885}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 33, "t": 28785.633408}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 33, "t": 28785.7253}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 33, "t": 28785.776758}
+{"cmd": "<closed>", "result": "closed", "session": 33, "t": 28785.776914}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 34, "t": 28785.830057}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 34, "t": 28785.881559}
+{"cmd": "PASS pass", "result": "+OK", "session": 34, "t": 28785.973303}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 34, "t": 28786.024816}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 34, "t": 28786.076517}
+{"cmd": "STAT", "result": "+OK", "session": 34, "t": 28786.129263}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 34, "t": 28786.222194}
+{"cmd": "<closed>", "result": "closed", "session": 34, "t": 28786.274965}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 35, "t": 28786.328393}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 35, "t": 28786.420393}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 35, "t": 28786.420581}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 35, "t": 28786.471283}
+{"cmd": "<closed>", "result": "closed", "session": 35, "t": 28786.523168}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 36, "t": 28786.576748}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 36, "t": 28786.628738}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 36, "t": 28786.72126}
+{"cmd": "<closed>", "result": "closed", "session": 36, "t": 28786.77369}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 37, "t": 28786.827485}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 37, "t": 28786.87979}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 37, "t": 28786.931425}
+{"cmd": "<closed>", "result": "closed", "session": 37, "t": 28786.983724}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 38, "t": 28787.036525}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 38, "t": 28787.087905}
+{"cmd": "PASS pass", "result": "+OK", "session": 38, "t": 28787.138283}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 38, "t": 28787.189701}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 38, "t": 28787.241347}
+{"cmd": "STAT", "result": "+OK", "session": 38, "t": 28787.293253}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 38, "t": 28787.344811}
+{"cmd": "<closed>", "result": "closed", "session": 38, "t": 28787.396782}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 39, "t": 28787.450201}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 39, "t": 28787.543266}
+{"cmd": "PASS pass", "result": "+OK", "session": 39, "t": 28787.593864}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 39, "t": 28787.645165}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 39, "t": 28787.737274}
+{"cmd": "STAT", "result": "+OK", "session": 39, "t": 28787.78868}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 39, "t": 28787.840265}
+{"cmd": "<closed>", "result": "closed", "session": 39, "t": 28787.892258}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 40, "t": 28787.94579}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 40, "t": 28788.038333}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 40, "t": 28788.090805}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 40, "t": 28788.091103}
+{"cmd": "<closed>", "result": "closed", "session": 40, "t": 28788.143406}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 41, "t": 28788.197148}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 41, "t": 28788.248944}
+{"cmd": "PASS pass", "result": "+OK", "session": 41, "t": 28788.342188}
+{"cmd": "STAT", "result": "+OK", "session": 41, "t": 28788.342349}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 41, "t": 28788.435181}
+{"cmd": "<closed>", "result": "closed", "session": 41, "t": 28788.444857}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 42, "t": 28788.497903}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 42, "t": 28788.591161}
+{"cmd": "PASS pass", "result": "+OK", "session": 42, "t": 28788.683219}
+{"cmd": "STAT", "result": "+OK", "session": 42, "t": 28788.735619}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 42, "t": 28788.776245}
+{"cmd": "<closed>", "result": "closed", "session": 42, "t": 28788.786932}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 43, "t": 28788.839904}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 43, "t": 28788.891528}
+{"cmd": "PASS pass", "result": "+OK", "session": 43, "t": 28788.98333}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 43, "t": 28789.076205}
+{"cmd": "STAT", "result": "+OK", "session": 43, "t": 28789.076473}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 43, "t": 28789.169172}
+{"cmd": "<closed>", "result": "closed", "session": 43, "t": 28789.179341}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 44, "t": 28789.232927}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 44, "t": 28789.326241}
+{"cmd": "PASS pass", "result": "+OK", "session": 44, "t": 28789.418226}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 44, "t": 28789.510166}
+{"cmd": "STAT", "result": "+OK", "session": 44, "t": 28789.561873}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 44, "t": 28789.561979}
+{"cmd": "<closed>", "result": "closed", "session": 44, "t": 28789.613819}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 45, "t": 28789.66705}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 45, "t": 28789.759182}
+{"cmd": "PASS pass", "result": "+OK", "session": 45, "t": 28789.851214}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 45, "t": 28789.902867}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 45, "t": 28789.995193}
+{"cmd": "STAT", "result": "+OK", "session": 45, "t": 28789.995337}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 45, "t": 28790.08723}
+{"cmd": "<closed>", "result": "closed", "session": 45, "t": 28790.098721}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 46, "t": 28790.15188}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 46, "t": 28790.245173}
+{"cmd": "PASS pass", "result": "+OK", "session": 46, "t": 28790.338332}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 46, "t": 28790.431277}
+{"cmd": "STAT", "result": "+OK", "session": 46, "t": 28790.483131}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 46, "t": 28790.575244}
+{"cmd": "<closed>", "result": "closed", "session": 46, "t": 28790.627097}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 47, "t": 28790.680239}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 47, "t": 28790.772163}
+{"cmd": "PASS pass", "result": "+OK", "session": 47, "t": 28790.823872}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 47, "t": 28790.875594}
+{"cmd": "STAT", "result": "+OK", "session": 47, "t": 28790.92815}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 47, "t": 28790.979811}
+{"cmd": "<closed>", "result": "closed", "session": 47, "t": 28791.032476}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 48, "t": 28791.08505}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 48, "t": 28791.177219}
+{"cmd": "PASS pass", "result": "+OK", "session": 48, "t": 28791.229108}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 48, "t": 28791.280665}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 48, "t": 28791.332397}
+{"cmd": "STAT", "result": "+OK", "session": 48, "t": 28791.424309}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 48, "t": 28791.475828}
+{"cmd": "<closed>", "result": "closed", "session": 48, "t": 28791.527697}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 49, "t": 28791.580441}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 49, "t": 28791.672195}
+{"cmd": "PASS pass", "result": "+OK", "session": 49, "t": 28791.765139}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 49, "t": 28791.857235}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 49, "t": 28791.908585}
+{"cmd": "STAT", "result": "+OK", "session": 49, "t": 28791.960449}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 49, "t": 28792.011898}
+{"cmd": "<closed>", "result": "closed", "session": 49, "t": 28792.063685}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 50, "t": 28792.117151}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 50, "t": 28792.168567}
+{"cmd": "PASS pass", "result": "+OK", "session": 50, "t": 28792.219937}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 50, "t": 28792.271278}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 50, "t": 28792.322601}
+{"cmd": "STAT", "result": "+OK", "session": 50, "t": 28792.374286}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 50, "t": 28792.374404}
+{"cmd": "<closed>", "result": "closed", "session": 50, "t": 28792.425577}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 51, "t": 28792.481351}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 51, "t": 28792.574146}
+{"cmd": "PASS pass", "result": "+OK", "session": 51, "t": 28792.62547}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 51, "t": 28792.717157}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 51, "t": 28792.768986}
+{"cmd": "<closed>", "result": "closed", "session": 51, "t": 28792.820911}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 52, "t": 28792.873996}
+{"cmd": "<closed>", "result": "closed", "session": 52, "t": 28792.925826}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 53, "t": 28792.978336}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 53, "t": 28793.070174}
+{"cmd": "<closed>", "result": "closed", "session": 53, "t": 28793.121568}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 54, "t": 28793.174768}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 54, "t": 28793.267292}
+{"cmd": "PASS pass", "result": "+OK", "session": 54, "t": 28793.318798}
+{"cmd": "<closed>", "result": "closed", "session": 54, "t": 28793.31911}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 55, "t": 28793.371909}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 55, "t": 28793.465254}
+{"cmd": "PASS pass", "result": "+OK", "session": 55, "t": 28793.557116}
+{"cmd": "<closed>", "result": "closed", "session": 55, "t": 28793.608767}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 56, "t": 28793.661544}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 56, "t": 28793.753198}
+{"cmd": "PASS pass", "result": "+OK", "session": 56, "t": 28793.846188}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 56, "t": 28793.897551}
+{"cmd": "<closed>", "result": "closed", "session": 56, "t": 28793.897716}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 57, "t": 28793.950476}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 57, "t": 28794.043214}
+{"cmd": "PASS pass", "result": "+OK", "session": 57, "t": 28794.136126}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 57, "t": 28794.228229}
+{"cmd": "<closed>", "result": "closed", "session": 57, "t": 28794.279594}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 58, "t": 28794.332577}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 58, "t": 28794.425225}
+{"cmd": "PASS pass", "result": "+OK", "session": 58, "t": 28794.517252}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 58, "t": 28794.609184}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 58, "t": 28794.660481}
+{"cmd": "<closed>", "result": "closed", "session": 58, "t": 28794.660647}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 59, "t": 28794.713285}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 59, "t": 28794.806217}
+{"cmd": "PASS pass", "result": "+OK", "session": 59, "t": 28794.857606}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 59, "t": 28794.95016}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 59, "t": 28795.042232}
+{"cmd": "<closed>", "result": "closed", "session": 59, "t": 28795.093713}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 60, "t": 28795.146646}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 60, "t": 28795.198021}
+{"cmd": "PASS pass", "result": "+OK", "session": 60, "t": 28795.249356}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 60, "t": 28795.300846}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 60, "t": 28795.393191}
+{"cmd": "<closed>", "result": "closed", "session": 60, "t": 28795.44479}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 61, "t": 28795.497751}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 61, "t": 28795.590209}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 61, "t": 28795.590364}
+{"cmd": "PASS pass", "result": "+OK", "session": 61, "t": 28795.682232}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 61, "t": 28795.733168}
+{"cmd": "<closed>", "result": "closed", "session": 61, "t": 28795.743521}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 62, "t": 28795.796299}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 62, "t": 28795.889185}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 62, "t": 28795.940583}
+{"cmd": "PASS pass", "result": "+OK", "session": 62, "t": 28795.940721}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 62, "t": 28796.032159}
+{"cmd": "<closed>", "result": "closed", "session": 62, "t": 28796.042511}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 63, "t": 28796.095266}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 63, "t": 28796.188221}
+{"cmd": "PASS pass", "result": "+OK", "session": 63, "t": 28796.281155}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 63, "t": 28796.281288}
+{"cmd": "PASS pass", "result": "+OK", "session": 63, "t": 28796.332647}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 63, "t": 28796.424243}
+{"cmd": "<closed>", "result": "closed", "session": 63, "t": 28796.43464}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 64, "t": 28796.487557}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 64, "t": 28796.580238}
+{"cmd": "PASS pass", "result": "+OK", "session": 64, "t": 28796.673145}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 64, "t": 28796.766306}
+{"cmd": "PASS pass", "result": "+OK", "session": 64, "t": 28796.766525}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 64, "t": 28796.81819}
+{"cmd": "<closed>", "result": "closed", "session": 64, "t": 28796.868862}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 65, "t": 28796.921827}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 65, "t": 28797.015235}
+{"cmd": "PASS pass", "result": "+OK", "session": 65, "t": 28797.107212}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 65, "t": 28797.158741}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 65, "t": 28797.15892}
+{"cmd": "PASS pass", "result": "+OK", "session": 65, "t": 28797.250167}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 65, "t": 28797.301226}
+{"cmd": "<closed>", "result": "closed", "session": 65, "t": 28797.31191}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 66, "t": 28797.365257}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 66, "t": 28797.457215}
+{"cmd": "PASS pass", "result": "+OK", "session": 66, "t": 28797.50904}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 66, "t": 28797.560572}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 66, "t": 28797.612219}
+{"cmd": "PASS pass", "result": "+OK", "session": 66, "t": 28797.612369}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 66, "t": 28797.663885}
+{"cmd": "<closed>", "result": "closed", "session": 66, "t": 28797.71561}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 67, "t": 28797.769213}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 67, "t": 28797.86227}
+{"cmd": "PASS pass", "result": "+OK", "session": 67, "t": 28797.955226}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 67, "t": 28798.006695}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 67, "t": 28798.098181}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 67, "t": 28798.098343}
+{"cmd": "<closed>", "result": "closed", "session": 67, "t": 28798.149914}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 68, "t": 28798.203353}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 68, "t": 28798.255077}
+{"cmd": "PASS pass", "result": "+OK", "session": 68, "t": 28798.306536}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 68, "t": 28798.358305}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 68, "t": 28798.409968}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 68, "t": 28798.46132}
+{"cmd": "<closed>", "result": "closed", "session": 68, "t": 28798.461465}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 69, "t": 28798.5144}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 69, "t": 28798.607129}
+{"cmd": "PASS pass", "result": "+OK", "session": 69, "t": 28798.699167}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 69, "t": 28798.752599}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 69, "t": 28798.804459}
+{"cmd": "<closed>", "result": "closed", "session": 69, "t": 28798.855899}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 70, "t": 28798.908674}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 70, "t": 28799.001143}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 70, "t": 28799.001282}
+{"cmd": "<closed>", "result": "closed", "session": 70, "t": 28799.053168}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 71, "t": 28799.105038}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 71, "t": 28799.156544}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 71, "t": 28799.20834}
+{"cmd": "<closed>", "result": "closed", "session": 71, "t": 28799.208584}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 72, "t": 28799.261917}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 72, "t": 28799.313606}
+{"cmd": "PASS pass", "result": "+OK", "session": 72, "t": 28799.36529}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 72, "t": 28799.365492}
+{"cmd": "<closed>", "result": "closed", "session": 72, "t": 28799.417443}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 73, "t": 28799.47072}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 73, "t": 28799.522337}
+{"cmd": "PASS pass", "result": "+OK", "session": 73, "t": 28799.5732}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 73, "t": 28799.625116}
+{"cmd": "<closed>", "result": "closed", "session": 73, "t": 28799.625378}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 74, "t": 28799.678733}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 74, "t": 28799.730438}
+{"cmd": "PASS pass", "result": "+OK", "session": 74, "t": 28799.782067}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 74, "t": 28799.833741}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 74, "t": 28799.833938}
+{"cmd": "<closed>", "result": "closed", "session": 74, "t": 28799.885725}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 75, "t": 28799.93895}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 75, "t": 28799.990556}
+{"cmd": "PASS pass", "result": "+OK", "session": 75, "t": 28800.041892}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 75, "t": 28800.092311}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 75, "t": 28800.143772}
+{"cmd": "<closed>", "result": "closed", "session": 75, "t": 28800.143963}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 76, "t": 28800.196803}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 76, "t": 28800.248354}
+{"cmd": "PASS pass", "result": "+OK", "session": 76, "t": 28800.299944}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 76, "t": 28800.350594}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 76, "t": 28800.402203}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 76, "t": 28800.402342}
+{"cmd": "<closed>", "result": "closed", "session": 76, "t": 28800.453726}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 77, "t": 28800.507061}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 77, "t": 28800.55859}
+{"cmd": "PASS pass", "result": "+OK", "session": 77, "t": 28800.610229}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 77, "t": 28800.66179}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 77, "t": 28800.71356}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 77, "t": 28800.765111}
+{"cmd": "<closed>", "result": "closed", "session": 77, "t": 28800.765357}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 78, "t": 28800.818544}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 78, "t": 28800.870075}
+{"cmd": "PASS pass", "result": "+OK", "session": 78, "t": 28800.962219}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 78, "t": 28801.013495}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 78, "t": 28801.106375}
+{"cmd": "STAT", "result": "+OK", "session": 78, "t": 28801.15737}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 78, "t": 28801.208762}
+{"cmd": "<closed>", "result": "closed", "session": 78, "t": 28801.260761}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 79, "t": 28801.314016}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 79, "t": 28801.365635}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 79, "t": 28801.366103}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 79, "t": 28801.416647}
+{"cmd": "<closed>", "result": "closed", "session": 79, "t": 28801.468507}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 80, "t": 28801.521406}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 80, "t": 28801.573341}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 80, "t": 28801.666142}
+{"cmd": "<closed>", "result": "closed", "session": 80, "t": 28801.717808}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 81, "t": 28801.770687}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 81, "t": 28801.822866}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 81, "t": 28801.874429}
+{"cmd": "<closed>", "result": "closed", "session": 81, "t": 28801.926277}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 82, "t": 28801.978987}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 82, "t": 28802.07224}
+{"cmd": "PASS pass", "result": "+OK", "session": 82, "t": 28802.164188}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 82, "t": 28802.257174}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 82, "t": 28802.308502}
+{"cmd": "STAT", "result": "+OK", "session": 82, "t": 28802.401329}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 82, "t": 28802.4942}
+{"cmd": "<closed>", "result": "closed", "session": 82, "t": 28802.545892}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 83, "t": 28802.598786}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 83, "t": 28802.691274}
+{"cmd": "PASS pass", "result": "+OK", "session": 83, "t": 28802.784331}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 83, "t": 28802.835719}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 83, "t": 28802.887263}
+{"cmd": "STAT", "result": "+OK", "session": 83, "t": 28802.93927}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 83, "t": 28802.990737}
+{"cmd": "<closed>", "result": "closed", "session": 83, "t": 28803.042811}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 84, "t": 28803.095953}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 84, "t": 28803.14637}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 84, "t": 28803.198228}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 84, "t": 28803.240119}
+{"cmd": "<closed>", "result": "closed", "session": 84, "t": 28803.249921}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 85, "t": 28803.30304}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 85, "t": 28803.395235}
+{"cmd": "PASS pass", "result": "+OK", "session": 85, "t": 28803.487345}
+{"cmd": "STAT", "result": "+OK", "session": 85, "t": 28803.487555}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 85, "t": 28803.580244}
+{"cmd": "<closed>", "result": "closed", "session": 85, "t": 28803.590204}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 86, "t": 28803.643853}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 86, "t": 28803.736223}
+{"cmd": "PASS pass", "result": "+OK", "session": 86, "t": 28803.828226}
+{"cmd": "STAT", "result": "+OK", "session": 86, "t": 28803.921202}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 86, "t": 28803.921337}
+{"cmd": "<closed>", "result": "closed", "session": 86, "t": 28803.973229}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 87, "t": 28804.026405}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 87, "t": 28804.07792}
+{"cmd": "PASS pass", "result": "+OK", "session": 87, "t": 28804.171181}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 87, "t": 28804.26324}
+{"cmd": "STAT", "result": "+OK", "session": 87, "t": 28804.263398}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 87, "t": 28804.355255}
+{"cmd": "<closed>", "result": "closed", "session": 87, "t": 28804.367689}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 88, "t": 28804.420896}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 88, "t": 28804.51323}
+{"cmd": "PASS pass", "result": "+OK", "session": 88, "t": 28804.605275}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 88, "t": 28804.6984}
+{"cmd": "STAT", "result": "+OK", "session": 88, "t": 28804.750455}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 88, "t": 28804.750593}
+{"cmd": "<closed>", "result": "closed", "session": 88, "t": 28804.802565}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 89, "t": 28804.855848}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 89, "t": 28804.948255}
+{"cmd": "PASS pass", "result": "+OK", "session": 89, "t": 28805.041192}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 89, "t": 28805.13436}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 89, "t": 28805.226267}
+{"cmd": "STAT", "result": "+OK", "session": 89, "t": 28805.226423}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 89, "t": 28805.277985}
+{"cmd": "<closed>", "result": "closed", "session": 89, "t": 28805.32898}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 90, "t": 28805.381817}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 90, "t": 28805.474155}
+{"cmd": "PASS pass", "result": "+OK", "session": 90, "t": 28805.525723}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 90, "t": 28805.617326}
+{"cmd": "STAT", "result": "+OK", "session": 90, "t": 28805.711185}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 90, "t": 28805.762547}
+{"cmd": "<closed>", "result": "closed", "session": 90, "t": 28805.814266}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 91, "t": 28805.867302}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 91, "t": 28805.960207}
+{"cmd": "PASS pass", "result": "+OK", "session": 91, "t": 28806.05221}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 91, "t": 28806.103642}
+{"cmd": "STAT", "result": "+OK", "session": 91, "t": 28806.197196}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 91, "t": 28806.248651}
+{"cmd": "<closed>", "result": "closed", "session": 91, "t": 28806.300455}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 92, "t": 28806.353428}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 92, "t": 28806.446167}
+{"cmd": "PASS pass", "result": "+OK", "session": 92, "t": 28806.538168}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 92, "t": 28806.630231}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 92, "t": 28806.72222}
+{"cmd": "STAT", "result": "+OK", "session": 92, "t": 28806.815165}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 92, "t": 28806.908236}
+{"cmd": "<closed>", "result": "closed", "session": 92, "t": 28806.96044}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 93, "t": 28807.013753}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 93, "t": 28807.10623}
+{"cmd": "PASS pass", "result": "+OK", "session": 93, "t": 28807.199254}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 93, "t": 28807.250723}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 93, "t": 28807.302258}
+{"cmd": "STAT", "result": "+OK", "session": 93, "t": 28807.354181}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 93, "t": 28807.446283}
+{"cmd": "<closed>", "result": "closed", "session": 93, "t": 28807.498515}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 94, "t": 28807.551638}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 94, "t": 28807.644292}
+{"cmd": "PASS pass", "result": "+OK", "session": 94, "t": 28807.736429}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 94, "t": 28807.828195}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 94, "t": 28807.920149}
+{"cmd": "STAT", "result": "+OK", "session": 94, "t": 28808.013161}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 94, "t": 28808.013291}
+{"cmd": "<closed>", "result": "closed", "session": 94, "t": 28808.065814}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 95, "t": 28808.124206}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 95, "t": 28808.2163}
+{"cmd": "PASS pass", "result": "+OK", "session": 95, "t": 28808.30834}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 95, "t": 28808.400264}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 95, "t": 28808.451677}
+{"cmd": "<closed>", "result": "closed", "session": 95, "t": 28808.503114}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 96, "t": 28808.556253}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 96, "t": 28808.608148}
+{"cmd": "<closed>", "result": "closed", "session": 96, "t": 28808.608612}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 97, "t": 28808.661311}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 97, "t": 28808.754221}
+{"cmd": "<closed>", "result": "closed", "session": 97, "t": 28808.805713}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 98, "t": 28808.859706}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 98, "t": 28808.952255}
+{"cmd": "PASS pass", "result": "+OK", "session": 98, "t": 28809.003766}
+{"cmd": "<closed>", "result": "closed", "session": 98, "t": 28809.003954}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 99, "t": 28809.056755}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 99, "t": 28809.14927}
+{"cmd": "PASS pass", "result": "+OK", "session": 99, "t": 28809.200788}
+{"cmd": "<closed>", "result": "closed", "session": 99, "t": 28809.252307}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 100, "t": 28809.305363}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 100, "t": 28809.397234}
+{"cmd": "PASS pass", "result": "+OK", "session": 100, "t": 28809.490178}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 100, "t": 28809.54191}
+{"cmd": "<closed>", "result": "closed", "session": 100, "t": 28809.542266}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 101, "t": 28809.59548}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 101, "t": 28809.68821}
+{"cmd": "PASS pass", "result": "+OK", "session": 101, "t": 28809.781214}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 101, "t": 28809.874269}
+{"cmd": "<closed>", "result": "closed", "session": 101, "t": 28809.92609}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 102, "t": 28809.979681}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 102, "t": 28810.031401}
+{"cmd": "PASS pass", "result": "+OK", "session": 102, "t": 28810.082842}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 102, "t": 28810.134348}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 102, "t": 28810.18469}
+{"cmd": "<closed>", "result": "closed", "session": 102, "t": 28810.184896}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 103, "t": 28810.238238}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 103, "t": 28810.289684}
+{"cmd": "PASS pass", "result": "+OK", "session": 103, "t": 28810.34135}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 103, "t": 28810.392946}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 103, "t": 28810.444683}
+{"cmd": "<closed>", "result": "closed", "session": 103, "t": 28810.49633}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 104, "t": 28810.549352}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 104, "t": 28810.601103}
+{"cmd": "PASS pass", "result": "+OK", "session": 104, "t": 28810.652771}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 104, "t": 28810.704256}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 104, "t": 28810.755654}
+{"cmd": "<closed>", "result": "closed", "session": 104, "t": 28810.807065}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 105, "t": 28810.859873}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 105, "t": 28810.952248}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 105, "t": 28810.952395}
+{"cmd": "PASS pass", "result": "+OK", "session": 105, "t": 28811.00396}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 105, "t": 28811.097166}
+{"cmd": "<closed>", "result": "closed", "session": 105, "t": 28811.105464}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 106, "t": 28811.15836}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 106, "t": 28811.251283}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 106, "t": 28811.344245}
+{"cmd": "PASS pass", "result": "+OK", "session": 106, "t": 28811.344364}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 106, "t": 28811.395936}
+{"cmd": "<closed>", "result": "closed", "session": 106, "t": 28811.447438}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 107, "t": 28811.50022}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 107, "t": 28811.551642}
+{"cmd": "PASS pass", "result": "+OK", "session": 107, "t": 28811.603081}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 107, "t": 28811.603244}
+{"cmd": "PASS pass", "result": "+OK", "session": 107, "t": 28811.653869}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 107, "t": 28811.705325}
+{"cmd": "<closed>", "result": "closed", "session": 107, "t": 28811.757146}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 108, "t": 28811.810663}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 108, "t": 28811.862048}
+{"cmd": "PASS pass", "result": "+OK", "session": 108, "t": 28811.955192}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 108, "t": 28812.048172}
+{"cmd": "PASS pass", "result": "+OK", "session": 108, "t": 28812.048307}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 108, "t": 28812.139178}
+{"cmd": "<closed>", "result": "closed", "session": 108, "t": 28812.150606}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 109, "t": 28812.203349}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 109, "t": 28812.296148}
+{"cmd": "PASS pass", "result": "+OK", "session": 109, "t": 28812.347608}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 109, "t": 28812.440143}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 109, "t": 28812.440283}
+{"cmd": "PASS pass", "result": "+OK", "session": 109, "t": 28812.491769}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 109, "t": 28812.542255}
+{"cmd": "<closed>", "result": "closed", "session": 109, "t": 28812.593794}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 110, "t": 28812.646795}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 110, "t": 28812.739283}
+{"cmd": "PASS pass", "result": "+OK", "session": 110, "t": 28812.832247}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 110, "t": 28812.925353}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 110, "t": 28813.017214}
+{"cmd": "PASS pass", "result": "+OK", "session": 110, "t": 28813.017491}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 110, "t": 28813.109174}
+{"cmd": "<closed>", "result": "closed", "session": 110, "t": 28813.119678}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 111, "t": 28813.172995}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 111, "t": 28813.266419}
+{"cmd": "PASS pass", "result": "+OK", "session": 111, "t": 28813.317964}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 111, "t": 28813.36931}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 111, "t": 28813.420833}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 111, "t": 28813.421006}
+{"cmd": "<closed>", "result": "closed", "session": 111, "t": 28813.472549}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 112, "t": 28813.525614}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 112, "t": 28813.616299}
+{"cmd": "PASS pass", "result": "+OK", "session": 112, "t": 28813.708196}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 112, "t": 28813.800288}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 112, "t": 28813.892317}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 112, "t": 28813.944034}
+{"cmd": "<closed>", "result": "closed", "session": 112, "t": 28813.944193}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 113, "t": 28813.996929}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 113, "t": 28814.048392}
+{"cmd": "PASS pass", "result": "+OK", "session": 113, "t": 28814.141197}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 113, "t": 28814.234325}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 113, "t": 28814.2861}
+{"cmd": "<closed>", "result": "closed", "session": 113, "t": 28814.337614}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 114, "t": 28814.390836}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 114, "t": 28814.484403}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 114, "t": 28814.4846}
+{"cmd": "<closed>", "result": "closed", "session": 114, "t": 28814.536411}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 115, "t": 28814.589331}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 115, "t": 28814.682249}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 115, "t": 28814.733937}
+{"cmd": "<closed>", "result": "closed", "session": 115, "t": 28814.734119}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 116, "t": 28814.787413}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 116, "t": 28814.839016}
+{"cmd": "PASS pass", "result": "+OK", "session": 116, "t": 28814.932337}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 116, "t": 28814.932454}
+{"cmd": "<closed>", "result": "closed", "session": 116, "t": 28814.98395}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 117, "t": 28815.037145}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 117, "t": 28815.088823}
+{"cmd": "PASS pass", "result": "+OK", "session": 117, "t": 28815.140335}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 117, "t": 28815.19188}
+{"cmd": "<closed>", "result": "closed", "session": 117, "t": 28815.192104}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 118, "t": 28815.244907}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 118, "t": 28815.3378}
+{"cmd": "PASS pass", "result": "+OK", "session": 118, "t": 28815.431326}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 118, "t": 28815.524236}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 118, "t": 28815.524407}
+{"cmd": "<closed>", "result": "closed", "session": 118, "t": 28815.575853}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 119, "t": 28815.629343}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 119, "t": 28815.721186}
+{"cmd": "PASS pass", "result": "+OK", "session": 119, "t": 28815.772553}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 119, "t": 28815.864533}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 119, "t": 28815.916589}
+{"cmd": "<closed>", "result": "closed", "session": 119, "t": 28815.916965}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 120, "t": 28815.969618}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 120, "t": 28816.062248}
+{"cmd": "PASS pass", "result": "+OK", "session": 120, "t": 28816.155126}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 120, "t": 28816.206953}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 120, "t": 28816.299223}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 120, "t": 28816.299441}
+{"cmd": "<closed>", "result": "closed", "session": 120, "t": 28816.351311}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 121, "t": 28816.404365}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 121, "t": 28816.497255}
+{"cmd": "PASS pass", "result": "+OK", "session": 121, "t": 28816.58923}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 121, "t": 28816.681265}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 121, "t": 28816.77436}
+{"cmd": "<closed>", "result": "closed", "session": 121, "t": 28816.826197}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 122, "t": 28816.879356}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 122, "t": 28816.930857}
+{"cmd": "PASS pass", "result": "+OK", "session": 122, "t": 28816.982195}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 122, "t": 28817.074241}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 122, "t": 28817.125736}
+{"cmd": "STAT", "result": "+OK", "session": 122, "t": 28817.177445}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 122, "t": 28817.227936}
+{"cmd": "<closed>", "result": "closed", "session": 122, "t": 28817.280059}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 123, "t": 28817.333058}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 123, "t": 28817.425207}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 123, "t": 28817.42536}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 123, "t": 28817.517232}
+{"cmd": "<closed>", "result": "closed", "session": 123, "t": 28817.526919}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 124, "t": 28817.580101}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 124, "t": 28817.672264}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 124, "t": 28817.765129}
+{"cmd": "<closed>", "result": "closed", "session": 124, "t": 28817.816963}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 125, "t": 28817.869909}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 125, "t": 28817.962208}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 125, "t": 28818.05422}
+{"cmd": "<closed>", "result": "closed", "session": 125, "t": 28818.106552}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 126, "t": 28818.159958}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 126, "t": 28818.252368}
+{"cmd": "PASS pass", "result": "+OK", "session": 126, "t": 28818.344209}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 126, "t": 28818.437184}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 126, "t": 28818.52921}
+{"cmd": "STAT", "result": "+OK", "session": 126, "t": 28818.621365}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 126, "t": 28818.713328}
+{"cmd": "<closed>", "result": "closed", "session": 126, "t": 28818.765427}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 127, "t": 28818.818453}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 127, "t": 28818.910202}
+{"cmd": "PASS pass", "result": "+OK", "session": 127, "t": 28819.002232}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 127, "t": 28819.095149}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 127, "t": 28819.146558}
+{"cmd": "STAT", "result": "+OK", "session": 127, "t": 28819.238328}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 127, "t": 28819.330313}
+{"cmd": "<closed>", "result": "closed", "session": 127, "t": 28819.382825}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 128, "t": 28819.436012}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 128, "t": 28819.528217}
+{"cmd": "STAT", "result": "-ERR not authenticated", "session": 128, "t": 28819.621224}
+{"cmd": "RETR 1", "result": "-ERR not authenticated", "session": 128, "t": 28819.621393}
+{"cmd": "<closed>", "result": "closed", "session": 128, "t": 28819.673915}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 129, "t": 28819.727676}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 129, "t": 28819.779249}
+{"cmd": "PASS pass", "result": "+OK", "session": 129, "t": 28819.871213}
+{"cmd": "STAT", "result": "+OK", "session": 129, "t": 28819.871376}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 129, "t": 28819.963423}
+{"cmd": "<closed>", "result": "closed", "session": 129, "t": 28819.973051}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 130, "t": 28820.026489}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 130, "t": 28820.117389}
+{"cmd": "PASS pass", "result": "+OK", "session": 130, "t": 28820.209346}
+{"cmd": "STAT", "result": "+OK", "session": 130, "t": 28820.260441}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 130, "t": 28820.302183}
+{"cmd": "<closed>", "result": "closed", "session": 130, "t": 28820.311927}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 131, "t": 28820.365401}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 131, "t": 28820.457311}
+{"cmd": "PASS pass", "result": "+OK", "session": 131, "t": 28820.550325}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 131, "t": 28820.602025}
+{"cmd": "STAT", "result": "+OK", "session": 131, "t": 28820.643228}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 131, "t": 28820.695179}
+{"cmd": "<closed>", "result": "closed", "session": 131, "t": 28820.705965}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 132, "t": 28820.7592}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 132, "t": 28820.810835}
+{"cmd": "PASS pass", "result": "+OK", "session": 132, "t": 28820.903153}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 132, "t": 28820.954489}
+{"cmd": "STAT", "result": "+OK", "session": 132, "t": 28821.006821}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 132, "t": 28821.006941}
+{"cmd": "<closed>", "result": "closed", "session": 132, "t": 28821.058784}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 133, "t": 28821.111649}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 133, "t": 28821.163265}
+{"cmd": "PASS pass", "result": "+OK", "session": 133, "t": 28821.214871}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 133, "t": 28821.308209}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 133, "t": 28821.359763}
+{"cmd": "STAT", "result": "+OK", "session": 133, "t": 28821.360363}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 133, "t": 28821.410968}
+{"cmd": "<closed>", "result": "closed", "session": 133, "t": 28821.461903}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 134, "t": 28821.515356}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 134, "t": 28821.56671}
+{"cmd": "PASS pass", "result": "+OK", "session": 134, "t": 28821.618191}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 134, "t": 28821.66974}
+{"cmd": "STAT", "result": "+OK", "session": 134, "t": 28821.721988}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 134, "t": 28821.773468}
+{"cmd": "<closed>", "result": "closed", "session": 134, "t": 28821.825866}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 135, "t": 28821.879131}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 135, "t": 28821.929716}
+{"cmd": "PASS pass", "result": "+OK", "session": 135, "t": 28822.022226}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 135, "t": 28822.073804}
+{"cmd": "STAT", "result": "+OK", "session": 135, "t": 28822.125643}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 135, "t": 28822.218261}
+{"cmd": "<closed>", "result": "closed", "session": 135, "t": 28822.27014}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 136, "t": 28822.321909}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 136, "t": 28822.414193}
+{"cmd": "PASS pass", "result": "+OK", "session": 136, "t": 28822.506184}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 136, "t": 28822.597208}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 136, "t": 28822.688192}
+{"cmd": "STAT", "result": "+OK", "session": 136, "t": 28822.739124}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 136, "t": 28822.831201}
+{"cmd": "<closed>", "result": "closed", "session": 136, "t": 28822.882035}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 137, "t": 28822.934893}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 137, "t": 28823.028209}
+{"cmd": "PASS pass", "result": "+OK", "session": 137, "t": 28823.121208}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 137, "t": 28823.172623}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 137, "t": 28823.26519}
+{"cmd": "STAT", "result": "+OK", "session": 137, "t": 28823.317298}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 137, "t": 28823.368646}
+{"cmd": "<closed>", "result": "closed", "session": 137, "t": 28823.42042}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 138, "t": 28823.473291}
+{"cmd": "USER popuser@example.com", "result": "+OK", "session": 138, "t": 28823.566106}
+{"cmd": "PASS pass", "result": "+OK", "session": 138, "t": 28823.617611}
+{"cmd": "CAPA", "result": "+OK capabilities", "session": 138, "t": 28823.668119}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 138, "t": 28823.719576}
+{"cmd": "STAT", "result": "+OK", "session": 138, "t": 28823.770506}
+{"cmd": "RETR 1", "result": "+OK 159 octets", "session": 138, "t": 28823.770636}
+{"cmd": "<closed>", "result": "closed", "session": 138, "t": 28823.821818}

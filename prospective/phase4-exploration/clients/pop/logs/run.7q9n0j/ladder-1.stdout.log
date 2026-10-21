@@ -1,0 +1,33 @@
+=== POP LADDER REPETITION 1 START (run pop-524622-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms
+POP-TARGET-1 B1 run=1 login_cancelled=true
+POP-SNAPSHOT run=1 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:37922/32/75]
+POP-TARGET-1 B1 run=1 login_cancelled=true
+POP-SNAPSHOT run=1 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:60102/32/80]
+POP-TARGET-1 B1 run=1 login_cancelled=true
+POP-SNAPSHOT run=1 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:33938/32/80]
+LADDER B1 LOGIN_RETR [pop]: plans=6 violations=3 unrealized=2 unsettled=0 baseline_errors=1 exhaustive=true baseline_targets=1
+LADDER-ERROR B1 LOGIN_RETR [pop]: scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B1 LOGIN_RETR [pop] plan=#0@2:AfterWake cancelled=1 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B1 LOGIN_RETR [pop] plan=#0@3:Immediate cancelled=0 verdict=None detail=scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B1 LOGIN_RETR [pop] plan=#0@3:AfterWake cancelled=0 verdict=None detail=scenario did not finish within 20s (liveness)
+POP-TARGET-1 B2 run=1 login_cancelled=true
+POP-SNAPSHOT run=1 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:48694/6/75]
+B2-RESULT run=1 login_cancelled=true retr_cancelled=false retry=Err("B2 retry login timed out after 2s")
+POP-SNAPSHOT run=1 stage=after_retry proxy_connections=1 conn=[127.0.0.1:48694/58/85]
+POP-TARGET-1 B2 run=1 login_cancelled=true
+POP-SNAPSHOT run=1 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:52374/32/80]
+B2-RESULT run=1 login_cancelled=true retr_cancelled=false retry=Ok(())
+POP-SNAPSHOT run=1 stage=after_retry proxy_connections=1 conn=[127.0.0.1:52374/75/101]
+POP-TARGET-1 B2 run=1 login_cancelled=true
+POP-SNAPSHOT run=1 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:42856/32/80]
+B2-RESULT run=1 login_cancelled=true retr_cancelled=false retry=Ok(())
+POP-SNAPSHOT run=1 stage=after_retry proxy_connections=1 conn=[127.0.0.1:42856/75/101]
+POP-TARGET-1 B2 run=1 login_cancelled=true
+POP-SNAPSHOT run=1 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:52526/32/80]
+B2-RESULT run=1 login_cancelled=true retr_cancelled=false retry=Err("B2 retry login timed out after 2s")
+POP-SNAPSHOT run=1 stage=after_retry proxy_connections=1 conn=[127.0.0.1:52526/58/80]
+LADDER B2 LOGIN_RETR [pop]: plans=4 violations=2 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=true baseline_targets=1
+LADDER-ERROR B2 LOGIN_RETR [pop]: scenario did not finish within 20s (liveness)
+LADDER-VIOLATION B2 LOGIN_RETR [pop] plan=#0@1:Immediate cancelled=1 verdict=None detail=B2 same operation failed after cancellation: B2 retry login timed out after 2s
+LADDER-VIOLATION B2 LOGIN_RETR [pop] plan=#0@2:AfterWake cancelled=1 verdict=None detail=B2 same operation failed after cancellation: B2 retry login timed out after 2s

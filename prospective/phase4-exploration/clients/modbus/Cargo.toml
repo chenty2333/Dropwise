@@ -1,0 +1,14 @@
+[package]
+name = "p4e-modbus"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dropwise = { path = "../../../..", features = ["net"] }
+tokio-modbus = { version = "=0.17.0", default-features = false, features = ["tcp"] }
+tokio = { version = "1.40", features = ["macros", "net", "rt", "rt-multi-thread", "time"] }
+
+[[bin]]
+name = "modbus-ladder"
+path = "src/main.rs"

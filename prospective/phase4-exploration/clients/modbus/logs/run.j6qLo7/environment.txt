@@ -1,0 +1,11 @@
+date=2026-10-21T22:43:39+09:00
+repo=/home/ava/Desktop/Dropwise
+server=standalone python3 asyncio Modbus TCP (public MBAP), pid=517068, 127.0.0.1:35031
+server_delay_ms=0
+client=tokio-modbus 0.17.0 (direct client::Context)
+tokio=1.54.0 dropwise=path:/home/ava/Desktop/Dropwise
+proxy=dropwise::net::Proxy reply_delay=50ms
+config=max_runs=64 races=Immediate,AfterWake max_cancellations=1 scenario_timeout=20s settle=0/0 workers=1
+python=Python 3.14.8
+cargo 1.98.0 (797e8a9bc 2026-08-05)
+rustc 1.98.0 (88d9e12ae 2026-08-18)

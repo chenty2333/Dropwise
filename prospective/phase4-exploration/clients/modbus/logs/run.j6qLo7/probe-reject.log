@@ -1,0 +1,1 @@
+PROBE-REJECT out_of_range=Err("modbus exception IllegalDataAddress") normal_after=Ok([100, 0]) write=Ok(()) after_reconnect=Ok([100, 7])

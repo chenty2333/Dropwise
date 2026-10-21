@@ -1,0 +1,60 @@
+=== MODBUS LADDER REPETITION 3 START (run modbus-517371-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms server_reply_delay=0ms
+MODBUS-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:33534/12/11]
+B1-TARGET run=3 result=Ok(())
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:33534/24/23]
+MODBUS-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:36800/12/11]
+B1-TARGET run=3 result=cancelled
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:36800/12/11]
+MODBUS-SNAPSHOT run=3 stage=after_setup proxy_connections=1 conn=[127.0.0.1:33684/12/11]
+B1-TARGET run=3 result=cancelled
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:33684/24/23]
+LADDER B1 WRITE_REG [modbus]: plans=2 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+B2-TARGET run=3 baseline completed
+B2-RESULT run=3 retry=Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))")
+MODBUS-SNAPSHOT run=3 stage=after_retry proxy_connections=1 conn=[127.0.0.1:59198/36/23]
+B2-RESULT run=3 retry=Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))")
+MODBUS-SNAPSHOT run=3 stage=after_retry proxy_connections=1 conn=[127.0.0.1:60604/36/23]
+LADDER B2 WRITE_REG [modbus]: plans=2 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B2 WRITE_REG [modbus] plan=#0@1:Immediate cancelled=1 verdict=None detail=B2 same write failed after cancellation: mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))
+LADDER-VIOLATION B2 WRITE_REG [modbus] plan=#0@1:AfterWake cancelled=1 verdict=None detail=B2 same write failed after cancellation: mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))
+B3-TARGET run=3 baseline completed
+B3-RESULT run=3 read=Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))")
+MODBUS-SNAPSHOT run=3 stage=after_read proxy_connections=1 conn=[127.0.0.1:45002/36/23]
+B3-RESULT run=3 read=Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))")
+MODBUS-SNAPSHOT run=3 stage=after_read proxy_connections=1 conn=[127.0.0.1:50950/36/23]
+LADDER B3 READ_REGS [modbus]: plans=2 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1
+LADDER-VIOLATION B3 READ_REGS [modbus] plan=#0@1:Immediate cancelled=1 verdict=None detail=B3 different read failed after cancellation: mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))
+LADDER-VIOLATION B3 READ_REGS [modbus] plan=#0@1:AfterWake cancelled=1 verdict=None detail=B3 different read failed after cancellation: mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:39538/24/23]
+M1-TARGET run=3 cancelled=false
+MODBUS-SNAPSHOT run=3 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:39538/36/35]
+MODBUS-OBS run=3 before=Ok([100, 1]) write=Ok(()) own=Ok([100, 7]) visible=Ok([100, 7])
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:34466/12/11]
+M1-TARGET run=3 cancelled=true
+MODBUS-SNAPSHOT run=3 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:34466/36/23]
+MODBUS-OBS run=3 before=Ok([100, 0]) write=Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))") own=Err("mismatching headers: expected/request = Header { transaction_id: 3, unit_id: 255 }, actual/response = Header { transaction_id: 2, unit_id: 255 } Ok(WriteSingleRegister(1, 7))") visible=Ok([100, 7])
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:42094/12/11]
+M1-TARGET run=3 cancelled=true
+MODBUS-SNAPSHOT run=3 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:42094/24/23]
+MODBUS-OBS run=3 before=Ok([100, 0]) write=Ok(()) own=Ok([100, 7]) visible=Ok([100, 7])
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:39198/12/11]
+M1-TARGET run=3 cancelled=true
+MODBUS-SNAPSHOT run=3 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:39198/24/23]
+MODBUS-OBS run=3 before=Ok([100, 0]) write=Ok(()) own=Ok([100, 7]) visible=Ok([100, 7])
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:43342/24/23]
+M1-TARGET run=3 cancelled=false
+MODBUS-SNAPSHOT run=3 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:43342/36/35]
+MODBUS-OBS run=3 before=Ok([100, 1]) write=Ok(()) own=Ok([100, 7]) visible=Ok([100, 7])
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:60990/24/23]
+M1-TARGET run=3 cancelled=false
+MODBUS-SNAPSHOT run=3 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:60990/36/35]
+MODBUS-OBS run=3 before=Ok([100, 1]) write=Ok(()) own=Ok([100, 7]) visible=Ok([100, 7])
+MODBUS-SNAPSHOT run=3 stage=after_target proxy_connections=1 conn=[127.0.0.1:38150/24/23]
+M1-TARGET run=3 cancelled=true
+MODBUS-SNAPSHOT run=3 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:38150/24/23]
+MODBUS-OBS run=3 before=Ok([100, 1]) write=Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))") own=Err("mismatching headers: expected/request = Header { transaction_id: 3, unit_id: 255 }, actual/response = Header { transaction_id: 2, unit_id: 255 } Ok(WriteSingleRegister(1, 7))") visible=Ok([100, 7])
+LADDER M1 WRITE_REG [modbus]: plans=2 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=1 pre=0 post=0 mixed=0 neither=2 unknown=0
+LADDER-VIOLATION M1 WRITE_REG [modbus] plan=#0@1:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok([100, 0]), write: Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))"), own: Err("mismatching headers: expected/request = Header { transaction_id: 3, unit_id: 255 }, actual/response = Header { transaction_id: 2, unit_id: 255 } Ok(WriteSingleRegister(1, 7))"), visible: Ok([100, 7]) }, pre=Obs { before: Ok([100, 0]), write: Ok(()), own: Ok([100, 7]), visible: Ok([100, 7]) }, post=Obs { before: Ok([100, 1]), write: Ok(()), own: Ok([100, 7]), visible: Ok([100, 7]) }
+LADDER-VIOLATION M1 WRITE_REG [modbus] plan=#0@1:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok([100, 1]), write: Err("mismatching headers: expected/request = Header { transaction_id: 2, unit_id: 255 }, actual/response = Header { transaction_id: 1, unit_id: 255 } Ok(WriteSingleRegister(1, 1))"), own: Err("mismatching headers: expected/request = Header { transaction_id: 3, unit_id: 255 }, actual/response = Header { transaction_id: 2, unit_id: 255 } Ok(WriteSingleRegister(1, 7))"), visible: Ok([100, 7]) }, pre=Obs { before: Ok([100, 0]), write: Ok(()), own: Ok([100, 7]), visible: Ok([100, 7]) }, post=Obs { before: Ok([100, 1]), write: Ok(()), own: Ok([100, 7]), visible: Ok([100, 7]) }
+=== MODBUS LADDER REPETITION 3 END ===

@@ -1,0 +1,14 @@
+date=2026-10-21T22:44:52+09:00
+repo=/home/ava/Desktop/Dropwise
+container=dw-r3-pop-519764
+image=greenmail/standalone:2.1.14
+image_id=sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626
+repo_digest=greenmail/standalone@sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626
+ports=127.0.0.1:32855(smtp) 127.0.0.1:32856(pop3) 127.0.0.1:32857(rest)
+seed=python3 smtplib, subject=dw-r3-pop-seed, to=popuser@example.com, rest_count=1
+client=async-pop 1.1.3 (direct async_pop::Client<tokio TcpStream>), default-features=false runtime-tokio
+proxy=dropwise::net::Proxy reply_delay=50ms
+config=max_runs=64 races=Immediate,AfterWake max_cancellations=1 scenario_timeout=20s settle=0/0 workers=1
+python=Python 3.14.8
+cargo 1.98.0 (797e8a9bc 2026-08-05)
+rustc 1.98.0 (88d9e12ae 2026-08-18)

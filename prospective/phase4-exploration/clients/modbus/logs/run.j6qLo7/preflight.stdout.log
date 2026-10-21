@@ -1,0 +1,4 @@
+MODBUS-SNAPSHOT run=0 stage=preflight_setup proxy_connections=1 conn=[127.0.0.1:57748/12/11]
+MODBUS-SNAPSHOT run=0 stage=preflight_after proxy_connections=1 conn=[127.0.0.1:57748/48/49]
+PREFLIGHT server=127.0.0.1:35031 write=Ok(()) observer=[100, 1] own=[100, 1] second=[100, 1] proxy_connections=1
+PREFLIGHT-OK observer_effect=register1:0->1 same_handle=reused proxy_connections=1

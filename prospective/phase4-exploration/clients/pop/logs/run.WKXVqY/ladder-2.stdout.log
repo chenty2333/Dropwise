@@ -1,0 +1,214 @@
+=== POP LADDER REPETITION 2 START (run pop-527841-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms
+POP-TARGET-1 B1 run=2 login_cancelled=false
+POP-TARGET-2 B1 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:49774/57/247]
+POP-TARGET-1 B1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:42726/6/45]
+POP-TARGET-1 B1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:40542/32/50]
+POP-TARGET-1 B1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:56612/43/50]
+POP-TARGET-1 B1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:35004/43/55]
+POP-TARGET-1 B1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:43396/49/55]
+POP-TARGET-1 B1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:58268/49/69]
+POP-TARGET-1 B1 run=2 login_cancelled=false
+POP-TARGET-2 B1 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:52046/57/69]
+POP-TARGET-1 B1 run=2 login_cancelled=false
+POP-TARGET-2 B1 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:43072/57/247]
+LADDER B1 LOGIN_RETR [pop]: plans=8 violations=0 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=2
+POP-TARGET-1 B2 run=2 login_cancelled=false
+POP-TARGET-2 B2 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:52748/57/247]
+B2-TARGET run=2 baseline completed, no retry
+POP-TARGET-1 B2 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:56936/32/45]
+B2-RESULT run=2 login_cancelled=true retr_cancelled=false retry=Ok(())
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:56936/75/60]
+POP-TARGET-1 B2 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:49764/32/50]
+B2-RESULT run=2 login_cancelled=true retr_cancelled=false retry=Ok(())
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:49764/75/60]
+POP-TARGET-1 B2 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:58886/43/50]
+B2-RESULT run=2 login_cancelled=true retr_cancelled=false retry=Ok(())
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:58886/86/65]
+POP-TARGET-1 B2 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:48052/43/55]
+B2-RESULT run=2 login_cancelled=true retr_cancelled=false retry=Ok(())
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:48052/86/65]
+POP-TARGET-1 B2 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:56082/49/55]
+B2-RESULT run=2 login_cancelled=true retr_cancelled=false retry=Err("Did not received the expected user response")
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:56082/92/79]
+POP-TARGET-1 B2 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:43910/49/69]
+B2-RESULT run=2 login_cancelled=true retr_cancelled=false retry=Err("Did not received the expected user response")
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:43910/92/79]
+POP-TARGET-1 B2 run=2 login_cancelled=false
+POP-TARGET-2 B2 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:59552/57/69]
+B2-RESULT run=2 login_cancelled=false retr_cancelled=true retry=Ok(())
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:59552/65/247]
+POP-TARGET-1 B2 run=2 login_cancelled=false
+POP-TARGET-2 B2 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:47862/57/247]
+B2-RESULT run=2 login_cancelled=false retr_cancelled=true retry=Ok(())
+POP-SNAPSHOT run=2 stage=after_retry proxy_connections=1 conn=[127.0.0.1:47862/65/247]
+LADDER B2 LOGIN_RETR [pop]: plans=8 violations=2 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=2
+LADDER-VIOLATION B2 LOGIN_RETR [pop] plan=#0@3:Immediate cancelled=1 verdict=None detail=B2 same operation failed after cancellation: Did not received the expected user response
+LADDER-VIOLATION B2 LOGIN_RETR [pop] plan=#0@3:AfterWake cancelled=1 verdict=None detail=B2 same operation failed after cancellation: Did not received the expected user response
+POP-TARGET-1 B3 run=2 login_cancelled=false
+POP-TARGET-2 B3 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:56086/57/247]
+B3-TARGET run=2 baseline completed
+POP-TARGET-1 B3 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:53236/32/45]
+B3-RESULT run=2 login_cancelled=true retr_cancelled=false capa=Err("Did not received the expected capa response")
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:53236/38/50]
+POP-TARGET-1 B3 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:48496/32/50]
+B3-RESULT run=2 login_cancelled=true retr_cancelled=false capa=Err("Did not received the expected capa response")
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:48496/32/50]
+POP-TARGET-1 B3 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:49436/43/50]
+B3-RESULT run=2 login_cancelled=true retr_cancelled=false capa=Err("Did not received the expected capa response")
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:49436/49/55]
+POP-TARGET-1 B3 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:59166/43/55]
+B3-RESULT run=2 login_cancelled=true retr_cancelled=false capa=Err("Did not received the expected capa response")
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:59166/43/55]
+POP-TARGET-1 B3 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:56474/49/55]
+B3-RESULT run=2 login_cancelled=true retr_cancelled=false capa=Ok(())
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:56474/55/69]
+POP-TARGET-1 B3 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:47776/49/69]
+B3-RESULT run=2 login_cancelled=true retr_cancelled=false capa=Ok(())
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:47776/55/69]
+POP-TARGET-1 B3 run=2 login_cancelled=false
+POP-TARGET-2 B3 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:57140/49/69]
+B3-RESULT run=2 login_cancelled=false retr_cancelled=true capa=Err("Did not received the expected capa response")
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:57140/63/247]
+POP-TARGET-1 B3 run=2 login_cancelled=false
+POP-TARGET-2 B3 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:33066/57/247]
+B3-RESULT run=2 login_cancelled=false retr_cancelled=true capa=Err("Did not received the expected capa response")
+POP-SNAPSHOT run=2 stage=after_capa proxy_connections=1 conn=[127.0.0.1:33066/57/247]
+LADDER B3 CAPA [pop]: plans=8 violations=6 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=2
+LADDER-VIOLATION B3 CAPA [pop] plan=#0@1:Immediate cancelled=1 verdict=None detail=B3 different command failed after cancellation: Did not received the expected capa response
+LADDER-VIOLATION B3 CAPA [pop] plan=#0@1:AfterWake cancelled=1 verdict=None detail=B3 different command failed after cancellation: Did not received the expected capa response
+LADDER-VIOLATION B3 CAPA [pop] plan=#0@2:Immediate cancelled=1 verdict=None detail=B3 different command failed after cancellation: Did not received the expected capa response
+LADDER-VIOLATION B3 CAPA [pop] plan=#0@2:AfterWake cancelled=1 verdict=None detail=B3 different command failed after cancellation: Did not received the expected capa response
+LADDER-VIOLATION B3 CAPA [pop] plan=#1@1:Immediate cancelled=1 verdict=None detail=B3 different command failed after cancellation: Did not received the expected capa response
+LADDER-VIOLATION B3 CAPA [pop] plan=#1@1:AfterWake cancelled=1 verdict=None detail=B3 different command failed after cancellation: Did not received the expected capa response
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:60598/57/247]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:60598/63/258]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:60598/71/436]
+POP-OBS run=2 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:58254/32/45]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:58254/38/50]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:58254/46/74]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Server error") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:39236/6/45]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:39236/12/69]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:39236/20/93]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Server error") retr=Err("Server error") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:56294/6/45]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:56294/12/69]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:56294/20/93]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Server error") retr=Err("Server error") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:33380/57/247]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:33380/63/258]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:33380/71/436]
+POP-OBS run=2 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:34724/57/247]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:34724/63/258]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:34724/71/436]
+POP-OBS run=2 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:58296/32/50]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:58296/38/50]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:58296/46/74]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Server error") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:41894/43/50]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:41894/49/55]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:41894/57/66]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Did not received the expected retr response") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:43304/43/55]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:43304/49/55]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:43304/57/66]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Did not received the expected retr response") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:47848/49/55]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:47848/55/69]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:47848/63/80]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Did not received the expected retr response") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=true
+POP-SNAPSHOT run=2 stage=after_login_cut proxy_connections=1 conn=[127.0.0.1:42728/49/69]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:42728/49/69]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:42728/63/80]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Did not received the expected retr response") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:54100/55/69]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:54100/63/247]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:54100/71/258]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Did not received the expected retr response") visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:45518/49/69]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:45518/55/80]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:45518/63/258]
+POP-OBS run=2 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:44324/49/69]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:44324/55/80]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:44324/63/258]
+POP-OBS run=2 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:41260/57/247]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:41260/63/258]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:41260/71/436]
+POP-OBS run=2 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=false
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:60848/57/247]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:60848/63/258]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:60848/71/436]
+POP-OBS run=2 before=Ok((1, true)) stat=Ok("1/159") retr=Ok((157, true)) visible=Ok((1, true))
+POP-TARGET-1 M1 run=2 login_cancelled=false
+POP-TARGET-2 M1 run=2 retr_cancelled=true
+POP-SNAPSHOT run=2 stage=after_targets proxy_connections=1 conn=[127.0.0.1:59438/57/247]
+POP-SNAPSHOT run=2 stage=after_stat proxy_connections=1 conn=[127.0.0.1:59438/63/247]
+POP-SNAPSHOT run=2 stage=after_retr proxy_connections=1 conn=[127.0.0.1:59438/71/258]
+POP-OBS run=2 before=Ok((1, true)) stat=Err("Did not received the expected stat response") retr=Err("Did not received the expected retr response") visible=Ok((1, true))
+LADDER M1 LOGIN_RETR [pop]: plans=8 violations=8 unrealized=0 unsettled=0 baseline_errors=0 exhaustive=true baseline_targets=2 pre=0 post=0 mixed=0 neither=8 unknown=0
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#0@1:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Server error"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Err("Server error"), retr: Err("Server error"), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#0@1:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Server error"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Err("Server error"), retr: Err("Server error"), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#0@2:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Did not received the expected retr response"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Err("Server error"), retr: Err("Server error"), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#0@2:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Did not received the expected retr response"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Err("Server error"), retr: Err("Server error"), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#0@3:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Did not received the expected retr response"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Err("Server error"), retr: Err("Server error"), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#0@3:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Did not received the expected retr response"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Err("Server error"), retr: Err("Server error"), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#1@1:Immediate cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Did not received the expected retr response"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+LADDER-VIOLATION M1 LOGIN_RETR [pop] plan=#1@1:AfterWake cancelled=1 verdict=Some(Neither) detail=Neither under Atomic: observed Obs { before: Ok((1, true)), stat: Err("Did not received the expected stat response"), retr: Err("Did not received the expected retr response"), visible: Ok((1, true)) }, pre=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }, post=Obs { before: Ok((1, true)), stat: Ok("1/159"), retr: Ok((157, true)), visible: Ok((1, true)) }
+=== POP LADDER REPETITION 2 END ===

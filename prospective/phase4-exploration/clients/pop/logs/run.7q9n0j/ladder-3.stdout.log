@@ -1,0 +1,11 @@
+=== POP LADDER REPETITION 3 START (run pop-529811-0) ===
+CONFIG flavor=MultiThread(1) races=[Immediate,AfterWake] max_cancellations=1 max_runs=64 scenario_timeout=20s settle=tokio0/real0 proxy_reply_delay=50ms
+LADDER B1 LOGIN_RETR [pop]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0
+LADDER-ERROR B1 LOGIN_RETR [pop]: DW_POP_OBS is required
+LADDER B2 LOGIN_RETR [pop]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0
+LADDER-ERROR B2 LOGIN_RETR [pop]: DW_POP_OBS is required
+LADDER B3 CAPA [pop]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0
+LADDER-ERROR B3 CAPA [pop]: DW_POP_OBS is required
+LADDER M1 LOGIN_RETR [pop]: plans=0 violations=0 unrealized=0 unsettled=0 baseline_errors=1 exhaustive=false baseline_targets=0 pre=0 post=0 mixed=0 neither=0 unknown=0
+LADDER-ERROR M1 LOGIN_RETR [pop]: DW_POP_OBS is required
+=== POP LADDER REPETITION 3 END ===

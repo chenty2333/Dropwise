@@ -1,0 +1,3 @@
+MODBUS-SNAPSHOT run=0 stage=after_survivor_write proxy_connections=1 conn=[127.0.0.1:54796/36/35]
+MODBUS-OBS run=0 before=Ok([100, 1]) write=Ok(()) own=Ok([100, 7]) visible=Ok([100, 7])
+MODBUS-CAL side=post obs=Obs { before: Ok([100, 1]), write: Ok(()), own: Ok([100, 7]), visible: Ok([100, 7]) }
