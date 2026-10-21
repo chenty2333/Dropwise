@@ -1,0 +1,13 @@
+{"body": null, "conn": 1, "kind": "warm", "method": "GET", "path": "/warm", "req": null, "seq": 1, "ts": 0.212182, "value": null}
+{"body": "{\"value\":\"target\",\"req\":\"tri-e3ed6e9d05af-target\"}", "conn": 1, "doc": "tri-e3ed6e9d05af", "kind": "post", "method": "POST", "path": "/doc/tri-e3ed6e9d05af", "req": "tri-e3ed6e9d05af-target", "seq": 2, "ts": 0.314979, "value": "target"}
+{"body": null, "conn": 2, "doc_id": "tri-e3ed6e9d05af", "kind": "observe", "method": "GET", "path": "/__observe__", "req": null, "seq": 3, "ts": 0.367595, "value": null}
+{"body": null, "conn": 2, "doc_id": "tri-e3ed6e9d05af", "kind": "observe", "method": "GET", "path": "/__observe__", "req": null, "seq": 4, "ts": 2.371534, "value": null}
+{"body": "{\"value\":\"fresh\",\"req\":\"tri-e3ed6e9d05af-fresh\"}", "conn": 3, "doc": "tri-e3ed6e9d05af", "kind": "post", "method": "POST", "path": "/doc/tri-e3ed6e9d05af", "req": "tri-e3ed6e9d05af-fresh", "seq": 5, "ts": 2.428982, "value": "fresh"}
+{"body": null, "conn": 2, "doc_id": "tri-e3ed6e9d05af", "kind": "observe", "method": "GET", "path": "/__observe__", "req": null, "seq": 6, "ts": 2.480618, "value": null}
+{"body": null, "conn": 4, "kind": "warm", "method": "GET", "path": "/warm", "req": null, "seq": 7, "ts": 2.541997, "value": null}
+{"body": "{\"value\":\"target\",\"req\":\"tri-2fbbd0f002ff-target\"}", "conn": 4, "doc": "tri-2fbbd0f002ff", "kind": "post", "method": "POST", "path": "/doc/tri-2fbbd0f002ff", "req": "tri-2fbbd0f002ff-target", "seq": 8, "ts": 2.644051, "value": "target"}
+{"body": null, "conn": 5, "doc_id": "tri-2fbbd0f002ff", "kind": "observe", "method": "GET", "path": "/__observe__", "req": null, "seq": 9, "ts": 2.696339, "value": null}
+{"body": "{\"value\":\"survivor\",\"req\":\"tri-2fbbd0f002ff-survivor\"}", "conn": 6, "doc": "tri-2fbbd0f002ff", "kind": "post", "method": "POST", "path": "/doc/tri-2fbbd0f002ff", "req": "tri-2fbbd0f002ff-survivor", "seq": 10, "ts": 2.748277, "value": "survivor"}
+{"body": null, "conn": 5, "doc_id": "tri-2fbbd0f002ff", "kind": "observe", "method": "GET", "path": "/__observe__", "req": null, "seq": 11, "ts": 2.80004, "value": null}
+{"body": "{\"value\":\"fresh\",\"req\":\"tri-2fbbd0f002ff-fresh\"}", "conn": 7, "doc": "tri-2fbbd0f002ff", "kind": "post", "method": "POST", "path": "/doc/tri-2fbbd0f002ff", "req": "tri-2fbbd0f002ff-fresh", "seq": 12, "ts": 2.85677, "value": "fresh"}
+{"body": null, "conn": 5, "doc_id": "tri-2fbbd0f002ff", "kind": "observe", "method": "GET", "path": "/__observe__", "req": null, "seq": 13, "ts": 2.90834, "value": null}

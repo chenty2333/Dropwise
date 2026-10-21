@@ -1,0 +1,49 @@
+case=aiosmtplib version=5.1.3 url=smtp://127.0.0.1:32844 rest=http://127.0.0.1:32845 reps=3 levels=['B1']
+
+=== LEVEL B1 ===
+DIAG setup token=smtp-5c6772e617eb user=smtp-5c6772e617eb@example.com proxy=32777 create=200 connect=220 noop=250
+DIAG target token=smtp-5c6772e617eb result={'recipients': {}, 'final': 'OK'}
+DIAG setup token=smtp-50e2d83a1c0f user=smtp-50e2d83a1c0f@example.com proxy=41879 create=200 connect=220 noop=250
+DIAG setup token=smtp-136e86f5f380 user=smtp-136e86f5f380@example.com proxy=46665 create=200 connect=220 noop=250
+DIAG setup token=smtp-0311bce0bb89 user=smtp-0311bce0bb89@example.com proxy=35835 create=200 connect=220 noop=250
+DIAG setup token=smtp-6b981640f42b user=smtp-6b981640f42b@example.com proxy=43801 create=200 connect=220 noop=250
+DIAG setup token=smtp-229011b6fa1d user=smtp-229011b6fa1d@example.com proxy=39087 create=200 connect=220 noop=250
+DIAG setup token=smtp-cff6992f6be4 user=smtp-cff6992f6be4@example.com proxy=35183 create=200 connect=220 noop=250
+DIAG setup token=smtp-d630ac798231 user=smtp-d630ac798231@example.com proxy=38397 create=200 connect=220 noop=250
+DIAG setup token=smtp-f0063a9736a4 user=smtp-f0063a9736a4@example.com proxy=34273 create=200 connect=220 noop=250
+DIAG setup token=smtp-4e6fba34cbab user=smtp-4e6fba34cbab@example.com proxy=36281 create=200 connect=220 noop=250
+DIAG setup token=smtp-c3d65c86fcf4 user=smtp-c3d65c86fcf4@example.com proxy=33643 create=200 connect=220 noop=250
+DIAG setup token=smtp-e7fc7a00be5c user=smtp-e7fc7a00be5c@example.com proxy=37443 create=200 connect=220 noop=250
+DIAG setup token=smtp-e5e31981ce2d user=smtp-e5e31981ce2d@example.com proxy=35467 create=200 connect=220 noop=250
+case=aiosmtplib level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=8.02
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs=None ok 
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs=None ok 
+verdicts={'-': 12}
+  target-detail plan=pending#1 rep=1 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=2 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=3 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#2 rep=1 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#2 rep=2 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#2 rep=3 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#3 rep=1 outcome=cancelled yields=3 realized=True detail=''
+  target-detail plan=pending#3 rep=2 outcome=cancelled yields=3 realized=True detail=''
+  target-detail plan=pending#3 rep=3 outcome=cancelled yields=3 realized=True detail=''
+  target-detail plan=pending#4 rep=1 outcome=cancelled yields=4 realized=True detail=''
+  target-detail plan=pending#4 rep=2 outcome=cancelled yields=4 realized=True detail=''
+  target-detail plan=pending#4 rep=3 outcome=cancelled yields=4 realized=True detail=''
+SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=8.02
+
+=== FINAL ===
+SUMMARY level=B1 yields=4 trials=12 violations=0 unknown=0 unrealized=0 seconds=8.02
+violations_by_plan=[]
+unrealized_by_plan=[]

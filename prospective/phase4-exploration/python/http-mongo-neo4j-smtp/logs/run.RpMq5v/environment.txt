@@ -1,0 +1,9 @@
+date_utc=2026-10-21T12:52:58Z
+python=Python 3.13.13 at /home/ava/dropwise-py-work-r3/venv-py313/bin/python
+aiosmtplib=5.1.3 httpx=0.28.1 python=3.13.13
+image=greenmail/standalone:2.1.14
+image_id=sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626
+image_digests=["greenmail/standalone@sha256:1ef95a966418cd09b7ea91d504d8c0826bbe7a2f6e679a75c601a831587c1626"]
+container=dw-r3-py-smtp-437444 smtp=127.0.0.1:32844 rest=http://127.0.0.1:32845
+pending=DelayProxy delay=0.05s per forwarded chunk, one per scenario instance
+op_bound=2.0s engine_timeout=15.0 reps=3; no reconnect between target and survivor

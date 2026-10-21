@@ -1,0 +1,20 @@
+== environment ==
+Python 3.13.13
+postgres:18-alpine postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+container=/dw-r3-py-pg-smoke-410464 image=postgres:18-alpine id=sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+
+== diag pool ==
+case=psycopg mode=pool psycopg=3.3.6 psycopg_pool=3.3.3 python=3.13.13 host=127.0.0.1 port=55432 db=dw round=0 delay=0.05 bound=2.0
+DIAG reuse pids=[('ok', 173), ('ok', 173), ('ok', 173)] stats={'connections_num': 1, 'connections_ms': 407, 'requests_num': 5, 'pool_min': 1, 'pool_max': 1, 'pool_size': 1, 'pool_available': 1, 'requests_waiting': 0}
+DIAG pre obs={'survivor': ['ok', {'write': ['ok', 'INSERT 0 1'], 'own': ['ok', 7], 'release': ['ok', None]}], 'observer': ['ok', {'rows': [['survivor', 7]], 'error': None}]}
+DIAG post target=completed/6 result={'backend_pid': 173, 'status_after_acquire': 'IDLE', 'begin': ('ok', 'BEGIN'), 'insert': ('ok', 'INSERT 0 1'), 'commit': ('ok', 'COMMIT'), 'status_before_release': 'IDLE', 'release': ('ok', None)} diag={'setup_pid': 173, 'setup_stats': {'connections_num': 1, 'connections_ms': 407, 'requests_num': 2, 'pool_min': 1, 'pool_max': 1, 'pool_size': 1, 'pool_available': 1, 'requests_waiting': 0}, 'survivor_start': {'pid': 173, 'status': 'IDLE', 'pool': {'connections_num': 1, 'connections_ms': 407, 'requests_num': 6, 'pool_min': 1, 'pool_max': 1, 'pool_size': 1, 'pool_available': 0, 'requests_waiting': 0}}, 'survivor_end': {'status': 'IDLE', 'pool': {'connections_num': 1, 'connections_ms': 407, 'requests_num': 6, 'pool_min': 1, 'pool_max': 1, 'pool_size': 1, 'pool_available': 1, 'requests_waiting': 0}}, 'stages': ['begin', 'insert', 'commit'], 'after_target': {'pid': 173, 'status': 'IDLE', 'pool_before_release': {'connections_num': 1, 'connections_ms': 407, 'requests_num': 7, 'pool_min': 1, 'pool_max': 1, 'pool_size': 1, 'pool_available': 0, 'requests_waiting': 0}}, 'after_release': {'status': 'IDLE', 'pool': {'connections_num': 1, 'connections_ms': 407, 'requests_num': 7, 'pool_min': 1, 'pool_max': 1, 'pool_size': 1, 'pool_available': 1, 'requests_waiting': 0}}}
+DIAG post obs={'survivor': ['ok', {'write': ['ok', 'INSERT 0 1'], 'own': ['ok', 7], 'release': ['ok', None]}], 'observer': ['ok', {'rows': [['survivor', 7], ['target', 1]], 'error': None}]}
+DIAG pre==post False
+
+== diag direct ==
+case=psycopg mode=direct psycopg=3.3.6 psycopg_pool=3.3.3 python=3.13.13 host=127.0.0.1 port=55432 db=dw round=0 delay=0.05 bound=2.0
+DIAG reuse pids=[('ok', 175), ('ok', 175), ('ok', 175)] stats=None
+DIAG pre obs={'survivor': ['ok', {'write': ['ok', 'INSERT 0 1'], 'own': ['ok', 7], 'release': ['ok', None]}], 'observer': ['ok', {'rows': [['survivor', 7]], 'error': None}]}
+DIAG post target=completed/6 result={'backend_pid': 175, 'status_after_acquire': 'IDLE', 'begin': ('ok', 'BEGIN'), 'insert': ('ok', 'INSERT 0 1'), 'commit': ('ok', 'COMMIT'), 'status_before_release': 'IDLE', 'release': ('ok', None)} diag={'setup_pid': 175, 'setup_stats': None, 'survivor_start': {'pid': 175, 'status': 'IDLE', 'pool': None}, 'survivor_end': {'status': 'IDLE', 'pool': None}, 'stages': ['begin', 'insert', 'commit'], 'after_target': {'pid': 175, 'status': 'IDLE', 'pool_before_release': None}, 'after_release': {'status': 'IDLE', 'pool': None}}
+DIAG post obs={'survivor': ['ok', {'write': ['ok', 'INSERT 0 1'], 'own': ['ok', 7], 'release': ['ok', None]}], 'observer': ['ok', {'rows': [['survivor', 7], ['target', 1]], 'error': None}]}
+DIAG pre==post False

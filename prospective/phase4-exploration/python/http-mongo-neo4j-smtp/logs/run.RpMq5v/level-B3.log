@@ -1,0 +1,49 @@
+case=aiosmtplib version=5.1.3 url=smtp://127.0.0.1:32844 rest=http://127.0.0.1:32845 reps=3 levels=['B3']
+
+=== LEVEL B3 ===
+DIAG setup token=smtp-318d1e9e4857 user=smtp-318d1e9e4857@example.com proxy=41253 create=200 connect=220 noop=250
+DIAG target token=smtp-318d1e9e4857 result={'recipients': {}, 'final': 'OK'}
+DIAG setup token=smtp-7c9bef0e1c9e user=smtp-7c9bef0e1c9e@example.com proxy=42191 create=200 connect=220 noop=250
+DIAG setup token=smtp-a7553de527e8 user=smtp-a7553de527e8@example.com proxy=42107 create=200 connect=220 noop=250
+DIAG setup token=smtp-fed82a1b6083 user=smtp-fed82a1b6083@example.com proxy=41431 create=200 connect=220 noop=250
+DIAG setup token=smtp-58e01f3ab711 user=smtp-58e01f3ab711@example.com proxy=43659 create=200 connect=220 noop=250
+DIAG setup token=smtp-7af1ef5b207e user=smtp-7af1ef5b207e@example.com proxy=41351 create=200 connect=220 noop=250
+DIAG setup token=smtp-61381b30b5b4 user=smtp-61381b30b5b4@example.com proxy=34875 create=200 connect=220 noop=250
+DIAG setup token=smtp-495051b9488c user=smtp-495051b9488c@example.com proxy=33399 create=200 connect=220 noop=250
+DIAG setup token=smtp-4639bcdd58ad user=smtp-4639bcdd58ad@example.com proxy=32781 create=200 connect=220 noop=250
+DIAG setup token=smtp-d864e28ab736 user=smtp-d864e28ab736@example.com proxy=32999 create=200 connect=220 noop=250
+DIAG setup token=smtp-58835237edbf user=smtp-58835237edbf@example.com proxy=41137 create=200 connect=220 noop=250
+DIAG setup token=smtp-6de81579f0bd user=smtp-6de81579f0bd@example.com proxy=39151 create=200 connect=220 noop=250
+DIAG setup token=smtp-04e4c912453d user=smtp-04e4c912453d@example.com proxy=42299 create=200 connect=220 noop=250
+case=aiosmtplib level=B3 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=38.44
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#1: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#1: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#1: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#2: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#2: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#2: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs='ERR send-b3 TimeoutError: ' VIOLATION after pending#3: ERR send-b3 TimeoutError: 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs='ERR send-b3 TimeoutError: ' VIOLATION after pending#3: ERR send-b3 TimeoutError: 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs='ERR send-b3 TimeoutError: ' VIOLATION after pending#3: ERR send-b3 TimeoutError: 
+  plan=pending#4 rep=1 target=cancelled/y4/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#4: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#4 rep=2 target=cancelled/y4/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#4: ERR send-b3 SMTPDataError: (250, 'OK')
+  plan=pending#4 rep=3 target=cancelled/y4/realized=True verdict=- obs="ERR send-b3 SMTPDataError: (250, 'OK')" VIOLATION after pending#4: ERR send-b3 SMTPDataError: (250, 'OK')
+verdicts={'-': 12}
+  target-detail plan=pending#1 rep=1 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=2 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=3 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#2 rep=1 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#2 rep=2 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#2 rep=3 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#3 rep=1 outcome=cancelled yields=3 realized=True detail=''
+  target-detail plan=pending#3 rep=2 outcome=cancelled yields=3 realized=True detail=''
+  target-detail plan=pending#3 rep=3 outcome=cancelled yields=3 realized=True detail=''
+  target-detail plan=pending#4 rep=1 outcome=cancelled yields=4 realized=True detail=''
+  target-detail plan=pending#4 rep=2 outcome=cancelled yields=4 realized=True detail=''
+  target-detail plan=pending#4 rep=3 outcome=cancelled yields=4 realized=True detail=''
+SUMMARY level=B3 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=38.44
+
+=== FINAL ===
+SUMMARY level=B3 yields=4 trials=12 violations=12 unknown=0 unrealized=0 seconds=38.44
+violations_by_plan=[('pending#1', 1), ('pending#1', 2), ('pending#1', 3), ('pending#2', 1), ('pending#2', 2), ('pending#2', 3), ('pending#3', 1), ('pending#3', 2), ('pending#3', 3), ('pending#4', 1), ('pending#4', 2), ('pending#4', 3)]
+unrealized_by_plan=[]

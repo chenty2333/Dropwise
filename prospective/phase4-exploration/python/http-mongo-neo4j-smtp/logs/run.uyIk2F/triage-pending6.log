@@ -1,0 +1,24 @@
+
+=== limit=1 ===
+after warm: {'max': 1, 'conns': ["'http://127.0.0.1:39889', HTTP/1.1, IDLE, Request Count: 1"], 'queued': 0}
+target cancelled at yield 6
+after cancel: {'max': 1, 'conns': ["'http://127.0.0.1:39889', HTTP/1.1, ACTIVE, Request Count: 2"], 'queued': 1}
+server rows after cancel: [('post', 'tri-e3ed6e9d05af-target')] doc= target
+retry result: ERR retry TimeoutError: 
+server rows after retry: [('post', 'tri-e3ed6e9d05af-target')] doc= target
+after retry: {'max': 1, 'conns': ["'http://127.0.0.1:39889', HTTP/1.1, ACTIVE, Request Count: 2"], 'queued': 1}
+aclose of wedged client: done
+fresh client result: <Response [200 OK]>
+server rows after fresh: [('post', 'tri-e3ed6e9d05af-target'), ('post', 'tri-e3ed6e9d05af-fresh')] doc= fresh
+
+=== limit=2 ===
+after warm: {'max': 2, 'conns': ["'http://127.0.0.1:38587', HTTP/1.1, IDLE, Request Count: 1"], 'queued': 0}
+target cancelled at yield 6
+after cancel: {'max': 2, 'conns': ["'http://127.0.0.1:38587', HTTP/1.1, ACTIVE, Request Count: 2"], 'queued': 1}
+server rows after cancel: [('post', 'tri-2fbbd0f002ff-target')] doc= target
+retry result: <Response [200 OK]>
+server rows after retry: [('post', 'tri-2fbbd0f002ff-target'), ('post', 'tri-2fbbd0f002ff-survivor')] doc= survivor
+after retry: {'max': 2, 'conns': ["'http://127.0.0.1:38587', HTTP/1.1, ACTIVE, Request Count: 2", "'http://127.0.0.1:38587', HTTP/1.1, IDLE, Request Count: 1"], 'queued': 1}
+aclose of wedged client: done
+fresh client result: <Response [200 OK]>
+server rows after fresh: [('post', 'tri-2fbbd0f002ff-target'), ('post', 'tri-2fbbd0f002ff-survivor'), ('post', 'tri-2fbbd0f002ff-fresh')] doc= fresh

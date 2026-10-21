@@ -1,0 +1,67 @@
+case=httpx version=0.28.1 httpcore=1.0.9 url=http://127.0.0.1:34185 reps=3 levels=['B2']
+
+=== LEVEL B2 ===
+DIAG setup token=hx-35f9a93471da proxy_port=42879 warm={'status': 200, 'body': {'conn': 39, 'ok': True}} health={'status': 200, 'body': {'conn': 40, 'ok': True, 'requests': 47}}
+DIAG target token=hx-35f9a93471da result={'status': 200, 'body': {'conn': 39, 'req': 'hx-35f9a93471da-target', 'stored': 'target'}}
+DIAG setup token=hx-e471e831a558 proxy_port=44981 warm={'status': 200, 'body': {'conn': 41, 'ok': True}} health={'status': 200, 'body': {'conn': 42, 'ok': True, 'requests': 50}}
+DIAG setup token=hx-82521bd869b1 proxy_port=41253 warm={'status': 200, 'body': {'conn': 43, 'ok': True}} health={'status': 200, 'body': {'conn': 44, 'ok': True, 'requests': 53}}
+DIAG setup token=hx-c74e7b4c56dd proxy_port=35835 warm={'status': 200, 'body': {'conn': 45, 'ok': True}} health={'status': 200, 'body': {'conn': 46, 'ok': True, 'requests': 56}}
+DIAG setup token=hx-4da333d6df7e proxy_port=34643 warm={'status': 200, 'body': {'conn': 47, 'ok': True}} health={'status': 200, 'body': {'conn': 48, 'ok': True, 'requests': 59}}
+DIAG setup token=hx-0c71dc0bcf04 proxy_port=34325 warm={'status': 200, 'body': {'conn': 49, 'ok': True}} health={'status': 200, 'body': {'conn': 50, 'ok': True, 'requests': 62}}
+DIAG setup token=hx-90bc371c50cb proxy_port=46141 warm={'status': 200, 'body': {'conn': 51, 'ok': True}} health={'status': 200, 'body': {'conn': 52, 'ok': True, 'requests': 65}}
+DIAG setup token=hx-a15f85dafd59 proxy_port=42771 warm={'status': 200, 'body': {'conn': 53, 'ok': True}} health={'status': 200, 'body': {'conn': 54, 'ok': True, 'requests': 68}}
+DIAG setup token=hx-c8b8eb593c11 proxy_port=43323 warm={'status': 200, 'body': {'conn': 56, 'ok': True}} health={'status': 200, 'body': {'conn': 57, 'ok': True, 'requests': 71}}
+DIAG setup token=hx-c48062f26ea6 proxy_port=35601 warm={'status': 200, 'body': {'conn': 59, 'ok': True}} health={'status': 200, 'body': {'conn': 60, 'ok': True, 'requests': 74}}
+DIAG setup token=hx-b72c6f2e3bfc proxy_port=46183 warm={'status': 200, 'body': {'conn': 62, 'ok': True}} health={'status': 200, 'body': {'conn': 63, 'ok': True, 'requests': 77}}
+DIAG setup token=hx-115ceccd208f proxy_port=36259 warm={'status': 200, 'body': {'conn': 65, 'ok': True}} health={'status': 200, 'body': {'conn': 66, 'ok': True, 'requests': 80}}
+DIAG setup token=hx-012e33cb1b29 proxy_port=37805 warm={'status': 200, 'body': {'conn': 68, 'ok': True}} health={'status': 200, 'body': {'conn': 69, 'ok': True, 'requests': 83}}
+DIAG setup token=hx-2db7f9a30cb0 proxy_port=42789 warm={'status': 200, 'body': {'conn': 71, 'ok': True}} health={'status': 200, 'body': {'conn': 72, 'ok': True, 'requests': 86}}
+DIAG setup token=hx-246353f8a78b proxy_port=33981 warm={'status': 200, 'body': {'conn': 74, 'ok': True}} health={'status': 200, 'body': {'conn': 75, 'ok': True, 'requests': 90}}
+DIAG setup token=hx-ed1c4874d655 proxy_port=45561 warm={'status': 200, 'body': {'conn': 77, 'ok': True}} health={'status': 200, 'body': {'conn': 78, 'ok': True, 'requests': 94}}
+DIAG setup token=hx-9f37d83557f1 proxy_port=36579 warm={'status': 200, 'body': {'conn': 80, 'ok': True}} health={'status': 200, 'body': {'conn': 81, 'ok': True, 'requests': 98}}
+DIAG setup token=hx-58e3488fe1c5 proxy_port=37445 warm={'status': 200, 'body': {'conn': 82, 'ok': True}} health={'status': 200, 'body': {'conn': 83, 'ok': True, 'requests': 101}}
+DIAG setup token=hx-a8a6bfc93649 proxy_port=33285 warm={'status': 200, 'body': {'conn': 84, 'ok': True}} health={'status': 200, 'body': {'conn': 85, 'ok': True, 'requests': 104}}
+case=httpx level=B2 yields=6 trials=18 violations=3 unknown=0 unrealized=0 seconds=10.13
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 41, 'req': 'hx-e471e831a558-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 43, 'req': 'hx-82521bd869b1-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs={'body': {'conn': 45, 'req': 'hx-c74e7b4c56dd-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs={'body': {'conn': 47, 'req': 'hx-4da333d6df7e-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs={'body': {'conn': 49, 'req': 'hx-0c71dc0bcf04-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs={'body': {'conn': 51, 'req': 'hx-90bc371c50cb-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#3 rep=1 target=cancelled/y5/realized=True verdict=- obs={'body': {'conn': 55, 'req': 'hx-a15f85dafd59-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#3 rep=2 target=cancelled/y5/realized=True verdict=- obs={'body': {'conn': 58, 'req': 'hx-c8b8eb593c11-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#3 rep=3 target=cancelled/y5/realized=True verdict=- obs={'body': {'conn': 61, 'req': 'hx-c48062f26ea6-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#4 rep=1 target=cancelled/y6/realized=True verdict=- obs={'body': {'conn': 64, 'req': 'hx-b72c6f2e3bfc-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#4 rep=2 target=cancelled/y6/realized=True verdict=- obs={'body': {'conn': 67, 'req': 'hx-115ceccd208f-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#4 rep=3 target=cancelled/y6/realized=True verdict=- obs={'body': {'conn': 70, 'req': 'hx-012e33cb1b29-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#5 rep=1 target=cancelled/y7/realized=True verdict=- obs={'body': {'conn': 73, 'req': 'hx-2db7f9a30cb0-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#5 rep=2 target=cancelled/y7/realized=True verdict=- obs={'body': {'conn': 76, 'req': 'hx-246353f8a78b-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#5 rep=3 target=cancelled/y7/realized=True verdict=- obs={'body': {'conn': 79, 'req': 'hx-ed1c4874d655-target', 'stored': 'target'}, 'status': 200} ok 
+  plan=pending#6 rep=1 target=cancelled/y6/realized=True verdict=- obs='ERR post-target TimeoutError: ' VIOLATION after pending#6: ERR post-target TimeoutError: 
+  plan=pending#6 rep=2 target=cancelled/y6/realized=True verdict=- obs='ERR post-target TimeoutError: ' VIOLATION after pending#6: ERR post-target TimeoutError: 
+  plan=pending#6 rep=3 target=cancelled/y6/realized=True verdict=- obs='ERR post-target TimeoutError: ' VIOLATION after pending#6: ERR post-target TimeoutError: 
+verdicts={'-': 18}
+  target-detail plan=pending#1 rep=1 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=2 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#1 rep=3 outcome=cancelled yields=1 realized=True detail=''
+  target-detail plan=pending#2 rep=1 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#2 rep=2 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#2 rep=3 outcome=cancelled yields=2 realized=True detail=''
+  target-detail plan=pending#3 rep=1 outcome=cancelled yields=5 realized=True detail=''
+  target-detail plan=pending#3 rep=2 outcome=cancelled yields=5 realized=True detail=''
+  target-detail plan=pending#3 rep=3 outcome=cancelled yields=5 realized=True detail=''
+  target-detail plan=pending#4 rep=1 outcome=cancelled yields=6 realized=True detail=''
+  target-detail plan=pending#4 rep=2 outcome=cancelled yields=6 realized=True detail=''
+  target-detail plan=pending#4 rep=3 outcome=cancelled yields=6 realized=True detail=''
+  target-detail plan=pending#5 rep=1 outcome=cancelled yields=7 realized=True detail=''
+  target-detail plan=pending#5 rep=2 outcome=cancelled yields=7 realized=True detail=''
+  target-detail plan=pending#5 rep=3 outcome=cancelled yields=7 realized=True detail=''
+  target-detail plan=pending#6 rep=1 outcome=cancelled yields=6 realized=True detail=''
+  target-detail plan=pending#6 rep=2 outcome=cancelled yields=6 realized=True detail=''
+  target-detail plan=pending#6 rep=3 outcome=cancelled yields=6 realized=True detail=''
+SUMMARY level=B2 yields=6 trials=18 violations=3 unknown=0 unrealized=0 seconds=10.13
+
+=== FINAL ===
+SUMMARY level=B2 yields=6 trials=18 violations=3 unknown=0 unrealized=0 seconds=10.13
+violations_by_plan=[('pending#6', 1), ('pending#6', 2), ('pending#6', 3)]
+unrealized_by_plan=[]

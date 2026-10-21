@@ -1,0 +1,76 @@
+===== aiomysql direct probe =====
+case=aiomysql mode=direct aiomysql=0.3.2 python=3.13.13 host=127.0.0.1 port=53306 db=dw round=0 delay=0.05 bound=2.0
+PROBE k=1 target=cancelled realized=True yields=1 err=None
+        stages=[] after_target={'txstatus': 0, 'stats': None}
+        survivor=('ok', {'in_tx': 0, 'write': ('err', 'InterfaceError: Cancelled during execution'), 'own': ('err', 'InterfaceError: Cancelled during execution'), 'release': ('ok', None)})
+        observer=('ok', {'rows': [], 'error': None}) seconds=0.00
+PROBE k=2 target=cancelled realized=True yields=2 err=None
+        stages=['begin'] after_target={'txstatus': 1, 'stats': None}
+        survivor=('ok', {'in_tx': 1, 'write': ('err', 'InterfaceError: Cancelled during execution'), 'own': ('err', 'InterfaceError: Cancelled during execution'), 'release': ('ok', None)})
+        observer=('ok', {'rows': [], 'error': None}) seconds=0.10
+PROBE k=3 target=cancelled realized=True yields=3 err=None
+        stages=['begin', 'insert'] after_target={'txstatus': 1, 'stats': None}
+        survivor=('ok', {'in_tx': 1, 'write': ('err', 'InterfaceError: Cancelled during execution'), 'own': ('err', 'InterfaceError: Cancelled during execution'), 'release': ('ok', None)})
+        observer=('ok', {'rows': [], 'error': None}) seconds=0.20
+===== aiomysql direct ladder =====
+case=aiomysql mode=direct aiomysql=0.3.2 python=3.13.13 host=127.0.0.1 port=53306 db=dw round=0 delay=0.05 bound=2.0
+case=aiomysql level=B1 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.27
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs=None ok 
+verdicts={'-': 9}
+SUMMARY level=B1 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.27
+case=aiomysql level=B2 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.27
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs=None ok 
+verdicts={'-': 9}
+SUMMARY level=B2 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.27
+case=aiomysql level=B3 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.31
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=- obs=None ok 
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=- obs=None ok 
+verdicts={'-': 9}
+SUMMARY level=B3 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.31
+case=aiomysql level=M1 yields=3 trials=9 violations=9 unknown=0 unrealized=0 seconds=6.73
+pre=[{'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, {'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}]
+post=[{'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}, {'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}]
+  plan=pending#1 rep=1 target=cancelled/y1/realized=True verdict=Neither obs={'survivor': {'in_tx': 0, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 0, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#1 rep=2 target=cancelled/y1/realized=True verdict=Neither obs={'survivor': {'in_tx': 0, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 0, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#1 rep=3 target=cancelled/y1/realized=True verdict=Neither obs={'survivor': {'in_tx': 0, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 0, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#2 rep=1 target=cancelled/y2/realized=True verdict=Neither obs={'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#2 rep=2 target=cancelled/y2/realized=True verdict=Neither obs={'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#2 rep=3 target=cancelled/y2/realized=True verdict=Neither obs={'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#3 rep=1 target=cancelled/y3/realized=True verdict=Neither obs={'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#3 rep=2 target=cancelled/y3/realized=True verdict=Neither obs={'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+  plan=pending#3 rep=3 target=cancelled/y3/realized=True verdict=Neither obs={'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}} VIOLATION Neither under atomic: observed {'survivor': {'in_tx': 1, 'own': ['err', 'InterfaceError: Cancelled during execution'], 'release': ['ok', None], 'write': ['err', 'InterfaceError: Cancelled during execution']}, 'observer': {'error': None, 'rows': []}}, pre={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, post={'survivor': {'in_tx': 0, 'own': ['ok', [[7]]], 'release': ['ok', None], 'write': ['ok', 1]}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}
+verdicts={'Neither': 9}
+SUMMARY level=M1 yields=3 trials=9 violations=9 unknown=0 unrealized=0 seconds=6.73
+=== FINAL ===
+mode=direct SUMMARY level=B1 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.27
+violations_by_plan=[]
+mode=direct SUMMARY level=B2 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.27
+violations_by_plan=[]
+mode=direct SUMMARY level=B3 yields=3 trials=9 violations=0 unknown=0 unrealized=0 seconds=4.31
+violations_by_plan=[]
+mode=direct SUMMARY level=M1 yields=3 trials=9 violations=9 unknown=0 unrealized=0 seconds=6.73
+violations_by_plan=['pending#1', 'pending#1', 'pending#1', 'pending#2', 'pending#2', 'pending#2', 'pending#3', 'pending#3', 'pending#3']
+exit=0

@@ -1,0 +1,41 @@
+===== psycopg pool M1 (state-augmented) =====
+case=psycopg mode=pool psycopg=3.3.6 psycopg_pool=3.3.3 python=3.13.13 host=127.0.0.1 port=55432 db=dw round=0 delay=0.05 bound=2.0
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=43167 user=postgres database=dw) at 0x7efc22ac5bf0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=39149 user=postgres database=dw) at 0x7efc22ac5e10>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=33015 user=postgres database=dw) at 0x7efc22ac69c0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=40853 user=postgres database=dw) at 0x7efc22ac5bf0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=39291 user=postgres database=dw) at 0x7efc22ac6360>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=38595 user=postgres database=dw) at 0x7efc22ac5bf0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=40007 user=postgres database=dw) at 0x7efc22ac6360>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=37591 user=postgres database=dw) at 0x7efc22ac6690>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=41661 user=postgres database=dw) at 0x7efc22ac6250>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=36279 user=postgres database=dw) at 0x7efc22ac5bf0>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=44285 user=postgres database=dw) at 0x7efc22ac6250>
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=41711 user=postgres database=dw) at 0x7efc22ac5bf0>
+case=psycopg level=M1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=25.73
+pre=[{'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}, {'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}}]
+post=[{'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}, {'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}}]
+  plan=pending#1 rep=1 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=2 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#1 rep=3 target=cancelled/y9/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=1 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=2 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#2 rep=3 target=cancelled/y10/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=1 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=2 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#3 rep=3 target=cancelled/y11/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#4 rep=1 target=cancelled/y12/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#4 rep=2 target=cancelled/y12/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#4 rep=3 target=cancelled/y12/realized=True verdict=Pre obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7]]}} ok 
+  plan=pending#5 rep=1 target=cancelled/y11/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#5 rep=2 target=cancelled/y11/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#5 rep=3 target=cancelled/y11/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#6 rep=1 target=cancelled/y12/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#6 rep=2 target=cancelled/y12/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+  plan=pending#6 rep=3 target=cancelled/y12/realized=True verdict=Post obs={'survivor': {'in_tx': 'IDLE', 'own': ['ok', 7], 'release': ['ok', None], 'write': ['ok', 'INSERT 0 1']}, 'observer': {'error': None, 'rows': [['survivor', 7], ['target', 1]]}} ok 
+verdicts={'Pre': 12, 'Post': 6}
+SUMMARY level=M1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=25.73
+=== FINAL ===
+mode=pool SUMMARY level=M1 yields=6 trials=18 violations=0 unknown=0 unrealized=0 seconds=25.73
+violations_by_plan=[]
+exit=0

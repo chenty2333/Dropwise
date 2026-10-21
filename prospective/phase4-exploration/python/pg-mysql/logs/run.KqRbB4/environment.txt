@@ -1,0 +1,15 @@
+Python 3.13.13
+postgres:18-alpine postgres@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+mariadb:11.4 mariadb@sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873
+mysql:9.6 mysql@sha256:c5df04bee1a42b74a5841c6409e669cf62126cd0416f00c1cea8ab933b9361b9
+container: dw-r3-py-mysql-432156 mysql:9.6 Up 5 minutes
+container: dw-r3-py-maria-432156 mariadb:11.4 Up 5 minutes
+container: dw-r3-py-pg-smoke-410464 postgres:18-alpine Up 13 minutes
+aiomysql==0.3.2
+asyncpg==0.32.0
+mysql-connector-python==26.7.0
+psycopg==3.3.6
+psycopg-binary==3.3.6
+psycopg-pool==3.3.3
+pymysql==1.2.3
+typing-extensions==4.16.0
