@@ -8,7 +8,7 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::task::{Context, Poll, Wake, Waker};
 use std::time::Duration;
 
-use crate::fields::{FieldContract, FieldJudgment, Observation};
+use crate::fields::{FieldContract, FieldJudgment, FieldStatus, Observation};
 use crate::obligation::{CurrentLedger, Leak, Ledger, set_current};
 
 /// When the competing branch wins, measured from the moment the target returns
@@ -1017,6 +1017,15 @@ pub struct Report {
     pub contract_errors: Vec<String>,
 }
 
+fn field_is_unknown(trial: &Trial) -> bool {
+    trial.field_judgment.as_ref().is_some_and(|judgment| {
+        judgment
+            .fields
+            .iter()
+            .any(|field| field.status == FieldStatus::Unknown)
+    })
+}
+
 impl Report {
     pub fn violations(&self) -> impl Iterator<Item = &Trial> {
         self.trials.iter().filter(|t| t.is_violation())
@@ -1033,14 +1042,25 @@ impl Report {
     }
 
     /// Trials whose calibration could not judge the observation.
+    ///
+    /// This covers both a single-blob [`Verdict::Unknown`] and a field trial
+    /// with at least one [`crate::FieldStatus::Unknown`] field (for example an
+    /// unstable pre or post calibration).  Use [`Report::field_unknown`] when
+    /// only the field-contract cases are wanted.
     pub fn unknown(&self) -> impl Iterator<Item = &Trial> {
         self.trials
             .iter()
-            .filter(|t| t.verdict == Some(Verdict::Unknown))
+            .filter(|t| t.verdict == Some(Verdict::Unknown) || field_is_unknown(t))
     }
 
-    /// Number of trials with this verdict; always 0 for a plain [`explore`]
-    /// report, whose trials carry no verdict.
+    /// Trials whose field judgment contains an undecidable field.
+    pub fn field_unknown(&self) -> impl Iterator<Item = &Trial> {
+        self.trials.iter().filter(|t| field_is_unknown(t))
+    }
+
+    /// Number of trials with this single-blob verdict.  Field trials carry no
+    /// `Verdict`; an undecidable field is counted by [`Report::unknown`] and
+    /// [`Report::field_unknown`], not here.
     pub fn verdict_count(&self, verdict: Verdict) -> usize {
         self.trials
             .iter()
@@ -1054,9 +1074,10 @@ impl Report {
     /// This covers calibration failures and unstable calibrations, plans whose
     /// planned `Pending` boundary was never reached, plans the settle watchdog
     /// cut short, a truncated search, and a scenario that marked no target or
-    /// whose targets never returned `Pending`. Violations and baseline errors
-    /// are not coverage gaps; they are reported by [`Report::violations`] and
-    /// [`Report::baseline_errors`].
+    /// whose targets never returned `Pending`, field-contract problems, and
+    /// field judgments that are undecidable or degenerate. Violations and
+    /// baseline errors are not coverage gaps; they are reported by
+    /// [`Report::violations`] and [`Report::baseline_errors`].
     pub fn coverage_gaps(&self) -> Vec<String> {
         let mut gaps = Vec::new();
         for error in &self.contract_errors {
@@ -1209,11 +1230,16 @@ impl Report {
             let _ = writeln!(
                 out,
                 "  verdict: {}, settled: {}",
-                trial
-                    .verdict
-                    .map_or("none (not an observed run)".to_string(), |verdict| format!(
-                        "{verdict:?}"
-                    )),
+                trial.verdict.map_or_else(
+                    || {
+                        if trial.field_judgment.is_some() {
+                            "none (field judgment below)".to_string()
+                        } else {
+                            "none (not an observed run)".to_string()
+                        }
+                    },
+                    |verdict| format!("{verdict:?}")
+                ),
                 trial.settled
             );
             if let Some(comparison) = &trial.comparison {
@@ -2315,16 +2341,22 @@ fn ensure_field_calibrated<S, Fut>(
 ///
 /// * an **effect** field must differ between `pre` and `post`; the trial must
 ///   equal one of them according to the field's [`Expect`], and equality with
-///   both is [`FieldStatus::Degenerate`] (the cut did not discriminate it);
+///   both is [`crate::FieldStatus::Degenerate`] (the cut did not discriminate it);
 /// * a **state** field must agree between the two calibrations and hold in the
 ///   trial;
-/// * cross-field [`Invariant`]s relate effect outcomes (for example, all or
+/// * cross-field [`crate::Invariant`]s relate effect outcomes (for example, all or
 ///   none of a set, exactly one, or one effect implies another).
 ///
-/// Unlike [`explore_observed`], no mixed calibration runs are needed for a
-/// multi-cut plan: a mixture is expressible per field, because each field
-/// chooses its own `pre`/`post` outcome.  A field whose trial value is neither
-/// calibration is [`FieldStatus::Neither`] and is a definite violation; a field
+/// Unlike [`explore_observed`], this entry point does not sample mixed
+/// calibration runs.  A per-operation mixture is expressible field by field
+/// only when each independently cancellable effect has its own field: each
+/// field then chooses its own `pre`/`post` outcome.  This is not a general
+/// replacement for the blob's mixed verdict.  A fused aggregate field (for
+/// example a total count over several operations) can be
+/// [`crate::FieldStatus::Neither`] on a legitimate one-done/one-skipped
+/// execution; declare one field per independent effect, or use
+/// [`explore_observed`] when the observable is inherently fused.  A field
+/// whose trial value is neither calibration is a definite violation; a field
 /// that is missing, unstable or degenerate is a coverage gap and never a pass.
 ///
 /// The contract is validated before any run.  Invalid contracts, fields missing

@@ -2,12 +2,12 @@
 //! by named fields.
 
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use dropwise::fields::FieldStatus;
 use dropwise::{
-    Config, Ctx, Expect, FieldContract, Invariant, Observation, Outcome, Race, explore_fields,
-    explore_observed, replay_fields,
+    Config, Ctx, Expect, FieldContract, Invariant, Observation, Outcome, Race, Verdict,
+    explore_fields, explore_observed, replay_fields,
 };
 
 fn config() -> Config {
@@ -306,4 +306,129 @@ fn exactly_one_accepts_a_single_completed_effect() {
     // The cut leaves a=post, b=pre: exactly one effect completed.
     assert!(report.violations().next().is_none(), "{report}");
     assert!(report.is_clean_within_coverage(), "{report}");
+}
+
+/// A fused aggregate field cannot express per-operation atomicity: the blob's
+/// mixed calibration accepts one-done/one-skipped, while the field sees a value
+/// that matches neither calibration.  This is the documented boundary of the
+/// field path, not a hidden pass.
+#[test]
+fn a_fused_aggregate_field_is_neither_where_the_blob_is_mixed() {
+    fn fused(
+        ctx: Ctx,
+    ) -> impl std::future::Future<Output = Result<Observation, String>> + Send + 'static {
+        let a = Arc::new(AtomicBool::new(false));
+        let b = Arc::new(AtomicBool::new(false));
+        let (task_a, task_b) = (a.clone(), b.clone());
+        async move {
+            let first = ctx.target(async move {
+                task_a.store(true, Ordering::SeqCst);
+                tokio::task::yield_now().await;
+            });
+            let second = ctx.target(async move {
+                tokio::task::yield_now().await;
+                task_b.store(true, Ordering::SeqCst);
+            });
+            let _ = first.await;
+            let _ = second.await;
+            let count = u64::from(a.load(Ordering::SeqCst)) + u64::from(b.load(Ordering::SeqCst));
+            Ok(Observation::new().with("count", count))
+        }
+    }
+
+    let mut config = config();
+    config.max_cancellations = 2;
+    let legacy = explore_observed(&config, Expect::Atomic, fused);
+    assert!(legacy.is_clean(), "{legacy}");
+    assert!(
+        legacy
+            .trials
+            .iter()
+            .any(|trial| trial.verdict == Some(Verdict::Mixed)),
+        "the blob must accept the mixed pair: {legacy}"
+    );
+
+    let report = explore_fields(
+        &config,
+        FieldContract::new().effect("count", Expect::Atomic),
+        fused,
+    );
+    assert!(!report.is_clean(), "{report}");
+    assert!(
+        report.violations().any(
+            |trial| trial
+                .field_judgment
+                .as_ref()
+                .is_some_and(|judgment| judgment.fields.iter().any(|field| {
+                    field.path == "count" && field.status == FieldStatus::Neither
+                }))
+        ),
+        "the fused field must be Neither, not Mixed: {report}"
+    );
+}
+
+/// An unstable field is a coverage gap, not a pass, and it must be visible
+/// through the `unknown`/`field_unknown` API as well as through Display.
+#[test]
+fn an_unstable_field_is_unknown_and_reported_as_unknown() {
+    static FLIP: AtomicUsize = AtomicUsize::new(0);
+    let scenario = |ctx: Ctx| async move {
+        let target = ctx.target(async {
+            tokio::task::yield_now().await;
+        });
+        let _ = target.await;
+        let flag = FLIP.fetch_add(1, Ordering::SeqCst).is_multiple_of(2);
+        Ok(Observation::new().with("flag", flag))
+    };
+    let report = explore_fields(
+        &config(),
+        FieldContract::new().effect("flag", Expect::Atomic),
+        scenario,
+    );
+    assert!(!report.trials.is_empty(), "{report}");
+    assert!(report.violations().next().is_none(), "{report}");
+    assert!(report.is_clean(), "{report}");
+    assert!(
+        report
+            .unknown()
+            .any(|trial| trial.field_judgment.as_ref().is_some_and(|j| {
+                j.fields
+                    .iter()
+                    .any(|field| field.status == FieldStatus::Unknown)
+            })),
+        "unknown() must include field-unknown trials: {report}"
+    );
+    assert_eq!(report.unknown().count(), report.field_unknown().count());
+    assert_eq!(report.verdict_count(Verdict::Unknown), 0);
+    assert!(!report.is_clean_within_coverage(), "{report}");
+    assert!(
+        report
+            .coverage_gaps()
+            .iter()
+            .any(|gap| gap.contains("unstable")),
+        "{report}"
+    );
+}
+
+/// The canonical `u32`/`u8` observations from the blob tests can be judged
+/// without casts, so porting a scenario to fields does not change its shape.
+#[test]
+fn common_integer_observations_convert_without_casts() {
+    let scenario = |ctx: Ctx| async move {
+        let target = ctx.target(async {
+            tokio::task::yield_now().await;
+        });
+        let _ = target.await;
+        Ok(Observation::new().with("value", 42u32))
+    };
+    let report = explore_fields(
+        &config(),
+        FieldContract::new().effect("value", Expect::Atomic),
+        scenario,
+    );
+    assert!(!report.trials.is_empty(), "{report}");
+    // The target always returns 42, so the effect is degenerate: this is the
+    // documented clean-but-not-covered case, not a pass.
+    assert!(report.is_clean(), "{report}");
+    assert!(!report.is_clean_within_coverage(), "{report}");
 }

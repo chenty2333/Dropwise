@@ -24,6 +24,14 @@
 //! separates definite violations from coverage gaps, and the report keeps the
 //! same distinction.
 //!
+//! Mixed calibration is not sampled here.  A per-operation mixture is
+//! expressible field by field when each independently cancellable effect has
+//! its own field.  A fused aggregate field (for example a total count over
+//! several operations) can be [`FieldStatus::Neither`] on a legitimate
+//! one-done/one-skipped execution; declare one field per independent effect,
+//! or use the single-blob [`explore_observed`](crate::explore_observed) when
+//! the observable is inherently fused.
+//!
 //! The contract is declared by the scenario author.  Nothing here infers that a
 //! field is an effect or a state from its name or value; a strict contract does
 //! reject fields that the scenario observed without declaring them, so an
@@ -109,6 +117,42 @@ impl From<usize> for Value {
 impl From<i32> for Value {
     fn from(value: i32) -> Self {
         Value::Int(i64::from(value))
+    }
+}
+
+macro_rules! value_from_unsigned {
+    ($($ty:ty),* $(,)?) => {
+        $(
+            impl From<$ty> for Value {
+                fn from(value: $ty) -> Self {
+                    Value::UInt(u64::from(value))
+                }
+            }
+        )*
+    };
+}
+
+value_from_unsigned!(u8, u16, u32);
+
+impl From<i8> for Value {
+    fn from(value: i8) -> Self {
+        Value::Int(i64::from(value))
+    }
+}
+
+impl From<i16> for Value {
+    fn from(value: i16) -> Self {
+        Value::Int(i64::from(value))
+    }
+}
+
+impl From<isize> for Value {
+    fn from(value: isize) -> Self {
+        Value::Int(i64::try_from(value).unwrap_or(if value.is_negative() {
+            i64::MIN
+        } else {
+            i64::MAX
+        }))
     }
 }
 

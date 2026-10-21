@@ -142,6 +142,52 @@ the plan is `Unknown`; a calibration run that fails or leaks is a
 `Report::calibration_errors` entry. Neither is a violation, and neither counts
 as a clean result.
 
+## Field contracts
+
+`explore_fields` keeps the same plans and calibration runs but judges named
+fields instead of one blob:
+
+```rust
+use dropwise::{Ctx, Expect, FieldContract, Observation, explore_fields};
+
+fn scenario(ctx: Ctx) -> impl Future<Output = Result<Observation, String>> + Send + 'static {
+    async move {
+        let target = ctx.target(async {
+            // ... the operation ...
+        });
+        let visible = target.await.is_some();
+        Ok(Observation::new()
+            .with("target.visible", visible)
+            .with("client.clean", true))
+    }
+}
+
+let contract = FieldContract::new()
+    .effect("target.visible", Expect::Atomic)
+    .state("client.clean");
+let report = explore_fields(&config, contract, scenario);
+```
+
+- An **effect** field must differ between `pre` and `post`. Equality is
+  `Degenerate`: the cut did not discriminate this field, so it is a coverage gap,
+  not a pass. A value that matches neither side is `Neither` and a definite
+  violation.
+- A **state** field must agree in `pre` and `post` and hold in the trial.
+- `Invariant` relates effect outcomes (`at_most_one`, `at_least_one`,
+  `exactly_one`, `all_or_none`, `implies`).  A violated relation is a violation;
+  an undecidable one is a coverage gap.
+- A field absent from the observation or the baseline is a contract/coverage
+  problem.  `FieldContract::strict()` also flags an observed field you did not
+  declare.
+- No mixed calibration is sampled.  Per-operation mixtures work when each
+  independent effect has its own field; a fused aggregate (a total count) can be
+  `Neither` on a legitimate one-done/one-skipped execution.  Declare separate
+  fields or use `explore_observed` for an inherently fused observable.
+- `Report::unknown()` includes field-`Unknown` trials, and
+  `Report::field_unknown()` isolates them.  `field_coverage_gaps()` lists the
+  deduplicated field gaps.  `replay_fields` and `assert_fields` mirror the
+  single-blob entry points.
+
 ## Pending boundaries and real I/O
 
 A plan cuts at an **observed `Pending` of a marked future**, not at a source

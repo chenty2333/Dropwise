@@ -68,14 +68,29 @@
 //! [`Report::is_clean_within_coverage`] (what [`assert_cancel_correct`] and
 //! [`assert_observed`] check) instead of treating [`Report::is_clean`] as proof.
 //!
+//! # Field contracts
+//!
+//! [`explore_fields`] replaces the single blob with an [`Observation`] of named
+//! fields and a declared [`FieldContract`].  Each effect field is judged
+//! against its own pre/post calibration; a state field must agree across both
+//! and hold in the trial.  Per-field [`Expect`] and cross-field [`Invariant`]s
+//! let a legitimate per-operation mixture be expressed without inventing a
+//! combined value.  This is not a drop-in replacement for the mixed verdict:
+//! each effect needs its own field, and a fused aggregate may be `Neither` on a
+//! legitimate one-done/one-skipped execution because mixed calibration is not
+//! sampled here.  [Report::field_coverage_gaps] and [Report::contract_errors]
+//! keep undecidable fields and contract problems visible, and
+//! [`assert_fields`]/[`replay_fields`] mirror the observed entry points.
+//!
 //! # Reports and replay
 //!
 //! The [`Report`] `Display` output prints violations, baseline/calibration problems, and
 //! coverage gaps concisely; [`Report::diagnostics`] prints every trial with its
 //! plan and observation/calibration comparison. Each [`Trial`] records its
 //! cancellation plan, call sites and outcomes. [`Trial::replay_plan`] returns a
-//! [`Plan`] for [`replay`] or [`replay_observed`], which reattempt that exact
-//! plan with the same contract, calibration, settling and coverage checks.
+//! [`Plan`] for [`replay`], [`replay_observed`] or [`replay_fields`], which
+//! reattempt that exact plan with the same contract, calibration, settling and
+//! coverage checks.
 //! Malformed or unsupported plans are rejected with [`ReplayError`]. Replay is
 //! an attempt, not a deterministic rerun: real I/O can move the target site or
 //! the `Pending` boundary, and the report says `Unrealized` rather than silently

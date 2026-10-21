@@ -93,6 +93,12 @@ queries whose result is simply discarded.
   or carries on, it must equal `post`. Comparing only with `post` reports every
   clean rollback as a failure. If the two calibration runs of a side disagree,
   the verdict is unknown, not a violation.
+- **With `explore_fields`, declare one field per independent effect.** A field
+  contract judges each name against its own pre/post calibration and does not
+  sample mixed calibrations. Separate fields can express "first done, second
+  not" legitimately; a fused total cannot, and is reported as a violation. A
+  state field must be true on both calibration sides, not a value the operation
+  changes.
 - **State the contract when progress is legitimately partial.** `write_all`
   may leave a prefix written; a multi-effect operation may apply a subset; an
   atomicity check would flag both. `Expect::{Atomic, Completed, Undone}` covers

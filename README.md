@@ -81,6 +81,17 @@ targets before their first poll (`pre`) and by cancelling nothing (`post`), and
 each trial is classified against both; `Expect` says which of them the calling
 context allows. See [Observed outcomes](#features) below.
 
+`explore_fields` is the same engine when the observation has named effects:
+the scenario returns an `Observation`, the caller declares an `FieldContract`
+with per-field `Expect` and optional cross-field `Invariant`s, and the report
+judges each field separately.  A field that did not move between calibration
+sides is a coverage gap (no discriminating power), not a silent pass; a field
+missing from the observation, or an undeclared observed field in a strict
+contract, is a contract problem.  Each independently cancellable effect needs
+its own field: a fused aggregate can be `Neither` on a legitimate mixture
+because this path does not sample mixed calibrations.  See
+[Field contracts](docs/using-dropwise.md#field-contracts).
+
 What you mark and what you check afterwards decide what a run can find. See
 [Choosing what to cancel and what to observe](docs/choosing-targets.md) for a
 target checklist and survivor-style observations.
@@ -132,8 +143,17 @@ than counted as passes; `assert_cancel_correct` fails on them.
   calibration run is a `Report::calibration_errors` entry (not a baseline error
   and not a panic). Equal `pre`/`post` observations add a `Report::notes` entry:
   that observation can see contamination, not whether the operation happened.
+- **Field contracts.** `explore_fields(&config, contract, scenario)` replaces the
+  single blob with named `effect` and `state` fields.  An effect must differ
+  between the pre and post calibration; a state must agree across both and hold
+  in the trial.  `FieldStatus::{Degenerate,Uncovered,Unknown}` are coverage gaps,
+  `Neither`/`Violated` are definite violations, and `Invariant` relates effect
+  outcomes (at most one, at least one, exactly one, all-or-none, implies).
+  `assert_fields` and `replay_fields` mirror the observed entry points.  The
+  contract is declared, never inferred; `FieldContract::strict` also flags
+  observed fields that were not declared.
 - **Plan replay.** Every `Trial` records its cancellation plan; `Trial::replay_plan`
-  returns the value to pass to `replay` or `replay_observed`. Replay reattempts
+  returns the value to pass to `replay`, `replay_observed` or `replay_fields`. Replay reattempts
   exactly that plan (cuts, race timing, gap substitutions, repeated-site flag)
   and re-runs the baseline, contract, calibration, settling and coverage checks.
   Empty, calibration-only, duplicated/unsorted, repeated-site-with-several-cuts
@@ -179,7 +199,9 @@ A run can come back without a violation for reasons that are not success. The
 | `baseline_errors` | the *uncancelled* run already fails or leaks: fix that before reading the trials |
 | `violations()` | a plan found a problem: the invariant failed, or an `Obligation` was dropped unresolved or left outstanding |
 | `calibration_errors` | a calibration run failed, leaked or produced no observation, so the affected plan could not be judged |
-| `unknown()` | a calibration side's two samples disagreed (or a side was absent), so `explore_observed` could not judge that plan; not a violation |
+| `contract_errors` | the field contract is invalid, a declared field is absent from the baseline, or a strict contract saw an undeclared field |
+| `unknown()` | a calibration side's two samples disagreed (or a side was absent), or a field is `FieldStatus::Unknown`; not a violation. `field_unknown()` isolates the field cases |
+| `field_coverage_gaps()` | the deduplicated field-contract gaps (degenerate, uncovered, unstable, invariant undetermined) behind `coverage_gaps()` |
 | `unrealized()` | a planned `Pending` boundary was never reached, so that plan tested nothing |
 | `unsettled()`, `!baseline_settled` | `Settle::watchdog` cut the observation window short: late effects may be missing, so a clean result is inconclusive |
 | `truncated` | `max_runs` left plans unrun (either stopped the search or skipped an unqueueable subtree) |
