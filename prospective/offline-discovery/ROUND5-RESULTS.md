@@ -146,3 +146,23 @@ contract is declared, not discovered, and assumes effect independence.
 3. Auto-derive fields from resource identity in the Rust engine and re-run
    round-3/4 cases to see which “passes” were actually uncovered; the manual
    port is done, but its discovery claim is not yet measured on those cases.
+
+
+## Closeout decision (2026-10-22)
+
+The main contribution pursued next is cross-layer obligation/state-desynchronization
+testing, with the online guard as a reference repair mechanism. The Rust field
+port now includes cross-field effect relations, not merely independent fields;
+it still does not infer contracts. Its fused-observation limitation remains.
+Compare field and whole-observation judgments with equivalent allowed outcomes,
+so a weaker baseline contract does not manufacture a discovery advantage.
+
+Three upstream async-driver patches have now been prepared and reviewed locally;
+see [their status](../phase4-exploration/python/pg-mysql/upstream/README.md).
+The psycopg async entry patch is separate from this round's synchronous-signal
+repair and does not retroactively extend that repair's coverage. Live-owner
+claims are implemented in the Rust research guard, with sole-owner authority
+for connection-wide recovery; they are not yet a Python ownership integration.
+The earlier “next” list is superseded by the [current research decision](../../research/theory/PROGRESS-GUARDS.md#当前收尾判断跨层责任中断与状态失步): prioritize pool handoff and pipeline responsibility,
+reuse mature positive controls, and do not add automatic field derivation or a
+policy learner merely to expand the framework.

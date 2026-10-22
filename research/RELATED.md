@@ -34,3 +34,12 @@
 | [SQLx Transaction](https://docs.rs/sqlx/0.9.0/sqlx/struct.Transaction.html)、[Pool acquire](https://docs.rs/sqlx/0.9.0/sqlx/struct.Pool.html#method.acquire) 与项目已有守卫补丁 | 已有事务 Drop 回滚、acquire 取消后淘汰连接等处理。 | 必须作为成熟基线，不能把主流库概括为“只在 I/O Error 时丢弃”。比较阶段覆盖、误拒绝、恢复成本和接入成本。 |
 
 这些工作支持把进度、责任和交接一起研究，但不支持“加几个 bit 即零开销”“有限测试证明零误报”或“已有在线规则必然需要离线综合”。提案中的可证伪实验用于区分这些可能性。
+
+
+## 构造期与复用边界的直接先例（2026-10-22 收尾）
+
+- [`tokio-postgres` 0.7.18 的 `TransactionBuilder::start`](https://docs.rs/tokio-postgres/0.7.18/src/tokio_postgres/transaction_builder.rs.html) 在等待 BEGIN 前建立 `RollbackIfNotDone`。这直接覆盖“服务端效果已开始、返回给调用者的 Transaction 尚未建立”的窗口，不能宣称现有 RAII 未考虑构造期取消。[本地真实上游对照](../prospective/upstream-pg-baseline/README.md) 已验证 typed BEGIN 取消后服务端回到 idle。
+- [Go `database/sql/driver`](https://pkg.go.dev/database/sql/driver) 将复用前的 `SessionResetter` 与归还前的 `Validator` 分开，且明确讨论未回池而直接复用。接口本身不保证每个驱动都实现完整清理，但不是“只有回池才有检查”。
+- [PostgreSQL Pipeline](https://www.postgresql.org/docs/current/libpq-pipeline-mode.html) 要求关联请求队列与返回结果，并处理 Sync 之前的错误传播。它与独立 stream 的多路复用不等价；应分别检验请求级关联和连接级恢复权限。
+
+本轮采用“离线发现为主、在线强制器验证修复”的定位，具体决策与对最新评审的事实修正见 [研究提案的收尾更新](theory/PROGRESS-GUARDS.md#当前收尾判断跨层责任中断与状态失步)。已有类型状态、补偿与会话取消机制是可复用的基础；本项目要验证的增量在跨层遗漏的系统发现、契约表达、迁移成本及强制边界，而不是所有权令牌本身。
