@@ -48,14 +48,18 @@ Added to `tests/test_transaction_async.py`:
 - a `SAVEPOINT` rejected by the server in an aborted transaction, checking
   that the local stack stays balanced.
 
-All of these fail on the unpatched baseline except the control test cancelling
-while waiting for the connection lock, which passes both before and after.
+The six entry-recovery regressions fail on the unpatched baseline. The
+connection-lock cancellation control passes both versions. A further control
+attempts to re-enter the same active transaction object, catches the expected
+TypeError and verifies that the original writes still commit. It passes with
+pipeline both off and on; entry recovery must not unwind the original frame
+when a second entry is rejected.
 
 ## Validation
 
 ```
 PSYCOPG_TEST_DSN=... pytest tests/test_transaction_async.py tests/test_transaction.py
-175 passed, 9 skipped
+177 passed, 9 skipped
 ```
 
 `black --check`, `flake8`, and `mypy --follow-imports=silent` are clean on the
@@ -68,4 +72,6 @@ excluding `test_resolve_error_host`, which fails independently of this change:
 the local resolver maps `nosuchhost.example.com` to a non-public address
 instead of failing DNS resolution as the test expects.
 
-Not run: full test suite, Windows/macOS, C implementation, remote CI.
+The local environment used psycopg's binary libpq implementation. Not run:
+full test suite, Windows/macOS, separate pure-Python and psycopg-c matrices,
+remote CI.

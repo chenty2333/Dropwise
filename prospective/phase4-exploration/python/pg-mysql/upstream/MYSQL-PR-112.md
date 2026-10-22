@@ -64,9 +64,8 @@ fetches and authentication. Cancellation is handled there:
 ### What this does not do
 
 This does not try to recover the connection by sending `ROLLBACK`, `PING`,
-`reset_session()` or another command after a cancellation. There is no way to
-prove that the first reply consumed by such a command belongs to the recovery
-command rather than to the cancelled one. Recovery is therefore explicit:
+`reset_session()` or another command after a cancellation. This patch does not implement the protocol-progress tracking needed to prove
+that a reply belongs to the recovery command rather than to the cancelled one. Recovery is therefore explicit:
 close the connection and reconnect. Attempts to reuse a poisoned connection
 (including `rollback()` and `reset_session()`) fail with `OperationalError`
 instead of returning a false success.
@@ -158,7 +157,7 @@ passes for all changed files. No remote CI was run.
   cancelled in a dedicated test, but they use the same `MySQLSocket.read()`
   guard as the tested prepared execute and multi-result paths.
 - Cancellation delivered at an await point outside socket I/O does not poison
-  the connection (the stream is still consistent). A cursor context manager
+  the connection (those sites are outside the socket guard). A cursor context manager
   preserves the cancellation in that case, but calling `close()` directly in a
   `finally` block while such a cancellation unwinds can still raise
   `InternalError` for an unread result, as before. This change does not add a

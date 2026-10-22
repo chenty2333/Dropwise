@@ -86,8 +86,8 @@ observer connections:
 
 The four tests that exercise the bug fail on the unpatched baseline.  The
 cancellation test fails with the observer seeing zero rows while the next
-transaction reported success, which is the silent data-loss symptom from the
-issue.  The nested tests pass on both versions and protect against clearing
+transaction reported success, which is the silent uncommitted-write symptom from the
+issue; later rollback or close can discard it.  The nested tests pass on both versions and protect against clearing
 the outer transaction.
 
 ## Local verification

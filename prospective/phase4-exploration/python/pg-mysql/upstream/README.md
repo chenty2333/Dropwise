@@ -31,12 +31,13 @@ baseline (`git show HEAD^:<file>`) to confirm the new tests fail before the fix.
 - baseline: `origin/master` `99356800` ("fix: don't poll the cancel connection if the socket is not ready")
 - patch: `5f295ab1` ("fix: recover async transaction state on cancelled entry")
 - files: `psycopg/psycopg/transaction.py`, `tests/test_transaction_async.py`, `docs/news.rst`
-- fixed tests: `PSYCOPG_TEST_DSN='host=127.0.0.1 port=32919 user=postgres password=dw dbname=dw' .venv/bin/python -m pytest tests/test_transaction_async.py tests/test_transaction.py -q` -> 175 passed, 9 skipped
-- baseline: 6 failed, 169 passed, 9 skipped; the six failures are the new entry-cancellation/savepoint tests, while the lock-wait control and the sync transaction tests pass
+- fixed tests: `PSYCOPG_TEST_DSN='host=127.0.0.1 port=32919 user=postgres password=dw dbname=dw' .venv/bin/python -m pytest tests/test_transaction_async.py tests/test_transaction.py -q` -> 177 passed, 9 skipped
+- baseline: 6 failed, 171 passed, 9 skipped; the six failures are the new entry-cancellation/savepoint tests, while the lock-wait control and the sync transaction tests pass
 - broader async suite (`test_connection_async`, `test_cursor_*_async`, `test_pipeline_async`, `test_tpc_async`, `test_prepared_async`, `test_concurrency_async`, `test_notify_async`): 784 passed, 37 skipped excluding `test_resolve_error_host` (the local resolver maps `nosuchhost.example.com` to a non-public address instead of failing DNS as the test expects)
 - checks: `black --check`, `flake8`, `mypy --follow-imports=silent` clean on changed files
 - PR draft: `PSYCOPG-PR-1451.md`
-- remaining coordinator checks: pipeline-entry cancellation is not covered (pipeline variants skip); full suite and remote CI were not run
+- coordinator review found and fixed a re-entry regression in the submitted patch: rejecting a second `__aenter__()` on the same active object must not roll back the original transaction. The new control passes on upstream, fails with the submitted patch, and passes after the local follow-up, with pipeline both off and on.
+- remaining coverage: pipeline-entry cancellation is not covered (the command-queue path does not suspend like the direct wire path); full suite and remote CI were not run
 
 ### asyncpg #1386
 
@@ -66,8 +67,37 @@ baseline (`git show HEAD^:<file>`) to confirm the new tests fail before the fix.
 - PR draft: `MYSQL-PR-112.md`
 - remaining coordinator checks: C-extension path and a dedicated cancelled server-side prepared fetch are not covered; compression is covered by a unit test plus the manual check but not by an integration test; full suite and remote CI were not run
 
+## Coordinator closeout (2026-10-22)
+
+The three production diffs, tests and drafts have been reviewed locally. The
+psycopg re-entry regression was corrected in a separate follow-up commit on
+`codex/tx-entry-cancel`; the branch now contains both the original repair and
+that correction. No production correction was needed for asyncpg or MySQL.
+
+Independent reruns confirmed:
+
+- psycopg: 177 transaction tests passed, 9 skipped; the broader async selection
+  passed 784, skipped 37, with the known resolver test excluded. Replacing only
+  the production module with upstream reproduced the six entry failures;
+  re-entry itself passes upstream. Black, flake8 and targeted mypy passed.
+  The test environment used the binary libpq implementation.
+- asyncpg: transaction/pool/cancellation/timeout suites ran 101 tests, OK with
+  4 skipped. Upstream production code reproduced four transaction failures;
+  restored patch passed all 12 transaction tests again. Flake8 passed.
+- MySQL: the focused 11 tests passed; upstream production code reproduced
+  5 failures and 4 errors, then the restored patch passed again. Connection,
+  cursor, pooling and timeout suites ran 94/75/18/22 tests respectively, all OK
+  (7/0/0/5 skipped). These are pure-Python aio tests against MySQL 9.6.0.
+
+**Local review is complete; the branches are ready for the user's PR submission
+step.** The asyncpg change deliberately clears stale local registration rather
+than promising rollback after every cancelled BEGIN; the draft describes the
+reset/reuse boundary. The MySQL patch intentionally retires a cancelled stream
+rather than attempting transparent recovery.
+
 ## Remaining work before publishing
 
-- Human/coordinator review of the three diffs and PR drafts.
+- Review the final upstream-facing text and choose whether to squash the two
+  psycopg commits for a single-fix PR.
 - Upstream CI (including the projects' Python/OS matrices) not run.
 - No push, PR, comment, email or CLA action has been performed.
