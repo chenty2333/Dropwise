@@ -1,0 +1,283 @@
+[
+  {
+    "scenario": "Short_Transaction",
+    "K": 8,
+    "stages": [
+      "enter_send",
+      "body_fetch",
+      "commit_wait"
+    ],
+    "method_a": {
+      "trials": 8,
+      "time_s": 0.16727100999560207,
+      "verdicts": [
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "POST"
+      ],
+      "unique_verdicts": [
+        "POST",
+        "FAIL_CLOSED"
+      ],
+      "duplicates": 3,
+      "details": [
+        {
+          "k": 1,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 2,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 3,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 4,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 5,
+          "stage": "enter_send",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 6,
+          "stage": "body_fetch",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 7,
+          "stage": "commit_wait",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 8,
+          "stage": "unknown",
+          "verdict": "POST"
+        }
+      ]
+    },
+    "method_b": {
+      "trials": 3,
+      "time_s": 0.12131256899738219,
+      "verdicts": [
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED"
+      ],
+      "unique_verdicts": [
+        "FAIL_CLOSED"
+      ],
+      "omissions": [
+        "POST"
+      ],
+      "details": [
+        {
+          "target_stage": "enter_send",
+          "realized_yield": 5,
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "target_stage": "body_fetch",
+          "realized_yield": 6,
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "target_stage": "commit_wait",
+          "realized_yield": 7,
+          "verdict": "FAIL_CLOSED"
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "Nested_Transaction_Savepoint",
+    "K": 11,
+    "stages": [
+      "enter_send",
+      "body_fetch",
+      "sp_enter",
+      "sp_release",
+      "commit_wait"
+    ],
+    "method_a": {
+      "trials": 11,
+      "time_s": 0.344089050006005,
+      "verdicts": [
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "POST"
+      ],
+      "unique_verdicts": [
+        "POST",
+        "FAIL_CLOSED"
+      ],
+      "duplicates": 4,
+      "details": [
+        {
+          "k": 1,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 2,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 3,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 4,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 5,
+          "stage": "enter_send",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 6,
+          "stage": "body_fetch",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 7,
+          "stage": "sp_enter",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 8,
+          "stage": "body_fetch",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 9,
+          "stage": "sp_release",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 10,
+          "stage": "commit_wait",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 11,
+          "stage": "unknown",
+          "verdict": "POST"
+        }
+      ]
+    },
+    "method_b": {
+      "trials": 5,
+      "time_s": 0.23594433600374032,
+      "verdicts": [
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED"
+      ],
+      "unique_verdicts": [
+        "FAIL_CLOSED"
+      ],
+      "omissions": [
+        "POST"
+      ],
+      "details": [
+        {
+          "target_stage": "enter_send",
+          "realized_yield": 5,
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "target_stage": "body_fetch",
+          "realized_yield": 6,
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "target_stage": "sp_enter",
+          "realized_yield": 7,
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "target_stage": "sp_release",
+          "realized_yield": 9,
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "target_stage": "commit_wait",
+          "realized_yield": 10,
+          "verdict": "FAIL_CLOSED"
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "Fragmented_Response",
+    "K": 3,
+    "stages": [],
+    "method_a": {
+      "trials": 3,
+      "time_s": 0.004911495998385362,
+      "verdicts": [
+        "FAIL_CLOSED",
+        "FAIL_CLOSED",
+        "FAIL_CLOSED"
+      ],
+      "unique_verdicts": [
+        "FAIL_CLOSED"
+      ],
+      "duplicates": 2,
+      "details": [
+        {
+          "k": 1,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 2,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        },
+        {
+          "k": 3,
+          "stage": "unknown",
+          "verdict": "FAIL_CLOSED"
+        }
+      ]
+    },
+    "method_b": {
+      "trials": 0,
+      "time_s": 3.579916665330529e-07,
+      "verdicts": [],
+      "unique_verdicts": [],
+      "omissions": [
+        "FAIL_CLOSED"
+      ],
+      "details": []
+    }
+  }
+]

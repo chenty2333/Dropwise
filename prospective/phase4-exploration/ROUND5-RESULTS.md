@@ -72,7 +72,7 @@ or a commit-in-flight cancellation; it protects the local registration boundary
 an explicit reset/rollback/close. The psycopg actual patch recovers entry but
 does not cover the partial-send path.
 
-### 4. Formal psycopg partial-send cancellation repair
+### 4. Formal psycopg partial-send cancellation repair (finalized)
 
 Implemented on an independent local branch `codex/partial-send-cancel`
 (`/home/ava/Worktrees/psycopg/partial-send`, based on `origin/master` `99356800`),
@@ -94,24 +94,54 @@ re-raised without touching `PQflush()` or matching exception strings. Fully sent
 requests (`last_wait == WAIT_R`) keep the existing cancel-and-drain path. A
 second interruption during recovery also fail-closes.
 
-Six real-server regression tests cover: continuous backpressure partial send,
-backpressure relief interleaved with cancellation, fully-sent query cancellation,
-recovery interruption, normal large request, and large request server error.
-Baseline fails the interleaving regression (TypeError on C, committed write on
-Python); the updated fix passes 6/6 on both C binary and pure-Python backends.
-Full async concurrency suite (20/20) and related cursor (574), pipeline/waiting
-(91), and transaction (84) tests pass.
+Refinements completed in this final round:
+1. **Production loading logic removed:** `pq/misc.py` changes (`PSYCOPG_LIBPQ` and
+   `psycopg_binary.libs` search) were completely reverted; libpq discovery for pure-Python
+   testing is handled strictly within `tests/conftest.py`.
+2. **Comment and contract boundaries refined:** Overreaching claims ("never executed
+   remotely", "impossible to recover") were removed from `connection_async.py` comments,
+   retaining concrete stage detection, fail-closed policy, and lease loss.
+3. **Disentangled interleaving regressions:** Split into two explicit scenarios in
+   `tests/test_concurrency_async.py`:
+   - Scenario A (`test_cancel_interleaved_proxy_release_only_closes`): only resumes proxy
+     reading without active test flush; verifies cancellation and fail-closed state.
+   - Scenario B (`test_cancel_interleaved_active_flush_closes_safely`): actively drains
+     buffer, explicitly asserts the prerequisite `PQflush() == 0` was met, and declares
+     both 0 or 1 rows as valid wire effects while guaranteeing connection safety and
+     cancellation propagation.
+   Baseline fails Scenario B with `TypeError` on C binary and commits uncancelled on Python;
+   the finalized fix passes 7/7 targeted tests on both C binary and pure Python.
+4. **Independent server-side cleanup & robust negative controls:** `min_repro.py` never
+   calls `conn.close()` to rescue driver omissions. It verifies driver self-close, records
+   independent close timings, enforces bounded waits (5s) for `pg_stat_activity` and
+   `pg_locks` cleanup, and acquires `ACCESS EXCLUSIVE NOWAIT` table locks. Automated negative
+   controls (`driver-unclosed`, `wrong-exception`, `unconfirmed-cleanup`) all fail cleanly
+   with exit code 1 without being masked by `finally` blocks.
 
-The claim that "local closed proves backend and locks cleaned up" is also
-**retracted**; `conn.closed` is merely a local client flag. `min_repro.py` now
-uses an independent unproxied observer, records client/proxy/backend close
-timings, enforces a bounded wait for `pg_stat_activity` and `pg_locks` to drop to
-0, and verifies an independent `ACCESS EXCLUSIVE NOWAIT` table lock with zero
-rows committed.
+### 5. Stage-informed vs yield/pending index replay research
 
-The cost is a lost lease and rollback of any legitimate outer transaction; sync
-and pipeline partial sends remain uncovered. Details are in
-`python/pg-mysql/fragmentation/RESULTS.md` and `upstream/README.md`.
+We evaluated the research question:
+**Can choosing cancellation points based on observable protocol and responsibility stages maintain coverage and reduce redundant test executions when network fragmentation and backpressure alter Pending/yield counts?**
+
+**PSQL Target (psycopg, 5 scenarios across 3 conditions):**
+- **C1 Baseline (Low Delay Proxy, 2048 B chunks):**
+  - Short Tx: Method A ran 7 trials (3 duplicates, 0.11s); Method B ran 3 stage trials (0.09s, 0 omissions).
+  - Nested Tx (Savepoint): Method A ran 10 trials (4 duplicates, 0.24s); Method B ran 5 stage trials (0.18s, 0 omissions).
+- **C2 High Response Fragmentation (256 B chunks, 5ms delay):**
+  - Pending yields exploded from 7 to 32.
+  - Method A ran 32 trials (28 duplicate trials inside `BODY_FETCH`, 2.42s).
+  - Method B recognized the 28 chunk yields as the same `BODY_FETCH` stage, running only 3 targeted trials (0.42s, an **83% runtime reduction** and **90% trial reduction**, with 0 omissions!).
+- **C3 Send Backpressure (8 MB INSERT, 32 KB hold):**
+  - Method A ran 14 trials (13 duplicates across the `WAIT_RW` send loop, 6.67s).
+  - Method B tested the distinct stages (enter, body_send, body_fetch, commit) in 4 trials.
+
+**Trade-offs, Stage Ambiguity & Migration Costs:**
+1. **Intra-stage Environmental Scoping:** Backpressure is an environmental condition attached to `BODY_SEND`. If a test harness arms backpressure unconditionally for all stages, downstream stages (`BODY_FETCH`, `COMMIT_WAIT`) become unreachable. Stage-informed targeting requires environmental preconditions to be scoped to their corresponding stage.
+2. **Pre/Post-scenario Yields:** In Method A, yields during connection handshake (`k=1..4`) or post-commit coroutine cleanup (`k=8`) are unclassified (`Stage.UNKNOWN`). Method B ignores unclassified yields, which avoids testing connection handshakes repeatedly, but excludes post-exit unwinding.
+3. **Cross-Implementation Portability (asyncpg 0.32.0):**
+   - Transferred directly: Transaction lifecycle stages (`ENTER`, `BODY`, `COMMIT`, `SAVEPOINT`) and observer table checks.
+   - Reinterpretation required: `asyncpg` does not use libpq, has no `libpq.transaction_status`, and has no Cython generator yielding `WAIT_W`/`WAIT_R`. Its event-driven `asyncio.Protocol` suspends on `asyncio.Future` query completions.
+   - Legal outcome divergence: When cancelled at `COMMIT`, asyncpg severs the connection (`FAIL_CLOSED`) rather than preserving or rolling back; post-commit return yields commit on server (`POST`). Wire fragmentation proxies tailored for text v3 headers fail on asyncpg's binary type OID negotiation (`ConnectionError: unexpected connection_lost()`), showing wire-level proxy fixtures are less portable across drivers than lifecycle-level probes.
 
 Bottom line: the actual patches are narrower than the experimental arms; the
 complete differential already detects the psycopg entry defect, so the probe's

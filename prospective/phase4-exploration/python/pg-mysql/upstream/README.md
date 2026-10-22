@@ -76,6 +76,18 @@ baseline (`git show HEAD^:<file>`) to confirm the new tests fail before the fix.
 - PR draft: `MYSQL-PR-112.md`
 - remaining coordinator checks: C-extension path and a dedicated cancelled server-side prepared fetch are not covered; compression is covered by a unit test plus the manual check but not by an integration test; full suite and remote CI were not run
 
+### psycopg partial-send cancellation (local worktree)
+
+- checkout: `/home/ava/Worktrees/psycopg/partial-send`
+- branch: `codex/partial-send-cancel`
+- baseline: `origin/master` `99356800` ("fix: don't poll the cancel connection if the socket is not ready")
+- commits: `fbcbf651`, `db8b6a09`, `0220617b`
+- files: `psycopg/psycopg/connection_async.py`, `tests/test_concurrency_async.py`, `tests/conftest.py`
+- mechanism: stage-scoped tracking via `_WaitGenTracker(gen)`. Cancelling on `WAIT_W` fail-closes immediately (`finish()`) and re-raises `CancelledError`, closing the window where backpressure relief caused `PQflush()` to return 0 and send generator to throw `TypeError: an integer is required`.
+- fixed tests: 7/7 targeted tests pass on both binary and pure Python backends; concurrency suite 20/20, full async suite 574 cursor, 91 pipeline/waiting, 84 transaction tests.
+- production boundary: `pq/misc.py` was kept pristine (no production env var or libs hack); discovery is strictly confined to test startup.
+- PR draft / submission status: kept local, not submitted.
+
 ## Coordinator closeout (2026-10-22)
 
 The three production diffs, tests and drafts have been reviewed locally. The

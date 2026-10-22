@@ -96,6 +96,19 @@ class FragmentingProxy(DelayProxy):
         self.upstream_closed = asyncio.Event()
         self.upstream_closed_time: float | None = None
 
+    async def start(self, rcvbuf: int | None = None) -> int:
+        if rcvbuf is not None:
+            sock = socket.socket()
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, rcvbuf)
+            sock.bind(("127.0.0.1", 0))
+            sock.listen()
+            sock.setblocking(False)
+            self._server = await asyncio.start_server(self._handle, sock=sock)
+        else:
+            self._server = await asyncio.start_server(self._handle, "127.0.0.1", 0)
+        assert self._server.sockets
+        return self._server.sockets[0].getsockname()[1]
+
     # ---- accountancy -------------------------------------------------
     def reset_stats(self) -> None:
         self.bytes_s2c = self.bytes_c2s = 0

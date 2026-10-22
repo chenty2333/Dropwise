@@ -361,51 +361,56 @@ and does not prove server backend processes or table locks have been released.
 `min_repro.py` was revised to perform independent server-side verification:
 1. Records the tested connection's `backend_pid` before the partial send.
 2. Uses an independent direct connection (bypassing the proxy) as observer.
-3. Separately records client close duration, proxy upstream connection close timing,
+3. Does not call `conn.close()` to rescue driver omissions; driver must self-close.
+4. Separately records client close duration, proxy upstream connection close timing,
    and server backend disappearance. The proxy is kept running during observation
    to distinguish driver vs proxy delays.
-4. Bounded wait (5 s timeout) for `pg_stat_activity` and `pg_locks` to drop to 0.
-5. Independently acquires an `ACCESS EXCLUSIVE NOWAIT` table lock and confirms 0
+5. Bounded wait (5 s timeout) for `pg_stat_activity` and `pg_locks` to drop to 0.
+6. Independently acquires an `ACCESS EXCLUSIVE NOWAIT` table lock and confirms 0
    target rows were inserted.
+7. Automated negative controls (`--negative-control driver-unclosed`,
+   `--negative-control wrong-exception`, `--negative-control unconfirmed-cleanup`)
+   verify that validator failures are fatal (exit code 1) and not masked by `finally`.
 
 Empirical timing from PostgreSQL 18.4 (32919):
 - Client closed: `True` (0.0000 s)
-- Proxy upstream closed: `True` (+0.0015 s after client close)
-- Server backend gone: `True` (+0.0540 s after upstream close; 0 in `pg_stat_activity`, 0 in `pg_locks`)
+- Proxy upstream closed: `True` (+0.0021 s after client close)
+- Server backend gone: `True` (+0.0021 s after upstream close; 0 in `pg_stat_activity`, 0 in `pg_locks`)
 - Independent lock check: `ACCESS EXCLUSIVE` acquired; target row count 0.
 
 ### Regression tests
 
-Six regression tests in `tests/test_concurrency_async.py` (real server, upstream style):
+Targeted regression tests in `tests/test_concurrency_async.py` (real server, upstream style):
 
 1. `test_cancel_while_sending_closes_connection` — 8 MB INSERT, 64 KiB proxy
    budget under continuous backpressure; asserts not done, forwarded < payload,
    ACTIVE, `CancelledError`, connection closed, successor `OperationalError: ... closed`,
    observer count 0.
-2. `test_cancel_interleaved_with_backpressure_relief_closes` — backpressure
-   clears while cancellation is unwinding, making socket writable (`PQflush() == 0`).
-   Baseline fails with `TypeError: an integer is required` (C) or commits row (Python);
-   fixed tree passes, fails closed, connection closed, observer count 0.
-3. `test_cancel_after_send_keeps_connection` — small query fully sent (`WAIT_R`); cancel
+2. `test_cancel_interleaved_proxy_release_only_closes` (Scenario A) — only resumes
+   proxy reading without test flush; verifies driver detects send stage and fails closed.
+3. `test_cancel_interleaved_active_flush_closes_safely` (Scenario B) — actively drains
+   buffer, explicitly asserts prerequisite `flushed_zero` is True, verifies safe fail-closed
+   termination without TypeError or ACTIVE hang.
+4. `test_cancel_after_send_keeps_connection` — small query fully sent (`WAIT_R`); cancel
    drains, connection remains usable, successor returns 1.
-4. `test_second_cancel_during_recovery_closes` — recovery interruption closes
+5. `test_second_cancel_during_recovery_closes` — recovery interruption closes
    the wire and still propagates `CancelledError`.
-5. `test_large_query_not_cancelled` — normal 8 MB request completes.
-6. `test_large_query_ordinary_error_keeps_connection` — a normal server error
+6. `test_large_query_not_cancelled` — normal 8 MB request completes.
+7. `test_large_query_ordinary_error_keeps_connection` — a normal server error
    on a large request leaves the connection usable.
 
 ### Before/after
 
 Binary C implementation, PostgreSQL 18.4 at 32919:
 
-| build | continuous backpressure cancel | interleaved relief cancel | connection after | successor | observer target rows |
+| build | continuous backpressure cancel | interleaved relief cancel (Scenario B) | connection after | successor | observer target rows |
 |---|---|---|---|---|---|
 | upstream `99356800` | `TypeError: an integer is required` | `TypeError: an integer is required` | ACTIVE, busy, not closed | `another command is already in progress` | 0 rows |
 | fixed with tracker | `CancelledError` (0.001 s) | `CancelledError` (0.001 s) | closed (`tx=4`, not busy) | `OperationalError: the connection is closed` | 0 rows |
 
 Pure-Python implementation (`PSYCOPG_IMPL=python`), same 8 MB INSERT:
 
-| build | continuous backpressure cancel | interleaved relief cancel | connection after | observer target rows | successor |
+| build | continuous backpressure cancel | interleaved relief cancel (Scenario B) | connection after | observer target rows | successor |
 |---|---|---|---|---|---|
 | upstream `99356800` | `CancelledError` (silently resumed) | `CancelledError` (silently resumed) | IDLE, reusable | **1 (cancelled INSERT committed)** | `(1,)` |
 | fixed with tracker | `CancelledError` | `CancelledError` | closed | **0** | `OperationalError: the connection is closed` |
@@ -416,14 +421,14 @@ Test commands:
 cd /home/ava/Worktrees/psycopg/partial-send
 PYTHONPATH=$PWD/psycopg PSYCOPG_TEST_DSN='host=127.0.0.1 port=32919 user=postgres password=dw dbname=dw' \
   /home/ava/Worktrees/psycopg/tx-cancel/.venv/bin/python -m pytest \
-  tests/test_concurrency_async.py -k 'cancel_while_sending or cancel_after_send or large_query or second_cancel or cancel_interleaved' -v
+  tests/test_concurrency_async.py -k 'partial or interleaved or cancel_after_send or large_query or second_cancel' -v
 ```
 
-Six targeted tests pass on both backends (6/6 C binary, 6/6 pure Python).
+Seven targeted tests pass on both backends (7/7 C binary, 7/7 pure Python).
 The full concurrency async suite passed 20/20 on both backends.
 Related async suites passed 574 cursor, 91 pipeline/waiting, 84 transaction tests.
-Pure Python backend automatically discovers bundled libpq via `psycopg_binary.libs`
-in `find_libpq_full_path()` without installing system packages.
+Pure Python backend discovers bundled libpq via `tests/conftest.py` hook without modifying
+production package code `pq/misc.py`.
 
 ### Scope limits and trade-offs
 
