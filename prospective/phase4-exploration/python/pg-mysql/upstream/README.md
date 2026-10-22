@@ -17,11 +17,20 @@ visible from an independent connection. The MySQL script confirms the first
 query is running before cancelling it, then demonstrates its reply being
 returned for `SELECT 42`.
 
+## Repair PR submission status (2026-10-22)
+
+- psycopg transaction-entry repair: [PR #1454](https://github.com/psycopg/psycopg/pull/1454), including the reviewed active-transaction re-entry correction.
+- asyncpg failed-start registration repair: [PR #1399](https://github.com/MagicStack/asyncpg/pull/1399).
+- MySQL cancellation repair: still local. Submission is pending the user's own signature of the Oracle Contributor Agreement; no agreement was signed on the user's behalf and no MySQL PR was opened.
+
+The published branches match the locally reviewed commits. Remote checks and
+maintainer acceptance are separate from the local results below.
+
 ## Local patch worktrees (2026-10-22)
 
 Three independent clean worktrees, each branched from the verified upstream
-baseline. All changes are local commits; nothing was pushed and no upstream PR
-was opened. Each branch was tested with its production change reverted to the
+baseline. At preparation time all changes were local; subsequent submission status is
+recorded above. Each branch was tested with its production change reverted to the
 baseline (`git show HEAD^:<file>`) to confirm the new tests fail before the fix.
 
 ### psycopg #1451
@@ -89,15 +98,13 @@ Independent reruns confirmed:
   cursor, pooling and timeout suites ran 94/75/18/22 tests respectively, all OK
   (7/0/0/5 skipped). These are pure-Python aio tests against MySQL 9.6.0.
 
-**Local review is complete; the branches are ready for the user's PR submission
-step.** The asyncpg change deliberately clears stale local registration rather
+**Local review is complete; the psycopg and asyncpg branches are submitted.** The asyncpg change deliberately clears stale local registration rather
 than promising rollback after every cancelled BEGIN; the draft describes the
 reset/reuse boundary. The MySQL patch intentionally retires a cancelled stream
 rather than attempting transparent recovery.
 
 ## Remaining work before publishing
 
-- Review the final upstream-facing text and choose whether to squash the two
-  psycopg commits for a single-fix PR.
-- Upstream CI (including the projects' Python/OS matrices) not run.
-- No push, PR, comment, email or CLA action has been performed.
+- The user must personally complete the Oracle OCA before submitting MySQL.
+- Upstream CI and maintainer review are not yet confirmed complete.
+- psycopg was submitted with both reviewed commits; no history rewrite was needed.
