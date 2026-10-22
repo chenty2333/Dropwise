@@ -1,5 +1,7 @@
 # asyncpg: same-lease reuse after the entry fix (round 5, group 1)
 
+> Review correction (2026-10-22): the patched arm below is the old terminate-on-entry experiment, not the submitted `_top_xact` repair. Independent one-trial checks with the actual patch reproduced same-lease INSERT success without visibility, followed by rollback on return; explicit reset before INSERT succeeded visibly. The actual-patch matrix is still required. See the coordinator correction in the round-5 overview.
+
 This completes the boundary that round 4 recorded only as a note.  The tested
 handle goes through a 50 ms proxy; an independent direct observer confirms that
 the server executed `BEGIN` before the cancellation is sent.  The cancellation

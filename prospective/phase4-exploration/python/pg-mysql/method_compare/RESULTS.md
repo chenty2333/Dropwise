@@ -1,5 +1,7 @@
 # Cut scale and method increment (round 5, Work 2)
 
+> Review correction (2026-10-22): `effect_judge.py` is a target-only ablation, not the existing calibrated successor differential. Its `visible_after_cancel` label is not an Atomic violation. The stated superiority/false-positive comparison against the original differential method is not established; a same-contract comparison remains required. Entry probe detections also currently short-circuit on transaction state before the write probe.
+
 All numbers below are from the disposable local PostgreSQL 18.4 at
 `127.0.0.1:32870`, Python 3.13.13, psycopg 3.3.6, asyncpg 0.32.0.  The tested
 handle goes through a 50 ms per-chunk `DelayProxy`; the observer is a separate

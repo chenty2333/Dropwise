@@ -1,5 +1,7 @@
 # Old/new handle comparison (round 5, Work 1)
 
+> Review correction (2026-10-22): the current probe returns on open transaction state before running its transaction-write/visibility steps. Entry results therefore establish state-check discrimination, not an independently measured black-box successor or fresh-reference increment. Separate diagnostic and effect modes are needed. The asyncpg fixed arm is the older terminate experiment, not the submitted registration repair.
+
 `successor_probe/probe.py` implements the reusable pair probe:
 fresh-nonce echo + agreed column metadata, session diagnostics, open-transaction
 boundary check, a unique marker write in a normal transaction, bounded

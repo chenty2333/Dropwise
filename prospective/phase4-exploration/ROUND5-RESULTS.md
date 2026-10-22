@@ -1,5 +1,48 @@
 # Round 5 results: handle comparison, cut scale, delivery handoff, and four appended groups
 
+## Coordinator review correction (2026-10-22)
+
+**The original measurements below are retained, but three interpretations need
+correction before this round can be considered closed.**
+
+1. The asyncpg `--fixed` arm loads the older experimental terminate-on-entry
+   monkeypatch, not the submitted `_top_xact` registration repair. Its explicit
+   refusal result does not validate the submitted patch's same-lease boundary.
+   The coordinator independently loaded `/home/ava/Worktrees/asyncpg/repo`
+   (confirmed import path and `Transaction.start()` identity-guard source) and
+   ran one `entry_same_lease` and one `entry_reset` trial against the existing
+   disposable PostgreSQL on port 32919, without the monkeypatch. With the actual
+   patch, ordinary INSERT returned `INSERT 0 1`, remained invisible to the
+   independent observer, and was rolled back on pool return. Explicit reset
+   before INSERT produced a visible write. These are bounded confirmation
+   trials, not a replacement for the full original/actual-patch/experimental
+   strategy matrix. The same-lease boundary remains open for investigation.
+2. `method_compare/effect_judge.py` is a target-effect-only ablation. It neither
+   runs the successor nor implements the existing pre/post calibration and
+   Atomic contract. `visible_after_cancel` is not an Atomic violation. Claims
+   below that this establishes an advantage over the original differential
+   method, or its false-positive rate, are withdrawn pending a same-contract
+   comparison. The strong targeted-test comparison is a separate result.
+3. `successor_probe/probe.py` returns immediately on `in_transaction`, before
+   transaction-write and independent-visibility probes. Entry detections in
+   that mode establish state-check discrimination, not an independent black-box
+   successor or fresh-reference increment. Those contributions need separate
+   measurement with diagnostic state checks decoupled from effect judgment.
+
+Independent validation during review: the 29 Python tests passed. The plain
+asyncio partial-send reproduction also reproduced `TypeError: an integer is
+required`, ACTIVE/busy state, and rejection of the next query, with about
+3.1 MB still queued for sending. No claim of upstream novelty or acceptance is
+made. The string-matching runtime containment is not a production repair.
+Other experiment matrices were reviewed, not independently rerun in full.
+
+Next work: correct the three comparisons, test actual submitted patches, and
+implement a source-level psycopg partial-send cancellation repair with failing
+baseline/passing fixed regression tests. Keep findings, repair scope, method
+increment and remaining uncertainty separate. This correction supersedes
+conflicting interpretations in the historical sections below.
+
+
 New work only; round-4 results and the user's existing logs are not rewritten.
 All experiments use disposable local databases and unique tables.  The main
 artifacts are under `python/pg-mysql/`; commands and raw JSONL are linked from
