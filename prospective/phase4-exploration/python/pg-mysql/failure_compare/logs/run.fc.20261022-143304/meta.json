@@ -1,0 +1,86 @@
+{
+  "asyncpg": "0.32.0",
+  "cwd": "/home/ava/Desktop/Dropwise/prospective/phase4-exploration/python/pg-mysql",
+  "delay": 0.05,
+  "drivers": "both",
+  "finished": "2026-10-22T14:34:56+0900",
+  "outdir": "failure_compare/logs/run.fc.20261022-143304",
+  "psycopg": "3.3.6",
+  "python": "3.13.13 (main, May 10 2026, 19:26:54) [Clang 22.1.3 ]",
+  "reps": 3,
+  "results": [
+    {
+      "calibration": {
+        "driver": "psycopg",
+        "phases": {
+          "body": [
+            3,
+            4
+          ],
+          "enter": [
+            1,
+            2
+          ],
+          "exit_commit": [
+            5,
+            6
+          ]
+        },
+        "yields": 6
+      },
+      "counts": {
+        "cancel_body": 3,
+        "cancel_enter": 3,
+        "cancel_exit_commit": 3,
+        "normal": 3,
+        "server_body_div": 3,
+        "server_body_swallowed_commit": 3,
+        "server_body_unique": 3,
+        "server_entry_savepoint": 3,
+        "server_entry_terminated": 3,
+        "server_exit_commit_deferred": 3
+      },
+      "driver": "psycopg",
+      "totals": {
+        "trials": 30
+      }
+    },
+    {
+      "calibration": {
+        "driver": "asyncpg",
+        "phases": {
+          "body": [
+            2
+          ],
+          "enter": [
+            1
+          ],
+          "exit_commit": [
+            3
+          ]
+        },
+        "yields": 3
+      },
+      "counts": {
+        "cancel_body": 3,
+        "cancel_enter": 3,
+        "cancel_exit_commit": 3,
+        "normal": 3,
+        "server_body_div": 3,
+        "server_body_swallowed_commit": 3,
+        "server_body_unique": 3,
+        "server_entry_savepoint": 3,
+        "server_entry_terminated": 3,
+        "server_exit_commit_deferred": 3
+      },
+      "driver": "asyncpg",
+      "totals": {
+        "trials": 30
+      }
+    }
+  ],
+  "server": "127.0.0.1:32870/dw",
+  "settle": 0.15,
+  "started": "2026-10-22T14:33:04+0900",
+  "timeout": 10.0
+}

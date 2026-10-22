@@ -1,0 +1,12 @@
+== mysql-connector-python aio recovery delay / re-cancel, round 5 ==
+2026-10-22T14:31:44+09:00
+host=127.0.0.1 port=32922 db=dw_r5_mysqldelay_1311517 run=mysql_delay/logs/run.DdAPby
+repo=/home/ava/Desktop/Dropwise
+git_head=6a8e254c63783b270e4280786a26a0a1e2bd8453
+Python 3.13.13
+python=3.13.13
+mysql-connector-python==26.7.0
+connector_file=/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/mysql/connector/__init__.py
+Linux fedora 7.2.11-200.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Thu Oct 15 15:58:58 UTC 2026 x86_64 GNU/Linux
+server=[('9.6.0', 3306, 'FILE', 0, 1, 'REPEATABLE-READ')]
+consumers=[('events_statements_history', 'YES'), ('events_transactions_current', 'YES'), ('events_transactions_history', 'YES')]

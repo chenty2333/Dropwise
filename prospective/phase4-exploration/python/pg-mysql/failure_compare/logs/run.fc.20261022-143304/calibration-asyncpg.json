@@ -1,0 +1,15 @@
+{
+  "driver": "asyncpg",
+  "phases": {
+    "body": [
+      2
+    ],
+    "enter": [
+      1
+    ],
+    "exit_commit": [
+      3
+    ]
+  },
+  "yields": 3
+}

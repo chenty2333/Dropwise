@@ -1,0 +1,6 @@
+EFFECT {"driver": "psycopg", "k": 1, "outcome": "cancelled", "phase": "enter", "rows": [], "seconds": 0.885, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 2, "outcome": "cancelled", "phase": "enter", "rows": [], "seconds": 0.988, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 3, "outcome": "cancelled", "phase": "body", "rows": [], "seconds": 1.089, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 4, "outcome": "cancelled", "phase": "body", "rows": [], "seconds": 1.185, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 5, "outcome": "cancelled", "phase": "exit_commit", "rows": [["target", 1]], "seconds": 1.086, "verdict": "visible_after_cancel"}
+EFFECT {"driver": "psycopg", "k": 6, "outcome": "cancelled", "phase": "exit_commit", "rows": [["target", 1]], "seconds": 1.197, "verdict": "visible_after_cancel"}

@@ -1,0 +1,14 @@
+REC {"driver": "psycopg", "kind": "config", "pause": 0.15, "payload_bytes": 8000000, "port": 32890, "psycopg": "3.3.6", "python": "3.13.13", "t_wall": 1792647809.252915}
+REC {"hold": false, "kind": "bp", "outcome": "completed", "rep": 1, "result": [8000000], "seconds": 0.027, "t_wall": 1792647809.290119, "yields": 5}
+BP hold=False rep=1 yields=5 suspended=None send_q=None proxy_bytes=None flush=None result=(8000000,)
+REC {"hold": false, "kind": "bp", "outcome": "completed", "rep": 2, "result": [8000000], "seconds": 0.025, "t_wall": 1792647809.320948, "yields": 5}
+BP hold=False rep=2 yields=5 suspended=None send_q=None proxy_bytes=None flush=None result=(8000000,)
+REC {"client_tx": "ACTIVE", "flush_pending": 1, "fut_waiter": "<Future pending cb=[Task.__wakeup()]>", "hold": true, "is_busy": true, "kind": "bp", "outcome": "completed", "proxy_bytes_c2s": 65735, "rep": 1, "result": [8000000], "seconds": 0.323, "send_q": 3102790, "suspended": true, "t_wall": 1792647809.649459, "yields": 7}
+BP hold=True rep=1 yields=7 suspended=True send_q=3102790 proxy_bytes=65735 flush=1 result=(8000000,)
+REC {"client_tx": "ACTIVE", "flush_pending": 1, "fut_waiter": "<Future pending cb=[Task.__wakeup()]>", "hold": true, "is_busy": true, "kind": "bp", "outcome": "completed", "proxy_bytes_c2s": 65735, "rep": 2, "result": [8000000], "seconds": 0.336, "send_q": 4097270, "suspended": true, "t_wall": 1792647809.99127, "yields": 8}
+BP hold=True rep=2 yields=8 suspended=True send_q=4097270 proxy_bytes=65735 flush=1 result=(8000000,)
+REC {"after": {"client_tx": "ACTIVE", "closed": false, "is_busy": true, "send_q": 0}, "close_ok": true, "cut_phase": "send", "cut_requested": true, "kind": "bp_cut", "outcome": {"error": "TypeError: an integer is required", "outcome": "error", "traceback_tail": ["  File \"/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/waiting.py\", line 183, in wait_async\n    s = next(gen)
+BP-CUT rep=1 pre_suspended=True send_q=4102390 bytes=65536 outcome=error error=TypeError: an integer is required after={'client_tx': 'ACTIVE', 'is_busy': True, 'closed': False, 'send_q': 0} successor=('err', 'OperationalError: sending query failed: another command is already in progress')
+REC {"after": {"client_tx": "ACTIVE", "closed": false, "is_busy": true, "send_q": 0}, "close_ok": true, "cut_phase": "send", "cut_requested": true, "kind": "bp_cut", "outcome": {"error": "TypeError: an integer is required", "outcome": "error", "traceback_tail": ["  File \"/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/waiting.py\", line 183, in wait_async\n    s = next(gen)
+BP-CUT rep=2 pre_suspended=True send_q=3581386 bytes=65536 outcome=error error=TypeError: an integer is required after={'client_tx': 'ACTIVE', 'is_busy': True, 'closed': False, 'send_q': 0} successor=('err', 'OperationalError: sending query failed: another command is already in progress')
+REC {"kind": "done", "t_wall": 1792647810.829457}

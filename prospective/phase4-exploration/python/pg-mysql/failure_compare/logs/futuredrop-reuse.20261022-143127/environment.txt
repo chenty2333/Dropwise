@@ -1,0 +1,24 @@
+release_bin=/home/ava/Desktop/Dropwise/prospective/t3-sqlx/target/debug/deps/rescan-252ffa1474962797
+fixed_bin=/home/ava/dropwise-rescan-work/t3-sqlx-pr4394/target/debug/deps/rescan-6b5818a3ef9f61d7
+database_url=postgres://postgres:***@127.0.0.1:32870/dw?sslmode=disable
+reps=3
+release_list:
+r3_1_pool_begin: test
+r3_2_pool_acquire: test
+r3_3_prepare_on_pooled_connection: test
+r3_4_frozen_fetch_target: test
+r3_5_whole_transaction: test
+r3_6_two_autocommit_writes: test
+
+6 tests, 0 benchmarks
+888e4a28208c2bd555797620baee81335864ddd24cc53882c4710e40130e803f  /home/ava/Desktop/Dropwise/prospective/t3-sqlx/target/debug/deps/rescan-252ffa1474962797
+fixed_list:
+r3_1_pool_begin: test
+r3_2_pool_acquire: test
+r3_3_prepare_on_pooled_connection: test
+r3_4_frozen_fetch_target: test
+r3_5_whole_transaction: test
+r3_6_two_autocommit_writes: test
+
+6 tests, 0 benchmarks
+4e24751366f4a94425e4fe6099367a614599d18f5818cb6e93d5284160e744d8  /home/ava/dropwise-rescan-work/t3-sqlx-pr4394/target/debug/deps/rescan-6b5818a3ef9f61d7

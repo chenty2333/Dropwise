@@ -1,0 +1,804 @@
+{
+  "calibration": {
+    "asyncpg": {
+      "driver": "asyncpg",
+      "phases": {
+        "body": [
+          2
+        ],
+        "enter": [
+          1
+        ],
+        "exit_commit": [
+          3
+        ]
+      },
+      "yields": 3
+    },
+    "psycopg": {
+      "driver": "psycopg",
+      "phases": {
+        "body": [
+          3,
+          4
+        ],
+        "enter": [
+          1,
+          2
+        ],
+        "exit_commit": [
+          5,
+          6
+        ]
+      },
+      "yields": 6
+    }
+  },
+  "delay": 0.05,
+  "finished": "2026-10-22T14:34:56+0900",
+  "groups": {
+    "asyncpg/cancel_body": {
+      "cleanup": {
+        "none observed: rollback ran and the successor was visible": 3
+      },
+      "levels": {
+        "CancelledError/None": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.75,
+        "min": 1.742,
+        "sum": 5.24
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=ROLLEDBACK": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "asyncpg/cancel_enter": {
+      "cleanup": {
+        "ownerless _top_xact remains; reset()/reconnect required, a fresh CM silently nests": 3
+      },
+      "levels": {
+        "CancelledError/None": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 0,
+      "seconds": {
+        "max": 1.495,
+        "min": 1.487,
+        "sum": 4.48
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 3,
+      "states": {
+        "asyncpg:in_tx=True/tx=FAILED/top=FAILED": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "asyncpg/cancel_exit_commit": {
+      "cleanup": {
+        "none for reuse, but the cancelled COMMIT's outcome is not resolvable by the client": 3
+      },
+      "levels": {
+        "cancelled": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.599,
+        "min": 1.591,
+        "sum": 4.78
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=FAILED": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 3,
+      "unrealized": 0
+    },
+    "asyncpg/normal": {
+      "cleanup": {
+        "none": 3
+      },
+      "levels": {
+        "completed": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 0,
+      "seconds": {
+        "max": 1.237,
+        "min": 1.234,
+        "sum": 3.71
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=COMMITTED": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 0,
+      "target_silent_success": 0,
+      "target_visible_after_target": 3,
+      "unrealized": 0
+    },
+    "asyncpg/server_body_div": {
+      "cleanup": {
+        "none observed: successor CM succeeded and its write was visible": 3
+      },
+      "levels": {
+        "DivisionByZeroError/22012": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.841,
+        "min": 1.789,
+        "sum": 5.42
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=ROLLEDBACK": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "asyncpg/server_body_swallowed_commit": {
+      "cleanup": {
+        "caller must verify the COMMIT result; the client reports success while the server rolled back": 3
+      },
+      "levels": {
+        "completed": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.798,
+        "min": 1.792,
+        "sum": 5.38
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=COMMITTED": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 3,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "asyncpg/server_body_unique": {
+      "cleanup": {
+        "none observed: successor CM succeeded and its write was visible": 3
+      },
+      "levels": {
+        "UniqueViolationError/23505": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.898,
+        "min": 1.894,
+        "sum": 5.69
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=ROLLEDBACK": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "asyncpg/server_entry_savepoint": {
+      "cleanup": {
+        "none observed: the live outer block's exit cleared the state": 3
+      },
+      "levels": {
+        "nested_entry=InFailedSQLTransactionError/25P02": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.792,
+        "min": 1.738,
+        "sum": 5.27
+      },
+      "silent_exit_after_handled_error": 3,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=COMMITTED": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "asyncpg/server_entry_terminated": {
+      "cleanup": {
+        "reconnect (connection closed by server or driver)": 3
+      },
+      "levels": {
+        "entry=InterfaceError/None": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "InterfaceError: connection is closed"
+        },
+        {
+          "reset": "InterfaceError: connection is closed"
+        },
+        {
+          "reset": "InterfaceError: connection is closed"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.798,
+        "min": 1.795,
+        "sum": 5.39
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=None": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "asyncpg/server_exit_commit_deferred": {
+      "cleanup": {
+        "none observed: successor CM succeeded and its write was visible": 3
+      },
+      "levels": {
+        "UniqueViolationError/23505": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        },
+        {
+          "reset": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.739,
+        "min": 1.692,
+        "sum": 5.13
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "asyncpg:in_tx=False/tx=FAILED": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/cancel_body": {
+      "cleanup": {
+        "none observed: rollback ran and the successor was visible": 3
+      },
+      "levels": {
+        "CancelledError/None": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.55,
+        "min": 1.546,
+        "sum": 4.65
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:IDLE/n=0": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/cancel_enter": {
+      "cleanup": {
+        "driver-internal bookkeeping: rollback() rejected, raw ROLLBACK does not reset the CM; close/reconnect required": 3
+      },
+      "levels": {
+        "CancelledError/None": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "raw_rollback": "ok",
+          "retry_after_raw": "AssertionError",
+          "rollback": "ProgrammingError: Explicit rollback() forbidden within a Transaction context. (E"
+        },
+        {
+          "raw_rollback": "ok",
+          "retry_after_raw": "AssertionError",
+          "rollback": "ProgrammingError: Explicit rollback() forbidden within a Transaction context. (E"
+        },
+        {
+          "raw_rollback": "ok",
+          "retry_after_raw": "AssertionError",
+          "rollback": "ProgrammingError: Explicit rollback() forbidden within a Transaction context. (E"
+        }
+      ],
+      "retry_visible": 0,
+      "seconds": {
+        "max": 1.455,
+        "min": 1.446,
+        "sum": 4.35
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 3,
+      "states": {
+        "psycopg:INTRANS/n=1": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/cancel_exit_commit": {
+      "cleanup": {
+        "none for reuse, but the cancelled COMMIT's outcome is not resolvable by the client": 3
+      },
+      "levels": {
+        "cancelled": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.555,
+        "min": 1.548,
+        "sum": 4.66
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:IDLE/n=0": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 3,
+      "unrealized": 0
+    },
+    "psycopg/normal": {
+      "cleanup": {
+        "none": 3
+      },
+      "levels": {
+        "completed": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        }
+      ],
+      "retry_visible": 0,
+      "seconds": {
+        "max": 1.037,
+        "min": 1.037,
+        "sum": 3.11
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:IDLE/n=0": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 0,
+      "target_silent_success": 0,
+      "target_visible_after_target": 3,
+      "unrealized": 0
+    },
+    "psycopg/server_body_div": {
+      "cleanup": {
+        "none observed: successor CM succeeded and its write was visible": 3
+      },
+      "levels": {
+        "DivisionByZero/22012": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.612,
+        "min": 1.592,
+        "sum": 4.81
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:IDLE/n=0": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/server_body_swallowed_commit": {
+      "cleanup": {
+        "caller must verify the COMMIT result; the client reports success while the server rolled back": 3
+      },
+      "levels": {
+        "completed": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.647,
+        "min": 1.6,
+        "sum": 4.89
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:IDLE/n=0": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 3,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/server_body_unique": {
+      "cleanup": {
+        "none observed: successor CM succeeded and its write was visible": 3
+      },
+      "levels": {
+        "UniqueViolation/23505": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.595,
+        "min": 1.594,
+        "sum": 4.78
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:IDLE/n=0": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/server_entry_savepoint": {
+      "cleanup": {
+        "driver-internal bookkeeping after a failed __aenter__: rollback()/raw ROLLBACK do not restore the CM": 3
+      },
+      "levels": {
+        "nested_entry=InFailedSqlTransaction/25P02": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "raw_rollback": "ok",
+          "retry_after_raw": "AssertionError",
+          "rollback": "ProgrammingError: Explicit rollback() forbidden within a Transaction context. (E"
+        },
+        {
+          "raw_rollback": "ok",
+          "retry_after_raw": "AssertionError",
+          "rollback": "ProgrammingError: Explicit rollback() forbidden within a Transaction context. (E"
+        },
+        {
+          "raw_rollback": "ok",
+          "retry_after_raw": "AssertionError",
+          "rollback": "ProgrammingError: Explicit rollback() forbidden within a Transaction context. (E"
+        }
+      ],
+      "retry_visible": 0,
+      "seconds": {
+        "max": 1.398,
+        "min": 1.393,
+        "sum": 4.19
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:INERROR/n=1": 3
+      },
+      "successor_failed": 3,
+      "successor_ok": 0,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/server_entry_terminated": {
+      "cleanup": {
+        "reconnect (connection closed by server or driver)": 3
+      },
+      "levels": {
+        "entry=AdminShutdown/57P01": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "raw_rollback": "OperationalError: the connection is closed",
+          "rollback": "OperationalError: the connection is lost"
+        },
+        {
+          "raw_rollback": "OperationalError: the connection is closed",
+          "rollback": "OperationalError: the connection is lost"
+        },
+        {
+          "raw_rollback": "OperationalError: the connection is closed",
+          "rollback": "OperationalError: the connection is lost"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.606,
+        "min": 1.597,
+        "sum": 4.81
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:UNKNOWN/n=1": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    },
+    "psycopg/server_exit_commit_deferred": {
+      "cleanup": {
+        "none observed: successor CM succeeded and its write was visible": 3
+      },
+      "levels": {
+        "UniqueViolation/23505": 3
+      },
+      "n": 3,
+      "realized": 3,
+      "recovery": [
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        },
+        {
+          "rollback": "ok"
+        }
+      ],
+      "retry_visible": 3,
+      "seconds": {
+        "max": 1.546,
+        "min": 1.504,
+        "sum": 4.59
+      },
+      "silent_exit_after_handled_error": 0,
+      "silent_successor": 0,
+      "states": {
+        "psycopg:IDLE/n=0": 3
+      },
+      "successor_failed": 0,
+      "successor_ok": 3,
+      "target_silent_success": 0,
+      "target_visible_after_target": 0,
+      "unrealized": 0
+    }
+  },
+  "harness_errors": 0,
+  "reps": 3,
+  "run": "failure_compare/logs/run.fc.20261022-143304",
+  "server": "127.0.0.1:32870/dw",
+  "settle": 0.15,
+  "started": "2026-10-22T14:33:04+0900",
+  "trials": 60,
+  "unrealized": 0
+}

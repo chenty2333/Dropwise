@@ -1,0 +1,81 @@
+
+running 6 tests
+test r3_1_pool_begin ... dropwise: 1 target(s), 4 cancellation plan(s) explored
+  verdicts (4 plan(s)): pre=0 post=4 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal (1); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.1 [pr4394] new-observation: plans=4 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=4 neither=0 unknown=0
+dropwise: 1 target(s), 4 cancellation plan(s) explored
+  verdicts (4 plan(s)): pre=0 post=4 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal ([1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007]); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.1 [pr4394] echo-observation: plans=4 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=4 neither=0 unknown=0
+ok
+test r3_2_pool_acquire ... dropwise: 1 target(s), 2 cancellation plan(s) explored
+  verdicts (2 plan(s)): pre=0 post=2 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal (1); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.2 [pr4394] new-observation: plans=2 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=2 neither=0 unknown=0
+dropwise: 1 target(s), 2 cancellation plan(s) explored
+  verdicts (2 plan(s)): pre=0 post=2 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal ([1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007]); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.2 [pr4394] echo-observation: plans=2 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=2 neither=0 unknown=0
+ok
+test r3_3_prepare_on_pooled_connection ... dropwise: 1 target(s), 2 cancellation plan(s) explored
+  verdicts (2 plan(s)): pre=0 post=2 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal (1); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.3 [pr4394] new-observation: plans=2 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=2 neither=0 unknown=0
+dropwise: 1 target(s), 2 cancellation plan(s) explored
+  verdicts (2 plan(s)): pre=0 post=2 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal ([1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007]); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.3 [pr4394] echo-observation: plans=2 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=2 neither=0 unknown=0
+ok
+test r3_4_frozen_fetch_target ... dropwise: 1 target(s), 4 cancellation plan(s) explored
+  verdicts (4 plan(s)): pre=0 post=4 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal (1); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.4 [pr4394] new-observation: plans=4 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=4 neither=0 unknown=0
+dropwise: 1 target(s), 4 cancellation plan(s) explored
+  verdicts (4 plan(s)): pre=0 post=4 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal ([1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007]); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.4 [pr4394] echo-observation: plans=4 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=4 neither=0 unknown=0
+ok
+test r3_5_whole_transaction ... dropwise: 1 target(s), 8 cancellation plan(s) explored
+  verdicts (8 plan(s)): pre=6 post=2 mixed=0 neither=0 unknown=0
+
+RESCAN R3.5 [pr4394] new-observation: plans=8 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=6 post=2 neither=0 unknown=0
+dropwise: 1 target(s), 8 cancellation plan(s) explored
+  verdicts (8 plan(s)): pre=0 post=8 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal ([1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007]); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.5 [pr4394] echo-observation: plans=8 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=8 neither=0 unknown=0
+ok
+test r3_6_two_autocommit_writes ... dropwise: 1 target(s), 10 cancellation plan(s) explored
+  target #0 (tests/rescan.rs:232:30) loses after pending #2, competitor ready immediately -> Cancelled:
+    invariant violated: Neither under Atomic: observed 2, pre=1, post=3
+  target #0 (tests/rescan.rs:232:30) loses after pending #2, competitor ready once the target is woken -> Cancelled:
+    invariant violated: Neither under Atomic: observed 2, pre=1, post=3
+  target #0 (tests/rescan.rs:232:30) loses after pending #3, competitor ready immediately -> Cancelled:
+    invariant violated: Neither under Atomic: observed 2, pre=1, post=3
+  target #0 (tests/rescan.rs:232:30) loses after pending #3, competitor ready once the target is woken -> Cancelled:
+    invariant violated: Neither under Atomic: observed 2, pre=1, post=3
+  target #0 (tests/rescan.rs:232:30) loses after pending #4, competitor ready immediately -> Cancelled:
+    invariant violated: Neither under Atomic: observed 2, pre=1, post=3
+  target #0 (tests/rescan.rs:232:30) loses after pending #4, competitor ready once the target is woken -> Cancelled:
+    invariant violated: Neither under Atomic: observed 2, pre=1, post=3
+  verdicts (10 plan(s)): pre=2 post=2 mixed=0 neither=6 unknown=0
+
+RESCAN R3.6 [pr4394] new-observation: plans=10 violations=6 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=2 post=2 neither=6 unknown=0
+dropwise: 1 target(s), 10 cancellation plan(s) explored
+  verdicts (10 plan(s)): pre=0 post=10 mixed=0 neither=0 unknown=0
+  note: target(s) #0: pre and post observations are equal ([1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007]); this observation cannot tell whether the operation happened, only whether it contaminated shared state
+
+RESCAN R3.6 [pr4394] echo-observation: plans=10 violations=0 unrealized=0 exhaustive=true baseline_errors=0 verdicts(all runs) pre=0 post=10 neither=0 unknown=0
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.37s
+

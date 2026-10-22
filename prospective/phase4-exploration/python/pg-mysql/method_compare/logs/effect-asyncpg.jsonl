@@ -1,0 +1,3 @@
+EFFECT {"driver": "asyncpg", "k": 1, "outcome": "cancelled", "phase": "enter", "rows": [], "seconds": 0.83, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 2, "outcome": "cancelled", "phase": "body", "rows": [], "seconds": 1.18, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 3, "outcome": "cancelled", "phase": "exit_commit", "rows": [], "seconds": 1.024, "verdict": "no_effect"}

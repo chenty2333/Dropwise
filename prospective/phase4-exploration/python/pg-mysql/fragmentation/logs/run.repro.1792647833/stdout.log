@@ -1,0 +1,46 @@
+before cancel: done=False send_q=3114054 proxy_bytes=65735 flush=1 tx=1
+cancelled at 0.004s -> TypeError: an integer is required
+Traceback (most recent call last):
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/connection_async.py", line 532, in wait
+    return await waiting.wait_async(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        gen, self.pgconn.socket, interval=interval, timeout=timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/waiting.py", line 222, in wait_async
+    await fut
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ava/Desktop/Dropwise/prospective/phase4-exploration/python/pg-mysql/fragmentation/min_repro.py", line 57, in main
+    await asyncio.wait_for(task, 10)
+  File "/home/ava/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu/lib/python3.13/asyncio/tasks.py", line 507, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/connection_async.py", line 330, in execute
+    return await cur.execute(query, params, prepare=prepare)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/cursor_async.py", line 113, in execute
+    await self._conn.wait(
+        self._execute_gen(query, params, prepare=prepare, binary=binary)
+    )
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/connection_async.py", line 541, in wait
+    await waiting.wait_async(
+        gen, self.pgconn.socket, interval=interval, timeout=5.0
+    )
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/waiting.py", line 183, in wait_async
+    s = next(gen)
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/_cursor_base.py", line 206, in _execute_gen
+    yield from self._maybe_prepare_gen(pgq, prepare=prepare, binary=binary)
+  File "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/_cursor_base.py", line 312, in _maybe_prepare_gen
+    results = yield from execute(self._pgconn)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "psycopg_binary/_psycopg/generators.pyx", line 113, in execute
+  File "psycopg_binary/_psycopg/generators.pyx", line 138, in send
+TypeError: an integer is required
+after: tx=1 busy=1 closed=False
+successor failed: OperationalError: sending query failed: another command is already in progress
+close ok; backend gone: True
