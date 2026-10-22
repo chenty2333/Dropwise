@@ -1,0 +1,4 @@
+POOLPROBE-SUMMARY driver=psycopg repair=actual k=1 rep=1 phase=enter next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.136
+POOLPROBE-SUMMARY driver=psycopg repair=actual k=2 rep=1 phase=body next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.127
+POOLPROBE-SUMMARY driver=psycopg repair=actual k=1 rep=2 phase=enter next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.127
+POOLPROBE-SUMMARY driver=psycopg repair=actual k=2 rep=2 phase=body next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.131

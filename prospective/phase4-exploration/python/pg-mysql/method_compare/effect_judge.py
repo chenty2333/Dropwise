@@ -10,6 +10,7 @@ import argparse, asyncio, contextlib, json, sys, time
 from types import SimpleNamespace
 from cases.common import add_db_args, close_quiet, err_text
 from cases.txphase_case import CmScenario, _await_phased
+from successor_probe.run_pg import package_info
 
 async def one(args, driver: str, k: int) -> dict:
     sc = CmScenario(SimpleNamespace(
@@ -43,23 +44,39 @@ async def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     add_db_args(ap)
     ap.add_argument("--driver", default="psycopg", choices=["psycopg", "asyncpg"])
+    ap.add_argument("--repair", choices=["none", "actual"], default="none")
     ap.add_argument("--cuts", default="1,2,3,4,5,6")
     ap.add_argument("--out", default="-")
     args = ap.parse_args()
+    info = package_info(args.driver)
+    marker = ("has_recover_entry_failure" if args.driver == "psycopg"
+              else "start_has_top_xact_clear")
+    if args.repair == "actual" and not info.get(marker):
+        raise SystemExit(
+            f"--repair actual requested but loaded package lacks {marker}: {info}"
+        )
     out = sys.stdout if args.out == "-" else open(args.out, "w", encoding="utf-8")
     recs = []
     try:
-        for k in [int(x) for x in args.cuts.split(",") if x.strip()]:
-            rec = await one(args, args.driver, k)
-            recs.append(rec)
-            print("EFFECT " + json.dumps(rec, default=str, sort_keys=True), file=out, flush=True)
-            print(f"EFFECT-SUMMARY driver={args.driver} k={k} phase={rec.get('phase')} "
-                  f"outcome={rec.get('outcome')} rows={rec.get('rows')} verdict={rec['verdict']} "
-                  f"seconds={rec['seconds']}", flush=True)
+        for rep in range(1, args.reps + 1):
+            for k in [int(x) for x in args.cuts.split(",") if x.strip()]:
+                rec = await one(args, args.driver, k)
+                rec["rep"] = rep
+                rec["repair"] = args.repair
+                recs.append(rec)
+                print("EFFECT " + json.dumps(rec, default=str, sort_keys=True), file=out,
+                      flush=True)
+                print(f"EFFECT-SUMMARY driver={args.driver} k={k} rep={rep} "
+                      f"phase={rec.get('phase')} outcome={rec.get('outcome')} "
+                      f"rows={rec.get('rows')} verdict={rec['verdict']} "
+                      f"seconds={rec['seconds']}", flush=True)
         print("EFFECT-TOTAL " + json.dumps({
-            "driver": args.driver,
-            "verdicts": {v: sum(1 for r in recs if r["verdict"] == v) for v in sorted({r["verdict"] for r in recs})},
-            "seconds": round(sum(r["seconds"] for r in recs), 2)}, sort_keys=True), flush=True)
+            "driver": args.driver, "repair": args.repair, "package": info,
+            "trials": len(recs),
+            "verdicts": {v: sum(1 for r in recs if r["verdict"] == v)
+                         for v in sorted({r["verdict"] for r in recs})},
+            "seconds": round(sum(r["seconds"] for r in recs), 2)},
+            sort_keys=True), file=out, flush=True)
     finally:
         if out is not sys.stdout:
             out.close()

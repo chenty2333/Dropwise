@@ -15,12 +15,22 @@ SAVEPOINT release inside an abandoned transaction.  In that case the probe
 reports an invisible write even though the driver returned success.
 
 This is a probe, not an oracle.  It knows nothing about the interrupted
-operation's own effect.  Its applicability is a handoff contract: no live owner
-and no open transaction.  A legitimate outer transaction is recorded as
-``open_transaction_allowed`` only when the caller declares that state; it is
-not silently treated as clean.  Session state is recorded but is not compared,
-because retaining an application_name, a GUC, a temporary table or a prepared
-statement is legal.
+operation's own effect.  It has two separable observations:
+
+* a state diagnosis (transaction/closed status) that can be run on its own;
+* a black-box effect probe that runs the transactional write even when the
+  state diagnosis says the handle is in a transaction.  The state is recorded
+  in the checks, but in effect mode it does not decide the verdict before the
+  write.  A handle can therefore be reported as ``invisible_write`` even when
+  its state alone would have been ``open_transaction``.
+
+A legitimate outer transaction is not silently called clean either: the caller
+must declare it, the immediate observation is ``effect_pending_outer``, and
+only after the caller ends that transaction can the marker be re-read.  A
+read-only or otherwise configured session makes the write unprobeable
+(``blocked_by_session``), not an anomaly.  Session state is recorded but is not
+compared, because retaining an application_name, a GUC, a temporary table or a
+prepared statement is legal.
 
 The independent observer is a separate asyncpg connection.  It creates one
 schema with an ``old`` and a ``ref`` table per probe pair, so the two handles
@@ -56,6 +66,7 @@ class ProbeStatus(str, enum.Enum):
     TRANSACTION_API_ERROR = "transaction_api_error"
     INVISIBLE_WRITE = "invisible_write"
     WRITE_ONLY_VISIBLE_AFTER_SETTLE = "write_only_visible_after_settle"
+    EFFECT_PENDING_OUTER = "effect_pending_outer"
     BLOCKED_BY_SESSION = "blocked_by_session"
     PROBE_TIMEOUT = "probe_timeout"
     HARNESS_ERROR = "harness_error"
@@ -180,6 +191,7 @@ class ProbePair:
         probe_timeout: float = 2.0,
         visibility_timeout: float = 1.0,
         write: bool = True,
+        effect: bool = True,
     ) -> ProbeResult:
         """Run the bounded probe on one handle.
 
@@ -194,6 +206,7 @@ class ProbePair:
             "allow_open_transaction": allow_open_transaction,
             "probe_timeout": probe_timeout,
             "visibility_timeout": visibility_timeout,
+            "mode": "effect" if effect else "state",
         }
         table = self.tables[handle]
 
@@ -204,6 +217,7 @@ class ProbePair:
                 applicable = status not in (
                     ProbeStatus.PROBE_TIMEOUT, ProbeStatus.BLOCKED_BY_SESSION,
                     ProbeStatus.OPEN_TRANSACTION_ALLOWED,
+                    ProbeStatus.EFFECT_PENDING_OUTER,
                 )
             checks["anomaly"] = anomaly
             checks["applicable"] = applicable
@@ -269,8 +283,9 @@ class ProbePair:
             # session query failing is not a handle-contamination verdict.
             checks["session"] = None
 
-        # 3. Boundary: an open transaction is not a clean handoff unless the
-        # caller explicitly declares a live outer transaction. -----------------
+        # 3. Record the state, but do not let it decide the effect probe.  A
+        # state-only run ends here; an effect run continues to the write even
+        # when the handle is in a transaction.
         try:
             state = await self._state(conn, driver)
             checks["state_after_echo"] = state
@@ -280,15 +295,26 @@ class ProbePair:
             checks["state_after_echo_error"] = _err(exc)
             return result(ProbeStatus.HARNESS_ERROR, applicable=False,
                           error=_err(exc))
-        if state.get("in_transaction"):
-            if allow_open_transaction:
-                return result(ProbeStatus.OPEN_TRANSACTION_ALLOWED)
-            return result(
-                ProbeStatus.OPEN_TRANSACTION,
-                error="handle is in a transaction at the declared handoff",
-            )
+        checks["open_transaction"] = bool(state.get("in_transaction"))
+        if not effect:
+            if state.get("in_transaction"):
+                if allow_open_transaction:
+                    return result(ProbeStatus.OPEN_TRANSACTION_ALLOWED)
+                return result(
+                    ProbeStatus.OPEN_TRANSACTION,
+                    error="handle is in a transaction at the declared handoff",
+                )
+            return result(ProbeStatus.CLEAN)
 
         if not write:
+            # Protocol/state diagnosis without a transactional effect.
+            if state.get("in_transaction") and not allow_open_transaction:
+                return result(
+                    ProbeStatus.OPEN_TRANSACTION,
+                    error="handle is in a transaction at the declared handoff",
+                )
+            if state.get("in_transaction"):
+                return result(ProbeStatus.OPEN_TRANSACTION_ALLOWED)
             return result(ProbeStatus.CLEAN)
 
         # 4. Normal transaction write + commit. --------------------------------
@@ -332,6 +358,14 @@ class ProbePair:
         checks["visible"] = visible
         checks["visibility_seconds"] = round(time.monotonic() - vis_started, 4)
         if not visible:
+            if allow_open_transaction:
+                # The write is nested in the caller's outer transaction, so it
+                # cannot be visible until that transaction ends.  This is
+                # pending, not clean and not an invisible write yet.
+                return result(
+                    ProbeStatus.EFFECT_PENDING_OUTER,
+                    error="write is pending the declared outer transaction",
+                )
             return result(
                 ProbeStatus.INVISIBLE_WRITE,
                 error="transactional write was not visible from the observer",
@@ -339,6 +373,12 @@ class ProbePair:
         if checks["visibility_seconds"] > 0.05:
             return result(ProbeStatus.WRITE_ONLY_VISIBLE_AFTER_SETTLE)
         return result(ProbeStatus.CLEAN)
+
+    async def pending_visible(
+        self, handle: str, marker: str, timeout: float = 1.0
+    ) -> bool:
+        """Check a write that was pending the caller's outer transaction."""
+        return await self._visible(self.tables[handle], marker, timeout)
 
     async def persisted_after_close(
         self, handle: str, marker: str, *, timeout: float = 0.5
@@ -473,6 +513,8 @@ def compare(old: ProbeResult, ref: ProbeResult) -> dict:
         label = "consistent_clean"
     elif old.status == ProbeStatus.OPEN_TRANSACTION_ALLOWED.value:
         label = "legitimate_open_transaction"
+    elif old.status == ProbeStatus.EFFECT_PENDING_OUTER.value:
+        label = "effect_pending_outer"
     elif not old.applicable:
         label = "old_not_applicable"
     else:

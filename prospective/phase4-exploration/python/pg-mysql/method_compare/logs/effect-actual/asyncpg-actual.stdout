@@ -1,0 +1,12 @@
+EFFECT-SUMMARY driver=asyncpg k=1 rep=1 phase=enter outcome=cancelled rows=[] verdict=no_effect seconds=0.829
+EFFECT-SUMMARY driver=asyncpg k=2 rep=1 phase=body outcome=cancelled rows=[] verdict=no_effect seconds=1.189
+EFFECT-SUMMARY driver=asyncpg k=3 rep=1 phase=exit_commit outcome=cancelled rows=[] verdict=no_effect seconds=1.035
+EFFECT-SUMMARY driver=asyncpg k=4 rep=1 phase=None outcome=completed rows=[['target', 1]] verdict=clean_completed seconds=1.139
+EFFECT-SUMMARY driver=asyncpg k=5 rep=1 phase=None outcome=completed rows=[['target', 1]] verdict=clean_completed seconds=1.136
+EFFECT-SUMMARY driver=asyncpg k=6 rep=1 phase=None outcome=completed rows=[['target', 1]] verdict=clean_completed seconds=1.133
+EFFECT-SUMMARY driver=asyncpg k=1 rep=2 phase=enter outcome=cancelled rows=[] verdict=no_effect seconds=0.828
+EFFECT-SUMMARY driver=asyncpg k=2 rep=2 phase=body outcome=cancelled rows=[] verdict=no_effect seconds=1.189
+EFFECT-SUMMARY driver=asyncpg k=3 rep=2 phase=exit_commit outcome=cancelled rows=[] verdict=no_effect seconds=1.03
+EFFECT-SUMMARY driver=asyncpg k=4 rep=2 phase=None outcome=completed rows=[['target', 1]] verdict=clean_completed seconds=1.132
+EFFECT-SUMMARY driver=asyncpg k=5 rep=2 phase=None outcome=completed rows=[['target', 1]] verdict=clean_completed seconds=1.132
+EFFECT-SUMMARY driver=asyncpg k=6 rep=2 phase=None outcome=completed rows=[['target', 1]] verdict=clean_completed seconds=1.134

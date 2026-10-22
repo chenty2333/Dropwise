@@ -1,69 +1,109 @@
-# asyncpg: same-lease reuse after the entry fix (round 5, group 1)
+# asyncpg: same-lease reuse after the entry fix (round 5, group 1 — corrected)
 
-> Review correction (2026-10-22): the patched arm below is the old terminate-on-entry experiment, not the submitted `_top_xact` repair. Independent one-trial checks with the actual patch reproduced same-lease INSERT success without visibility, followed by rollback on return; explicit reset before INSERT succeeded visibly. The actual-patch matrix is still required. See the coordinator correction in the round-5 overview.
+> Correction (2026-10-22): the earlier "patched" arm was the experimental
+> terminate-on-entry monkeypatch, not the submitted `_top_xact` repair. The
+> actual-patch matrix is below. It changes the conclusion: the actual patch
+> does **not** refuse a same-lease ordinary operation; it only stops the stale
+> registration from turning the next transaction into a savepoint. The
+> experimental arm's explicit refusal is retained as a separate, narrower
+> strategy result.
 
-This completes the boundary that round 4 recorded only as a note.  The tested
-handle goes through a 50 ms proxy; an independent direct observer confirms that
-the server executed `BEGIN` before the cancellation is sent.  The cancellation
-is caught without returning or resetting the connection.  Then an ordinary
-autocommit `INSERT` is issued on the same connection, the table is read from
-the independent observer, and the handle is returned to a one-slot pool for
-reset and reborrow.
+The tested handle goes through a 50 ms proxy. An independent direct observer
+confirms that the server executed `BEGIN` before cancellation. The
+cancellation is caught without returning or resetting the connection. Then an
+ordinary autocommit `INSERT` is issued on the same connection, the table is
+read from the independent observer, and the handle is returned to a one-slot
+pool for reset and reborrow.
 
-Original asyncpg 0.32.0 and the local fail-closed patch (terminate the
-connection in a cancelled `Transaction.__aenter__`) are run separately.
+Variants are selected by the loaded package, not by a flag name:
+`original` = asyncpg 0.32.0; `actual` = `/home/ava/Worktrees/asyncpg/repo`
+(HEAD `ff1bb8d`, `Transaction.start()` identity-guard source present);
+`experimental` = 0.32.0 plus `install_asyncpg_enter_fix()`. Every record carries
+`package.file`, version, `start_has_top_xact_clear`, and whether
+`Transaction.__aenter__` contains `terminate()`. Logs:
+[`logs/actual-matrix/`](logs/actual-matrix/).
 
-## Results (2 reps, all 2/2 unless noted)
+## Results (3 reps per pool mode, all 3/3 unless noted)
 
-| mode | original | patched |
-|---|---|---|
-| `normal` | commit, target visible, next borrow visible | same |
-| `entry_same_lease` | same-lease `INSERT` returns `ok`; observer sees **0 rows**; after pool return rows 0; next borrow clean | same-lease call **explicitly refused**; after return 0; next borrow clean |
-| `entry_reset` | `conn.reset()` clears the abandoned transaction; same-lease `INSERT` is **visible/committed** | `reset()` refused on the already-released/closed lease |
-| `entry_txapi` | `async with conn.transaction()` returns ok, its write is **invisible**; after return 0; next borrow clean | transaction API explicitly refused |
-| `body_cancel` | same-lease `INSERT` visible; next borrow clean | same |
+| mode | original | actual `_top_xact` patch | experimental terminate |
+|---|---|---|---|
+| `normal` | commit/visible; next borrow visible | same | same |
+| `entry_same_lease` | `INSERT 0 1`; observer **0 rows**; after return 0 | **`INSERT 0 1`; observer 0 rows; after return 0** | explicit refusal (pool proxy detached/closed); after return 0 |
+| `entry_reset` | reset then INSERT **visible** | **reset then INSERT visible**; after return 1 | reset refused (already released) |
+| `entry_txapi` | nested API returns ok, write **invisible** | **`InterfaceError: cannot use Connection.transaction() in a manually started transaction`** | transaction API refused (pool message) |
+| `body_cancel` | same-lease INSERT visible | same | same |
 
-The direct-connection control gives the same distinction with a different
-message: original returns `INSERT 0 1` but the row is invisible; patched raises
-`InterfaceError: connection is closed`.  In the pooled run the patched message
-is `InterfaceError: cannot call Connection.execute(): connection has been
-released back to the pool` because `asyncpg` detaches the pool proxy when the
-underlying connection is terminated.  Both are explicit refusals, not a
-successful reuse.
+All next borrows are clean in these cells. The actual patch's same-lease
+ordinary INSERT is therefore still an **uncommitted success** in this sample;
+the old experimental arm's `explicit_refusal` is not a property of the
+submitted patch. The actual patch's one clear same-lease protection is the
+transaction API: `_top_xact` is `None`, but `_protocol.is_in_transaction()` is
+true, so `Transaction.start()` refuses instead of silently using a savepoint.
 
-Classification used by `classify()`: `committed_success` (returned and
-visible), `explicit_refusal` (raised/closed), `uncommitted_success` (returned
-`ok` but invisible), and `after_return_rows_0` (rolled back on pool return).
-The original entry case is **uncommitted success**: a caller that trusts the
-return value can lose the write.  The patched case is **explicit refusal**: the
-caller must not use that lease, and the pool replaces it on the next borrow.
+## Legitimate outer transaction and nested failure
 
-## What this says about the fix
+`outer_nested` starts an outer transaction, writes `outer_before`, provokes an
+ordinary nested-start failure (different isolation), then cancels a second
+nested start, writes `outer_after`, and commits the outer transaction.
+`outer_control` does the same without a nested failure.
 
-- `_top_xact = None` is not evidence that the server is IDLE.  The observer saw
-  `BEGIN` and `idle in transaction` at the cut, while the client-side state was
-  already unusable/ownerless.
-- The patch protects the **same-lease ordinary-operation** boundary by refusing
-  it: it does not make the half-entered transaction usable.  That is a
-  legitimate fail-closed contract, not a fake repair.
-- The pool return/reborrow boundary is protected even in the original: reset
-  rolls the abandoned transaction back, and the next borrow is clean.  This is
-  why a next-checkout probe can look clean while a same-checkout retry silently
-  loses its write.
-- Explicit `reset()` before reuse is a real recovery path in the original
-  (`entry_reset`: insert visible), but the patched handle cannot take it
-  because it is already closed.
-- `entry_txapi` in the original is a second silent-success shape: the nested
-  transaction API returns ok, but its write is inside the abandoned transaction.
+| variant | outer commit visible | outer kept after ordinary nested | outer kept after cancelled nested | result |
+|---|---:|---:|---:|---|
+| original | 2/2 | 2/2 | 2/2 | outer commits, both rows visible |
+| actual | 2/2 | 2/2 | 2/2 | outer commits, both rows visible |
+| experimental | 2/2 on control | 2/2 | **0/2** | cancelled nested start terminates the whole connection; outer commit fails |
+
+The actual patch's `if con._top_xact is self` identity guard preserves the
+outer registration when a nested start fails. The experimental terminate
+policy is too broad: it kills a legitimate outer transaction on a nested
+cancellation. The actual patch is narrower and safer on this boundary.
+
+## What changed in the interpretation
+
+- The actual patch does **not** make the half-entered transaction usable. It
+  clears a stale local registration so the next transaction is not silently
+  nested. A caller that continues on the same lease with an ordinary
+  autocommit statement can still get `ok` and lose the write.
+- The safe same-lease continuations observed here are: explicitly
+  `reset()`/rollback/close before reuse (reset works with the actual patch), or
+  use a pool return/reborrow, whose reset rolls the abandoned transaction back.
+- The transaction API is an explicit refusal boundary with the actual patch,
+  because the protocol still knows it is in a transaction. That is a guard,
+  not transparent recovery.
+- `_top_xact = None` alone is not evidence of IDLE; the observer still sees
+  `BEGIN`/`idle in transaction` at the cut.
+- The pool return/reborrow boundary is clean in original and actual. A
+  next-checkout probe can look clean while a same-checkout retry silently
+  loses its write; these are different handoffs.
 
 ## Limits
 
-- Two reps per mode, one host, one asyncpg version, experimental monkeypatch
-  (no upstream change).  50 ms proxy delay; the BEGIN confirmation is an
-  observer `pg_stat_activity` sample, not a packet capture.
-- The ordinary INSERT is autocommit; under a different caller transaction the
-  result could differ.  The point is the same-lease return value, not a general
-  transaction API guarantee.
-- `asyncpg` emits a `ConnectionError('unexpected connection_lost() call')`
-  future warning after some late cancellations; it is non-fatal and is recorded
-  as a limitation, not scored as a defect.
+- Two or three reps per cell, one host, one asyncpg version and one delay.
+  `BEGIN` confirmation is a `pg_stat_activity` sample, not a packet capture.
+- The ordinary INSERT is autocommit; a different caller transaction may
+  differ. The claim is about the return value on the same lease.
+- The experimental arm is retained only as a strategy comparison. Its results
+  must not be attributed to the submitted patch.
+- asyncpg can emit a non-fatal `unexpected connection_lost()` warning after
+  late cancellations; it is recorded, not scored as a defect.
+
+## MySQL actual patch focused re-check
+
+The MySQL round-5 delay matrix used `fix/patched` (old experimental
+`_close_reason`/`InterfaceError`), not the actual `e7a02b6`
+(`_is_poisoned`/`_abort()`/`OperationalError`). A focused re-check of the actual
+worktree (`/home/ava/Worktrees/mysql-connector/aio-cancel`, 2 reps per mode) is
+in [`logs/actual-matrix/mysql-actual.jsonl`](logs/actual-matrix/mysql-actual.jsonl)
+and `mysql-original.jsonl`.
+
+| mode | original 26.7.0 | actual `e7a02b6` |
+|---|---|---|
+| normal | commit/visible (`[["target", 1]]`) | same |
+| entry | rollback/reset return `ok`; successor `ProgrammingError: ... 'NoneType' object is not subscriptable`; socket open | `poisoned=True`, `socket_open=False`; rollback/reset/successor all `OperationalError: MySQL Connection not available`; observer 0 rows |
+| nested | rollback/reset `ok`; successor `ok` with `rowcount=0`; outer row invisible | poisoned/closed; successor refused; observer 0 rows |
+| post-commit | same silent `ok/0` path; cancellation may precede the commit on the wire | poisoned/closed; successor refused; observer 0 rows |
+
+The actual patch's contract is explicit refusal/poisoning, not transparent
+recovery: the caller must acquire a new connection. The original's `ok/0`
+successor is the dangerous shape: a return value that looks successful while the
+outer effect is absent.

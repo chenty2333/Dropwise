@@ -16,7 +16,8 @@ def pr(status: ProbeStatus | str, *, anomaly=None, applicable=None) -> ProbeResu
     if applicable is None:
         applicable = status not in {
             ProbeStatus.PROBE_TIMEOUT.value, ProbeStatus.BLOCKED_BY_SESSION.value,
-            ProbeStatus.OPEN_TRANSACTION_ALLOWED.value}
+            ProbeStatus.OPEN_TRANSACTION_ALLOWED.value,
+            ProbeStatus.EFFECT_PENDING_OUTER.value}
     return ProbeResult("old", status, bool(anomaly), bool(applicable), {})
 
 class CompareTest(unittest.TestCase):
@@ -42,6 +43,22 @@ class CompareTest(unittest.TestCase):
         for s in (ProbeStatus.BLOCKED_BY_SESSION, ProbeStatus.PROBE_TIMEOUT):
             self.assertEqual(compare(pr(s), pr(ProbeStatus.CLEAN))["label"],
                              "old_not_applicable")
+
+    def test_invisible_write_is_contamination(self):
+        c = compare(pr(ProbeStatus.INVISIBLE_WRITE), pr(ProbeStatus.CLEAN))
+        self.assertEqual(c["label"], "old_anomaly")
+        self.assertTrue(c["old_anomaly"])
+
+    def test_transaction_api_refusal_is_an_anomaly(self):
+        c = compare(pr(ProbeStatus.TRANSACTION_API_ERROR), pr(ProbeStatus.CLEAN))
+        self.assertEqual(c["label"], "old_anomaly")
+        self.assertTrue(c["old_anomaly"])
+
+    def test_pending_outer_is_not_clean_or_dirty_yet(self):
+        c = compare(pr(ProbeStatus.EFFECT_PENDING_OUTER), pr(ProbeStatus.CLEAN))
+        self.assertEqual(c["label"], "effect_pending_outer")
+        self.assertFalse(c["old_anomaly"])
+        self.assertFalse(pr(ProbeStatus.EFFECT_PENDING_OUTER).applicable)
 
     def test_reference_anomaly_is_not_old_evidence(self):
         self.assertEqual(compare(pr(ProbeStatus.CLEAN), pr(ProbeStatus.OPEN_TRANSACTION))["label"],

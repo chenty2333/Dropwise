@@ -1,0 +1,2 @@
+POOLPROBE-SUMMARY driver=asyncpg repair=none k=1 rep=1 phase=enter next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.128
+POOLPROBE-SUMMARY driver=asyncpg repair=none k=1 rep=2 phase=enter next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.129

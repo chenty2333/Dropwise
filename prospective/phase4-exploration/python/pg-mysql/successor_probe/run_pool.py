@@ -34,6 +34,7 @@ from cases.common import add_db_args, bound, close_quiet, err_text
 from cases.txphase_case import _await_phased, install_psycopg_enter_fix
 
 from .probe import ProbePair, compare
+from .run_pg import package_info
 
 BOUND = 5.0
 
@@ -194,6 +195,8 @@ class PoolProbeScenario:
 
     async def trial(self, k: int, variant: str) -> dict:
         rec: dict = {"driver": self.driver, "k": k, "variant": variant,
+                     "repair": getattr(self.args, "repair", "none"),
+                     "package": package_info(self.driver),
                      "tag": self.tag, "table": self.table}
         started = time.monotonic()
         await self.setup()
@@ -327,11 +330,24 @@ async def main() -> int:
     ap.add_argument("--driver", choices=["psycopg", "asyncpg"], required=True)
     ap.add_argument("--cuts", default="1", help="comma-separated cut indices")
     ap.add_argument("--variant", default="original", choices=["original", "fix"])
+    ap.add_argument("--repair", choices=["none", "experimental", "actual"],
+                    default=None)
     ap.set_defaults(reps=1)
     ap.add_argument("--out", default="-")
     args = ap.parse_args()
-    if args.variant == "fix" and args.driver == "psycopg":
+    if args.repair is None:
+        args.repair = "experimental" if args.variant == "fix" else "none"
+    if args.repair == "experimental" and args.driver == "psycopg":
         install_psycopg_enter_fix()
+    if args.repair == "actual":
+        info = package_info(args.driver)
+        marker = ("has_recover_entry_failure" if args.driver == "psycopg"
+                  else "start_has_top_xact_clear")
+        if not info.get(marker):
+            raise SystemExit(
+                f"--repair actual requested but loaded package lacks {marker}: "
+                f"{info}"
+            )
 
     cuts = [int(x) for x in args.cuts.split(",") if x.strip()]
     out = sys.stdout if args.out == "-" else open(args.out, "w", encoding="utf-8")
@@ -339,7 +355,8 @@ async def main() -> int:
     try:
         for rep in range(1, args.reps + 1):
             for k in cuts:
-                sc = PoolProbeScenario(args, tag=f"{args.driver}-{rep}-{k}")
+                sc = PoolProbeScenario(
+                    args, tag=f"{args.driver}-{args.repair}-{rep}-{k}")
                 try:
                     rec = await asyncio.wait_for(sc.trial(k, args.variant), 40)
                     rec["rep"] = rep
@@ -358,7 +375,8 @@ async def main() -> int:
                       file=out, flush=True)
                 c = rec.get("probe_compare") or {}
                 print(
-                    f"POOLPROBE-SUMMARY driver={args.driver} k={k} rep={rep} "
+                    f"POOLPROBE-SUMMARY driver={args.driver} "
+                    f"repair={args.repair} k={k} rep={rep} "
                     f"phase={rec.get('cut_phase')} "
                     f"next_same_pid={rec.get('next_same_pid')} "
                     f"old={((rec.get('probe_old') or {}).get('status'))} "

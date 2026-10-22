@@ -1,0 +1,10 @@
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=32919 user=postgres database=dw) at 0x7f75ab90ba10>
+rollback failed: ProgrammingError: Explicit rollback() forbidden within a Transaction context. (Either raise Rollback() or allow an exception to propagate out of the context.). Discarding connection <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=32919 user=postgres database=dw) at 0x7f75ab90ba10>
+discarding closed connection: <psycopg.AsyncConnection [BAD] at 0x7f75ab90ba10>
+POOLPROBE-SUMMARY driver=psycopg repair=none k=1 rep=1 phase=enter next_same_pid=False old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.133
+POOLPROBE-SUMMARY driver=psycopg repair=none k=2 rep=1 phase=body next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.126
+rolling back returned connection: <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=32919 user=postgres database=dw) at 0x7f75ab9743b0>
+rollback failed: ProgrammingError: Explicit rollback() forbidden within a Transaction context. (Either raise Rollback() or allow an exception to propagate out of the context.). Discarding connection <psycopg.AsyncConnection [INTRANS] (host=127.0.0.1 port=32919 user=postgres database=dw) at 0x7f75ab9743b0>
+discarding closed connection: <psycopg.AsyncConnection [BAD] at 0x7f75ab9743b0>
+POOLPROBE-SUMMARY driver=psycopg repair=none k=1 rep=2 phase=enter next_same_pid=False old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.129
+POOLPROBE-SUMMARY driver=psycopg repair=none k=2 rep=2 phase=body next_same_pid=True old=clean ref=clean compare=consistent_clean rows=[['survivor', 7]] seconds=0.13

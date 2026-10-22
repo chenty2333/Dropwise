@@ -1,0 +1,4 @@
+LEASE-SUMMARY variant=actual mode=outer_nested rep=1 cut=None phase=None server_after_cut=None same=None labels=['outer_commit_visible', 'outer_kept_after_ordinary_nested', 'outer_kept_after_cancelled_nested'] release_s=None next_s=None seconds=1.446
+LEASE-SUMMARY variant=actual mode=outer_control rep=1 cut=None phase=None server_after_cut=None same=None labels=['outer_commit_visible'] release_s=None next_s=None seconds=0.984
+LEASE-SUMMARY variant=actual mode=outer_nested rep=2 cut=None phase=None server_after_cut=None same=None labels=['outer_commit_visible', 'outer_kept_after_ordinary_nested', 'outer_kept_after_cancelled_nested'] release_s=None next_s=None seconds=1.443
+LEASE-SUMMARY variant=actual mode=outer_control rep=2 cut=None phase=None server_after_cut=None same=None labels=['outer_commit_visible'] release_s=None next_s=None seconds=0.987

@@ -1,0 +1,13 @@
+EFFECT {"driver": "psycopg", "k": 1, "outcome": "cancelled", "phase": "enter", "rep": 1, "repair": "none", "rows": [], "seconds": 0.885, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 2, "outcome": "cancelled", "phase": "enter", "rep": 1, "repair": "none", "rows": [], "seconds": 0.983, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 3, "outcome": "cancelled", "phase": "body", "rep": 1, "repair": "none", "rows": [], "seconds": 1.089, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 4, "outcome": "cancelled", "phase": "body", "rep": 1, "repair": "none", "rows": [], "seconds": 1.191, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 5, "outcome": "cancelled", "phase": "exit_commit", "rep": 1, "repair": "none", "rows": [["target", 1]], "seconds": 1.084, "verdict": "visible_after_cancel"}
+EFFECT {"driver": "psycopg", "k": 6, "outcome": "cancelled", "phase": "exit_commit", "rep": 1, "repair": "none", "rows": [["target", 1]], "seconds": 1.186, "verdict": "visible_after_cancel"}
+EFFECT {"driver": "psycopg", "k": 1, "outcome": "cancelled", "phase": "enter", "rep": 2, "repair": "none", "rows": [], "seconds": 0.884, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 2, "outcome": "cancelled", "phase": "enter", "rep": 2, "repair": "none", "rows": [], "seconds": 0.987, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 3, "outcome": "cancelled", "phase": "body", "rep": 2, "repair": "none", "rows": [], "seconds": 1.082, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 4, "outcome": "cancelled", "phase": "body", "rep": 2, "repair": "none", "rows": [], "seconds": 1.193, "verdict": "no_effect"}
+EFFECT {"driver": "psycopg", "k": 5, "outcome": "cancelled", "phase": "exit_commit", "rep": 2, "repair": "none", "rows": [["target", 1]], "seconds": 1.084, "verdict": "visible_after_cancel"}
+EFFECT {"driver": "psycopg", "k": 6, "outcome": "cancelled", "phase": "exit_commit", "rep": 2, "repair": "none", "rows": [["target", 1]], "seconds": 1.187, "verdict": "visible_after_cancel"}
+EFFECT-TOTAL {"driver": "psycopg", "package": {"file": "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/psycopg/__init__.py", "has_recover_entry_failure": false, "recover_entry_failure_source": "", "version": "3.3.6"}, "repair": "none", "seconds": 12.84, "trials": 12, "verdicts": {"no_effect": 8, "visible_after_cancel": 4}}

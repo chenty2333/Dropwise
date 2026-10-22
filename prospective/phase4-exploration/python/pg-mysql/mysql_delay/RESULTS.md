@@ -3,7 +3,10 @@
 **Scope.** `mysql-connector-python` 26.7.0 pure-Python async (`mysql.connector.aio`)
 against the existing real MySQL 9.6.0 on `127.0.0.1:32922`. One direct connection
 per scenario, no pool. Two builds: **original** (venv copy) and **patched**
-(`fix/patched`, automatic direct-close on cancellation). Synthetic delay only:
+(`fix/patched`, the older experimental automatic direct-close with
+`_close_reason`/`InterfaceError`). This is not the actual submitted `e7a02b6`
+(`_is_poisoned`/`_abort()`/`OperationalError`); the actual-patch focused
+re-check is in `../postfix_lease/RESULTS.md`. Synthetic delay only:
 a loopback TCP proxy holds server->client chunks for **50 ms** or **5 s**. No
 server failure is injected and no server variable is changed.
 

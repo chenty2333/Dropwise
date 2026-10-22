@@ -18,14 +18,23 @@ writes cannot see each other.
 Variants:
 
     original      no repair
-    fix           the driver-level cancelled-entry repair already used in round 4
+    fix           alias for the older experimental cancelled-entry monkeypatch
     reset         caller-side reset/reconnect after the cut (asyncpg reset,
                   psycopg reconnect)
     outer         a legitimate outer transaction is open when the probe runs
+    nested        a legitimate outer transaction and a nested transaction are
+                  open; both are rolled back after the pending probe
     session       legitimate session state (application_name, GUC, temp table,
                   prepared statement) is retained before the probe
     readonly      a legitimate read-only session makes the write probe
                   inapplicable; this is an unprobeable control, not a finding
+
+Repair selection is by loaded package, not by flag alone.  ``--repair actual``
+does not monkeypatch: it requires the real patch marker in the imported package
+and records the package path/source in every count line.  ``--state-only`` stops
+after the state/session diagnosis; the default effect mode runs the
+transactional write even when the state says the handle is already in a
+transaction.
 """
 
 from __future__ import annotations
@@ -59,6 +68,35 @@ def observer_dsn(args) -> str:
     )
 
 
+def package_info(driver: str) -> dict:
+    """Facts about the driver package actually imported by this process."""
+    import importlib
+    import inspect
+
+    mod = importlib.import_module(driver)
+    out = {"version": getattr(mod, "__version__", None),
+           "file": getattr(mod, "__file__", None)}
+    if driver == "psycopg":
+        from psycopg.transaction import AsyncTransaction
+
+        out["has_recover_entry_failure"] = hasattr(
+            AsyncTransaction, "_recover_entry_failure")
+        try:
+            src = inspect.getsource(AsyncTransaction._recover_entry_failure)
+        except BaseException:
+            src = ""
+        out["recover_entry_failure_source"] = src[:400]
+    else:
+        from asyncpg.transaction import Transaction
+
+        out["start_has_top_xact_clear"] = (
+            "con._top_xact = None" in inspect.getsource(Transaction.start))
+        out["aenter_has_terminate"] = (
+            "terminate()" in inspect.getsource(Transaction.__aenter__))
+        out["aenter_module"] = Transaction.__aenter__.__module__
+    return out
+
+
 class ProbeCmScenario(CmScenario):
     """CmScenario plus one bounded probe pair per trial.
 
@@ -88,23 +126,25 @@ class ProbeCmScenario(CmScenario):
         return await self._tested_connect(self.args.port)
 
     async def run_probe_old(self, *, allow_open_transaction: bool = False,
-                            write: bool = True, probe_timeout: float = 2.0):
+                            write: bool = True, probe_timeout: float = 2.0,
+                            effect: bool = True):
         assert self.probe_pair is not None
         return await self.probe_pair.run(
             "old", self.conn, self.driver,
             marker=self.probe_marker["old"],
             allow_open_transaction=allow_open_transaction,
-            write=write, probe_timeout=probe_timeout,
+            write=write, probe_timeout=probe_timeout, effect=effect,
         )
 
-    async def run_probe_ref(self, *, probe_timeout: float = 2.0, write: bool = True):
+    async def run_probe_ref(self, *, probe_timeout: float = 2.0,
+                            write: bool = True, effect: bool = True):
         assert self.probe_pair is not None
         conn = await self._reference_connect()
         try:
             return await self.probe_pair.run(
                 "ref", conn, self.driver,
                 marker=self.probe_marker["ref"],
-                probe_timeout=probe_timeout, write=write,
+                probe_timeout=probe_timeout, write=write, effect=effect,
             )
         finally:
             with contextlib.suppress(BaseException):
@@ -135,13 +175,20 @@ class ProbeCmScenario(CmScenario):
         }
 
     async def _legit_outer_begin(self):
-        tx = self.conn.transaction()
-        await tx.__aenter__()
-        return tx
+        cm = self.conn.transaction()
+        await cm.__aenter__()
+        return cm
 
     async def _legit_outer_rollback(self, tx) -> str:
         try:
             await tx.__aexit__(Exception, Exception("legit outer rollback"), None)
+            return "ok"
+        except BaseException as exc:
+            return err_text(exc)
+
+    async def _legit_outer_commit(self, tx) -> str:
+        try:
+            await tx.__aexit__(None, None, None)
             return "ok"
         except BaseException as exc:
             return err_text(exc)
@@ -151,6 +198,7 @@ class ProbeCmScenario(CmScenario):
             "driver": self.driver,
             "k": k,
             "variant": variant,
+            "repair": getattr(self.args, "repair", "none"),
             "probe_tag": self.probe_tag,
         }
         started = time.monotonic()
@@ -206,9 +254,11 @@ class ProbeCmScenario(CmScenario):
         pair = self.probe_pair
         assert pair is not None
         old = await self.run_probe_old(
-            allow_open_transaction=(variant in ("outer", "nested"))
+            allow_open_transaction=(variant in ("outer", "nested")),
+            effect=self.args.effect,
         )
-        ref = await self.run_probe_ref()
+        ref = await self.run_probe_ref(effect=self.args.effect)
+        rec["mode"] = "effect" if self.args.effect else "state"
         rec["probe_old"] = old.as_dict()
         rec["probe_ref"] = ref.as_dict()
         rec["probe_compare"] = compare(old, ref)
@@ -217,12 +267,22 @@ class ProbeCmScenario(CmScenario):
         rec["probe_ref_persist"] = await self.close_ref_and_recheck()
 
         if outer_tx is not None:
-            if variant == "nested" and rec.get("inner_tx") is not None:
-                rec["inner_tx_rollback"] = await self._legit_outer_rollback(
-                    rec["inner_tx"]
-                )
-            rec["outer_tx_rollback"] = await self._legit_outer_rollback(outer_tx)
-            rec["client_after_outer_rollback"] = self._client_state()
+            if variant == "outer":
+                rec["outer_tx_commit"] = await self._legit_outer_commit(outer_tx)
+                rec["probe_after_outer_commit"] = (
+                    await self.probe_pair.pending_visible(
+                        "old", self.probe_marker["old"]))
+                rec["client_after_outer_commit"] = self._client_state()
+            else:
+                if rec.get("inner_tx") is not None:
+                    rec["inner_tx_rollback"] = await self._legit_outer_rollback(
+                        rec["inner_tx"]
+                    )
+                rec["outer_tx_rollback"] = await self._legit_outer_rollback(outer_tx)
+                rec["probe_after_outer_rollback"] = (
+                    await self.probe_pair.pending_visible(
+                        "old", self.probe_marker["old"]))
+                rec["client_after_outer_rollback"] = self._client_state()
 
         # Close the reused handle and re-read its probe table.  A transaction
         # that was not really committed loses the marker here (or was already
@@ -271,16 +331,35 @@ async def main() -> int:
     ap.add_argument("--variant", default="original",
                     choices=["original", "fix", "reset", "outer", "nested",
                              "session", "readonly"])
+    ap.add_argument("--repair", choices=["none", "experimental", "actual"],
+                    default=None,
+                    help="which repair is loaded; 'actual' is selected by the "
+                         "interpreter path and must not be monkeypatched")
     ap.add_argument("--cuts", default="", help="comma-separated k; empty = all")
     ap.set_defaults(reps=1)
     ap.add_argument("--out", default="-")
+    ap.add_argument("--state-only", dest="effect", action="store_false",
+                    help="record state diagnosis only; do not run the "
+                         "transactional effect probe")
+    ap.set_defaults(effect=True)
     args = ap.parse_args()
 
-    if args.variant == "fix":
+    if args.repair is None:
+        args.repair = "experimental" if args.variant == "fix" else "none"
+    if args.repair == "experimental":
         if args.driver == "psycopg":
             install_psycopg_enter_fix()
         else:
             install_asyncpg_enter_fix()
+    if args.repair == "actual":
+        info = package_info(args.driver)
+        marker = ("has_recover_entry_failure" if args.driver == "psycopg"
+                  else "start_has_top_xact_clear")
+        if not info.get(marker):
+            raise SystemExit(
+                f"--repair actual requested but loaded package lacks {marker}: "
+                f"{info}"
+            )
 
     # Measure K first, on an isolated scenario.
     counter = ProbeCmScenario(args, tag=f"count-{args.driver}")
@@ -293,6 +372,8 @@ async def main() -> int:
         k_total = tr.yields
         print("PROBE-COUNT " + json.dumps({
             "driver": args.driver, "variant": args.variant,
+            "repair": args.repair, "package": package_info(args.driver),
+            "mode": "effect" if args.effect else "state",
             "yields": k_total, "outcome": tr.outcome,
             "error": tr.error,
         }, sort_keys=True), flush=True)
@@ -312,7 +393,8 @@ async def main() -> int:
     try:
         for rep in range(1, args.reps + 1):
             for k in cuts:
-                tag = f"{args.driver}-{args.variant}-k{k}-r{rep}"
+                tag = (f"{args.driver}-{args.variant}-{args.repair}"
+                       f"-k{k}-r{rep}")
                 sc = ProbeCmScenario(args, tag=tag)
                 try:
                     rec = await asyncio.wait_for(
@@ -345,6 +427,7 @@ def _summary(rec: dict) -> None:
     print(
         "PROBE-SUMMARY "
         f"driver={rec.get('driver')} variant={rec.get('variant')} "
+        f"repair={rec.get('repair')} "
         f"k={rec.get('k')} rep={rec.get('rep')} "
         f"phase={rec.get('cut_phase')} "
         f"target={((rec.get('target') or {}).get('outcome'))} "

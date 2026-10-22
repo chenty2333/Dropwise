@@ -293,6 +293,114 @@ PYTHONPATH=".:$REPO/research/python-retro" \
 
 The containment makes the interruption observable and prevents a stuck
 connection from being reused, but it loses the lease: callers must acquire a
-new one.  The real fix still belongs in psycopg's wait/cancel-generator path;
-no upstream contact was made and no novelty claim is based on an unfetched
+new one.  Section 11 replaces it with a source-level repair in the
+wait/cancel path; the containment is retained only as the earlier experiment.
+No upstream contact was made and no novelty claim is based on an unfetched
 issue page.
+
+## 11. Source-level partial-send cancellation repair (`codex/partial-send-cancel`)
+
+The containment above is retained as an experiment. The source-level repair is
+on a separate local branch/worktree, **not** on the transaction-entry patch
+branch and not pushed:
+
+- worktree `/home/ava/Worktrees/psycopg/partial-send`
+- branch `codex/partial-send-cancel`, based on `origin/master` `99356800`
+- commit `fbcbf651` (local only)
+
+### Mechanism
+
+`AsyncConnection.wait()` already had a cancel-and-drain path for an ACTIVE
+connection. The new precondition is checked at the cancellation point:
+
+```python
+except _INTERRUPTED:
+    if self.pgconn.transaction_status == ACTIVE:
+        if self.pgconn.flush() != 0:
+            # buffered output remains: do not resume the send generator
+            self.pgconn.finish()
+            raise
+        # fully sent: keep the existing cancel + drain
+```
+
+`PQflush()` returns 1 when libpq still has output queued. In that state the send
+generator is suspended on write readiness; the old recovery called
+`next(gen)`/`wait_async(gen)` on it, which the C generator rejects with
+`TypeError: an integer is required`, and the Python generator silently finished
+the send and executed the cancelled statement. Closing instead guarantees the
+server never receives a complete request and the caller gets `CancelledError`.
+The second-interruption branch (`except _INTERRUPTED` during `_try_cancel` or
+the drain) also closes and preserves the cancellation.
+
+This is stage-scoped fail-closed, not string matching: it keys on the wire
+state, not the exception text. Fully sent requests keep the existing
+cancel-and-drain behaviour and a usable connection. If the caller held a
+legitimate outer transaction, `pgconn.finish()` disconnects and the server
+rolls that transaction back; the caller must not expect the outer transaction
+to survive a partial-send cancellation. That is the price of not completing an
+unsent request.
+
+### Regression tests
+
+Added to `tests/test_concurrency_async.py` (upstream style, real server):
+
+1. `test_cancel_while_sending_closes_connection` — 8 MB INSERT, 64 KiB proxy
+   budget; asserts not done, forwarded < payload, ACTIVE, `CancelledError`,
+   connection closed, successor `OperationalError: ... closed`, observer count
+   0. Uses a small `SO_RCVBUF` on the proxy listener so backpressure is real;
+   the test does not call `PQflush()` before cancelling.
+2. `test_cancel_after_send_keeps_connection` — small query fully sent; cancel
+   drains, connection remains usable, successor returns 1.
+3. `test_large_query_not_cancelled` — normal 8 MB request completes.
+4. `test_large_query_ordinary_error_keeps_connection` — a normal server error
+   on a large request leaves the connection usable.
+5. `test_second_cancel_during_recovery_closes` — recovery interruption closes
+   the wire and still propagates `CancelledError`.
+
+### Before/after
+
+Binary C implementation, PostgreSQL 18.4 at 32919:
+
+| build | `min_repro` cancel | connection after | successor | observer |
+|---|---|---|---|---|
+| upstream `99356800` | `TypeError: an integer is required` | ACTIVE, busy, not closed | `another command is already in progress` | 0 rows |
+| fixed `fbcbf651` | `CancelledError` (0.001 s) | closed (`tx=4`, not busy) | `OperationalError: the connection is closed` | 0 rows |
+
+Pure-Python implementation (`PSYCOPG_IMPL=python`), same 8 MB INSERT:
+
+| build | caller result | connection | observer target rows | successor |
+|---|---|---|---|---|
+| upstream | `CancelledError` (after silently resuming) | IDLE, reusable | **1 (cancelled INSERT committed)** | `(1,)` |
+| fixed | `CancelledError` | closed | **0** | `OperationalError: the connection is closed` |
+
+The pure-Python baseline is the important effect-authority control: a
+resume/drain patch would make the caller happy and the connection reusable, but
+it would execute a statement the caller cancelled. The chosen close avoids that
+outcome and does not claim the lease is usable.
+
+Test commands:
+
+```sh
+cd /home/ava/Worktrees/psycopg/partial-send
+PYTHONPATH=$PWD/psycopg PSYCOPG_TEST_DSN='host=127.0.0.1 port=32919 user=postgres password=dw dbname=dw' \
+  /home/ava/Worktrees/psycopg/tx-cancel/.venv/bin/python -m pytest \
+  tests/test_concurrency_async.py -k 'partial_send or large_query or cancel_after_send or second_cancel' -q
+```
+
+Five new tests pass on both backends. The upstream `connection_async.py` fails
+the partial-send test with the TypeError above (binary) and with the
+committed-row effect (pure Python); the fix passes. The full relevant async
+suite (concurrency, connection, transaction, cursor, pipeline, waiting) passed
+372 tests, 14 skipped, 1 deselected on the fixed tree.
+
+### Remaining scope
+
+- The fix covers async `AsyncConnection.wait()` only. The sync `Connection.wait()`
+  path and pipeline-mode partial sends are not covered by these tests.
+- It is fail-closed: the lease is lost; callers need a new connection. It does
+  not attempt to recover a usable connection after a partial send.
+- It cannot retract bytes already handed to the kernel. The decision is made at
+  the libpq output buffer; if `PQflush()` is already 0, the request is treated
+  as fully sent and the existing drain path applies.
+- No upstream contact, PR, issue or novelty claim was made. The local commit is
+  independent of the transaction-entry patch and of the research logs.

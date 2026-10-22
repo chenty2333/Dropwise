@@ -1,0 +1,12 @@
+EFFECT-SUMMARY driver=psycopg k=1 rep=1 phase=enter outcome=cancelled rows=[] verdict=no_effect seconds=0.885
+EFFECT-SUMMARY driver=psycopg k=2 rep=1 phase=enter outcome=cancelled rows=[] verdict=no_effect seconds=0.983
+EFFECT-SUMMARY driver=psycopg k=3 rep=1 phase=body outcome=cancelled rows=[] verdict=no_effect seconds=1.089
+EFFECT-SUMMARY driver=psycopg k=4 rep=1 phase=body outcome=cancelled rows=[] verdict=no_effect seconds=1.191
+EFFECT-SUMMARY driver=psycopg k=5 rep=1 phase=exit_commit outcome=cancelled rows=[['target', 1]] verdict=visible_after_cancel seconds=1.084
+EFFECT-SUMMARY driver=psycopg k=6 rep=1 phase=exit_commit outcome=cancelled rows=[['target', 1]] verdict=visible_after_cancel seconds=1.186
+EFFECT-SUMMARY driver=psycopg k=1 rep=2 phase=enter outcome=cancelled rows=[] verdict=no_effect seconds=0.884
+EFFECT-SUMMARY driver=psycopg k=2 rep=2 phase=enter outcome=cancelled rows=[] verdict=no_effect seconds=0.987
+EFFECT-SUMMARY driver=psycopg k=3 rep=2 phase=body outcome=cancelled rows=[] verdict=no_effect seconds=1.082
+EFFECT-SUMMARY driver=psycopg k=4 rep=2 phase=body outcome=cancelled rows=[] verdict=no_effect seconds=1.193
+EFFECT-SUMMARY driver=psycopg k=5 rep=2 phase=exit_commit outcome=cancelled rows=[['target', 1]] verdict=visible_after_cancel seconds=1.084
+EFFECT-SUMMARY driver=psycopg k=6 rep=2 phase=exit_commit outcome=cancelled rows=[['target', 1]] verdict=visible_after_cancel seconds=1.187

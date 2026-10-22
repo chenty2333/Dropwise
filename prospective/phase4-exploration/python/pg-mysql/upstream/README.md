@@ -108,3 +108,55 @@ rather than attempting transparent recovery.
 - MySQL submission is deferred at the user's request. Keep the local patch; do not pursue Oracle registration.
 - Upstream CI and maintainer review are not yet confirmed complete.
 - psycopg was submitted with both reviewed commits; no history rewrite was needed.
+
+## Round-5 correction: actual vs experimental arms (2026-10-22)
+
+The local patch worktrees above are the actual reviewed patches. Earlier
+round-5 "fixed" arms used separate experimental copies, which must not be
+attributed to these patches:
+
+- **asyncpg**: `postfix_lease/asyncpg_lease.py --fixed` called
+  `install_asyncpg_enter_fix()` (terminate-on-entry), not `ff1bb8d`. The actual
+  patch was re-run in a clean interpreter with
+  `/home/ava/Worktrees/asyncpg/repo` first on `PYTHONPATH`; each record carries
+  the loaded path/version and checks `Transaction.start()` for the identity
+  guard. Results are in `postfix_lease/RESULTS.md`: the actual patch leaves a
+  same-lease ordinary INSERT returning `ok` with no visible row, makes the
+  transaction API refuse explicitly, preserves a legitimate outer transaction
+  on a nested failure, and allows explicit reset. The experimental arm refuses
+  same-lease reuse but terminates a legitimate outer transaction on a nested
+  cancellation; that is a strategy difference, not a property of the patch.
+- **psycopg**: the round-5 probe "fix" arm called
+  `install_psycopg_enter_fix()` (rollback inside the cancelled `__aenter__`).
+  The actual submitted patch is `5f295ab1`/`6650185f`/`c37e8203` on
+  `/home/ava/Worktrees/psycopg/tx-cancel`, selected by the interpreter path and
+  verified by the presence of `AsyncTransaction._recover_entry_failure`. The
+  actual patch is clean at entry cuts in the probe and has zero complete-
+  differential violations; results are in `successor_probe/RESULTS.md` and
+  `method_compare/RESULTS.md`.
+- **MySQL**: the round-5 delay matrix's "patched" build is
+  `fix/patched` (`_close_reason`/`InterfaceError`), not `e7a02b6`
+  (`_is_poisoned`/`_abort()`/`OperationalError`). A focused re-check of the
+  actual worktree is in `postfix_lease/logs/actual-matrix/mysql-*.jsonl`:
+  entry/nested/post-commit cancellation poisons the socket, later
+  rollback/reset/successor all raise `OperationalError: MySQL Connection not
+  available`, and the observer sees no uncommitted row. The old experimental
+  build instead raises `InterfaceError: Cancelled during execution; connection
+  is not reusable` on rollback.
+
+### New local psycopg partial-send branch
+
+- checkout: `/home/ava/Worktrees/psycopg/partial-send`
+- branch: `codex/partial-send-cancel`, based on `origin/master` `99356800`
+- commit: `fbcbf651` ("fix: close async connection on cancellation during a
+  partial send") — local only
+- files: `psycopg/psycopg/connection_async.py`, `tests/test_concurrency_async.py`,
+  `docs/news.rst`
+- status: **not submitted**, not pushed, no issue/PR/contact. This is separate
+  from the transaction-entry branch so it does not pollute PR #1454.
+- focused tests: five new tests pass on the C and pure-Python backends; the
+  upstream module fails the partial-send test with the TypeError (C) or a
+  committed cancelled INSERT (Python). The relevant async suite passes on the
+  fixed tree.
+- remaining scope: async `AsyncConnection.wait()` only; sync and pipeline
+  partial sends are not covered; the repair is fail-closed and loses the lease.

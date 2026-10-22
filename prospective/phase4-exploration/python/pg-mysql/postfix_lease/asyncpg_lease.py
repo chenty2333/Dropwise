@@ -16,7 +16,11 @@ than calling it a fake repair:
 
 Comparisons: no cancellation (normal), cancellation + explicit ``reset()``,
 cancellation + retry through the transaction API, and a body cancellation.
-The original package and the local fail-closed patch are run separately.
+The original package, the submitted ``_top_xact`` registration patch, and the
+older fail-closed terminate experiment are separate variants.  The variant is
+recorded from the *loaded package and source*, not inferred from the flag.
+A legitimate outer transaction with a failed/cancelled nested start is also
+exercised to check that the patch's identity guard keeps the outer frame.
 
 Outcomes are classified as committed success, explicit refusal, uncommitted
 success, or rolled back on return.  ``_top_xact = None`` is never treated as
@@ -48,6 +52,29 @@ from cases.common import (
 from cases.txphase_case import _await_phased, install_asyncpg_enter_fix
 
 
+def package_info() -> dict:
+    """Facts about the asyncpg package actually imported by this process."""
+    import inspect
+
+    from asyncpg.transaction import Transaction
+
+    start_src = inspect.getsource(Transaction.start)
+    aenter_src = inspect.getsource(Transaction.__aenter__)
+    return {
+        "version": asyncpg.__version__,
+        "file": asyncpg.__file__,
+        "start_has_top_xact_clear": "con._top_xact = None" in start_src,
+        "aenter_module": Transaction.__aenter__.__module__,
+        "aenter_has_terminate": "terminate()" in aenter_src,
+    }
+
+
+def variant_name(args) -> str:
+    if getattr(args, "variant", None):
+        return args.variant
+    return "experimental" if args.fixed else "original"
+
+
 class LeaseScenario:
     def __init__(self, args, mode: str, rep: int) -> None:
         self.args = args
@@ -67,6 +94,7 @@ class LeaseScenario:
         self.rec: dict = {
             "mode": mode, "rep": rep, "driver": "asyncpg",
             "table": self.table, "app": self.app,
+            "variant": variant_name(args), "package": package_info(),
         }
         self.times: dict[str, float] = {}
 
@@ -332,6 +360,9 @@ class LeaseScenario:
                     "rows": await self._rows(),
                 }
                 self.rec["same_lease"] = await self._insert("after_body")
+            elif self.mode in ("outer_nested", "outer_control"):
+                self.rec["outer"] = await self._outer_case(
+                    nested_failure=self.mode == "outer_nested")
             else:
                 raise RuntimeError(f"unknown mode {self.mode}")
 
@@ -382,6 +413,68 @@ class LeaseScenario:
             await self.cleanup()
             self.rec["seconds"] = round(time.monotonic() - started, 3)
         return self.rec
+
+    async def _outer_case(self, *, nested_failure: bool) -> dict:
+        """A legitimate outer transaction must survive a failed/cancelled
+        nested start.  The patch may not clear the outer registration."""
+        out: dict = {"nested_failure": nested_failure}
+        outer = self.conn.transaction()
+        await outer.start()
+        out["outer_started"] = self._state()
+        out["outer_write"] = await bound(
+            self.conn.execute(
+                f"INSERT INTO {self.table} (k, v) VALUES ($1, $2)",
+                "outer_before", 1,
+            ),
+            self.args.timeout,
+        )
+        if nested_failure:
+            # An ordinary failure before SAVEPOINT: the nested transaction
+            # reports a different isolation level.
+            try:
+                await self.conn.transaction(
+                    isolation="serializable"
+                ).start()
+            except BaseException as exc:
+                out["nested_start_error"] = err_text(exc)
+            out["after_ordinary_nested"] = {
+                "client": self._state(),
+                "top_is_outer": getattr(self.conn, "_top_xact", None) is outer,
+            }
+
+            # A cancelled nested start.  The outer registration must stay.
+            nested = self.conn.transaction()
+            task = asyncio.create_task(nested.__aenter__())
+            await asyncio.sleep(0.1)
+            task.cancel()
+            try:
+                await task
+                out["nested_cancel"] = "completed"
+            except asyncio.CancelledError:
+                out["nested_cancel"] = "cancelled"
+            except BaseException as exc:
+                out["nested_cancel"] = err_text(exc)
+            out["after_cancelled_nested"] = {
+                "client": self._state(),
+                "top_is_outer": getattr(self.conn, "_top_xact", None) is outer,
+            }
+        out["outer_write_after"] = await bound(
+            self.conn.execute(
+                f"INSERT INTO {self.table} (k, v) VALUES ($1, $2)",
+                "outer_after", 2,
+            ),
+            self.args.timeout,
+        )
+        await outer.commit()
+        out["after_commit"] = {
+            "client": self._state(), "rows": await self._rows(),
+            "server": await self._server(),
+        }
+        out["outer_committed_visible"] = (
+            ["outer_before", 1] in out["after_commit"]["rows"]
+            and ["outer_after", 2] in out["after_commit"]["rows"]
+        )
+        return out
 
     async def _normal(self) -> dict:
         async with self.conn.transaction():
@@ -456,6 +549,15 @@ def classify(rec: dict) -> dict:
         labels.extend([f"after_return_rows_{len(ret['rows'])}"])
     if (nextw.get("rows") or []) and ["after_borrow", 9] in nextw["rows"]:
         labels.append("next_borrow_visible")
+    outer = rec.get("outer") or {}
+    if rec.get("mode") in ("outer_nested", "outer_control"):
+        if outer.get("outer_committed_visible"):
+            labels.append("outer_commit_visible")
+        if rec.get("mode") == "outer_nested":
+            if outer.get("after_ordinary_nested", {}).get("top_is_outer"):
+                labels.append("outer_kept_after_ordinary_nested")
+            if outer.get("after_cancelled_nested", {}).get("top_is_outer"):
+                labels.append("outer_kept_after_cancelled_nested")
     return {"labels": labels,
             "same_lease_result": result,
             "same_lease_visible": bool(rows),
@@ -469,14 +571,32 @@ async def main() -> int:
     ap.add_argument("--modes", default="normal,entry_same_lease,entry_reset,entry_txapi,body_cancel")
     ap.add_argument("--delay", type=float, default=0.05)
     ap.add_argument("--settle", type=float, default=0.2)
-    ap.add_argument("--fixed", action="store_true")
+    ap.add_argument("--variant", choices=["original", "actual", "experimental"],
+                    default=None,
+                    help="label and, for experimental, install the old "
+                         "terminate-on-entry monkeypatch")
+    ap.add_argument("--fixed", action="store_true",
+                    help="legacy alias for --variant experimental")
     ap.add_argument("--direct", action="store_true",
                     help="use a direct tested connection, not a one-slot pool")
     ap.add_argument("--out", default="-")
     args = ap.parse_args()
+    if args.variant == "experimental":
+        args.fixed = True
     if args.fixed:
         install_asyncpg_enter_fix()
+    args.variant = variant_name(args)
+    if args.variant == "actual":
+        info = package_info()
+        if not info.get("start_has_top_xact_clear"):
+            raise SystemExit(
+                "--variant actual requested but loaded asyncpg lacks the "
+                f"top-xact clear: {info}"
+            )
     out = sys.stdout if args.out == "-" else open(args.out, "w", encoding="utf-8")
+    print("PACKAGE " + json.dumps({
+        "variant": args.variant, "package": package_info()}, sort_keys=True),
+        file=out, flush=True)
     failures = 0
     try:
         for rep in range(1, args.reps + 1):
@@ -496,7 +616,7 @@ async def main() -> int:
                 print("LEASE " + json.dumps(rec, default=str, sort_keys=True),
                       file=out, flush=True)
                 print(
-                    f"LEASE-SUMMARY fixed={args.fixed} mode={mode} rep={rep} "
+                    f"LEASE-SUMMARY variant={args.variant} mode={mode} rep={rep} "
                     f"cut={((rec.get('cut') or {}).get('realized'))} "
                     f"phase={((rec.get('cut') or {}).get('phase'))} "
                     f"server_after_cut={((rec.get('cut') or {}).get('server'))} "

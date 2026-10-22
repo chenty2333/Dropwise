@@ -1,0 +1,13 @@
+EFFECT {"driver": "asyncpg", "k": 1, "outcome": "cancelled", "phase": "enter", "rep": 1, "repair": "none", "rows": [], "seconds": 0.831, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 2, "outcome": "cancelled", "phase": "body", "rep": 1, "repair": "none", "rows": [], "seconds": 1.192, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 3, "outcome": "cancelled", "phase": "exit_commit", "rep": 1, "repair": "none", "rows": [], "seconds": 1.033, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 4, "outcome": "completed", "phase": null, "rep": 1, "repair": "none", "rows": [["target", 1]], "seconds": 1.139, "verdict": "clean_completed"}
+EFFECT {"driver": "asyncpg", "k": 5, "outcome": "completed", "phase": null, "rep": 1, "repair": "none", "rows": [["target", 1]], "seconds": 1.131, "verdict": "clean_completed"}
+EFFECT {"driver": "asyncpg", "k": 6, "outcome": "completed", "phase": null, "rep": 1, "repair": "none", "rows": [["target", 1]], "seconds": 1.13, "verdict": "clean_completed"}
+EFFECT {"driver": "asyncpg", "k": 1, "outcome": "cancelled", "phase": "enter", "rep": 2, "repair": "none", "rows": [], "seconds": 0.827, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 2, "outcome": "cancelled", "phase": "body", "rep": 2, "repair": "none", "rows": [], "seconds": 1.193, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 3, "outcome": "cancelled", "phase": "exit_commit", "rep": 2, "repair": "none", "rows": [], "seconds": 1.029, "verdict": "no_effect"}
+EFFECT {"driver": "asyncpg", "k": 4, "outcome": "completed", "phase": null, "rep": 2, "repair": "none", "rows": [["target", 1]], "seconds": 1.132, "verdict": "clean_completed"}
+EFFECT {"driver": "asyncpg", "k": 5, "outcome": "completed", "phase": null, "rep": 2, "repair": "none", "rows": [["target", 1]], "seconds": 1.126, "verdict": "clean_completed"}
+EFFECT {"driver": "asyncpg", "k": 6, "outcome": "completed", "phase": null, "rep": 2, "repair": "none", "rows": [["target", 1]], "seconds": 1.132, "verdict": "clean_completed"}
+EFFECT-TOTAL {"driver": "asyncpg", "package": {"aenter_has_terminate": false, "aenter_module": "asyncpg.transaction", "file": "/home/ava/dropwise-py-work-r3/venv313/lib/python3.13/site-packages/asyncpg/__init__.py", "start_has_top_xact_clear": false, "version": "0.32.0"}, "repair": "none", "seconds": 12.89, "trials": 12, "verdicts": {"clean_completed": 6, "no_effect": 6}}

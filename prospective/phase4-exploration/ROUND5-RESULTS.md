@@ -1,47 +1,100 @@
 # Round 5 results: handle comparison, cut scale, delivery handoff, and four appended groups
 
-## Coordinator review correction (2026-10-22)
+## Final correction and closure (2026-10-22)
 
-**The original measurements below are retained, but three interpretations need
-correction before this round can be considered closed.**
+The three review corrections are resolved. The original measurements below are
+retained as history; the corrected conclusions are these.
 
-1. The asyncpg `--fixed` arm loads the older experimental terminate-on-entry
-   monkeypatch, not the submitted `_top_xact` registration repair. Its explicit
-   refusal result does not validate the submitted patch's same-lease boundary.
-   The coordinator independently loaded `/home/ava/Worktrees/asyncpg/repo`
-   (confirmed import path and `Transaction.start()` identity-guard source) and
-   ran one `entry_same_lease` and one `entry_reset` trial against the existing
-   disposable PostgreSQL on port 32919, without the monkeypatch. With the actual
-   patch, ordinary INSERT returned `INSERT 0 1`, remained invisible to the
-   independent observer, and was rolled back on pool return. Explicit reset
-   before INSERT produced a visible write. These are bounded confirmation
-   trials, not a replacement for the full original/actual-patch/experimental
-   strategy matrix. The same-lease boundary remains open for investigation.
-2. `method_compare/effect_judge.py` is a target-effect-only ablation. It neither
-   runs the successor nor implements the existing pre/post calibration and
-   Atomic contract. `visible_after_cancel` is not an Atomic violation. Claims
-   below that this establishes an advantage over the original differential
-   method, or its false-positive rate, are withdrawn pending a same-contract
-   comparison. The strong targeted-test comparison is a separate result.
-3. `successor_probe/probe.py` returns immediately on `in_transaction`, before
-   transaction-write and independent-visibility probes. Entry detections in
-   that mode establish state-check discrimination, not an independent black-box
-   successor or fresh-reference increment. Those contributions need separate
-   measurement with diagnostic state checks decoupled from effect judgment.
+### 1. Actual patch vs experimental strategy (asyncpg, psycopg, MySQL)
 
-Independent validation during review: the 29 Python tests passed. The plain
-asyncio partial-send reproduction also reproduced `TypeError: an integer is
-required`, ACTIVE/busy state, and rejection of the next query, with about
-3.1 MB still queued for sending. No claim of upstream novelty or acceptance is
-made. The string-matching runtime containment is not a production repair.
-Other experiment matrices were reviewed, not independently rerun in full.
+The asyncpg `--fixed` arm was the old terminate-on-entry monkeypatch, not the
+submitted `_top_xact` registration repair. Re-run with the loaded package path
+and source checked (`/home/ava/Worktrees/asyncpg/repo`, HEAD `ff1bb8d`; every
+record carries `package.file`, version and `start_has_top_xact_clear`):
 
-Next work: correct the three comparisons, test actual submitted patches, and
-implement a source-level psycopg partial-send cancellation repair with failing
-baseline/passing fixed regression tests. Keep findings, repair scope, method
-increment and remaining uncertainty separate. This correction supersedes
-conflicting interpretations in the historical sections below.
+- **Actual asyncpg patch:** same-lease ordinary `INSERT` returns `INSERT 0 1`
+  but the independent observer sees 0 rows; the write is rolled back on pool
+  return. `reset()` then INSERT is visible. The transaction API now refuses
+  explicitly (`cannot use Connection.transaction() in a manually started
+  transaction`). A legitimate outer transaction survives an ordinary nested
+  failure and a cancelled nested start, and commits visibly.
+- **Experimental terminate arm:** same-lease reuse is refused, but a cancelled
+  *nested* start terminates the whole connection and kills the legitimate outer
+  transaction. That is a strategy result, not a property of the submitted patch.
+- **Actual psycopg patch:** `AsyncTransaction._recover_entry_failure()` present;
+  entry cuts are clean in the probe and the complete differential has zero
+  violations (baseline: four `Neither` violations at psycopg entry k=1,2).
+- **Actual MySQL patch:** `e7a02b6` is selected by the loaded worktree, not
+  `fix/patched`. Entry, nested and commit-in-flight cancellation poison the
+  socket; rollback/reset/successor all raise `OperationalError: MySQL Connection
+  not available`; the observer sees no uncommitted row; the normal control is
+  visible. The old experimental build raises `InterfaceError: Cancelled during
+  execution; connection is not reusable` instead.
 
+### 2. Fair method comparison
+
+`effect_judge.py` is a target-effect-only ablation. The original calibrated
+method (`explore_observed`, survivor + pre/post calibration + Atomic) was run on
+the same target and cutpoints, with the same two reps and window. It **also
+finds the psycopg entry defect** (4/4 `Neither` at k=1,2); the effect-only
+ablation misses it (8 `no_effect` over two reps) and labels the legitimate
+commit-after-cancel exit cuts `visible_after_cancel`, which is not an Atomic
+violation. The actual psycopg patch removes the complete-differential violation.
+The new probe's discovery increment over the complete differential on this
+target is therefore **zero**; its increment is classification (invisible write
+vs explicit transaction-API refusal vs pending outer vs blocked session) and
+fresh-reference calibration. The complete differential costs ~25 s psycopg /
+~16 s asyncpg for 2 reps plus calibration; the probe costs ~21-26 s /
+~13-16 s for the same cuts and reps. Each method's code/reuse and remaining
+limits are in `python/pg-mysql/method_compare/RESULTS.md`.
+
+### 3. Separated state, black-box effect and fresh reference
+
+The probe now has `--state-only` and effect mode. In effect mode the transaction
+state is recorded but does not short-circuit the write. Results:
+
+- psycopg baseline entry: state `open_transaction`, effect `invisible_write`,
+  reference clean.
+- psycopg actual patch entry: state clean, effect clean.
+- asyncpg baseline entry: state `open_transaction`, effect `invisible_write`.
+- asyncpg actual patch entry: state still `open_transaction`, effect
+  `transaction_api_error` (explicit refusal). State-only cannot distinguish the
+  actual patch from baseline here; the write does.
+- legitimate outer: `effect_pending_outer`, then visible after commit (2/2);
+  nested rollback leaves the marker absent (2/2).
+- session clean (2/2); read-only `blocked_by_session` (2/2), not an anomaly.
+- pool return/reborrow is clean for baseline and actual; same-lease ordinary
+  reuse is not.
+
+The asyncpg actual patch does **not** protect a same-lease ordinary operation
+or a commit-in-flight cancellation; it protects the local registration boundary
+(explicit transaction-API refusal, outer identity guard) and leaves recovery to
+an explicit reset/rollback/close. The psycopg actual patch recovers entry but
+does not cover the partial-send path.
+
+### 4. Formal psycopg partial-send cancellation repair
+
+Implemented on an independent local branch `codex/partial-send-cancel`
+(`/home/ava/Worktrees/psycopg/partial-send`, commit `fbcbf651`, based on
+`origin/master` `99356800`), not on the transaction-entry PR branch and not
+pushed. `AsyncConnection.wait()` checks `PQflush()` at cancellation: if libpq
+still has buffered output, it closes the connection and re-raises
+`CancelledError`; it does not resume the suspended send generator. Fully sent
+requests keep the existing cancel-and-drain path. A second interruption during
+recovery also closes. Five real-server regression tests cover the partial send,
+the fully-sent control, a normal large query, an ordinary error, and interrupted
+recovery; they pass on the C and pure-Python backends, while upstream fails with
+`TypeError` (C) or commits the cancelled INSERT (pure Python). The cost is a
+lost lease and rollback of any legitimate outer transaction; sync and pipeline
+partial sends remain uncovered. Details are in
+`python/pg-mysql/fragmentation/RESULTS.md` and `upstream/README.md`.
+
+Bottom line: the actual patches are narrower than the experimental arms; the
+complete differential already detects the psycopg entry defect, so the probe's
+contribution is contract classification, not new discovery; the asyncpg
+registration patch still requires caller recovery on a same lease; and the
+psycopg partial-send defect now has a source-level, fail-closed repair with
+failing-baseline/passing-fixed tests.
 
 New work only; round-4 results and the user's existing logs are not rewritten.
 All experiments use disposable local databases and unique tables.  The main
@@ -50,73 +103,83 @@ each sub-report, not duplicated here.
 
 ## 0. Short answer
 
-- The old/new handle comparison **works** for the entry-cancellation defect:
-  it detects an open server transaction and an invisible marker that an
-  effect-only differential misses.  It **fails or needs extra semantics** for
-  legitimate outer transactions, read-only/session-blocked handles, committed
-  exit cuts, and pool reset/reborrow (a clean next checkout can hide a bad
-  same-checkout retry).
+- The **actual** asyncpg registration patch does not refuse same-lease
+  ordinary reuse: `INSERT 0 1` is returned while the independent observer sees
+  nothing, and only reset/rollback/close or a pool return makes the lease safe.
+  It does protect the transaction-API boundary by explicit refusal and keeps a
+  legitimate outer transaction alive on a nested failure. The older terminate
+  arm's refusal is not a property of the submitted patch.
+- The complete calibrated differential finds the psycopg entry defect
+  (`Neither` at k=1,2; 4/4), and the actual psycopg patch removes it. The
+  effect-only ablation misses it. The new probe finds the same psycopg defect,
+  so its discovery increment over the complete differential is **zero**; its
+  increment is classification (invisible vs refused vs pending vs
+  unprobeable) and fresh-reference calibration.
 - The measured cut scale is 6 (psycopg direct), 3 (asyncpg direct), 12
   (psycopg outer+inner savepoint), and 4 (warm pool checkout); nested operation
-  is the main underestimate of a "transaction boundary".  Automatic runtime
-  is ~1.8-24 s per target for counts + all cuts; target-specific setup is the
-  main authoring cost.
-- Confirmed increment over a strong manual baseline: the probe finds the entry
-  contamination; exhaustive Dropwise cutpoint search finds **no additional
-  root cause** on these targets; an effect-only differential misses the entry
-  defect and false-flags legitimate commit-after-cancel.  The new increment
-  came from a **different axis** (send backpressure), not from more cutpoints.
+  is the main underestimate of a "transaction boundary". Automatic runtime is
+  ~1.8-24 s per target for counts + all cuts; target-specific setup is the main
+  authoring cost.
 - The pool delivery window is correctly protected in psycopg_pool/asyncpg;
-  no leak or capacity loss was found.  A same-checkout post-cancel reuse can
-  still silently lose a write, so the delivery window and the lease-use window
-  are separate.
-- Most worthwhile next mainline: fix the newly reproduced psycopg cancellation
-  path for a partly written request (TypeError / stuck ACTIVE connection), then
-  express the post-cancel lease contract (closed vs reusable) in the probe.
+  no leak or capacity loss was found. Pool return/reborrow is clean for baseline
+  and actual patches, but a same-checkout post-cancel reuse can still silently
+  lose a write, so the delivery window and the lease-use window are separate.
+- The partial-send cancellation defect now has a source-level fail-closed
+  repair with failing-baseline/passing-fixed tests on an independent local
+  branch. It is not submitted and does not cover sync or pipeline partial
+  sends.
 
 ## 1. Old/new handle comparison (Work 1)
 
 `successor_probe/probe.py` + `run_pg.py` + `run_pool.py`;
 details in [`python/pg-mysql/successor_probe/RESULTS.md`](python/pg-mysql/successor_probe/RESULTS.md).
 
-Contract: a fresh nonce and column metadata must echo; the old handle gets a
-unique marker write in a normal transaction and bounded independent visibility;
-then it is closed/returned and the marker is re-read.  The reference is a fresh
-direct handle.  The probe compares handle behaviour, not the target's intended
-effect.
+Contract: a fresh nonce and column metadata must echo; in **effect mode** the
+old handle gets a unique marker write in a normal transaction and bounded
+independent visibility, even if its state says it is already in a transaction.
+In **state mode** the probe stops after the state/session diagnosis.  The
+reference is a fresh direct handle.  The probe compares handle behaviour, not
+the target's intended effect.
 
-| target | old | reference | compare |
-|---|---|---|---|
-| psycopg entry k=1,2 | open_transaction | clean | **old_anomaly** |
-| psycopg body/exit | clean | clean | consistent_clean |
-| psycopg fix entry | clean | clean | consistent_clean |
-| asyncpg entry k=1 | open_transaction | clean | **old_anomaly** |
-| asyncpg fix entry | closed | clean | **old_closed** |
-| legit outer/nested | open_transaction_allowed | clean | legitimate_open_transaction |
-| session k=3 | clean | clean | consistent_clean |
-| read-only k=3 | blocked_by_session | clean | old_not_applicable |
+Every run records the loaded package path/version and the actual-repair marker.
+Repair selection is by interpreter path, not by flag name; `--repair actual`
+refuses to run if the marker is absent.
 
-Why this is not just an effect check: at the psycopg entry cut the server is
-`idle in transaction`, a retry through the official CM returns normally, and
-the independent observer sees no row.  The effect-only judge (below) reports
-`no_effect` and misses it.  The probe catches the open transaction and the
-invisible marker.
+| target | state mode | effect mode | reference | compare |
+|---|---|---|---|---|
+| psycopg baseline entry k=1,2 | open_transaction | **invisible_write** | clean | **old_anomaly** |
+| psycopg actual patch entry | clean | clean | clean | consistent_clean |
+| psycopg body/exit | clean | clean | clean | consistent_clean |
+| asyncpg baseline entry k=1 | open_transaction | **invisible_write** | clean | **old_anomaly** |
+| asyncpg actual patch entry k=1 | open_transaction | **transaction_api_error** | clean | **old_anomaly** |
+| asyncpg body/exit | clean | clean | clean | consistent_clean |
+| psycopg actual legit outer | open_transaction_allowed | effect_pending_outer | clean | pending; visible after commit 2/2 |
+| psycopg actual nested | open_transaction_allowed | effect_pending_outer | clean | absent after rollback 2/2 |
+| psycopg actual session | clean | clean | clean | consistent_clean |
+| psycopg actual read-only | clean | blocked_by_session | clean | old_not_applicable |
 
-Where it needs extra semantics:
+The asyncpg actual-patch row is the key separation: state alone still says
+`open_transaction` (as in the baseline), but the write gets an explicit
+transaction-API refusal rather than an invisible success.  State-only evidence
+cannot distinguish the patch from the baseline here; the black-box write does.
+
+Where the probe needs extra semantics:
 
 - An open transaction is only an anomaly under the declared handoff contract;
-  a legitimate outer transaction must be allowed explicitly.
+  a legitimate outer transaction must be declared and is reported as pending,
+  not clean.
 - `blocked_by_session` / timeout is **unprobeable**, not clean.
 - A committed exit cut looks clean and visible; the probe cannot know whether
   that commit was the intended effect or a legitimate cancellation-after-commit.
 - A pool reset/reborrow can repair the handle before the next checkout; this
   does not prove a retry **inside** the same checkout was safe.
 - The reference is direct while the tested handle goes through the delay proxy;
-  it is a same-server fresh-handle baseline, not a byte-identical path.
+  it is a same-server fresh-handle baseline, not a byte-identical path.  It is a
+  calibration control, not a source of new defect discovery.
 
 ## 2. Cut scale and method increment (Work 2)
 
-`cut_scale.py` and `effect_judge.py`; details in
+`cut_scale.py`, `complete_judge.py` and `effect_judge.py`; details in
 [`python/pg-mysql/method_compare/RESULTS.md`](python/pg-mysql/method_compare/RESULTS.md).
 
 | target | K (5 normal runs) | source awaits | realised cuts | overrun K+1 | phases | wall time (counts + cuts) |
@@ -132,20 +195,26 @@ and the conditional rollback await is not observed on the normal path.  The
 pool sample was warm, so no checkout handoff cutpoint appeared; Work 3 covers
 the delivery window separately.
 
-Method comparison on the same entry defect (targeted test not weakened):
+Method comparison on the same entry defect (same target, cuts, allowed
+outcomes and window; two reps for all three methods):
 
-| method | discovery | misses / false positives | runtime |
-|---|---|---|---|
-| targeted phase test | entry open transaction on both | none in sample | psycopg 1.86 s; asyncpg 0.83 s |
-| Dropwise all-cut exploration | same entry defect | no additional root cause; overrun unrealised | psycopg 6.4 s (cuts) + 5.2 s (counts); asyncpg 3.0 s + 5.7 s |
-| effect-only differential | **misses entry** | psycopg flags 2 exit cuts `visible_after_cancel` (legitimate commits); asyncpg 0 | psycopg 6.43 s; asyncpg 3.03 s |
-| old/new handle probe | entry old_anomaly; fixed clean/closed | no false positives on body/exit/legit outer | ~1.7 s/cut psycopg; ~2.1 s/cut asyncpg |
+| method | psycopg baseline | psycopg actual | asyncpg baseline | asyncpg actual | runtime |
+|---|---|---|---|---|---|
+| complete calibrated differential (`explore_observed`) | **4 `Neither`** (k=1,2) | 0 violations | 4 `Neither` (entry + commit-in-flight) | 2 `Neither` (commit-in-flight) | 24.7-25.2 s / 16.4-16.5 s |
+| effect-only ablation | 8 `no_effect`; 4 `visible_after_cancel` | same | 6 `clean_completed`, 6 `no_effect` | 6 `clean_completed`, 6 `no_effect` | 12.8-13.3 s / 12.9 s |
+| new probe (effect mode) | 4 `invisible_write` | 12 clean | 2 `invisible_write` (entry) | 2 `transaction_api_error` (entry) | 20.6-26.2 s / 13.0-15.8 s |
+| targeted phase test | entry contamination | psycopg recovered | entry contamination | explicit refusal / outer guarded | sub-second per cut |
 
-Confirmed increment: the probe and the targeted test both find the entry
-contamination; all-cut exploration does not find a second entry/body/exit
-defect.  Unconfirmed: general superiority, message-level cut completeness, or
-replacement of semantic phase knowledge.  The probe's advantage is
-**discrimination** (open transaction vs clean/closed), not more cutpoints.
+The complete differential **also finds** the psycopg entry defect; the probe's
+discovery increment over it is zero. The effect-only ablation misses the entry
+defect and describes legitimate commit-after-cancel as
+`visible_after_cancel`, but that label is not an Atomic violation. The probe's
+increment is classification and reference calibration. Asyncpg's actual-patch
+entry result depends on whether cancellation reaches the server before or after
+`BEGIN`; a cut index alone does not pin that wire phase.
+
+Not established: general superiority, message-level cut completeness, or
+replacement of semantic phase knowledge.
 
 ## 3. Pool delivery window (Work 3)
 
@@ -180,21 +249,28 @@ interrupted transaction entry (section 4).
 The server BEGIN is confirmed by an independent observer before cancellation.
 Then the cancellation is caught without return/reset, an ordinary autocommit
 `INSERT` is issued on the same connection, and the handle is returned to a
-one-slot pool for reset and reborrow.  Two reps, original vs fail-closed patch.
+one-slot pool for reset and reborrow.  Three reps per pool mode (two for the
+outer/nested control), three variants selected by the loaded package and
+verified in every record.
 
-| mode | original | patched |
-|---|---|---|
-| normal | committed/visible | same |
-| entry same-lease INSERT | returns `INSERT 0 1`, observer sees **0 rows**; after return 0 | **explicit refusal** (`released back to the pool` / `connection is closed`); after return 0 |
-| entry reset then INSERT | visible/committed | reset refused (already released) |
-| entry transaction API | returns ok, write invisible | transaction API refused |
-| body cancel | visible | visible |
+| mode | original 0.32.0 | actual `ff1bb8d` | experimental terminate |
+|---|---|---|---|
+| normal | committed/visible | same | same |
+| entry same-lease INSERT | `INSERT 0 1`, observer **0 rows** | **`INSERT 0 1`, observer 0 rows** | explicit refusal; after return 0 |
+| entry reset then INSERT | visible/committed | **visible/committed** | reset refused (already released) |
+| entry transaction API | returns ok, write invisible | **explicit `InterfaceError: cannot use Connection.transaction() in a manually started transaction`** | transaction API refused |
+| body cancel | visible | visible | visible |
+| outer + cancelled nested start | outer survives and commits | **outer survives and commits (2/2)** | **connection terminated; outer commit fails (0/2)** |
 
-So the original is **uncommitted success** (a caller trusting the return loses
-the write), while the patch is **explicit refusal** (fail-closed; the pool
-replaces the lease).  `_top_xact = None` was not server IDLE: the observer saw
-`BEGIN` and `idle in transaction` at the cut.  The pool return/reset boundary is
-clean in both; the same-checkout boundary is the hazard.
+The actual patch does **not** make same-lease ordinary reuse safe: it still
+returns success with an invisible row.  Its protections are the transaction-API
+refusal (no silent savepoint) and the outer identity guard (a nested failure
+does not clear the outer registration).  The old terminate arm's explicit
+refusal and its outer-transaction kill are strategy results, not properties of
+the submitted patch.  `_top_xact = None` is not server IDLE: the observer saw
+`BEGIN` and `idle in transaction` at the cut.  The pool return/reset boundary
+is clean in all variants; the same-checkout boundary is the hazard.  Explicit
+`reset()` is the working same-lease recovery with the actual patch.
 
 ## 5. Delayed BEGIN/SAVEPOINT and recovery (group 2)
 
@@ -209,17 +285,21 @@ One-way 5 s server→client delay; BEGIN confirmed before cancel.
 | none | 5.00 s | INTRANS, not cleared in 7 s | 5.01 s |
 | `rollback()` | 5.00 s | guard error, still INTRANS | 5.02 s |
 | `close()` | 5.00 s | cleared 0.0006 s | 5.01 s |
-| fail-closed fix | **10.00 s** | cleared 0.0005 s | 10.01 s |
-| fix + second cancel | **0.10 s** | cleared 0.0007 s | 0.11 s |
+| experimental fail-closed fix | **10.00 s** | cleared 0.0005 s | 10.01 s |
+| experimental fix + second cancel | **0.10 s** | cleared 0.0007 s | 0.11 s |
 | nested original rollback | 5.00 s | outer exit `OutOfOrderTransactionNesting`, not cleared | — |
-| nested fix | 15.01 s | cleared; outer rollback ok | 20.02 s |
+| experimental nested fix | 15.01 s | cleared; outer rollback ok | 20.02 s |
 
 Cancellation delivery is bounded by the delayed BEGIN reply, so an explicit
-post-catch recovery cannot start earlier.  The fix rolls back inside the
-cancelled entry, adding a second reply round trip.  A second cancel is an
-escape (fast, closes), not a normal repair.  In a one-slot pool, close/replace
-forces a new connection: successor 20.01 s; the fix retains the connection and
-gives an immediate successor at the price of 10.00 s cancellation.
+post-catch recovery cannot start earlier.  The fix rows above are the **older
+experimental rollback-in-`__aenter__` monkeypatch**, not the submitted
+`_recover_entry_failure()` patch.  The actual patch recovers entry (verified by
+the probe and complete differential) and also adds a rollback round trip, but
+its 5 s-delay timings were not rerun in this correction; the experimental
+timing is retained only as a strategy reference.  A second cancel is an escape
+(fast, closes), not a normal repair.  In a one-slot pool, close/replace forces a
+new connection: successor 20.01 s; the experimental fix retained the connection
+and gave an immediate successor at the price of 10.00 s cancellation.
 
 ### MySQL
 
@@ -235,11 +315,19 @@ held at cancel, none delivered before.
   then reads the next queued reply (`rowcount=0`, `[]`) while an independent
   observer sees its row.  Long BEGIN: rollback false OK at 5.0 s, connection
   held 15.15 s; reset recovery 25.0 s, connection 35.16 s.  No usable successor.
-- Patched direct close evicts at cancel (0.14-0.37 ms) and eliminates the
-  stale-reply false OK, but recovery fails immediately and **c is unrealised**.
-  A usable successor needs reconnect: ~0.35 s at 50 ms delay, **30-35 s at
-  5 s**, with c ~0.5 s / **45-50 s**.  Direct close is not O(1)/zero-wait to a
-  usable successor.
+- The "patched" rows here are `fix/patched`, the **older experimental direct
+  close** (`_close_reason`/`InterfaceError`), not the actual `e7a02b6`
+  (`_is_poisoned`/`_abort()`/`OperationalError`).  That direct close evicts at
+  cancel (0.14-0.37 ms) and eliminates the stale-reply false OK, but recovery
+  fails immediately and **c is unrealised**.  A usable successor needs
+  reconnect: ~0.35 s at 50 ms delay, **30-35 s at 5 s**, with c ~0.5 s /
+  **45-50 s**.  Direct close is not O(1)/zero-wait to a usable successor.
+- Actual `e7a02b6` focused re-check (2 reps, entry/nested/commit-in-flight):
+  cancellation poisons the socket and reports `OperationalError: MySQL
+  Connection not available` for rollback/reset/successor; the observer sees no
+  uncommitted row; the normal control commits visibly.  This confirms the
+  explicit-refusal contract, not a usable same-lease successor.  See
+  `postfix_lease/RESULTS.md` and `postfix_lease/logs/actual-matrix/mysql-*.jsonl`.
 - Re-cancel: 24/24 realised cancels reached the recovery action and caller; 11
   patched rollback/reset second cancels were unrealised because recovery had
   already finished (0.16 ms).  Original reset re-cancel leaves b **Unknown**,
@@ -279,8 +367,8 @@ Full header ladder, 21/21 cuts realised:
 Outcomes **aggregate by message phase**; half-frame cuts did not reveal a new
 server→client responsibility state.  This does not claim message-level
 completeness: one split, one pause length, one target shape, one cancellation.
-The fixed variant (existing experimental repair) had K=21 3/3 and entry cuts
-k=1-3 all `Pre`/IDLE.
+The experimental entry monkeypatch had K=21 3/3 and entry cuts k=1-3 all
+`Pre`/IDLE; this is not the actual submitted patch.
 
 **New defect (send direction).** With an 8 MB parameter and the proxy
 forwarding at most 64 KiB then not reading, the client was verified suspended
@@ -293,18 +381,23 @@ already in progress`.  A plain asyncio task reproduces it.  Located in
 A protocol-level positive control (libpq cancel+drain) passed 9/9, so the
 harness does not force breakage.
 
-A narrow runtime containment (`partial_send_fix.py`) closes the connection when
-that exact TypeError escapes and re-raises `CancelledError`: the caller gets
-the interruption, the successor is explicitly `connection is closed` rather
-than stuck, at the cost of losing the lease.  This is fail-closed containment,
-not an upstream-ready fix; no upstream contact or novelty claim.
+The runtime containment (`partial_send_fix.py`) is retained as an experiment.
+The source-level repair is on a separate local branch `codex/partial-send-cancel`
+(commit `fbcbf651`): at cancellation, if `PQflush() != 0` the async connection
+closes instead of resuming the suspended send generator; fully sent requests
+keep the existing cancel/drain path; a second interruption also closes.  Five
+real-server regression tests pass on the C and pure-Python backends, while
+upstream fails with `TypeError` (C) or commits the cancelled INSERT (Python).
+The repair is fail-closed and loses the lease; sync and pipeline partial sends
+remain uncovered.  No upstream contact or novelty claim.
 
 ## 7. Ordinary failure vs one-sided interruption (group 4)
 
 `failure_compare/`; details in
 [`python/pg-mysql/failure_compare/RESULTS.md`](python/pg-mysql/failure_compare/RESULTS.md).
-60 new trials (3 reps x 10 arms x psycopg/asyncpg), 112 s wall, 0 harness
-errors, 0 unrealised; real `Task.cancel` at calibrated entry/body/exit, real
+This matrix compares the **baseline** drivers' ordinary errors with one-sided
+cancellation; the actual repairs are tested separately above. 60 new trials
+(3 reps x 10 arms x psycopg/asyncpg), 112 s wall, 0 harness errors, 0 unrealised; real `Task.cancel` at calibrated entry/body/exit, real
 `1/0` 22012, immediate/deferred unique 23505, failed SAVEPOINT 25P02,
 `pg_terminate_backend` 57P01, plus reused sqlx future-drop and sync-signal data
 (clearly labelled; not equivalent mechanisms).
@@ -334,72 +427,87 @@ The failures are not one generic "lost responsibility" shape:
 
 1. **Entry half-transaction.** Server owns an open transaction, client has no
    usable owner.  Effect may be invisible; a naive retry can silently join the
-   abandoned transaction.  Fixes: rollback inside cancellation (psycopg),
-   terminate/refuse (asyncpg), direct close (MySQL, but no usable successor).
+   abandoned transaction.  Fixes: rollback inside cancellation (actual psycopg),
+   clear the stale local registration and explicitly refuse the transaction API
+   while requiring reset/rollback/close for ordinary reuse (actual asyncpg),
+   close/poison (actual MySQL, but no usable successor).
 2. **Exit commit ambiguity.** Server committed; caller cancelled.  This is a
    legitimate outcome, not automatically a bug, but the caller cannot infer it
    and local status can disagree with the server.  Needs post-cancel
    verification semantics.
 3. **Partial send.** Client has not finished handing the request to the
    server; cancellation resumes a started generator and corrupts the wait
-   state.  Fail-closed close is safe; reuse is not.
+   state (C) or executes the cancelled statement (Python).  The source-level
+   fix closes when libpq still has buffered output; reuse is not claimed.
 4. **Stale reply.** MySQL's caller can return before the held reply; recovery
    may consume that reply as its own result.  Fast cancellation return is not
    evidence of a clean handoff.
 5. **Delivery window.** Mature pools already protect assignment-through-
    delivery; the remaining hazard is the lease-use window after delivery.
 
-Costs: in-place repair can add a full reply round trip (psycopg 10 s at 5 s
-delay; nested 15 s); eviction is fast (sub-ms to ~0.37 ms) but successor
-acquisition can be 20-50 s under the same delay; re-cancellation is a fast
+Costs: the experimental in-place repair can add a full reply round trip
+(psycopg 10 s at 5 s delay; nested 15 s); eviction is fast (sub-ms to ~0.37 ms)
+but successor acquisition can be 20-50 s under the same delay; re-cancellation is a fast
 escape but is a second interruption, not a repair; background isolation was
 not tested in this round (only separate-process helpers), so no queued-worker
 occupancy claim is made.
 
 ## 9. Final five answers
 
-1. **When does old/new handle comparison work?**  It works for a reused handle
+1. **When does old/new handle comparison work?** It works for a reused handle
    after entry cancellation, for clean body/exit handles, for fail-closed
-   closure, and for pool return/reborrow.  It detects an open transaction and
-   an invisible marker that an effect-only differential misses.  It fails or
-   needs declared semantics for legitimate outer transactions, read-only/
-   session-blocked handles, committed exit cuts, and same-checkout retries
-   hidden by a pool reset; timeout/blocked is unprobeable, not clean.
-2. **Actual cut scale and runtime?**  K=6 psycopg, 3 asyncpg, 12 nested
+   closure, and for pool return/reborrow. The state-only mode detects an open
+   transaction; the effect mode detects an invisible write or an explicit
+   transaction-API refusal. It does **not** add a new defect discovery over the
+   complete calibrated differential on these targets. It needs declared
+   semantics for legitimate outer transactions, read-only/session-blocked
+   handles and committed exit cuts; timeout/blocked is unprobeable, not clean.
+   Same-checkout retries can be hidden by a pool reset.
+2. **Actual cut scale and runtime?** K=6 psycopg, 3 asyncpg, 12 nested
    psycopg, 4 warm pool checkout; K stable over 5 runs but not exhaustive.
-   Counts + all cuts: 13.2 s, 10.7 s, 24.2 s, 1.8 s.  The nested target, not
-   the single transaction, is the realistic lower bound for a complex
+   Counts + all cuts: 13.2 s, 10.7 s, 24.2 s, 1.8 s. The complete differential
+   with two reps and calibration took 24.7-25.2 s (psycopg) and 16.4-16.5 s
+   (asyncpg); the effect-only ablation took 12.8-13.3 s and 12.9 s; the probe took
+   20.6-26.2 s and 13.0-15.8 s for the same cuts and reps. The nested target,
+   not the single transaction, is the realistic lower bound for a complex
    operation.
-3. **Confirmed increment over a strong manual baseline?**  Confirmed: the probe
-   discriminates entry contamination and fail-closed closure where effect-only
-   fails; targeted entry testing matches exhaustive cutpoint discovery at about
-   one third of the cut runtime; exhaustive exploration found no second
-   entry/body/exit root cause here; half-frame splitting raises K but only
-   reproduces phase states.  Unconfirmed: general superiority, message-level
-   completeness, or a generic probe for arbitrary session/transaction
-   semantics.
-4. **New responsibility-handoff result?**  Mature pool delivery is protected
-   (no leak/capacity loss); asyncpg entry-fix same-lease reuse is explicitly
-   refused, while the original silently loses the write; psycopg entry fix
-   protects top-level and nested entry at a latency cost; MySQL direct close
-   evicts fast but does not yield a usable successor without reconnect; and a
-   new psycopg partial-send cancellation defect (`TypeError`, stuck ACTIVE) was
-   reproduced and narrowly contained.
-5. **Most worthwhile next mainline?**  Fix/verify the psycopg wait/cancel-
-   generator path for partial sends, with a before/after contract test
-   (`CancelledError`, connection closed or provably drained, successor
-   explicit), then carry that "closed vs reusable" result into the handle
-   probe.  This is a concrete, reproducible defect on the same responsibility
-   boundary; it is more valuable than adding more generic cutpoints.
+3. **Confirmed increment over a strong manual baseline?** Confirmed: the
+   complete differential finds the psycopg entry defect (4/4 `Neither`) and the
+   asyncpg entry/commit defects; the actual psycopg patch removes its entry
+   violation; the probe classifies invisible write vs transaction-API refusal
+   vs pending outer vs blocked session and gives a fresh-reference control;
+   targeted entry testing matches exhaustive cutpoint discovery at lower
+   runtime; exhaustive exploration found no second entry/body/exit root cause
+   here; half-frame splitting raises K but only reproduces phase states. The
+   probe's discovery increment over the complete differential is zero.
+   Unconfirmed: general superiority, message-level completeness, or a generic
+   probe for arbitrary session/transaction semantics.
+4. **New responsibility-handoff result?** Mature pool delivery is protected
+   (no leak/capacity loss). The actual asyncpg registration patch does **not**
+   make same-lease ordinary reuse safe (invisible `INSERT 0 1`); it refuses the
+   transaction API explicitly and preserves a legitimate outer transaction,
+   while the older terminate arm kills the outer transaction on a nested
+   cancellation. The actual psycopg entry patch rolls back and yields a clean
+   successor. MySQL's actual patch closes/poisons fast but does not yield a
+   usable successor without reconnect. A psycopg partial-send cancellation
+   defect (`TypeError`/stuck ACTIVE in C, committed cancelled INSERT in Python)
+   now has a source-level fail-closed repair with failing-baseline/passing-fixed
+   tests.
+5. **Most worthwhile next mainline?** Carry the "closed vs reusable" contract
+   into the probe and exercise it on the actual patches, rather than adding
+   more generic cutpoints. The partial-send repair is implemented locally but
+   still needs sync/pipeline coverage and upstream review; the asyncpg patch's
+   same-lease ordinary-operation hazard is a caller-recovery contract, not
+   something the registration patch claims to solve.
 
 ## 10. Artifact index
 
 - Handle probe: [`successor_probe/`](python/pg-mysql/successor_probe/) — `probe.py`, `run_pg.py`, `run_pool.py`, logs, `RESULTS.md`.
-- Cut scale / methods: [`method_compare/`](python/pg-mysql/method_compare/) — `cut_scale.py`, `effect_judge.py`, logs, `RESULTS.md`.
+- Cut scale / methods: [`method_compare/`](python/pg-mysql/method_compare/) — `cut_scale.py`, `effect_judge.py`, `complete_judge.py`, `logs/complete/`, `logs/effect-actual/`, `RESULTS.md`.
 - Pool delivery: [`pool_handoff/`](python/pg-mysql/pool_handoff/) — `delivery_case.py`, logs, `RESULTS.md`.
 - asyncpg same-lease: [`postfix_lease/`](python/pg-mysql/postfix_lease/) — `asyncpg_lease.py`, logs, `RESULTS.md`.
 - psycopg delay/recovery: [`delay_recovery/`](python/pg-mysql/delay_recovery/) — `psycopg_delay.py`, `pool_capacity.py`, logs, `RESULTS.md`.
 - MySQL delay/recovery: [`mysql_delay/`](python/pg-mysql/mysql_delay/) — `delay_proxy.py`, `case.py`, `run.sh`, 75 records, `RESULTS.md`.
-- Fragmentation/backpressure: [`fragmentation/`](python/pg-mysql/fragmentation/) — `fragment_proxy.py`, `run_small.py`, `min_repro.py`, `partial_send_fix.py`, logs, `RESULTS.md`.
+- Fragmentation/backpressure: [`fragmentation/`](python/pg-mysql/fragmentation/) — `fragment_proxy.py`, `run_small.py`, `min_repro.py`, `partial_send_fix.py`, logs, `RESULTS.md`; source-level fix on `/home/ava/Worktrees/psycopg/partial-send` branch `codex/partial-send-cancel` commit `fbcbf651`.
 - Ordinary vs cancellation: [`failure_compare/`](python/pg-mysql/failure_compare/) — `compare.py`, 60 trials, reused future-drop logs, `RESULTS.md`.
-- Regression tests: `tests/test_round5_logic.py` plus the existing suite; all 29 tests pass.
+- Regression tests: `tests/test_round5_logic.py` plus the existing suite; all 32 tests pass.

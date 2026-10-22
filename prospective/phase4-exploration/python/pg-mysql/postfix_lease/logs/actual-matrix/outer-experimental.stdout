@@ -1,0 +1,4 @@
+LEASE-SUMMARY variant=experimental mode=outer_nested rep=1 cut=None phase=None server_after_cut=None same=None labels=['trial_error'] release_s=None next_s=None seconds=1.086
+LEASE-SUMMARY variant=experimental mode=outer_control rep=1 cut=None phase=None server_after_cut=None same=None labels=['outer_commit_visible'] release_s=None next_s=None seconds=0.993
+LEASE-SUMMARY variant=experimental mode=outer_nested rep=2 cut=None phase=None server_after_cut=None same=None labels=['trial_error'] release_s=None next_s=None seconds=1.081
+LEASE-SUMMARY variant=experimental mode=outer_control rep=2 cut=None phase=None server_after_cut=None same=None labels=['outer_commit_visible'] release_s=None next_s=None seconds=0.993
