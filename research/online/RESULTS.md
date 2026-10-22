@@ -417,8 +417,9 @@ not by this proxy run.  That gap is listed in the limits.
 The guard now has live owner claims (`guard.rs`, `OwnerClaim`).  A claim is
 RAII: its drop is positive evidence that the owner relinquished authority.
 Nested claims are legitimate (outer transaction, inner savepoint), releasing
-one does not release the others, and a handoff replaces the whole cohort and
-starts a new generation.  Tests cover:
+one does not release the others. After integration review, connection-wide
+recovery and handoff require the sole remaining claim; handoff starts a new
+generation and is refused during recovery.  Tests cover:
 
 - a watchdog refused with `Owned` while a live transaction exists, then
   allowed only after every claim is released;
@@ -506,11 +507,11 @@ What this measures:
   backend, so a test that only asks "does the next query work?" does not see
   the availability cost.  The fault label is absent; the observation is only
   "no reply within the budget".
-- A budget longer than the delay recovers without a reconnect.  On a
-  permanently unresponsive read, the same budget bounds the decision: 54 ms
+- A budget longer than the delay recovers without a reconnect.  On the
+  injected 1000 ms read delay, the same budget bounds the decision: 54 ms
   for 50 ms, 154 ms for 150 ms, versus 253 ms for the fixed 250 ms drain.  A
   shorter budget is better for a dead peer and worse for a slow one; there is
-  no universally safe budget, and this experiment does not learn one.
+  no universally cost-optimal budget, and this experiment does not learn one.
 - `drain_reset` still has the lower false-retirement rate at 100 ms, because
   its 250 ms budget exceeds that delay.  The probe is a decision mechanism,
   not a strict improvement.
@@ -527,6 +528,38 @@ The delay is injected on the client read path, not in the network, and the
 server reply is often already buffered.  It measures decision timing and the
 probe's state handling, not WAN latency or packet loss.  All trials use the
 simple query protocol and trust authentication.
+
+### 8.5 Integration review and independent rerun
+
+The integration review found and repaired three problems in the new code:
+
+- A live inner claim could authorize connection-wide recovery or hand off the
+  whole cohort, invalidating a still-live outer claim. Claims are now explicitly
+  a flat liveness set: only a sole owner can authorize whole-object recovery or
+  handoff. Savepoint-scoped authority is not implemented.
+- Handoff was allowed during an active recovery, and owner registration checked
+  `Ready` before taking the owners lock. Admission, witness validation and the
+  recovery transition now use the same lock; handoff also refuses `Recovering`.
+  Copyable diagnostic witnesses no longer expose a public recovery entrypoint.
+- `probe_reset` restarted `ctx.remaining` after the probe, and direct recovery
+  callers lacked a total write/read timeout. Probe and rollback now share the
+  original deadline, with a timeout covering the complete recovery future.
+
+The new authority and handoff tests failed on the submitted implementation;
+the wire-peer budget regression likewise accepted a recovery beyond the total
+budget before the fix. The corrected suite passes 56 library tests and 3
+rule-input tests; the core suite still passes 89 tests. Lint and formatting
+checks retain warnings-as-errors. A 128-iteration admission race test exercises
+mutual exclusion without claiming exhaustive scheduling coverage.
+
+The real PostgreSQL guard probe was also rerun: all successor checks passed,
+including pending-reply drain/reset, policy budgets and same-backend pool reuse.
+The four pinned upstream baseline modes were independently rerun against a real
+PostgreSQL server: typed BEGIN cleaned up; the blackhole case timed out twice
+at about 701 ms with one connection still idle in the pool; cancelled COMMIT
+left one committed row; manual BEGIN survived pool validation. These results
+support the baseline's specific mechanism claims, not an unmeasured performance
+advantage of the guard over that stack.
 
 ## 9. Limits
 

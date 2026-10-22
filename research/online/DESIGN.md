@@ -72,12 +72,18 @@ not proof that no owner exists.
 `OwnerClaim` is an RAII claim on one guard.  Its existence is positive,
 in-process evidence that an owner is live; dropping it is the positive evidence
 that authority was relinquished.  Claims may nest (an outer transaction and an
-inner savepoint), and releasing one does not release the others.  A handoff is
-all-or-nothing: it replaces the cohort and starts a new owner generation, so
-older witnesses cannot authorise, block or release the new owner.  A leaked
-claim is not inferred dead; it blocks recovery/reuse until the pool's ownership
-grace expires and the object is retired.  A live owner can recover its own
-object through `OwnerClaim::claim_recovery`; an unowned watchdog is refused
+inner savepoint), and releasing one does not release the others. These claims
+are a flat liveness set, not a tree of savepoint-specific cleanup authority.
+Connection-wide recovery and handoff require the sole live claim; one owner
+cannot revoke the other claims. Handoff is refused during an operation or
+recovery, and starts a new owner generation on success. Owner registration,
+recovery admission, handoff and operation admission share the ownership lock;
+a checked liveness fact cannot change before the recovery transition. Copyable
+witnesses are diagnostic data; only an `OwnerClaim` exposes owner recovery.
+A leaked claim is not inferred dead; it blocks recovery/reuse until the pool's
+ownership grace expires and the object is retired. Retirement explicitly
+sacrifices that object's availability; it is not successful cleanup or a
+promise that another user's work survives. An unowned watchdog is refused
 with `Refusal::Owned`.
 
 The pool does not claim a root owner for a checked-out lease: the lease itself
@@ -188,3 +194,22 @@ Proposal: a multiplexed adapter with per-stream generations and a
 connection-level framing guard; a kernel/runtime-assisted hand-off witness for
 owners in another process or after a non-unwinding kill; a policy that consumes
 a calibrated cost model instead of a fixed timeout.
+
+
+## Current research decision
+
+Use deterministic admissible recovery plans and bounded escalation as the
+reference enforcer; do not expand policy learning in this round. Retain the
+corrected rule study as a negative result. PostgreSQL probing and reset share
+one total deadline, including writes; a per-probe budget does not restart the
+object's remaining recovery time. A shorter timeout trades reuse for latency,
+not uncertainty for proof that the peer is dead.
+
+Owner claims complement exclusive session access; they do not grant access to
+the session or serialize arbitrary application I/O. Create claims while holding
+the session's lease and carry them across actual responsibility transfers.
+Protocol adapters do not yet automatically register transaction owners, so the
+ledger tests are not evidence of transparent nested-transaction protection.
+The main research claim remains cross-layer cancellation testing and diagnosis;
+the enforcer tests the repair pattern at its actual handoff boundary. See
+[the research decision](../theory/PROGRESS-GUARDS.md).

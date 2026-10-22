@@ -11,7 +11,7 @@ not depend on the offline exploration crates at runtime.
   first I/O, typed `Discharge` proofs, an exclusive `RecoveryPermit`, and
   standing obligations (for example an open PostgreSQL transaction).  Live
   `OwnerClaim`s add a separate authority dimension: nested claims, owner-only
-  recovery, all-or-nothing handoff, and stale-witness rejection.  A live claim
+  recovery, sole-owner handoff, and stale-witness rejection.  A live claim
   refuses recovery/reuse; a forgotten claim is not inferred dead.
 - `src/pool.rs` — async pool whose return path routes suspect sessions to a
   bounded quarantine and a recovery worker; checkout only hands out `Clean`

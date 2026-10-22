@@ -2,7 +2,7 @@
 //! a completed BEGIN returned with a standing obligation, and the naive
 //! no-read reuse that shifts replies by one exchange.
 //!
-//! Usage: pg_probe <port> [user] [database]
+//! Usage: `pg_probe <port> [user] [database]`
 
 use online_guards::guard::{Cause, RecoveryLimits, Suspect};
 use online_guards::policy::{Plan, RecoveryPolicy};

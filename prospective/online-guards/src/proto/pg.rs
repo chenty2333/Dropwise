@@ -765,6 +765,16 @@ impl PgConn {
     }
 
     pub async fn recover(&mut self, ctx: &RecoveryContext) -> RecoveryAttempt {
+        // Include writes and every recovery stage in the same total budget,
+        // including direct callers outside the pool's timeout wrapper.
+        match tokio::time::timeout(ctx.remaining, self.recover_inner(ctx)).await {
+            Ok(attempt) => attempt,
+            Err(_) => RecoveryAttempt::Unresolved(Cause::Timeout),
+        }
+    }
+
+    async fn recover_inner(&mut self, ctx: &RecoveryContext) -> RecoveryAttempt {
+        let total_deadline = tokio::time::Instant::now() + ctx.remaining;
         let timeout = PG_DRAIN.min(ctx.remaining);
         let deadline = tokio::time::Instant::now() + timeout;
         match ctx.plan {
@@ -786,11 +796,14 @@ impl PgConn {
             "probe_reset" => {
                 let probe_deadline =
                     tokio::time::Instant::now() + ctx.limits.probe_budget.min(ctx.remaining);
-                if let Err(attempt) = self.probe_roundtrip(probe_deadline).await {
-                    return attempt;
+                match tokio::time::timeout_at(probe_deadline, self.probe_roundtrip(probe_deadline))
+                    .await
+                {
+                    Ok(Ok(())) => {}
+                    Ok(Err(attempt)) => return attempt,
+                    Err(_) => return RecoveryAttempt::Unresolved(Cause::Timeout),
                 }
-                let reset_deadline = tokio::time::Instant::now() + ctx.remaining;
-                if let Err(attempt) = self.drain_and_reset(reset_deadline).await {
+                if let Err(attempt) = self.drain_and_reset(total_deadline).await {
                     return attempt;
                 }
                 self.finish_recovery(ctx, "pg.probed_reset")
@@ -989,3 +1002,82 @@ pub fn pg_features(
 
 #[allow(dead_code)]
 fn _q(_: Qualification) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::RecoveryLimits;
+    use tokio::net::TcpListener;
+
+    #[tokio::test]
+    async fn probe_and_rollback_share_one_recovery_deadline() {
+        // A minimal wire peer delays both the abandoned reply and rollback.
+        // No database state is inferred from this transport-budget test.
+        for (reset_delay, succeeds) in [(20, true), (300, false)] {
+            let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+            let stream = TcpStream::connect(listener.local_addr().unwrap())
+                .await
+                .unwrap();
+            let (mut peer, _) = listener.accept().await.unwrap();
+            let server = tokio::spawn(async move {
+                tokio::time::sleep(Duration::from_millis(150)).await;
+                peer.write_all(b"Z\0\0\0\x05T").await.unwrap();
+                let mut rollback = vec![0; encode_query("ROLLBACK").len()];
+                peer.read_exact(&mut rollback).await.unwrap();
+                assert_eq!(rollback, encode_query("ROLLBACK"));
+                tokio::time::sleep(Duration::from_millis(reset_delay)).await;
+                let _ = peer.write_all(b"Z\0\0\0\x05I").await;
+            });
+            let guard = Arc::new(Guard::new());
+            let mut conn = PgConn {
+                io: PgIo {
+                    stream: Some(stream),
+                    inbuf: Vec::new(),
+                    out: Vec::new(),
+                    out_off: 0,
+                },
+                guard: guard.clone(),
+                contract: EffectContract::MustNotApply,
+                status: PgStatus::InTransaction,
+                backend_pid: 0,
+                cut: None,
+                write_chunk: None,
+                cut_snapshot: None,
+                out_kind: None,
+                recovered_ready: false,
+                pending: true,
+                read_delay_once: None,
+            };
+            guard.enter_standing("open_transaction");
+            let permit = guard.claim_recovery().unwrap();
+            let ctx = RecoveryContext {
+                obj: guard.obj(),
+                epoch: permit.epoch(),
+                attempt: permit.attempt(),
+                plan: "probe_reset",
+                limits: RecoveryLimits {
+                    probe_budget: Duration::from_millis(300),
+                    ..RecoveryLimits::default()
+                },
+                features: crate::features::Features::new(),
+                remaining: Duration::from_millis(400),
+                write_state: "complete",
+                read_state: "none",
+                cause: Cause::Cancelled,
+                contract: EffectContract::MustNotApply,
+            };
+            let result = conn.recover(&ctx).await;
+            if succeeds {
+                assert!(matches!(result, RecoveryAttempt::Recovered(_)));
+            } else {
+                assert!(matches!(
+                    result,
+                    RecoveryAttempt::Unresolved(Cause::Timeout)
+                ));
+                assert!(conn.pending, "timed out rollback still owns its reply");
+            }
+            server.abort();
+            let _ = server.await;
+        }
+    }
+}

@@ -227,7 +227,10 @@ async fn typed_begin(port: u16) {
     proxy.release();
     tokio::time::sleep(Duration::from_millis(300)).await;
     match tokio::time::timeout(Duration::from_millis(700), client.simple_query("SELECT 1")).await {
-        Ok(Ok(rows)) => println!("typed-begin: successor after release OK ({} messages)", rows.len()),
+        Ok(Ok(rows)) => println!(
+            "typed-begin: successor after release OK ({} messages)",
+            rows.len()
+        ),
         Ok(Err(error)) => println!("typed-begin: successor after release failed: {error}"),
         Err(_) => println!("typed-begin: successor after release hung"),
     }
@@ -252,7 +255,10 @@ async fn blackhole(port: u16) {
         .unwrap()
         .get(0);
     conn.batch_execute("SELECT 1").await.unwrap();
-    println!("blackhole: proxy=127.0.0.1:{} pid={pid} max_size=1 timeout=700ms", proxy.port);
+    println!(
+        "blackhole: proxy=127.0.0.1:{} pid={pid} max_size=1 timeout=700ms",
+        proxy.port
+    );
 
     proxy.arm(1, false);
     {
@@ -287,7 +293,10 @@ async fn blackhole(port: u16) {
         );
     }
     backend_state(port, pid).await;
-    println!("blackhole: proxy accepted {} connection(s)", proxy.ctl.connections.load(Ordering::SeqCst));
+    println!(
+        "blackhole: proxy accepted {} connection(s)",
+        proxy.ctl.connections.load(Ordering::SeqCst)
+    );
 }
 
 async fn commit(port: u16) {
@@ -327,9 +336,7 @@ async fn commit(port: u16) {
     println!("commit: is_closed while held = {}", client.is_closed());
     backend_state(port, pid).await;
 
-    let (observer, observer_connection) = tokio_postgres::connect(&cfg(port), NoTls)
-        .await
-        .unwrap();
+    let (observer, observer_connection) = tokio_postgres::connect(&cfg(port), NoTls).await.unwrap();
     let observer_task = tokio::spawn(observer_connection);
     let count: i64 = observer
         .query_one(
@@ -346,7 +353,10 @@ async fn commit(port: u16) {
     proxy.release();
     tokio::time::sleep(Duration::from_millis(300)).await;
     match tokio::time::timeout(Duration::from_millis(700), client.simple_query("SELECT 1")).await {
-        Ok(Ok(rows)) => println!("commit: successor after release OK ({} messages)", rows.len()),
+        Ok(Ok(rows)) => println!(
+            "commit: successor after release OK ({} messages)",
+            rows.len()
+        ),
         Ok(Err(error)) => println!("commit: successor after release failed: {error}"),
         Err(_) => println!("commit: successor after release hung"),
     }
@@ -387,14 +397,19 @@ async fn validate(port: u16) {
             backend_state(port, pid).await;
             conn.batch_execute("ROLLBACK").await.unwrap();
         }
-        Err(error) => println!("validate: get failed after {:?}: {error:?}", start.elapsed()),
+        Err(error) => println!(
+            "validate: get failed after {:?}: {error:?}",
+            start.elapsed()
+        ),
     }
     backend_state(port, pid).await;
 }
 
 #[tokio::main]
 async fn main() {
-    let mode = std::env::args().nth(1).unwrap_or_else(|| "typed-begin".into());
+    let mode = std::env::args()
+        .nth(1)
+        .unwrap_or_else(|| "typed-begin".into());
     let port = pg_port();
     match mode.as_str() {
         "typed-begin" => typed_begin(port).await,
