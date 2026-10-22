@@ -93,6 +93,8 @@ class FragmentingProxy(DelayProxy):
         self.hold_reached = asyncio.Event()
         self.hold_gate = asyncio.Event()
         self.hold_gate.set()
+        self.upstream_closed = asyncio.Event()
+        self.upstream_closed_time: float | None = None
 
     # ---- accountancy -------------------------------------------------
     def reset_stats(self) -> None:
@@ -106,6 +108,8 @@ class FragmentingProxy(DelayProxy):
         self.hold_after = None
         self.hold_reached.clear()
         self.hold_gate.set()
+        self.upstream_closed.clear()
+        self.upstream_closed_time = None
 
     def arm_hold(self, after_bytes: int) -> None:
         """Stop reading the client direction after this many forwarded bytes."""
@@ -160,6 +164,8 @@ class FragmentingProxy(DelayProxy):
                 with contextlib.suppress(BaseException):
                     w.close()
                 self._writers.discard(w)
+            self.upstream_closed_time = time.monotonic()
+            self.upstream_closed.set()
 
     async def _write(self, writer, data: bytes, direction: str) -> None:
         writer.write(data)

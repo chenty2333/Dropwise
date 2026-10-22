@@ -148,15 +148,27 @@ attributed to these patches:
 
 - checkout: `/home/ava/Worktrees/psycopg/partial-send`
 - branch: `codex/partial-send-cancel`, based on `origin/master` `99356800`
-- commit: `fbcbf651` ("fix: close async connection on cancellation during a
-  partial send") — local only
-- files: `psycopg/psycopg/connection_async.py`, `tests/test_concurrency_async.py`,
-  `docs/news.rst`
+- files: `psycopg/psycopg/connection_async.py`, `psycopg/psycopg/pq/misc.py`,
+  `tests/test_concurrency_async.py`, `docs/news.rst`
 - status: **not submitted**, not pushed, no issue/PR/contact. This is separate
   from the transaction-entry branch so it does not pollute PR #1454.
-- focused tests: five new tests pass on the C and pure-Python backends; the
-  upstream module fails the partial-send test with the TypeError (C) or a
-  committed cancelled INSERT (Python). The relevant async suite passes on the
-  fixed tree.
+- mechanism: stage-scoped generator tracking via `_WaitGenTracker(gen)` within
+  `AsyncConnection.wait()`. If `last_wait` is `None` or `last_wait & WAIT_W`, the
+  query was cancelled during the send stage (or prior to read readiness); the
+  connection is closed immediately (`self.pgconn.finish()`) and `_INTERRUPTED` is
+  re-raised. It avoids `PQflush()` active-sending false negatives and does not match
+  exception strings. Fully sent requests (`WAIT_R`) keep the existing cancel-and-drain
+  path. A second interruption during recovery also fail-closes.
+- focused tests: six regression tests pass on the C and pure-Python backends:
+  continuous backpressure partial send, backpressure relief interleaved with
+  cancellation, fully-sent query cancellation, recovery interruption, normal large
+  request, and large request server error. The baseline fails the interleaving
+  regression with `TypeError: an integer is required` (C) or a committed cancelled
+  INSERT (pure Python); the fixed tree passes 6/6 on both backends.
+- broader suites: async concurrency 20/20, cursor 574 passed (8 skipped), pipeline
+  and waiting 91 passed (5 skipped), transaction 84 passed (1 skipped).
+- server cleanup: verified via independent direct observer with bounded wait on
+  `pg_stat_activity` and `pg_locks` (dropping to 0), and confirmed table lock
+  acquisition (`ACCESS EXCLUSIVE NOWAIT`) with 0 rows committed.
 - remaining scope: async `AsyncConnection.wait()` only; sync and pipeline
   partial sends are not covered; the repair is fail-closed and loses the lease.

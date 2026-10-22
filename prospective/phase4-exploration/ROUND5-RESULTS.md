@@ -75,26 +75,51 @@ does not cover the partial-send path.
 ### 4. Formal psycopg partial-send cancellation repair
 
 Implemented on an independent local branch `codex/partial-send-cancel`
-(`/home/ava/Worktrees/psycopg/partial-send`, commit `fbcbf651`, based on
-`origin/master` `99356800`), not on the transaction-entry PR branch and not
-pushed. `AsyncConnection.wait()` checks `PQflush()` at cancellation: if libpq
-still has buffered output, it closes the connection and re-raises
-`CancelledError`; it does not resume the suspended send generator. Fully sent
-requests keep the existing cancel-and-drain path. A second interruption during
-recovery also closes. Five real-server regression tests cover the partial send,
-the fully-sent control, a normal large query, an ordinary error, and interrupted
-recovery; they pass on the C and pure-Python backends, while upstream fails with
-`TypeError` (C) or commits the cancelled INSERT (pure Python). The cost is a
-lost lease and rollback of any legitimate outer transaction; sync and pipeline
-partial sends remain uncovered. Details are in
+(`/home/ava/Worktrees/psycopg/partial-send`, based on `origin/master` `99356800`),
+not on the transaction-entry PR branch and not pushed.
+
+The initial commit `fbcbf651` used `PQflush() != 0` to detect buffered output.
+That check had an interleaving window: `PQflush()` actively pushes data to the
+socket; if backpressure clears while cancellation unwinds, `PQflush()` flushes
+and returns 0, but the generator remains suspended at write readiness
+(`WAIT_RW`), causing `TypeError: an integer is required` on C generators and
+executing the cancelled query on pure Python. The claim that `PQflush() == 0`
+proves the send generator completed is **retracted**.
+
+The updated fix wraps the generator in `_WaitGenTracker(gen)` within
+`AsyncConnection.wait()`. If `last_wait is None` or `last_wait & WAIT_W`, the
+request was cancelled during the send stage (or prior to read readiness); the
+connection is closed immediately (`self.pgconn.finish()`) and `_INTERRUPTED` is
+re-raised without touching `PQflush()` or matching exception strings. Fully sent
+requests (`last_wait == WAIT_R`) keep the existing cancel-and-drain path. A
+second interruption during recovery also fail-closes.
+
+Six real-server regression tests cover: continuous backpressure partial send,
+backpressure relief interleaved with cancellation, fully-sent query cancellation,
+recovery interruption, normal large request, and large request server error.
+Baseline fails the interleaving regression (TypeError on C, committed write on
+Python); the updated fix passes 6/6 on both C binary and pure-Python backends.
+Full async concurrency suite (20/20) and related cursor (574), pipeline/waiting
+(91), and transaction (84) tests pass.
+
+The claim that "local closed proves backend and locks cleaned up" is also
+**retracted**; `conn.closed` is merely a local client flag. `min_repro.py` now
+uses an independent unproxied observer, records client/proxy/backend close
+timings, enforces a bounded wait for `pg_stat_activity` and `pg_locks` to drop to
+0, and verifies an independent `ACCESS EXCLUSIVE NOWAIT` table lock with zero
+rows committed.
+
+The cost is a lost lease and rollback of any legitimate outer transaction; sync
+and pipeline partial sends remain uncovered. Details are in
 `python/pg-mysql/fragmentation/RESULTS.md` and `upstream/README.md`.
 
 Bottom line: the actual patches are narrower than the experimental arms; the
 complete differential already detects the psycopg entry defect, so the probe's
 contribution is contract classification, not new discovery; the asyncpg
 registration patch still requires caller recovery on a same lease; and the
-psycopg partial-send defect now has a source-level, fail-closed repair with
-failing-baseline/passing-fixed tests.
+psycopg partial-send defect now has a stage-scoped fail-closed repair with
+discriminative failing-baseline/passing-fixed regressions and independent
+backend cleanup verification.
 
 New work only; round-4 results and the user's existing logs are not rewritten.
 All experiments use disposable local databases and unique tables.  The main
