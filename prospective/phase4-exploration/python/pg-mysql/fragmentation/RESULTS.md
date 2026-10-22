@@ -376,7 +376,10 @@ Pure-Python implementation (`PSYCOPG_IMPL=python`), same 8 MB INSERT:
 The pure-Python baseline is the important effect-authority control: a
 resume/drain patch would make the caller happy and the connection reusable, but
 it would execute a statement the caller cancelled. The chosen close avoids that
-outcome and does not claim the lease is usable.
+outcome and does not claim the lease is usable. `min_repro` reports
+`backend gone: True` after the close, so no tested backend or its locks remain
+on the server; the test suite also closes the observer and proxy before
+dropping the table.
 
 Test commands:
 

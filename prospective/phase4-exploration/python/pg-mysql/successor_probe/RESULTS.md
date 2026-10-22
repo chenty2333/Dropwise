@@ -38,7 +38,9 @@ absent. Logs:
   mode): the caller declared a live outer transaction. The effect is not clean
   or dirty yet; it must be re-read after that transaction ends.
 - `CLOSED`: `old_closed`; fail-closed repair is kept separate from
-  contamination.
+  contamination. A closed handle is safe only under a contract that says
+  "reconnect"; under a contract that requires reuse it is a failed handoff, not
+  a clean one.
 - `BLOCKED_BY_SESSION` / `PROBE_TIMEOUT`: not applicable
   (`old_not_applicable`), never "clean".
 - A reference anomaly is `reference_anomaly` (environment/harness problem), not
