@@ -21,7 +21,7 @@ returned for `SELECT 42`.
 
 - psycopg transaction-entry repair: [PR #1454](https://github.com/psycopg/psycopg/pull/1454), including the reviewed active-transaction re-entry correction.
 - asyncpg failed-start registration repair: [PR #1399](https://github.com/MagicStack/asyncpg/pull/1399).
-- MySQL cancellation repair: still local. Submission is pending the user's own signature of the Oracle Contributor Agreement; no agreement was signed on the user's behalf and no MySQL PR was opened.
+- MySQL cancellation repair: still local. The user chose to defer submission rather than continue Oracle registration; no agreement was signed on the user's behalf and no MySQL PR was opened.
 
 The published branches match the locally reviewed commits. Remote checks and
 maintainer acceptance are separate from the local results below.
@@ -105,6 +105,6 @@ rather than attempting transparent recovery.
 
 ## Remaining work before publishing
 
-- The user must personally complete the Oracle OCA before submitting MySQL.
+- MySQL submission is deferred at the user's request. Keep the local patch; do not pursue Oracle registration.
 - Upstream CI and maintainer review are not yet confirmed complete.
 - psycopg was submitted with both reviewed commits; no history rewrite was needed.
