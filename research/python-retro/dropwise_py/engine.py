@@ -24,16 +24,31 @@ import asyncio
 import contextlib
 import dataclasses
 import enum
+import math
 import time
 from typing import Any, Awaitable, Callable
 
-# The pure-Python Task implementation; the C Task's step method cannot be
-# overridden.  In recent CPython, `asyncio.tasks.Task` itself is the C class,
-# while `_PyTask` is the pure-Python one.
-try:
-    from asyncio.tasks import _PyTask as PureTask
-except ImportError:  # pragma: no cover - older/newer layouts
-    PureTask = asyncio.tasks.Task
+class PureTask(asyncio.tasks._PyTask):
+    """Steppable task registered with CPython 3.15's public task lookup.
+
+    The Python Task now maintains its own registry, separate from the C
+    implementation behind asyncio.current_task(). Register each step there too
+    so driver cleanup and asyncio.timeout() see the actual injection task.
+    This intentionally targets the current runtime, not older task layouts.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # all_tasks() and asyncio.run() shutdown use the native registry too.
+        asyncio.tasks._register_task(self)
+        self.add_done_callback(asyncio.tasks._unregister_task)
+
+    def _Task__step(self, exc=None):
+        asyncio.tasks._enter_task(self._loop, self)
+        try:
+            super()._Task__step(exc)
+        finally:
+            asyncio.tasks._leave_task(self._loop, self)
 
 
 class Expect(enum.Enum):
@@ -119,27 +134,32 @@ async def _await_target(
 ) -> TargetRun:
     started = time.monotonic()
     task = _CutTask(coro, cut_after=cut_after)
-    outcome = "error"
     result = None
     error = None
     try:
-        result = await asyncio.wait_for(task, timeout)
-        if operation_failed(result):
-            outcome = "error"
-            error = f"target reported failure: {result!r}"
-        else:
-            outcome = "completed"
-    except asyncio.CancelledError:
-        outcome = "cancelled"
+        # Gather keeps a child's CancelledError as an outcome, but still
+        # propagates cancellation of this caller and cancels the child. This
+        # separates the two sources without guessing from cancelling() counts
+        # (which may include previously handled or not-yet-delivered requests).
+        await asyncio.wait_for(asyncio.gather(task, return_exceptions=True), timeout)
     except asyncio.TimeoutError:
         outcome = "timeout"
         error = f"timeout after {timeout:.1f}s"
-        task.cancel()
-        with contextlib.suppress(BaseException):
-            await task
-    except BaseException as exc:  # library error during cancellation/cleanup
-        outcome = "error"
-        error = f"{type(exc).__name__}: {exc}"
+    else:
+        try:
+            # Inspect the task itself so a returned exception object remains a
+            # successful value rather than being confused with a raised one.
+            result = task.result()
+            if operation_failed(result):
+                outcome = "error"
+                error = f"target reported failure: {result!r}"
+            else:
+                outcome = "completed"
+        except asyncio.CancelledError:
+            outcome = "cancelled"
+        except Exception as exc:  # library error during cancellation/cleanup
+            outcome = "error"
+            error = f"{type(exc).__name__}: {exc}"
     return TargetRun(
         outcome=outcome,
         result=result,
@@ -215,7 +235,7 @@ async def _scenario_run(
         await asyncio.wait_for(sc.setup(), timeout)
         return await body(sc)
     finally:
-        with contextlib.suppress(BaseException):
+        with contextlib.suppress(Exception):
             await asyncio.wait_for(sc.close(), timeout)
 
 
@@ -226,6 +246,16 @@ async def count_yields(factory: ScenarioFactory, timeout: float = 15.0) -> Targe
         return await _await_target(sc.target(), None, timeout)
 
     return await _scenario_run(factory, body, timeout)
+
+
+def _validate_search(reps: int, timeout: float, plans: list[int] | None) -> None:
+    """Reject searches that cannot execute a meaningful cancellation trial."""
+    if type(reps) is not int or reps < 1:
+        raise ValueError("reps must be a positive integer")
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("timeout must be finite and positive")
+    if plans is not None and any(type(k) is not int or k < 1 for k in plans):
+        raise ValueError("each cancellation plan must be a positive suspension index")
 
 
 @dataclasses.dataclass
@@ -298,11 +328,11 @@ async def _observed_once(
             tr = await _await_target(sc.target(), cut_after, timeout)
         try:
             survivor = normalize(await asyncio.wait_for(sc.survivor(), timeout))
-        except BaseException as exc:
+        except Exception as exc:
             survivor = err(exc)
         try:
             observer = normalize(await asyncio.wait_for(sc.observe(), timeout))
-        except BaseException as exc:
+        except Exception as exc:
             observer = err(exc)
         return {"survivor": survivor, "observer": observer}, tr
 
@@ -319,6 +349,7 @@ async def explore_observed(
     plans: list[int] | None = None,
 ) -> Report:
     """M1: cancel at every suspension, judge with pre/post calibration."""
+    _validate_search(reps, timeout, plans)
     started = time.monotonic()
     report = Report(case=case, level="M1")
     first = await count_yields(factory, timeout)
@@ -377,7 +408,12 @@ async def explore_observed(
                 trial.verdict = Verdict.UNKNOWN
             else:
                 trial.verdict = _classify(obs, report.pre[0], report.post[0])
-                if not _allows(expect, trial.verdict):
+                # _classify labels equal endpoints Pre; that observation also
+                # satisfies Completed. Keep the degeneracy note, not a false bug.
+                allowed = _allows(expect, trial.verdict) or (
+                    expect is Expect.COMPLETED and obs == report.post[0]
+                )
+                if not allowed:
                     trial.violation = (
                         f"{trial.verdict.value} under {expect.value}: observed {obs!r}, "
                         f"pre={report.pre[0]!r}, post={report.post[0]!r}"
@@ -405,6 +441,7 @@ async def level_b1(
     plans: list[int] | None = None,
 ) -> Report:
     """Cancel and stop.  A violation is an escaping error or a timeout."""
+    _validate_search(reps, timeout, plans)
     started = time.monotonic()
     report = Report(case=case, level="B1")
     first = await count_yields(factory, timeout)
@@ -447,7 +484,7 @@ async def _survivor_once(
         op = sc.same() if retry == "same" else sc.different()
         try:
             value = normalize(await asyncio.wait_for(op, timeout))
-        except BaseException as exc:
+        except Exception as exc:
             value = err(exc)
         return tr, value
 
@@ -465,6 +502,7 @@ async def level_retry(
     plans: list[int] | None = None,
 ) -> Report:
     """B2 (same operation) / B3 (different operation); only `not an error` counts."""
+    _validate_search(reps, timeout, plans)
     started = time.monotonic()
     report = Report(case=case, level=level)
     first = await count_yields(factory, timeout)

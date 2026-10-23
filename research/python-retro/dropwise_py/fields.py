@@ -367,8 +367,9 @@ async def explore_fields(
     """
     # Imported lazily to keep this module importable without the asyncio driver
     # internals (the synchronous harness only needs judge_trial).
-    from .engine import _observed_once, count_yields
+    from .engine import _observed_once, _validate_search, count_yields
 
+    _validate_search(reps, timeout, plans)
     started = time.monotonic()
     report = FieldReport(case=case, contract=contract)
     first = await count_yields(factory, timeout)

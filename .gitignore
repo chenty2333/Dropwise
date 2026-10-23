@@ -1,2 +1,10 @@
 target/
 research/linux/build/
+__pycache__/
+*.py[cod]
+.venv/
+
+# Generated experiment runs and the reconstructible third-party test copy.
+/prospective/**/logs/run.*/
+/prospective/phase3/db-clients/logs/mysql_generate/
+/prospective/phase4-exploration/python/pg-mysql/fix/patched/mysql/
