@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
 import os
 import subprocess as sp
 import sys
 import unittest
+from pathlib import Path
 
 from stage_experiment.stage_definitions import Stage, StageClassifier
 
@@ -63,45 +63,66 @@ class StageClassifierTest(unittest.TestCase):
             StageClassifier.classify(None, 0, None),
             Stage.UNKNOWN,
         )
+        for context in ("enter", "body", "commit"):
+            for readiness in (None, 0):
+                self.assertEqual(
+                    StageClassifier.classify(context, 1, readiness), Stage.UNKNOWN
+                )
 
 
 class MinReproNegativeControlsTest(unittest.TestCase):
     def _run_min_repro(self, *args: str) -> sp.CompletedProcess[str]:
         cmd = [
-            "/home/ava/dropwise-py-work-r3/venv313/bin/python",
+            sys.executable,
             "-m",
             "fragmentation.min_repro",
             "--port",
-            "32919",
+            os.environ.get("PGPORT", "32919"),
             *args,
         ]
         env = dict(os.environ)
-        env["PYTHONPATH"] = (
-            "prospective/phase4-exploration/python/pg-mysql:"
-            "research/python-retro:"
-            "/home/ava/Worktrees/psycopg/partial-send/psycopg"
+        root = Path(__file__).resolve().parents[5]
+        env["PYTHONPATH"] = os.pathsep.join(
+            [
+                str(Path(__file__).resolve().parents[1]),
+                str(root / "research/python-retro"),
+                env.get("PYTHONPATH", ""),
+            ]
         )
         return sp.run(
             cmd,
-            cwd="/home/ava/Desktop/Dropwise",
+            cwd=root,
             capture_output=True,
             text=True,
             env=env,
+            timeout=60,
         )
 
     def test_negative_control_driver_unclosed(self):
         res = self._run_min_repro("--fix", "--negative-control", "driver-unclosed")
-        self.assertEqual(res.returncode, 1, f"Expected returncode 1, got {res.returncode}\n{res.stdout}\n{res.stderr}")
+        self.assertEqual(
+            res.returncode,
+            1,
+            f"Expected returncode 1, got {res.returncode}\n{res.stdout}\n{res.stderr}",
+        )
         self.assertIn("FAILURE: driver failed to close connection", res.stdout)
 
     def test_negative_control_wrong_exception(self):
         res = self._run_min_repro("--fix", "--negative-control", "wrong-exception")
-        self.assertEqual(res.returncode, 1, f"Expected returncode 1, got {res.returncode}\n{res.stdout}\n{res.stderr}")
+        self.assertEqual(
+            res.returncode,
+            1,
+            f"Expected returncode 1, got {res.returncode}\n{res.stdout}\n{res.stderr}",
+        )
         self.assertIn("FAILURE: target task did not raise CancelledError", res.stdout)
 
     def test_negative_control_unconfirmed_cleanup(self):
         res = self._run_min_repro("--fix", "--negative-control", "unconfirmed-cleanup")
-        self.assertEqual(res.returncode, 1, f"Expected returncode 1, got {res.returncode}\n{res.stdout}\n{res.stderr}")
+        self.assertEqual(
+            res.returncode,
+            1,
+            f"Expected returncode 1, got {res.returncode}\n{res.stdout}\n{res.stderr}",
+        )
         self.assertIn("FAILURE: backend cleanup UNCONFIRMED", res.stdout)
 
 

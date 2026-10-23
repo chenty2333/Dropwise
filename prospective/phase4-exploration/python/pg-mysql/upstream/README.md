@@ -84,7 +84,8 @@ baseline (`git show HEAD^:<file>`) to confirm the new tests fail before the fix.
 - commits: `fbcbf651`, `db8b6a09`, `0220617b`
 - files: `psycopg/psycopg/connection_async.py`, `tests/test_concurrency_async.py`, `tests/conftest.py`
 - mechanism: stage-scoped tracking via `_WaitGenTracker(gen)`. Cancelling on `WAIT_W` fail-closes immediately (`finish()`) and re-raises `CancelledError`, closing the window where backpressure relief caused `PQflush()` to return 0 and send generator to throw `TypeError: an integer is required`.
-- fixed tests: 7/7 targeted tests pass on both binary and pure Python backends; concurrency suite 20/20, full async suite 574 cursor, 91 pipeline/waiting, 84 transaction tests.
+- revalidated 2026-10-23 on Python 3.15.1 / PostgreSQL 18.6: all 7 targeted tests pass on binary and pure-Python backends, including the previously omitted partial-send test. Recovery now verifies two real `Task.cancel()` requests rather than a synthetic raise. The concurrency/cursor/pipeline/waiting/transaction sweep passes 275 tests with 5 skips per backend; older full-suite counts are not current evidence.
+- generated-source follow-up: async-only tracking and recovery now use the upstream `# ASYNC` generation guards. `tools/async_to_sync.py --check --all` passes on Python 3.15.1, and generated `connection.py` is unchanged. Both async backend sweeps were rerun (275 passed, 5 skipped each), plus the binary sync concurrency/waiting/transaction control (347 passed, 26 skipped). Black, flake8 and targeted mypy pass. This remains a local, unsubmitted branch.
 - production boundary: `pq/misc.py` was kept pristine (no production env var or libs hack); discovery is strictly confined to test startup.
 - PR draft / submission status: kept local, not submitted.
 

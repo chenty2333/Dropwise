@@ -8,7 +8,6 @@ or expected outcomes.
 from __future__ import annotations
 
 import enum
-from typing import Any
 
 
 class Stage(str, enum.Enum):
@@ -65,23 +64,23 @@ class StageClassifier:
         if method_context == "enter":
             if is_write:
                 return Stage.ENTER_SEND
-            if is_read or io_readiness is not None:
+            if is_read:
                 return Stage.ENTER_WAIT
-            return Stage.ENTER_SEND
+            return Stage.UNKNOWN
 
         if method_context == "body":
             if is_write:
                 return Stage.BODY_SEND
-            if is_read or io_readiness is not None:
+            if is_read:
                 return Stage.BODY_FETCH
-            return Stage.BODY_FETCH
+            return Stage.UNKNOWN
 
         if method_context == "commit":
             if is_write:
                 return Stage.COMMIT_SEND
-            if is_read or io_readiness is not None:
+            if is_read:
                 return Stage.COMMIT_WAIT
-            return Stage.COMMIT_WAIT
+            return Stage.UNKNOWN
 
         if method_context == "rollback":
             return Stage.ROLLBACK_WAIT

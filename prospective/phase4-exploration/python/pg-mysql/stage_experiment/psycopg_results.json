@@ -1,699 +1,2162 @@
 [
   {
-    "scenario": "C1_Short_Transaction",
-    "K": 7,
-    "stages": [
-      "enter_wait",
-      "body_fetch",
-      "commit_wait"
+    "valid": true,
+    "calibration": {
+      "method": "count",
+      "target_spec": null,
+      "realized_yield": null,
+      "realized_stage": null,
+      "operation": null,
+      "outcome": "COMPLETED",
+      "exc_type": null,
+      "driver_closed": false,
+      "conn_tx_status": 0,
+      "successor_ok": true,
+      "observer_rows": [
+        1
+      ],
+      "server_state": "idle",
+      "server_in_transaction": false,
+      "relation_locks": 0,
+      "second_requested": false,
+      "second_delivered": false,
+      "valid": true,
+      "failures": [],
+      "verdict": "POST",
+      "duration_s": 0.042933870980050415
+    },
+    "K": 3,
+    "trace": [
+      [
+        1,
+        "enter_wait",
+        "enter",
+        1,
+        1,
+        "outer.enter"
+      ],
+      [
+        2,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "outer.insert"
+      ],
+      [
+        3,
+        "commit_wait",
+        "commit",
+        1,
+        1,
+        "outer.commit"
+      ]
     ],
     "method_a": {
-      "trials": 7,
-      "time_s": 0.11207586200907826,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "duplicates": 3,
+      "trials": 3,
+      "time_s": 0.10778806000598706,
       "details": [
         {
-          "k": 1,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 1,
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.030231849988922477
         },
         {
-          "k": 2,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 2,
+          "realized_yield": 2,
+          "realized_stage": "body_fetch",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.038482494011987
         },
         {
-          "k": 3,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 4,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 5,
-          "stage": "enter_wait",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 6,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 7,
-          "stage": "commit_wait",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 3,
+          "realized_yield": 3,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [
+            1
+          ],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "POST",
+          "duration_s": 0.039073716005077586
         }
       ]
     },
     "method_b": {
       "trials": 3,
-      "time_s": 0.08706848899601027,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "omissions": [],
+      "time_s": 0.11773713599541225,
       "details": [
         {
-          "target_stage": "enter_wait",
-          "realized_yield": 5,
-          "verdict": "FAIL_CLOSED"
+          "method": "stage",
+          "target_spec": [
+            "outer.enter",
+            "enter_wait"
+          ],
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.03193129401188344
         },
         {
-          "target_stage": "body_fetch",
-          "realized_yield": 6,
-          "verdict": "FAIL_CLOSED"
+          "method": "stage",
+          "target_spec": [
+            "outer.insert",
+            "body_fetch"
+          ],
+          "realized_yield": 2,
+          "realized_stage": "body_fetch",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.04516441700980067
         },
         {
-          "target_stage": "commit_wait",
-          "realized_yield": 7,
-          "verdict": "FAIL_CLOSED"
+          "method": "stage",
+          "target_spec": [
+            "outer.commit",
+            "commit_wait"
+          ],
+          "realized_yield": 3,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [
+            1
+          ],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "POST",
+          "duration_s": 0.040641424973728135
         }
       ]
-    }
+    },
+    "unrealized_trials": 0,
+    "unclassified_yields": 0,
+    "missing_observations": [],
+    "extra_observations": [],
+    "observed_state_coverage_preserved": true,
+    "defect_coverage": "not established",
+    "scenario": "C1_Short_Transaction"
   },
   {
-    "scenario": "C1_Nested_Transaction_Savepoint",
+    "valid": true,
+    "calibration": {
+      "method": "count",
+      "target_spec": null,
+      "realized_yield": null,
+      "realized_stage": null,
+      "operation": null,
+      "outcome": "COMPLETED",
+      "exc_type": null,
+      "driver_closed": false,
+      "conn_tx_status": 0,
+      "successor_ok": true,
+      "observer_rows": [
+        1,
+        2
+      ],
+      "server_state": "idle",
+      "server_in_transaction": false,
+      "relation_locks": 0,
+      "second_requested": false,
+      "second_delivered": false,
+      "valid": true,
+      "failures": [],
+      "verdict": "POST",
+      "duration_s": 0.05551941701560281
+    },
+    "K": 6,
+    "trace": [
+      [
+        1,
+        "enter_wait",
+        "enter",
+        1,
+        1,
+        "outer.enter"
+      ],
+      [
+        2,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "outer.insert"
+      ],
+      [
+        3,
+        "sp_enter",
+        "sp_enter",
+        1,
+        1,
+        "inner.enter"
+      ],
+      [
+        4,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "inner.insert"
+      ],
+      [
+        5,
+        "sp_release",
+        "sp_release",
+        1,
+        1,
+        "inner.commit"
+      ],
+      [
+        6,
+        "commit_wait",
+        "commit",
+        1,
+        1,
+        "outer.commit"
+      ]
+    ],
+    "method_a": {
+      "trials": 6,
+      "time_s": 0.2818149669910781,
+      "details": [
+        {
+          "method": "yield",
+          "target_spec": 1,
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.030409579980187118
+        },
+        {
+          "method": "yield",
+          "target_spec": 2,
+          "realized_yield": 2,
+          "realized_stage": "body_fetch",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.04178311399300583
+        },
+        {
+          "method": "yield",
+          "target_spec": 3,
+          "realized_yield": 3,
+          "realized_stage": "sp_enter",
+          "operation": "inner.enter",
+          "outcome": "EXCEPTION",
+          "exc_type": "OutOfOrderTransactionNesting",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 1,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed",
+            "unexpected_exception"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.039895552006782964
+        },
+        {
+          "method": "yield",
+          "target_spec": 4,
+          "realized_yield": 4,
+          "realized_stage": "body_fetch",
+          "operation": "inner.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.06070302499574609
+        },
+        {
+          "method": "yield",
+          "target_spec": 5,
+          "realized_yield": 5,
+          "realized_stage": "sp_release",
+          "operation": "inner.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.05512192699825391
+        },
+        {
+          "method": "yield",
+          "target_spec": 6,
+          "realized_yield": 6,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [
+            1,
+            2
+          ],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "POST",
+          "duration_s": 0.0539017690171022
+        }
+      ]
+    },
+    "method_b": {
+      "trials": 6,
+      "time_s": 0.2725488150026649,
+      "details": [
+        {
+          "method": "stage",
+          "target_spec": [
+            "outer.enter",
+            "enter_wait"
+          ],
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.03181498000049032
+        },
+        {
+          "method": "stage",
+          "target_spec": [
+            "outer.insert",
+            "body_fetch"
+          ],
+          "realized_yield": 2,
+          "realized_stage": "body_fetch",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.04095111502101645
+        },
+        {
+          "method": "stage",
+          "target_spec": [
+            "inner.enter",
+            "sp_enter"
+          ],
+          "realized_yield": 3,
+          "realized_stage": "sp_enter",
+          "operation": "inner.enter",
+          "outcome": "EXCEPTION",
+          "exc_type": "OutOfOrderTransactionNesting",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 1,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed",
+            "unexpected_exception"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.039579504024004564
+        },
+        {
+          "method": "stage",
+          "target_spec": [
+            "inner.insert",
+            "body_fetch"
+          ],
+          "realized_yield": 4,
+          "realized_stage": "body_fetch",
+          "operation": "inner.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.05641625399584882
+        },
+        {
+          "method": "stage",
+          "target_spec": [
+            "inner.commit",
+            "sp_release"
+          ],
+          "realized_yield": 5,
+          "realized_stage": "sp_release",
+          "operation": "inner.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.05036167197977193
+        },
+        {
+          "method": "stage",
+          "target_spec": [
+            "outer.commit",
+            "commit_wait"
+          ],
+          "realized_yield": 6,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [
+            1,
+            2
+          ],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "POST",
+          "duration_s": 0.05342528998153284
+        }
+      ]
+    },
+    "unrealized_trials": 0,
+    "unclassified_yields": 0,
+    "missing_observations": [],
+    "extra_observations": [],
+    "observed_state_coverage_preserved": true,
+    "defect_coverage": "not established",
+    "scenario": "C1_Nested_Transaction_Savepoint"
+  },
+  {
+    "valid": true,
+    "calibration": {
+      "method": "count",
+      "target_spec": null,
+      "realized_yield": null,
+      "realized_stage": null,
+      "operation": null,
+      "outcome": "COMPLETED",
+      "exc_type": null,
+      "driver_closed": false,
+      "conn_tx_status": 0,
+      "successor_ok": true,
+      "observer_rows": [],
+      "server_state": "idle",
+      "server_in_transaction": false,
+      "relation_locks": 0,
+      "second_requested": false,
+      "second_delivered": false,
+      "valid": true,
+      "failures": [],
+      "verdict": "PRE",
+      "duration_s": 0.18114058699575253
+    },
+    "K": 8,
+    "trace": [
+      [
+        1,
+        "enter_wait",
+        "enter",
+        1,
+        1,
+        "outer.enter"
+      ],
+      [
+        2,
+        "enter_wait",
+        "enter",
+        1,
+        1,
+        "outer.enter"
+      ],
+      [
+        3,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "outer.fetch"
+      ],
+      [
+        4,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "outer.fetch"
+      ],
+      [
+        5,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "outer.fetch"
+      ],
+      [
+        6,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "outer.fetch"
+      ],
+      [
+        7,
+        "commit_wait",
+        "commit",
+        1,
+        1,
+        "outer.commit"
+      ],
+      [
+        8,
+        "commit_wait",
+        "commit",
+        1,
+        1,
+        "outer.commit"
+      ]
+    ],
+    "method_a": {
+      "trials": 8,
+      "time_s": 1.3709134000528138,
+      "details": [
+        {
+          "method": "yield",
+          "target_spec": 1,
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.14750820002518594
+        },
+        {
+          "method": "yield",
+          "target_spec": 2,
+          "realized_yield": 2,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.14838936500018463
+        },
+        {
+          "method": "yield",
+          "target_spec": 3,
+          "realized_yield": 3,
+          "realized_stage": "body_fetch",
+          "operation": "outer.fetch",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.1701443389756605
+        },
+        {
+          "method": "yield",
+          "target_spec": 4,
+          "realized_yield": 4,
+          "realized_stage": "body_fetch",
+          "operation": "outer.fetch",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.18007969702011906
+        },
+        {
+          "method": "yield",
+          "target_spec": 5,
+          "realized_yield": 5,
+          "realized_stage": "body_fetch",
+          "operation": "outer.fetch",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.182142563018715
+        },
+        {
+          "method": "yield",
+          "target_spec": 6,
+          "realized_yield": 6,
+          "realized_stage": "body_fetch",
+          "operation": "outer.fetch",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.182274884020444
+        },
+        {
+          "method": "yield",
+          "target_spec": 7,
+          "realized_yield": 7,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.1806396569882054
+        },
+        {
+          "method": "yield",
+          "target_spec": 8,
+          "realized_yield": 8,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.17973469500429928
+        }
+      ]
+    },
+    "method_b": {
+      "trials": 3,
+      "time_s": 0.49707411098643206,
+      "details": [
+        {
+          "method": "stage",
+          "target_spec": [
+            "outer.enter",
+            "enter_wait"
+          ],
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.14707652799552307
+        },
+        {
+          "method": "stage",
+          "target_spec": [
+            "outer.fetch",
+            "body_fetch"
+          ],
+          "realized_yield": 3,
+          "realized_stage": "body_fetch",
+          "operation": "outer.fetch",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.16968611199990846
+        },
+        {
+          "method": "stage",
+          "target_spec": [
+            "outer.commit",
+            "commit_wait"
+          ],
+          "realized_yield": 7,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.18031147099100053
+        }
+      ]
+    },
+    "unrealized_trials": 0,
+    "unclassified_yields": 0,
+    "missing_observations": [
+      [
+        "outer.enter",
+        "enter_wait",
+        "CANCELLED",
+        "CancelledError",
+        false,
+        2,
+        true,
+        [],
+        "idle in transaction",
+        true,
+        0,
+        false,
+        false,
+        [
+          "transaction_not_idle",
+          "backend_cleanup_unconfirmed"
+        ]
+      ]
+    ],
+    "extra_observations": [
+      [
+        "outer.enter",
+        "enter_wait",
+        "CANCELLED",
+        "CancelledError",
+        false,
+        0,
+        true,
+        [],
+        "idle",
+        false,
+        0,
+        false,
+        false,
+        []
+      ]
+    ],
+    "observed_state_coverage_preserved": false,
+    "defect_coverage": "not established",
+    "scenario": "C2_Fragmented_Response"
+  },
+  {
+    "valid": true,
+    "calibration": {
+      "method": "count",
+      "target_spec": null,
+      "realized_yield": null,
+      "realized_stage": null,
+      "operation": null,
+      "outcome": "COMPLETED",
+      "exc_type": null,
+      "driver_closed": false,
+      "conn_tx_status": 0,
+      "successor_ok": true,
+      "observer_rows": [
+        1
+      ],
+      "server_state": "idle",
+      "server_in_transaction": false,
+      "relation_locks": 0,
+      "second_requested": false,
+      "second_delivered": false,
+      "valid": true,
+      "failures": [],
+      "verdict": "POST",
+      "duration_s": 0.16375996201531962
+    },
     "K": 10,
-    "stages": [
-      "enter_wait",
-      "body_fetch",
-      "sp_enter",
-      "sp_release",
-      "commit_wait"
+    "trace": [
+      [
+        1,
+        "enter_wait",
+        "enter",
+        1,
+        1,
+        "outer.enter"
+      ],
+      [
+        2,
+        "body_send",
+        "body",
+        1,
+        3,
+        "outer.insert"
+      ],
+      [
+        3,
+        "body_send",
+        "body",
+        1,
+        3,
+        "outer.insert"
+      ],
+      [
+        4,
+        "body_send",
+        "body",
+        1,
+        3,
+        "outer.insert"
+      ],
+      [
+        5,
+        "body_send",
+        "body",
+        1,
+        3,
+        "outer.insert"
+      ],
+      [
+        6,
+        "body_send",
+        "body",
+        1,
+        3,
+        "outer.insert"
+      ],
+      [
+        7,
+        "body_send",
+        "body",
+        1,
+        3,
+        "outer.insert"
+      ],
+      [
+        8,
+        "body_send",
+        "body",
+        1,
+        3,
+        "outer.insert"
+      ],
+      [
+        9,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "outer.insert"
+      ],
+      [
+        10,
+        "commit_wait",
+        "commit",
+        1,
+        1,
+        "outer.commit"
+      ]
     ],
     "method_a": {
       "trials": 10,
-      "time_s": 0.23720371500530746,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "duplicates": 4,
+      "time_s": 1.2809400190308224,
       "details": [
         {
-          "k": 1,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 1,
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.010316780011635274
         },
         {
-          "k": 2,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 2,
+          "realized_yield": 2,
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.13766008798847906
         },
         {
-          "k": 3,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 3,
+          "realized_yield": 3,
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.13233076501637697
         },
         {
-          "k": 4,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 4,
+          "realized_yield": 4,
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.13442037100321613
         },
         {
-          "k": 5,
-          "stage": "enter_wait",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 6,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 7,
-          "stage": "sp_enter",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 8,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 9,
-          "stage": "sp_release",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 10,
-          "stage": "commit_wait",
-          "verdict": "FAIL_CLOSED"
-        }
-      ]
-    },
-    "method_b": {
-      "trials": 5,
-      "time_s": 0.17715668999881018,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "omissions": [],
-      "details": [
-        {
-          "target_stage": "enter_wait",
+          "method": "yield",
+          "target_spec": 5,
           "realized_yield": 5,
-          "verdict": "FAIL_CLOSED"
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.13487548899138346
         },
         {
-          "target_stage": "body_fetch",
+          "method": "yield",
+          "target_spec": 6,
           "realized_yield": 6,
-          "verdict": "FAIL_CLOSED"
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.13593432700145058
         },
         {
-          "target_stage": "sp_enter",
+          "method": "yield",
+          "target_spec": 7,
           "realized_yield": 7,
-          "verdict": "FAIL_CLOSED"
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.13767590001225471
         },
         {
-          "target_stage": "sp_release",
+          "method": "yield",
+          "target_spec": 8,
+          "realized_yield": 8,
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.1397277399955783
+        },
+        {
+          "method": "yield",
+          "target_spec": 9,
           "realized_yield": 9,
-          "verdict": "FAIL_CLOSED"
+          "realized_stage": "body_fetch",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.15746902400860563
         },
         {
-          "target_stage": "commit_wait",
+          "method": "yield",
+          "target_spec": 10,
           "realized_yield": 10,
-          "verdict": "FAIL_CLOSED"
-        }
-      ]
-    }
-  },
-  {
-    "scenario": "C2_Fragmented_Response",
-    "K": 32,
-    "stages": [
-      "enter_wait",
-      "body_fetch",
-      "commit_wait"
-    ],
-    "method_a": {
-      "trials": 32,
-      "time_s": 2.4231869150098646,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "duplicates": 28,
-      "details": [
-        {
-          "k": 1,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 2,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 3,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 4,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 5,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 6,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 7,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 8,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 9,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 10,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 11,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 12,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 13,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 14,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 15,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 16,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 17,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 18,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 19,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 20,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 21,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 22,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 23,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 24,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 25,
-          "stage": "enter_wait",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 26,
-          "stage": "enter_wait",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 27,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 28,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 29,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 30,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 31,
-          "stage": "commit_wait",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 32,
-          "stage": "commit_wait",
-          "verdict": "FAIL_CLOSED"
-        }
-      ]
-    },
-    "method_b": {
-      "trials": 3,
-      "time_s": 0.42038211699400563,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "omissions": [],
-      "details": [
-        {
-          "target_stage": "enter_wait",
-          "realized_yield": 25,
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "target_stage": "body_fetch",
-          "realized_yield": 27,
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "target_stage": "commit_wait",
-          "realized_yield": 31,
-          "verdict": "FAIL_CLOSED"
-        }
-      ]
-    }
-  },
-  {
-    "scenario": "C3_Partial_Send_Backpressure",
-    "K": 14,
-    "stages": [
-      "enter_wait",
-      "body_send",
-      "body_fetch",
-      "commit_wait"
-    ],
-    "method_a": {
-      "trials": 14,
-      "time_s": 6.665840126996045,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "duplicates": 13,
-      "details": [
-        {
-          "k": 1,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 2,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 3,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 4,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 5,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 6,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 7,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 8,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 9,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 10,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 11,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 12,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 13,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "k": 14,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [
+            1
+          ],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "POST",
+          "duration_s": 0.1605295350018423
         }
       ]
     },
     "method_b": {
       "trials": 4,
-      "time_s": 8.15964781299408,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "EXCEPTION",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED",
-        "EXCEPTION"
-      ],
-      "omissions": [],
+      "time_s": 0.4392752119747456,
       "details": [
         {
-          "target_stage": "enter_wait",
-          "realized_yield": 5,
-          "verdict": "FAIL_CLOSED"
+          "method": "stage",
+          "target_spec": [
+            "outer.enter",
+            "enter_wait"
+          ],
+          "realized_yield": 1,
+          "realized_stage": "enter_wait",
+          "operation": "outer.enter",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 2,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle in transaction",
+          "server_in_transaction": true,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [
+            "transaction_not_idle",
+            "backend_cleanup_unconfirmed"
+          ],
+          "verdict": "FAILURE",
+          "duration_s": 0.009761702996911481
         },
         {
-          "target_stage": "body_send",
-          "realized_yield": null,
-          "verdict": "EXCEPTION"
+          "method": "stage",
+          "target_spec": [
+            "outer.insert",
+            "body_send"
+          ],
+          "realized_yield": 2,
+          "realized_stage": "body_send",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 0.11588407997624017
         },
         {
-          "target_stage": "body_fetch",
-          "realized_yield": 13,
-          "verdict": "FAIL_CLOSED"
+          "method": "stage",
+          "target_spec": [
+            "outer.insert",
+            "body_fetch"
+          ],
+          "realized_yield": 9,
+          "realized_stage": "body_fetch",
+          "operation": "outer.insert",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "PRE",
+          "duration_s": 0.15622779200202785
         },
         {
-          "target_stage": "commit_wait",
-          "realized_yield": 14,
-          "verdict": "FAIL_CLOSED"
+          "method": "stage",
+          "target_spec": [
+            "outer.commit",
+            "commit_wait"
+          ],
+          "realized_yield": 10,
+          "realized_stage": "commit_wait",
+          "operation": "outer.commit",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": false,
+          "conn_tx_status": 0,
+          "successor_ok": true,
+          "observer_rows": [
+            1
+          ],
+          "server_state": "idle",
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": false,
+          "second_delivered": false,
+          "valid": true,
+          "failures": [],
+          "verdict": "POST",
+          "duration_s": 0.1574016369995661
         }
       ]
-    }
+    },
+    "unrealized_trials": 0,
+    "unclassified_yields": 0,
+    "missing_observations": [],
+    "extra_observations": [],
+    "observed_state_coverage_preserved": true,
+    "defect_coverage": "not established",
+    "scenario": "C3_Partial_Send_Backpressure"
   },
   {
-    "scenario": "C3_Double_Cancel_Entry_Recovery",
-    "K": 7,
-    "stages": [
-      "enter_wait",
-      "body_fetch",
-      "commit_wait"
+    "valid": true,
+    "calibration": {
+      "method": "count",
+      "target_spec": null,
+      "realized_yield": null,
+      "realized_stage": null,
+      "operation": null,
+      "outcome": "COMPLETED",
+      "exc_type": null,
+      "driver_closed": false,
+      "conn_tx_status": 0,
+      "successor_ok": true,
+      "observer_rows": [],
+      "server_state": "idle",
+      "server_in_transaction": false,
+      "relation_locks": 0,
+      "second_requested": false,
+      "second_delivered": false,
+      "valid": true,
+      "failures": [],
+      "verdict": "PRE",
+      "duration_s": 2.0105618220113683
+    },
+    "K": 20,
+    "trace": [
+      [
+        1,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        2,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        3,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        4,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        5,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        6,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        7,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        8,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        9,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        10,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        11,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        12,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        13,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        14,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        15,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        16,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        17,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        18,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        19,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ],
+      [
+        20,
+        "body_fetch",
+        "body",
+        1,
+        1,
+        "query.sleep"
+      ]
     ],
     "method_a": {
-      "trials": 7,
-      "time_s": 0.03397591099201236,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "duplicates": 3,
+      "trials": 20,
+      "time_s": 40.37358576708357,
       "details": [
         {
-          "k": 1,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 1,
+          "realized_yield": 1,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0259164300223347
         },
         {
-          "k": 2,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 2,
+          "realized_yield": 2,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.014928382996004
         },
         {
-          "k": 3,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 3,
+          "realized_yield": 3,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.012465804000385
         },
         {
-          "k": 4,
-          "stage": "unknown",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 4,
+          "realized_yield": 4,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.010111373005202
         },
         {
-          "k": 5,
-          "stage": "enter_wait",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 5,
+          "realized_yield": 5,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.027597484004218
         },
         {
-          "k": 6,
-          "stage": "body_fetch",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 6,
+          "realized_yield": 6,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.010245160985505
         },
         {
-          "k": 7,
-          "stage": "commit_wait",
-          "verdict": "FAIL_CLOSED"
+          "method": "yield",
+          "target_spec": 7,
+          "realized_yield": 7,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0236226610140875
+        },
+        {
+          "method": "yield",
+          "target_spec": 8,
+          "realized_yield": 8,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0182787670055404
+        },
+        {
+          "method": "yield",
+          "target_spec": 9,
+          "realized_yield": 9,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.015471049991902
+        },
+        {
+          "method": "yield",
+          "target_spec": 10,
+          "realized_yield": 10,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.015915505005978
+        },
+        {
+          "method": "yield",
+          "target_spec": 11,
+          "realized_yield": 11,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0140763410017826
+        },
+        {
+          "method": "yield",
+          "target_spec": 12,
+          "realized_yield": 12,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.025580807006918
+        },
+        {
+          "method": "yield",
+          "target_spec": 13,
+          "realized_yield": 13,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0228030400176067
+        },
+        {
+          "method": "yield",
+          "target_spec": 14,
+          "realized_yield": 14,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.019533484999556
+        },
+        {
+          "method": "yield",
+          "target_spec": 15,
+          "realized_yield": 15,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.019425124017289
+        },
+        {
+          "method": "yield",
+          "target_spec": 16,
+          "realized_yield": 16,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0144717920047697
+        },
+        {
+          "method": "yield",
+          "target_spec": 17,
+          "realized_yield": 17,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.011295519012492
+        },
+        {
+          "method": "yield",
+          "target_spec": 18,
+          "realized_yield": 18,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.025907046016073
+        },
+        {
+          "method": "yield",
+          "target_spec": 19,
+          "realized_yield": 19,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.027725436986657
+        },
+        {
+          "method": "yield",
+          "target_spec": 20,
+          "realized_yield": 20,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0182145579892676
         }
       ]
     },
     "method_b": {
-      "trials": 3,
-      "time_s": 0.022980064997682348,
-      "verdicts": [
-        "FAIL_CLOSED",
-        "FAIL_CLOSED",
-        "FAIL_CLOSED"
-      ],
-      "unique_verdicts": [
-        "FAIL_CLOSED"
-      ],
-      "omissions": [],
+      "trials": 1,
+      "time_s": 2.0227962500066496,
       "details": [
         {
-          "target_stage": "enter_wait",
-          "realized_yield": 5,
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "target_stage": "body_fetch",
-          "realized_yield": 6,
-          "verdict": "FAIL_CLOSED"
-        },
-        {
-          "target_stage": "commit_wait",
-          "realized_yield": 7,
-          "verdict": "FAIL_CLOSED"
+          "method": "stage",
+          "target_spec": [
+            "query.sleep",
+            "body_fetch"
+          ],
+          "realized_yield": 1,
+          "realized_stage": "body_fetch",
+          "operation": "query.sleep",
+          "outcome": "CANCELLED",
+          "exc_type": "CancelledError",
+          "driver_closed": true,
+          "conn_tx_status": null,
+          "successor_ok": true,
+          "observer_rows": [],
+          "server_state": null,
+          "server_in_transaction": false,
+          "relation_locks": 0,
+          "second_requested": true,
+          "second_delivered": true,
+          "valid": true,
+          "failures": [],
+          "verdict": "FAIL_CLOSED",
+          "duration_s": 2.0227962500066496
         }
       ]
-    }
+    },
+    "unrealized_trials": 0,
+    "unclassified_yields": 0,
+    "missing_observations": [],
+    "extra_observations": [],
+    "observed_state_coverage_preserved": true,
+    "defect_coverage": "not established",
+    "scenario": "C3_Double_Cancel_Query_Recovery"
   }
 ]

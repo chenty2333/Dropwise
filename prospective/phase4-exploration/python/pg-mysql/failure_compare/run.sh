@@ -12,7 +12,7 @@ cd "$(dirname "$0")/.."                       # .../python/pg-mysql
 REPO=$(cd ../../../.. && pwd)                 # repository root
 export PYTHONPATH=".:$REPO/research/python-retro"
 
-PY=${DW_PYTHON:-/home/ava/dropwise-py-work-r3/venv313/bin/python}
+PY=${DW_PYTHON:-$REPO/.venv/bin/python}
 STAMP=$(date +%Y%m%d-%H%M%S)
 OUT="failure_compare/logs/run.fc.$STAMP"
 mkdir -p "$OUT"

@@ -1,6 +1,51 @@
 # 调研之后：两份调研的交叉验证与落地情况
 
-> 更新于 2026-10-22。开头是当前概览；旧讨论和标注日期的表保留当时语境，不再逐条回写。实验细节仍以各阶段 RESULTS 为准。[REPORT.md](REPORT.md) 是本仓库五份笔记的综合报告。
+> 更新于 2026-10-23。开头是当前概览；旧讨论和标注日期的表保留当时语境，不再逐条回写。实验细节仍以各阶段 RESULTS 为准。[REPORT.md](REPORT.md) 是本仓库五份笔记的综合报告。
+
+## Gemini 三项产出的复核与取舍（2026-10-23）
+
+已按当前工作区的 agy 对话核对三项产出，而非把三份完成声明直接当作验证：
+
+| agy 会话 | 实际产出 | 当前结论 |
+|---|---|---|
+| Psycopg Partial Send Cancellation Fix | psycopg 独立工作树的修复与回归；本仓库 `stage_experiment/`、JSON 和 Round 5 文档 | 初审发现漏跑回归和比较判据污染。后续已在 Python 3.15.1 修正并复跑：7 项定向回归双后端通过，二次取消实际触发；阶段选择仍漏掉一个观察状态，不能恢复覆盖保持或提速结论，见 [Round 5 §5](../../prospective/phase4-exploration/ROUND5-RESULTS.md#5-stage-informed-comparison-corrected-on-python-315)。 |
+| Dropwise Vulnerability Mechanism Exploration | 会话中的机制分析与临时命令实验；未留下独立实验文件 | 有用的是责任、效果、协议与复用资格的区分；三个“新发现”均不足以按报告原文成立，见下。 |
+| Dropwise Vulnerability Research Strategy | 会话中的 17 条公开案例目录；未写入仓库 | 有价值的检索线索，但不是 17 个已核实独立缺陷。来源错配、设计讨论混入缺陷、重复合并和状态错误使汇总统计不可用。 |
+
+### 机制线：保留观察，撤回错误因果
+
+- **提交后才收到取消**：是本仓库已有的 commit ambiguity 结果，不是这轮新发现；不能从 `CancelledError` 推出回滚，也不能在没有重试实验和幂等性条件时推断“必然重复写入”。
+- **流式查询清理**：报告把一次 `Task.cancel()` 解释为进入 `finally` 后每个 `await` 自动重新抛取消，这是错误的 asyncio 语义。独立的 Python 3.14 最小检查中，取消计数保持 1，`finally` 中的 `await` 仍完成；[Python 3.13 文档](https://docs.python.org/3.13/library/asyncio-task.html#task-cancellation)也不支持该解释。原实验取消的是消费者循环体中的 `sleep`，不是已证明发生在生成器清理内部的第二次取消。会话自己的 autocommit 对照成功返回 `(42,)`；另一次观察已回到 IDLE，后继结果正确；锁也能在有界等待内重新获取。非 autocommit 的 `InFailedSqlTransaction` 不能单独证明协议失步或永久锁泄漏。需要区分异步生成器关闭时机、事务恢复和真实的二次取消，当前应为待查线索，而非确认的新漏洞。
+- **fd 重用异常**：确实有一条命令报 `ENOENT`，但它在另一任务仍等待时直接调用底层 `pgconn.finish()`，且加载的是虚拟环境安装包，没有证明走过正式补丁的取消路径。正式路径先从 `waiting.wait_async()` 展开，该函数在 `finally` 中移除读写监听，再进入外层关闭分支。因此不能把这次人工干预的异常归因于 partial-send 修复；是否另有可达竞态仍需单独验证。
+- **“所有修复都靠关闭”不成立**：实际 asyncpg 补丁清理本地事务登记，并未承诺修复同一 lease 的普通操作；psycopg 入口补丁有回滚路径。关闭是某些路径的隔离策略，不是统一根因，更不是“毁灭证据”。
+
+### 资料线：17 条输入记录的处理
+
+以下是来源核对后的取舍，不是新的完整漏洞普查，也不重新给出未经逐项验证的缺陷总数。原表实际上只有 **5 条带 CVE 的记录**，与其“6 个安全漏洞”统计不符；“15 个上游确认”等分类也不能沿用。历史已知案例和本项目已有提交不算本轮独立新增发现。
+
+| 原条目 | 处理及正确来源 |
+|---|---|
+| 1. io_uring / CVE-2022-29582 | 保留待核实线索。所引 [Openwall 邮件](https://www.openwall.com/lists/oss-security/2022/08/08/1)实际是 **CVE-2022-2590 / shmem**；它不能支撑原文的 timeout 竞态图、修复版本或披露日期。本次未完成该条其余来源的交叉验证。 |
+| 2. Envoy / CVE-2026-26311 | 保留已公开漏洞线索，改用真实公告 [GHSA-84xm-r438-86px](https://github.com/envoyproxy/envoy/security/advisories/GHSA-84xm-r438-86px)，不是 `GHSA-26311`。公告修复版本为 1.37.1 / 1.36.5 / 1.35.8 / 1.34.13；原文 1.30.1+ 错误。UAF 崩溃不能直接算作已证实 RCE。 |
+| 3. HTTP/2 Rapid Reset | [厂商技术分析](https://blog.cloudflare.com/technical-breakdown-http2-rapid-reset-ddos-attack/)可作取消成本与配额的比较材料；不等同于 Future-drop 清理缺陷，不沿用“全部实现都已修复”等无版本边界断言。 |
+| 4. Undici / CVE-2026-6733 | [官方公告](https://github.com/nodejs/undici/security/advisories/GHSA-35p6-xmwp-9g52)描述受控上游向空闲 keep-alive 连接发送非请求响应，**不以调用者取消或超时为前提**。作为相邻的复用/归属案例保留，不计入直接取消缺陷；修复为 6.27.0 / 7.28.0 / 8.5.0。 |
+| 5. Go database/sql #34775 | [原 issue](https://github.com/golang/go/issues/34775)确有回滚后语句仍执行的报告，值得深入。原文拼接的提交 `57724fd34775` 未核实，不沿用其修复版本和已确认根因细节。 |
+| 6. Go net/http #46866 | [原 issue](https://github.com/golang/go/issues/46866)是 handler panic 后对 persistConn 的竞态读取；需以实际触发链解释，不能把任意 panic 都改写成普通客户端取消。 |
+| 7. Lettuce #1401 | 原引用[实际是 Sentinel 认证失败](https://github.com/redis/lettuce/issues/1401)，不能支撑所述 Redis 超时后响应串扰。该“已确认案例”撤回；若研究客户端选项，应另找对应原始资料。 |
+| 8. Reactor Netty | [#1401](https://github.com/reactor/reactor-netty/issues/1401)与 [#3459](https://github.com/reactor/reactor-netty/pull/3459)不能仅凭现象相似归为同一缺陷；后者关联 #3416/#3367。拆分线索，具体根因、版本和计数暂不确认。 |
+| 9. Npgsql | [#5960](https://github.com/npgsql/npgsql/issues/5960)讨论取消导致连接关闭及冷连接成本；[#3705](https://github.com/npgsql/npgsql/issues/3705)涉及失败的 CancelRequest 和池耗尽。不要合并成一个已修复缺陷，也不能推出所有 PG 取消都必须断连。 |
+| 10. asyncpg / SQLAlchemy | [asyncpg #547](https://github.com/MagicStack/asyncpg/issues/547)是带超时的 acquire 被取消后池关闭挂起；[SQLAlchemy #10717](https://github.com/sqlalchemy/sqlalchemy/issues/10717)是 terminate 与服务端会话终止时机。两个不同问题，应拆开；不能统一解释成 FastAPI 二次取消导致排他表锁残留。 |
+| 11. PEP 678 / CPython #91479 | 从缺陷统计剔除。[PEP 678](https://peps.python.org/pep-0678/)和 [#91479](https://github.com/python/cpython/issues/91479)都是异常注释，不是取消计数机制；“捕获取消后必须 uncancel 才能 await 清理”的断言错误。 |
+| 12. SQLx #4394 | [PR](https://github.com/transact-rs/sqlx/pull/4394)确实修复 BEGIN 往返期间取消，2026-09-09 合并。属于项目已经分析过的案例，不是新检索发现；发布版本需另核。 |
+| 13. bb8 #325 | [PR](https://github.com/djc/bb8/pull/325)创建于 **2026-10-18**，本次核对仍为 **open**，且已在本项目材料中。原文“2024-06、已修复于 0.9.2”不成立。 |
+| 14. tower #626 / #112 | [#626](https://github.com/tower-rs/tower/issues/626)与 [#112](https://github.com/tower-rs/tower/issues/112)是 poll_ready / 背压设计讨论。保留作契约材料；没有特定实现、复现和修复证据，不能记为“上游确认永久许可泄漏”。 |
+| 15. h2 #893 / #894 | [#893](https://github.com/hyperium/h2/pull/893)确为 reserve_capacity 后 reset 的容量泄漏或 panic，2026-04-28 合并；[#894](https://github.com/hyperium/h2/pull/894)处理 padded frames，是另一补丁。原日期 2024-03 错误，不能将两个修复混为一条。 |
+| 16. Tokio mpsc | [Sender 文档](https://docs.rs/tokio/latest/tokio/sync/mpsc/struct.Sender.html#method.send)明确说明取消 send 会丢弃消息以及 reserve 的用途，这是 API 契约对照，不是已经修复的漏洞。所引 [#2460](https://github.com/tokio-rs/tokio/issues/2460)实际涉及 LocalSet / JoinHandle / budget，不是 reserve 补丁。 |
+| 17. Kafka KIP-360 / KIP-447 | 保留为设计研究线索；[KIP-447](https://cwiki.apache.org/confluence/spaces/KAFKA/pages/103093950/KIP-447+Producer+scalability+for+exactly+once+semantics)是 EOS 扩展设计，不能单独证明所述超时活锁缺陷。KIP-360 本次未成功读取，不确认其具体因果或修复版本。 |
+
+当前值得继续读的是 Envoy 的 reset 后生命周期、h2 的取消后容量归还，以及 Go database/sql 的回滚/关闭间隙；Undici 可作为不依赖取消的响应归属对照。这些是后续问题，不是已经验证的统一机制或新增漏洞数量。
+
+初审只做了整理、分类器单测和负对照，未做数据库复验。随后按用户要求改用 Python 3.15.1 修复并集中复跑，结果见上面的 Round 5 §5；这不改变本节对机制线和公开资料线的取舍，也不代表历史实验全部重跑。截至该轮复验结束，研究和 psycopg 改动尚未提交或推送；另行获授权的 diesel_async #305 评审修改已推送并回复。
 
 ## 新增研究方向（2026-10-22）
 

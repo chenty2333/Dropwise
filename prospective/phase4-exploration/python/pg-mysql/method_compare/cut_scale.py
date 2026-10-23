@@ -32,7 +32,7 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
-from asyncio.tasks import _PyTask as PureTask
+from dropwise_py.engine import PureTask
 
 from cases.common import add_db_args, close_quiet, err_text
 from cases.txphase_case import CmScenario

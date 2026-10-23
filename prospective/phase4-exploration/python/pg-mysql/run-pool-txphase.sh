@@ -5,7 +5,7 @@ set -u
 STATUS=0
 cd "$(dirname "$0")"
 REPO=$(cd ../../../.. && pwd)
-PY=${PY:-$HOME/dropwise-py-work-r3/venv313/bin/python}
+PY=${PY:-$REPO/.venv/bin/python}
 NAME="dw-r4-pooltx-$$"
 RUN=$(mktemp -d logs/run.pool.XXXXXX)
 RUN_ABS=$(cd "$RUN" && pwd)

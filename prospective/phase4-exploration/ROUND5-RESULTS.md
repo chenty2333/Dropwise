@@ -1,9 +1,12 @@
 # Round 5 results: handle comparison, cut scale, delivery handoff, and four appended groups
 
-## Final correction and closure (2026-10-22)
+## Current corrections (reviewed 2026-10-23)
 
-The three review corrections are resolved. The original measurements below are
-retained as history; the corrected conclusions are these.
+The stage-comparison harness has been repaired and rerun on CPython 3.15.1.
+The omitted partial-send regression is now included, and recovery uses two real
+cancellation requests. The comparison still does **not** establish general defect
+coverage or the earlier 83% speedup; the corrected sample contains a missed state.
+Historical measurements below remain tied to their original environments.
 
 ### 1. Actual patch vs experimental strategy (asyncpg, psycopg, MySQL)
 
@@ -110,7 +113,8 @@ Refinements completed in this final round:
      both 0 or 1 rows as valid wire effects while guaranteeing connection safety and
      cancellation propagation.
    Baseline fails Scenario B with `TypeError` on C binary and commits uncancelled on Python;
-   the finalized fix passes 7/7 targeted tests on both C binary and pure Python.
+   all seven targeted tests now pass on both backends under Python 3.15.1.
+   The previously omitted `test_cancel_while_sending_closes_connection` is included.
 4. **Independent server-side cleanup & robust negative controls:** `min_repro.py` never
    calls `conn.close()` to rescue driver omissions. It verifies driver self-close, records
    independent close timings, enforces bounded waits (5s) for `pg_stat_activity` and
@@ -118,30 +122,97 @@ Refinements completed in this final round:
    controls (`driver-unclosed`, `wrong-exception`, `unconfirmed-cleanup`) all fail cleanly
    with exit code 1 without being masked by `finally` blocks.
 
-### 5. Stage-informed vs yield/pending index replay research
+### 5. Stage-informed comparison: corrected on Python 3.15
 
-We evaluated the research question:
-**Can choosing cancellation points based on observable protocol and responsibility stages maintain coverage and reduce redundant test executions when network fragmentation and backpressure alter Pending/yield counts?**
+The previous comparison was invalid: runner teardown was misclassified as driver
+closure, coarse verdict sets hid distinct states, repeated nested operations were
+collapsed, second cancellation was not demonstrated, and workloads differed.
+Those results and the claimed 83% speedup are withdrawn. The existing
+`stage_experiment/*_results.json` files now contain the corrected run, not that
+old output.
 
-**PSQL Target (psycopg, 5 scenarios across 3 conditions):**
-- **C1 Baseline (Low Delay Proxy, 2048 B chunks):**
-  - Short Tx: Method A ran 7 trials (3 duplicates, 0.11s); Method B ran 3 stage trials (0.09s, 0 omissions).
-  - Nested Tx (Savepoint): Method A ran 10 trials (4 duplicates, 0.24s); Method B ran 5 stage trials (0.18s, 0 omissions).
-- **C2 High Response Fragmentation (256 B chunks, 5ms delay):**
-  - Pending yields exploded from 7 to 32.
-  - Method A ran 32 trials (28 duplicate trials inside `BODY_FETCH`, 2.42s).
-  - Method B recognized the 28 chunk yields as the same `BODY_FETCH` stage, running only 3 targeted trials (0.42s, an **83% runtime reduction** and **90% trial reduction**, with 0 omissions!).
-- **C3 Send Backpressure (8 MB INSERT, 32 KB hold):**
-  - Method A ran 14 trials (13 duplicates across the `WAIT_RW` send loop, 6.67s).
-  - Method B tested the distinct stages (enter, body_send, body_fetch, commit) in 4 trials.
+The current harness:
 
-**Trade-offs, Stage Ambiguity & Migration Costs:**
-1. **Intra-stage Environmental Scoping:** Backpressure is an environmental condition attached to `BODY_SEND`. If a test harness arms backpressure unconditionally for all stages, downstream stages (`BODY_FETCH`, `COMMIT_WAIT`) become unreachable. Stage-informed targeting requires environmental preconditions to be scoped to their corresponding stage.
-2. **Pre/Post-scenario Yields:** In Method A, yields during connection handshake (`k=1..4`) or post-commit coroutine cleanup (`k=8`) are unclassified (`Stage.UNKNOWN`). Method B ignores unclassified yields, which avoids testing connection handshakes repeatedly, but excludes post-exit unwinding.
-3. **Cross-Implementation Portability (asyncpg 0.32.0):**
-   - Transferred directly: Transaction lifecycle stages (`ENTER`, `BODY`, `COMMIT`, `SAVEPOINT`) and observer table checks.
-   - Reinterpretation required: `asyncpg` does not use libpq, has no `libpq.transaction_status`, and has no Cython generator yielding `WAIT_W`/`WAIT_R`. Its event-driven `asyncio.Protocol` suspends on `asyncio.Future` query completions.
-   - Legal outcome divergence: When cancelled at `COMMIT`, asyncpg severs the connection (`FAIL_CLOSED`) rather than preserving or rolling back; post-commit return yields commit on server (`POST`). Wire fragmentation proxies tailored for text v3 headers fail on asyncpg's binary type OID negotiation (`ConnectionError: unexpected connection_lost()`), showing wire-level proxy fixtures are less portable across drivers than lifecycle-level probes.
+- establishes connections before either replay method starts; setup/teardown
+  suspensions are excluded from both methods;
+- observes connection state, independent committed row identities, backend
+  presence/transaction state and relation locks before successor probes and
+  harness close; closed backends get a bounded disappearance check;
+- compares operation identity + actual stage + outcome/exception + state +
+  successor result + effects + cleanup + cancellation delivery, not verdict labels;
+- separates outer/inner operations and preserves unclassified stages rather than
+  inventing send/read signals; Method B selects the first suspension per
+  `(operation, stage)` pair, while Method A enumerates all target suspensions;
+- stops replay after failed/empty calibration and reports failed setup, missing
+  targets or undelivered second cancellations as Unknown, never zero omissions;
+- uses the same backpressure hold and 100 ms timed release for calibration and
+  both methods; release is not conditional on the chosen cut;
+- instruments real `_try_cancel()` entry and verifies two actual cancellation
+  requests and delivery. No synthetic exception or extra recovery sleep is used.
+
+CPython 3.15 separates the Python Task registry from the native task APIs. The
+shared `engine.PureTask` now registers lifecycle and current execution with both,
+so `current_task()`, `all_tasks()`, cancellation counts and `asyncio.timeout()`
+work inside injected tasks. Stage and yield experiments use the same base.
+asyncpg's plaintext proxy connection explicitly disables TLS; its previously
+empty fragmentation calibration now succeeds. This does not establish a general
+proxy capability beyond the exercised plaintext PostgreSQL flows.
+
+Environment: CPython **3.15.1**, PostgreSQL **18.6**, psycopg **3.3.7.dev1** loaded
+from `/home/ava/Worktrees/psycopg/partial-send/psycopg`, binary/libpq
+**3.3.6 / 18.6**, asyncpg **0.32.0** (released package, not the separate entry-fix
+worktree). The partial-send branch does not include the transaction-entry repair.
+
+| Driver / scenario | Yield trials A | Stage trials B | A observations missing from B |
+|---|---:|---:|---:|
+| psycopg short transaction | 3 | 3 | 0 |
+| psycopg nested transaction | 6 | 6 | 0 |
+| psycopg fragmented response | 8 | 3 | **1** |
+| psycopg partial-send backpressure | 10 | 4 | 0 |
+| psycopg query / recovery double cancellation | 20 | 1 | 0 |
+| asyncpg short transaction | 3 | 3 | 0 |
+| asyncpg nested transaction | 6 | 6 | 0 |
+| asyncpg fragmented response | 3 | 3 | 0 |
+
+All eight calibrations and all **88** cancellation trials were realized in this
+run (59 A + 29 B); "valid" means usable observations, **not** absence of failures.
+In the fragmented psycopg case, A observes cancellation during `outer.enter`
+leaving an open transaction (`INTRANS`, backend `idle in transaction`), with a
+successful `SELECT 42` but no clean transaction handoff. B's first sample of that
+same stage misses this state. Thus successful successor queries alone are also
+insufficient, and the existing entry failure is not a new partial-send defect.
+The **21/21** double-cancel trials record both the second request and actual
+receipt, closed-handle rejection and observed backend disappearance.
+
+This is one matched run, not a repeated statistical or seeded-defect campaign.
+Earlier development reruns varied in the precise missing-state set, which is
+another reason not to claim stage equivalence. Trial counts are descriptive;
+there is **no accepted coverage-preserving speedup** and no general defect-coverage
+claim. The existing open-transaction outcomes in the other cases remain failures,
+not proof that the partial-send patch repairs every cancellation path.
+
+Validation on the new environment:
+
+- **86** repository tests (engine, classifier, harness negative controls and
+  PostgreSQL min-repro controls) pass.
+- psycopg's **7/7** focused regressions pass on binary and pure Python. The
+  recovery test independently confirms `PgSleep`, two `Task.cancel()` calls,
+  delivery in recovery, `cancelling() == 2` and fail-closed rejection.
+- The five-file concurrency/cursor/pipeline/waiting/transaction sweep passes
+  **275 tests, 5 skipped per backend**. This is not an unqualified full-suite run.
+- The follow-up source-generation repair uses upstream `# ASYNC` guards for
+  async-only tracking and recovery. `async_to_sync.py --check --all` now passes
+  on Python 3.15.1, with generated `connection.py` unchanged. The generator's
+  canonical-runtime warning (3.14) remains informational; no lint rule was
+  weakened. Both 275-pass/5-skip async sweeps were rerun after this repair.
+  The binary-backend sync concurrency/waiting/transaction control also passes:
+  **347 passed, 26 skipped**. Black, flake8 and targeted mypy pass.
+
+The local environment setup and interpreter selection are documented in
+[`research/python-retro/README.md`](../../research/python-retro/README.md).
+The research and psycopg changes remain local. The separately authorized
+diesel_async #305 review follow-up was committed, pushed and replied to; it does
+not publish these research or psycopg changes.
 
 Bottom line: the actual patches are narrower than the experimental arms; the
 complete differential already detects the psycopg entry defect, so the probe's

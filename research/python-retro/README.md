@@ -25,6 +25,52 @@ asyncio，对 redis-py、SQLAlchemy 和 aiohttp 的历史问题做回溯检测�
 - `run-redis.sh` / `run-postgres.sh` / `run-aiohttp.sh`：起一次性容器、等待、
   跑三轮、写 `logs/`、退出时删容器。容器只绑 127.0.0.1。
 
+## 当前开发环境（2026-10-23）
+
+当前引擎面向 **CPython 3.15**，不再维护旧 3.13 环境。仓库根目录的
+`.python-version` 选择 3.15，PostgreSQL/MySQL runner 默认使用根目录 `.venv`。
+它们仍允许用 `PY`（个别脚本为 `DW_PYTHON`）显式选择解释器。历史数据中的
+解释器、包版本和服务版本不回写为新版本。
+
+从仓库根目录安装和检查：
+
+```sh
+uv venv
+uv pip install -r research/python-retro/requirements-dev.txt
+export PYTHONPATH="$PWD/prospective/phase4-exploration/python/pg-mysql:$PWD/research/python-retro"
+.venv/bin/python -m pytest research/python-retro/tests
+```
+
+仅运行引擎的无服务测试不需要第三方包：
+
+```sh
+PYTHONPATH=research/python-retro python -m unittest discover -s research/python-retro/tests -v
+```
+
+3.15 把纯 Python Task 的登记与原生 `current_task()` / `all_tasks()` 分开了。
+`engine.PureTask` 在每次执行期间登记正确的当前任务，并登记任务生命周期；
+不改写全局 asyncio 函数。当前任务、超时、取消计数以及清理行为都有回归。
+`_CutTask`、`_PhasedTask`、位置比较和阶段比较共用这个实现。
+
+本轮 PostgreSQL 复验使用 3.15.1、PostgreSQL 18.6、asyncpg 0.32.0，
+以及 `/home/ava/Worktrees/psycopg/partial-send/psycopg` 的
+psycopg 3.3.7.dev1 源码，而不是把已发布 wheel 误称为补丁：
+
+```sh
+uv pip install --no-deps -e /home/ava/Worktrees/psycopg/partial-send/psycopg
+```
+
+psycopg binary 后端为 3.3.6，绑定 libpq 18.6。纯 Python 后端也使用该 wheel
+自带的 libpq：本机没有系统 libpq，故在 `.venv/lib/libpq.so` 建立指向 bundled
+libpq 的链接，并为测试进程及其子进程设置 `.venv/lib` 和
+`psycopg_binary.libs` 的 `LD_LIBRARY_PATH`。这是本地测试依赖配置，不修改驱动的
+库发现逻辑；有系统 libpq 的机器不需要这一步。上游扩展测试还需要 `pproxy`。
+
+`pg-mysql/tests` 包含真实数据库负对照，完整运行需要本地 PostgreSQL；本轮用
+Podman 启动仅绑定 loopback 的一次性数据库，没有重启系统 Docker 或业务服务。
+阶段比较的当前判据、结果和范围见
+[Round 5](../../prospective/phase4-exploration/ROUND5-RESULTS.md)。
+
 ## 环境
 
 历史运行环境由 uv 建在仓库外 `~/dropwise-py-work/`，交卷后已删除；

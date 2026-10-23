@@ -390,7 +390,8 @@ Targeted regression tests in `tests/test_concurrency_async.py` (real server, ups
    proxy reading without test flush; verifies driver detects send stage and fails closed.
 3. `test_cancel_interleaved_active_flush_closes_safely` (Scenario B) — actively drains
    buffer, explicitly asserts prerequisite `flushed_zero` is True, verifies safe fail-closed
-   termination without TypeError or ACTIVE hang.
+   termination without TypeError or ACTIVE hang; after active flushing, either
+   0 or 1 committed row is permitted and this test does not prove no remote effect.
 4. `test_cancel_after_send_keeps_connection` — small query fully sent (`WAIT_R`); cancel
    drains, connection remains usable, successor returns 1.
 5. `test_second_cancel_during_recovery_closes` — recovery interruption closes
@@ -420,15 +421,35 @@ Test commands:
 ```sh
 cd /home/ava/Worktrees/psycopg/partial-send
 PYTHONPATH=$PWD/psycopg PSYCOPG_TEST_DSN='host=127.0.0.1 port=32919 user=postgres password=dw dbname=dw' \
-  /home/ava/Worktrees/psycopg/tx-cancel/.venv/bin/python -m pytest \
-  tests/test_concurrency_async.py -k 'partial or interleaved or cancel_after_send or large_query or second_cancel' -v
+  /home/ava/Desktop/Dropwise/.venv/bin/python -m pytest \
+  tests/test_concurrency_async.py -k 'cancel_while_sending or cancel_interleaved or cancel_after_send or large_query or second_cancel' -v
 ```
 
-Seven targeted tests pass on both backends (7/7 C binary, 7/7 pure Python).
-The full concurrency async suite passed 20/20 on both backends.
-Related async suites passed 574 cursor, 91 pipeline/waiting, 84 transaction tests.
-Pure Python backend discovers bundled libpq via `tests/conftest.py` hook without modifying
-production package code `pq/misc.py`.
+Revalidated on 2026-10-23 with CPython 3.15.1 and PostgreSQL 18.6: **7/7**
+targeted tests pass on both binary and pure-Python backends, including the
+previously omitted `test_cancel_while_sending_closes_connection`. The recovery
+test now sends two actual `Task.cancel()` requests, checks the query reached
+`PgSleep`, and asserts recovery entry, second-cancellation delivery and a
+cancellation count of 2. It no longer substitutes a synthetic `CancelledError`.
+
+The five-file async sweep (concurrency, cursor, pipeline, waiting, transaction)
+passes **275 tests with 5 skips per backend**. This is not the old claimed
+574-cursor/full-suite count. The three min-repro negative controls also reject
+their faulty observations on the new environment. Pure-Python subprocess tests
+use bundled libpq through a local library-path configuration; no production
+library-discovery code was changed.
+
+The subsequent generated-source repair uses upstream `# ASYNC` guards around
+async-only tracking and recovery. `tools/async_to_sync.py --check --all` now
+**passes on Python 3.15.1**, with generated `connection.py` unchanged. The generator
+still warns that its canonical runtime is 3.14, but produces no diff. Both async
+backend sweeps were rerun: 275 passed, 5 skipped each. This does not extend the
+partial-send fix to synchronous connections. The unchanged binary sync path also
+passes its concurrency/waiting/transaction control (347 passed, 26 skipped).
+Black, flake8 and targeted mypy pass; the branch remains local.
+
+The before/after row counts above are observations from particular executions;
+Scenario B's contract permits 0 or 1 committed row, not a no-commit guarantee.
 
 ### Scope limits and trade-offs
 

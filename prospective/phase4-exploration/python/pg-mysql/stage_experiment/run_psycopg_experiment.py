@@ -1,14 +1,11 @@
 """Run the Stage-Informed vs Yield-Replay Experiment on Psycopg.
 
-Evaluates:
-- 5 scenarios: Short Tx, Nested Tx, Fragmented Response, Partial Send, Double Cancel
-- 3 network/workload conditions:
-    C1 (Baseline): 2048 B chunks, 5ms delay
-    C2 (High Fragmentation): 256 B chunks, 5ms delay, 16KB payload (Pending explosion)
-    C3 (Backpressure): 2MB payload, 32KB client hold, release on cut
-- Compares:
-    Method A: Step-by-step Yield Replay (1..K)
-    Method B: Stage-Targeted Cancellation (1 trial per semantic stage)
+Five scenarios: short/nested transactions, fragmented responses, partial send,
+and two real cancellations during query recovery. Calibration and both methods
+share a 2 ms chunk-delay baseline, or one 5 ms pause inside each v3 message,
+or an 8 MB send with a 32 KiB proxy hold released after 100 ms independently of
+cancellation. Method A enumerates target-operation suspensions; Method B picks
+the first suspension of each (operation identity, observed stage) pair.
 """
 
 from __future__ import annotations
@@ -18,13 +15,12 @@ import contextlib
 import json
 import os
 import sys
-import time
 from typing import Any
 
 import psycopg
 
 from fragmentation.fragment_proxy import FragmentingProxy
-from stage_experiment.harness import execute_trial, TrialResult
+from stage_experiment.harness import compare
 from stage_experiment.stage_definitions import Stage
 
 
@@ -55,267 +51,166 @@ class TrackerGen:
         self._gen.close()
 
 
-def instrument_conn(conn: psycopg.AsyncConnection, holder: dict[str, Any]) -> None:
+def instrument_conn(conn, holder):
     holder["conn"] = conn
     orig_wait = conn.wait
+    orig_cancel = conn._try_cancel
 
-    async def hooked_wait(gen: Any, interval: float = 0.1, timeout: float | None = None) -> Any:
+    async def hooked_cancel(*, timeout=5.0):
+        holder["method_context"] = "recovery"
+        holder["recovery_entered"] = True
+        return await orig_cancel(timeout=timeout)
+
+    async def hooked_wait(gen, interval=0.1, timeout=None):
+        context = holder.get("method_context")
+        holder["recovery_entered"] = False
         tracker = TrackerGen(gen, holder)
-        return await orig_wait(tracker, interval=interval, timeout=timeout)
+        try:
+            return await orig_wait(tracker, interval=interval, timeout=timeout)
+        except asyncio.CancelledError:
+            # This flag requires an actual second Task.cancel(), and delivery
+            # while the driver's recovery path is unwinding. No synthetic raise.
+            task = asyncio.current_task()
+            if holder["recovery_entered"] and task.cancelling() >= 2:
+                holder["second_delivered"] = True
+            raise
+        finally:
+            holder["method_context"] = context
+            holder["tracker"] = None
 
-    conn.wait = hooked_wait  # type: ignore[method-assign]
+    conn.wait = hooked_wait
+    conn._try_cancel = hooked_cancel
 
 
-async def run_scenario_short_tx(holder: dict[str, Any]) -> None:
-    conn = holder["conn"]
-    table = holder["table"]
+def phase(holder, context, operation):
+    holder["method_context"] = context
+    holder["operation"] = operation
 
-    tx = conn.transaction()
-    holder["method_context"] = "enter"
+
+@contextlib.asynccontextmanager
+async def transaction(holder, *, nested=False):
+    tx = holder["conn"].transaction()
+    scope = "inner" if nested else "outer"
+    phase(holder, "sp_enter" if nested else "enter", scope + ".enter")
     await tx.__aenter__()
-
-    holder["method_context"] = "body"
-    await conn.execute(f"INSERT INTO {table} VALUES (1, 'val1')")
-
-    holder["method_context"] = "commit"
-    await tx.__aexit__(None, None, None)
-
-    holder["method_context"] = None
-
-
-async def run_scenario_nested_tx(holder: dict[str, Any]) -> None:
-    conn = holder["conn"]
-    table = holder["table"]
-
-    tx_outer = conn.transaction()
-    holder["method_context"] = "enter"
-    await tx_outer.__aenter__()
-
-    holder["method_context"] = "body"
-    await conn.execute(f"INSERT INTO {table} VALUES (1, 'outer')")
-
-    tx_inner = conn.transaction()
-    holder["method_context"] = "sp_enter"
-    await tx_inner.__aenter__()
-
-    holder["method_context"] = "body"
-    await conn.execute(f"INSERT INTO {table} VALUES (2, 'inner')")
-
-    holder["method_context"] = "sp_release"
-    await tx_inner.__aexit__(None, None, None)
-
-    holder["method_context"] = "commit"
-    await tx_outer.__aexit__(None, None, None)
-
-    holder["method_context"] = None
+    try:
+        yield
+    except BaseException:
+        phase(holder, "rollback", scope + ".rollback")
+        if not await tx.__aexit__(*sys.exc_info()):
+            raise
+    else:
+        phase(holder, "sp_release" if nested else "commit", scope + ".commit")
+        await tx.__aexit__(None, None, None)
+    finally:
+        phase(holder, None, None)
 
 
-async def run_scenario_fragmented_resp(holder: dict[str, Any]) -> None:
-    conn = holder["conn"]
-    table = holder["table"]
-
-    tx = conn.transaction()
-    holder["method_context"] = "enter"
-    await tx.__aenter__()
-
-    holder["method_context"] = "body"
-    cur = await conn.execute("SELECT repeat('a', 32768)")
-    await cur.fetchall()
-
-    holder["method_context"] = "commit"
-    await tx.__aexit__(None, None, None)
-
-    holder["method_context"] = None
+async def run_scenario_short_tx(holder):
+    async with transaction(holder):
+        phase(holder, "body", "outer.insert")
+        await holder["conn"].execute(
+            f"INSERT INTO {holder['table']} VALUES (1, 'val1')"
+        )
 
 
-async def run_scenario_partial_send(holder: dict[str, Any]) -> None:
-    conn = holder["conn"]
-    table = holder["table"]
-    payload = "x" * 8_000_000
-
-    tx = conn.transaction()
-    holder["method_context"] = "enter"
-    await tx.__aenter__()
-
-    holder["method_context"] = "body"
-    await conn.execute(f"INSERT INTO {table} VALUES (1, %s)", (payload,))
-
-    holder["method_context"] = "commit"
-    await tx.__aexit__(None, None, None)
-
-    holder["method_context"] = None
+async def run_scenario_nested_tx(holder):
+    holder["expected_rows"] = [1, 2]
+    async with transaction(holder):
+        phase(holder, "body", "outer.insert")
+        await holder["conn"].execute(
+            f"INSERT INTO {holder['table']} VALUES (1, 'outer')"
+        )
+        async with transaction(holder, nested=True):
+            phase(holder, "body", "inner.insert")
+            await holder["conn"].execute(
+                f"INSERT INTO {holder['table']} VALUES (2, 'inner')"
+            )
 
 
-async def run_scenario_double_cancel(holder: dict[str, Any]) -> None:
-    conn = holder["conn"]
-    table = holder["table"]
-
-    tx = conn.transaction()
-    holder["method_context"] = "enter"
-    await tx.__aenter__()
-
-    holder["method_context"] = "body"
-    await conn.execute(f"INSERT INTO {table} VALUES (1, 'val1')")
-
-    holder["method_context"] = "commit"
-    await tx.__aexit__(None, None, None)
-
-    holder["method_context"] = None
+async def run_scenario_fragmented_resp(holder):
+    holder["expected_rows"] = []
+    async with transaction(holder):
+        phase(holder, "body", "outer.fetch")
+        await holder["conn"].execute("SELECT repeat('a', 32768)")
 
 
-def make_driver_runner(scenario_fn: Any, dsn: str):
-    async def runner(holder: dict[str, Any]) -> None:
+async def run_scenario_partial_send(holder):
+    async with transaction(holder):
+        phase(holder, "body", "outer.insert")
+        await holder["conn"].execute(
+            f"INSERT INTO {holder['table']} VALUES (1, %s)", ("x" * 8_000_000,)
+        )
+
+
+async def run_scenario_double_cancel(holder):
+    holder["expected_rows"] = []
+    # Autocommit removes transaction-context cleanup as a confounder: both
+    # requests must hit query cancellation and the driver's recovery itself.
+    phase(holder, "body", "query.sleep")
+    await holder["conn"].execute("SELECT pg_sleep(2)")
+    phase(holder, None, None)
+
+
+def make_driver_runner(scenario_fn, dsn, *, proxy=None, is_partial_send=False):
+    async def prepare(holder):
         conn = await psycopg.AsyncConnection.connect(dsn, autocommit=True)
         instrument_conn(conn, holder)
-        try:
-            await scenario_fn(holder)
-        finally:
-            if not conn.closed:
-                with contextlib.suppress(BaseException):
-                    await conn.close()
+        if proxy is not None:
+            proxy.reset_stats()
+        if is_partial_send:
+            # Identical hold/release schedule for calibration and both methods.
+            # Never release because of a cut or because B targets a later stage.
+            proxy.arm_hold(32768)
+            timer = asyncio.get_running_loop().call_later(0.1, proxy.release_hold)
+
+            def cleanup():
+                timer.cancel()
+                proxy.release_hold()
+
+            holder["cleanup"] = cleanup
+
+    async def runner(holder):
+        await scenario_fn(holder)
+
+    runner.prepare = prepare
     return runner
 
 
 async def run_comparison_suite(
-    scenario_name: str,
-    scenario_fn: Any,
+    scenario_name,
+    scenario_fn,
     *,
-    proxy_dsn: str,
-    observer_conn: psycopg.AsyncConnection,
-    table_name: str,
-    proxy: Any = None,
-    is_partial_send: bool = False,
-    second_cut_stage: Stage | None = None,
-) -> dict[str, Any]:
-    print(f"\n=======================================================")
-    print(f"Scenario: {scenario_name}")
-    print(f"=======================================================")
-
-    runner = make_driver_runner(scenario_fn, proxy_dsn)
-
-    # 1. Uncancelled calibration run to record normal-path trace and K
-    if is_partial_send and proxy:
-        proxy.arm_hold(32768)
-        asyncio.get_running_loop().call_later(0.1, proxy.release_hold)
-
-    uncancelled_res, trace = await execute_trial(
+    proxy_dsn,
+    observer_conn,
+    table_name,
+    proxy=None,
+    is_partial_send=False,
+    second_cut_stage=None,
+):
+    runner = make_driver_runner(
+        scenario_fn, proxy_dsn, proxy=proxy, is_partial_send=is_partial_send
+    )
+    result = await compare(
         runner,
-        mode="count",
-        target_cut=None,
         dsn=proxy_dsn,
         table_name=table_name,
         observer_conn=observer_conn,
+        second_cut_stage=second_cut_stage,
     )
-    K = uncancelled_res.realized_yield or len(trace)
-    distinct_stages: list[Stage] = []
-    for step, stg, _, _, _ in trace:
-        if stg != Stage.UNKNOWN and stg not in distinct_stages:
-            distinct_stages.append(stg)
-
-    print(f"Normal path completed: K={K} yields, distinct stages={len(distinct_stages)}: {[s.value for s in distinct_stages]}")
-
-    # 2. Method A: Yield-Index Replay (1..K)
-    print(f"\n--- Method A: Yield-Index Replay (1..{K}) ---")
-    t_start_a = time.monotonic()
-    method_a_results: list[TrialResult] = []
-    for k in range(1, K + 1):
-        hook = None
-        if is_partial_send and proxy:
-            proxy.arm_hold(32768)
-            hook = proxy.release_hold
-
-        res, _ = await execute_trial(
-            runner,
-            mode="yield",
-            target_cut=k,
-            dsn=proxy_dsn,
-            table_name=table_name,
-            on_cut_hook=hook,
-            second_cut_stage=second_cut_stage,
-            observer_conn=observer_conn,
-        )
-        method_a_results.append(res)
-    time_a = time.monotonic() - t_start_a
-    print(f"Method A completed {K} trials in {time_a:.2f}s")
-
-    # 3. Method B: Stage-Targeted Cancellation (1 trial per distinct stage)
-    print(f"\n--- Method B: Stage-Targeted Cancellation ({len(distinct_stages)} stages) ---")
-    t_start_b = time.monotonic()
-    method_b_results: list[TrialResult] = []
-    for stg in distinct_stages:
-        hook = None
-        # Backpressure hold is an environmental precondition specific to BODY_SEND.
-        # Arming it for subsequent stages would block them from ever being reached.
-        if is_partial_send and proxy:
-            if stg == Stage.BODY_SEND:
-                proxy.arm_hold(32768)
-                hook = proxy.release_hold
-            else:
-                proxy.release_hold()
-
-        res, _ = await execute_trial(
-            runner,
-            mode="stage",
-            target_cut=stg,
-            dsn=proxy_dsn,
-            table_name=table_name,
-            on_cut_hook=hook,
-            second_cut_stage=second_cut_stage,
-            observer_conn=observer_conn,
-        )
-        method_b_results.append(res)
-    time_b = time.monotonic() - t_start_b
-    print(f"Method B completed {len(distinct_stages)} trials in {time_b:.2f}s")
-
-    # Analyze comparison
-    a_verdicts = [r.verdict for r in method_a_results]
-    b_verdicts = [r.verdict for r in method_b_results]
-    a_unique_verdicts = set(a_verdicts)
-    b_unique_verdicts = set(b_verdicts)
-
-    # Duplicates in Method A: trials that map to already seen (stage, verdict)
-    seen_pairs: set[tuple[Stage | None, str]] = set()
-    duplicates_a = 0
-    for r in method_a_results:
-        pair = (r.realized_stage, r.verdict)
-        if pair in seen_pairs:
-            duplicates_a += 1
-        else:
-            seen_pairs.add(pair)
-
-    # Omissions in Method B: did Method A discover a verdict that B missed?
-    omissions_b = a_unique_verdicts - b_unique_verdicts
-
-    print(f"Comparison Summary for {scenario_name}:")
-    print(f"  Method A: {len(method_a_results)} trials, {time_a:.2f}s, unique verdicts={a_unique_verdicts}, duplicate trials={duplicates_a}")
-    print(f"  Method B: {len(method_b_results)} trials, {time_b:.2f}s, unique verdicts={b_unique_verdicts}, omissions={omissions_b}")
-
-    return {
-        "scenario": scenario_name,
-        "K": K,
-        "stages": [s.value for s in distinct_stages],
-        "method_a": {
-            "trials": len(method_a_results),
-            "time_s": time_a,
-            "verdicts": a_verdicts,
-            "unique_verdicts": list(a_unique_verdicts),
-            "duplicates": duplicates_a,
-            "details": [{"k": r.target_spec, "stage": r.realized_stage.value if r.realized_stage else None, "verdict": r.verdict} for r in method_a_results],
-        },
-        "method_b": {
-            "trials": len(method_b_results),
-            "time_s": time_b,
-            "verdicts": b_verdicts,
-            "unique_verdicts": list(b_unique_verdicts),
-            "omissions": list(omissions_b),
-            "details": [{"target_stage": r.target_spec.value if isinstance(r.target_spec, Stage) else r.target_spec, "realized_yield": r.realized_yield, "verdict": r.verdict} for r in method_b_results],
-        },
-    }
+    result["scenario"] = scenario_name
+    print(
+        f"{scenario_name}: valid={result['valid']} A={result['method_a']['trials']} "
+        f"B={result['method_b']['trials']} missing={len(result['missing_observations'])} "
+        f"unrealized={result['unrealized_trials']}",
+        flush=True,
+    )
+    return result
 
 
 async def main() -> int:
     host = "127.0.0.1"
-    port = 32919
+    port = int(os.environ.get("PGPORT", "32919"))
     user = "postgres"
     password = "dw"
     dbname = "dw"
@@ -325,7 +220,9 @@ async def main() -> int:
 
     observer_conn = await psycopg.AsyncConnection.connect(direct_dsn, autocommit=True)
     await observer_conn.execute(f"DROP TABLE IF EXISTS {table_name}")
-    await observer_conn.execute(f"CREATE TABLE {table_name} (id int primary key, payload text)")
+    await observer_conn.execute(
+        f"CREATE TABLE {table_name} (id int primary key, payload text)"
+    )
 
     overall_results: list[dict[str, Any]] = []
 
@@ -334,7 +231,7 @@ async def main() -> int:
         # CONDITION 1: Baseline (Direct / Low Delay)
         # =========================================================================
         print("\n=======================================================")
-        print("CONDITION 1: Baseline (Low Delay Proxy, 2048 B chunks)")
+        print("CONDITION 1: Baseline (2 ms chunk delay)")
         print("=======================================================")
         proxy_c1 = FragmentingProxy(host, port, delay=0.002, mode="off")
         proxy_port_c1 = await proxy_c1.start()
@@ -367,9 +264,11 @@ async def main() -> int:
         # CONDITION 2: High Fragmentation (Response Chunks with delay)
         # =========================================================================
         print("\n=======================================================")
-        print("CONDITION 2: High Response Fragmentation (Pending Explosion)")
+        print("CONDITION 2: Finite response splits (5 ms pause)")
         print("=======================================================")
-        proxy_c2 = FragmentingProxy(host, port, delay=0.002, mode="payload", pause=0.005)
+        proxy_c2 = FragmentingProxy(
+            host, port, delay=0.002, mode="payload", pause=0.005
+        )
         proxy_port_c2 = await proxy_c2.start()
         proxy_dsn_c2 = f"host={host} port={proxy_port_c2} user={user} password={password} dbname={dbname} sslmode=disable"
 
@@ -408,7 +307,7 @@ async def main() -> int:
         overall_results.append(res_psend)
 
         res_double = await run_comparison_suite(
-            "C3_Double_Cancel_Entry_Recovery",
+            "C3_Double_Cancel_Query_Recovery",
             run_scenario_double_cancel,
             proxy_dsn=proxy_dsn_c3,
             observer_conn=observer_conn,
@@ -422,16 +321,21 @@ async def main() -> int:
             await asyncio.wait_for(proxy_c3.close(), timeout=2.0)
 
         # Save results to JSON
-        out_path = "/home/ava/Desktop/Dropwise/prospective/phase4-exploration/python/pg-mysql/stage_experiment/psycopg_results.json"
+        out_path = os.path.join(os.path.dirname(__file__), "psycopg_results.json")
         with open(out_path, "w") as f:
             json.dump(overall_results, f, indent=2)
-        print(f"\nAll psycopg comparison experiments completed! Results saved to {out_path}", flush=True)
+        print(
+            f"\nPsycopg comparisons finished; inspect validity and omissions. Results saved to {out_path}",
+            flush=True,
+        )
 
-        return 0
+        return 0 if all(r["valid"] for r in overall_results) else 1
 
     finally:
         with contextlib.suppress(BaseException):
-            await asyncio.wait_for(observer_conn.execute(f"DROP TABLE IF EXISTS {table_name}"), timeout=2.0)
+            await asyncio.wait_for(
+                observer_conn.execute(f"DROP TABLE IF EXISTS {table_name}"), timeout=2.0
+            )
             await asyncio.wait_for(observer_conn.close(), timeout=2.0)
 
 

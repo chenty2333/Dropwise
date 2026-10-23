@@ -9,7 +9,7 @@
 set -u
 cd "$(dirname "$0")/.."          # prospective/phase4-exploration/python/pg-mysql
 REPO=$(cd ../../../.. && pwd)
-PY=${PY:-$HOME/dropwise-py-work-r3/venv313/bin/python}
+PY=${PY:-$REPO/.venv/bin/python}
 HOST=${HOST:-127.0.0.1}
 PORT=${PORT:-32922}
 DB=${DB:-dw_r5_mysqldelay_$$}
