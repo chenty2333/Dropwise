@@ -138,9 +138,18 @@ observation or leave the plan undecided.
 A plan with several cuts is also calibrated against every skipped/completed
 mixture when the contract is `Expect::Atomic`. Each calibration side is sampled
 twice. If those two samples disagree,
-the plan is `Unknown`; a calibration run that fails or leaks is a
+the plan is `Unknown`, even if the trial matches another stable side. A
+calibration run that fails, leaks, does not settle, or misses a required target
+or gap assignment is a
 `Report::calibration_errors` entry. Neither is a violation, and neither counts
 as a clean result.
+
+Unrealized or stalled plans and unsettled trials receive no calibrated verdict;
+their direct invariant/leak results remain visible. Equal pre/post observations
+satisfy either endpoint contract but retain a degeneracy note: they cannot tell
+whether the operation happened. Mixed calibration is exponential, so Atomic
+plans with more than 12 explicit cuts are reported as undecided with a
+calibration error instead of allocating all combinations.
 
 ## Field contracts
 
@@ -218,14 +227,14 @@ verdict, observation/calibration comparison, invariant and leaks.
 |---|---|
 | `baseline_errors` | the uncancelled run already fails or leaks; fix that before the trials |
 | `violations()` | a plan observed a problem: invariant failed, or an obligation was dropped unresolved or left outstanding |
-| `calibration_errors` | a calibration run failed, leaked or produced no observation; the plan could not be judged |
+| `calibration_errors` | calibration failed, leaked, did not settle, missed a required target/gap, or exceeded the mixed-calibration safety limit |
 | `unknown()` | a calibration side was unstable (or absent): no verdict, not a violation |
-| `unrealized()` | the planned `Pending` boundary was never reached; that plan tested nothing |
+| `unrealized()` | a planned `Pending` boundary or gap assignment was not reached; the requested plan was not fully tested |
 | `unsettled()`, `!baseline_settled` | the settle watchdog cut the observation window; late effects may be missing |
 | `truncated` | `Config::max_runs` left plans unrun |
 | `!exhaustive` | the search did not cover every generated plan within the configured limits |
 | no plans, `baseline_targets > 0` | a target was marked but never returned `Pending`: no cancellation point was reached |
-| `coverage_gaps()` | the coverage/decidability gaps above as text (no plan, calibration, unknown, unrealized, unsettled, truncation); baseline failures and violations are separate signals |
+| `coverage_gaps()` | the coverage/decidability gaps above, including a stalled competitor; baseline failures and violations are separate signals |
 | `notes` | hints such as `pre == post`; the observation cannot tell whether the operation happened |
 | `is_clean()` | no baseline error or trial violation was *observed*; not a conclusion on its own |
 | `is_clean_within_coverage()` | clean **and** no coverage gaps, baseline errors or violations |

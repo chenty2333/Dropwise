@@ -145,9 +145,10 @@ impl Proxy {
     /// - Only meaningful while the client is idle (not reading) and the peer
     ///   has stopped sending. Otherwise data can arrive between the `/proc`
     ///   walk and the query.
-    /// - The walk uses raw fd numbers. The process may close an fd and the
-    ///   kernel reuse its number while the walk runs, so a recycled fd can be
-    ///   mistaken for the client socket.
+    /// - This is a snapshot, not a synchronization barrier: a client may close
+    ///   its socket while the walk runs. Each candidate is duplicated before
+    ///   checking its addresses, so fd reuse cannot redirect the subsequent
+    ///   receive-buffer query to another object.
     /// - Server-push protocols (pub/sub, notifications) make the number
     ///   meaningless: the server sends data the client is not expected to
     ///   consume, and the proxy cannot tell that data apart from a reply.
@@ -317,9 +318,8 @@ async fn pump<R, W>(
 #[cfg(target_os = "linux")]
 mod linux {
     use std::io;
-    use std::mem::ManuallyDrop;
     use std::net::{SocketAddr, TcpStream};
-    use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
+    use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
 
     use super::{ConnectionResidue, State};
 
@@ -361,14 +361,21 @@ mod linux {
                 continue;
             };
 
-            // SAFETY: `fd` comes from `/proc/self/fd` and is wrapped in
-            // `ManuallyDrop`, so this borrow never closes it; it is only used
-            // for address queries and `FIONREAD`, which neither read from it
-            // nor touch its flags. Address checks reject every fd that is not
-            // the client socket. The fd can still be closed and its number
-            // reused while this walk runs; that race is documented on
-            // `Proxy::residue`.
-            let stream = ManuallyDrop::new(unsafe { TcpStream::from_raw_fd(fd) });
+            // SAFETY: fcntl accepts a raw descriptor number and reports EBADF
+            // if the concurrently inspected descriptor has already closed.
+            // The duplicate pins its identity across both address checks and
+            // FIONREAD without borrowing somebody else's descriptor lifetime.
+            let duplicate = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 0) };
+            if duplicate == -1 {
+                let error = io::Error::last_os_error();
+                if error.raw_os_error() == Some(libc::EBADF) {
+                    continue;
+                }
+                return Err(error);
+            }
+            // SAFETY: successful F_DUPFD_CLOEXEC returned a new, owned fd.
+            let owned = unsafe { OwnedFd::from_raw_fd(duplicate) };
+            let stream = TcpStream::from(owned);
 
             // The client socket's local address is the address `accept`
             // recorded; its peer address is the proxy's listener address.

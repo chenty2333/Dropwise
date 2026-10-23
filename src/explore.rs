@@ -648,8 +648,9 @@ impl Wake for WakeProbe {
 
     fn wake_by_ref(self: &Arc<Self>) {
         self.woken.store(true, Ordering::SeqCst);
-        if let Some(w) = self.waker.lock().unwrap().as_ref() {
-            w.wake_by_ref();
+        let waker = self.waker.lock().unwrap().clone();
+        if let Some(w) = waker {
+            w.wake();
         }
     }
 }
@@ -798,7 +799,9 @@ impl<F: Future> Future for Raced<F> {
                     sh.doomed = true;
                     sh.doomed_at = Some(tokio::time::Instant::now());
                     sh.target_waker = Some(cx.waker().clone());
-                    if let Some(w) = sh.competitor_waker.take() {
+                    let waker = sh.competitor_waker.take();
+                    drop(sh);
+                    if let Some(w) = waker {
                         w.wake();
                     }
                 }
@@ -835,10 +838,18 @@ impl Future for Preempt {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
         let this = self.get_mut();
-        let skipped = this.shared.lock().unwrap().skipped;
+        let skipped = {
+            let mut sh = this.shared.lock().unwrap();
+            if sh.fired {
+                return Poll::Pending;
+            }
+            if sh.skipped {
+                sh.fired = true;
+            }
+            sh.skipped
+        };
         if skipped {
             // The calibration-only cut is already "lost": ready at once.
-            this.shared.lock().unwrap().fired = true;
             this.mark_kept();
             return Poll::Ready(());
         }
@@ -887,11 +898,13 @@ impl Drop for Preempt {
     /// never polled still stalls it; that shows up as `CutOutcome::Stalled`.)
     fn drop(&mut self) {
         let mut sh = self.shared.lock().unwrap();
-        if sh.doomed && !sh.fired {
-            sh.fired = true;
-            if let Some(w) = sh.target_waker.take() {
-                w.wake();
-            }
+        // Also release a target whose losing boundary has not been reached:
+        // no future poll may stall waiting for this departed competitor.
+        sh.fired = true;
+        let waker = sh.target_waker.take();
+        drop(sh);
+        if let Some(w) = waker {
+            w.wake();
         }
     }
 }
@@ -932,6 +945,8 @@ pub struct Trial {
     /// How the observed value compared with the calibration, when the run was
     /// started by [`explore_observed`] or [`replay_observed`]. `None` for
     /// [`explore`], or when the scenario produced no observation.
+    /// Also `None` for an unrealized/stalled plan or an unsettled trial: those
+    /// attempts cannot support a calibrated cancellation verdict.
     pub verdict: Option<Verdict>,
     /// Human-readable comparison of the observation with its calibration, for
     /// diagnosis only. Equality is always decided by the scenario's
@@ -948,6 +963,9 @@ pub struct Trial {
     /// False if the settle phase was cut short by the watchdog: late effects
     /// may be missing, so a clean result is inconclusive.
     pub settled: bool,
+    /// Number of gap sites actually registered in this trial. A substitution
+    /// beyond this prefix was not applied and is a coverage gap, not a pass.
+    pub registered_gaps: usize,
 }
 
 impl Trial {
@@ -960,8 +978,15 @@ impl Trial {
                 .is_some_and(FieldJudgment::has_violation)
     }
 
+    /// All explicit target boundaries and gap assignments were reached.
+    /// A stalled competitor is reported separately by [`Report::coverage_gaps`].
     pub fn is_realized(&self) -> bool {
         !self.outcomes.contains(&CutOutcome::Unrealized)
+            && !self
+                .gaps
+                .iter()
+                .skip(self.registered_gaps)
+                .any(Option::is_some)
     }
 
     /// The plan to pass to [`replay`] or [`replay_observed`] to attempt this
@@ -1036,7 +1061,7 @@ impl Report {
         self.trials.iter().filter(|t| !t.settled)
     }
 
-    /// Trials in which some planned cut never took effect.
+    /// Trials in which a planned target boundary or gap assignment was not reached.
     pub fn unrealized(&self) -> impl Iterator<Item = &Trial> {
         self.trials.iter().filter(|t| !t.is_realized())
     }
@@ -1117,8 +1142,16 @@ impl Report {
         let unrealized = self.unrealized().count();
         if unrealized > 0 {
             gaps.push(format!(
-                "{unrealized} plan(s) were not realized: the planned Pending boundary was never reached"
+                "{unrealized} plan(s) were not realized: a planned Pending boundary or gap assignment was not reached"
             ));
+        }
+        let stalled = self
+            .trials
+            .iter()
+            .filter(|t| t.outcomes.contains(&CutOutcome::Stalled))
+            .count();
+        if stalled > 0 {
+            gaps.push(format!("{stalled} plan(s) stalled: the competitor never fired within the observation window"));
         }
         let unknown = self.unknown().count();
         if unknown > 0 {
@@ -1235,7 +1268,7 @@ impl Report {
                         if trial.field_judgment.is_some() {
                             "none (field judgment below)".to_string()
                         } else {
-                            "none (not an observed run)".to_string()
+                            "none (no calibrated verdict)".to_string()
                         }
                     },
                     |verdict| format!("{verdict:?}")
@@ -1532,6 +1565,22 @@ struct RunResult {
     gap_defaults: Vec<Gap>,
 }
 
+impl RunResult {
+    /// An incomplete intervention has no calibrated cancellation verdict.
+    /// Its direct invariant/leak results and coverage gaps are still reported.
+    fn can_judge(&self, plan: &Plan) -> bool {
+        self.settled
+            && !plan.cuts.is_empty()
+            && plan.cuts.iter().all(|cut| {
+                matches!(
+                    outcome(self.targets.get(cut.target)),
+                    CutOutcome::Cancelled | CutOutcome::Kept
+                )
+            })
+            && check_applied_gaps(plan, self).is_ok()
+    }
+}
+
 /// Real-time bound for one bounded `block_on`.
 ///
 /// The watchdog thread waits on a condvar instead of sleeping for the whole
@@ -1600,13 +1649,9 @@ fn settle(rt: &tokio::runtime::Runtime, settle: Settle) -> bool {
     })
     .is_some();
     if !settle.real_time.is_zero() {
-        std::thread::sleep(settle.real_time);
-        // Let tasks woken by the late work run.
-        rt.block_on(async {
-            for _ in 0..16 {
-                tokio::task::yield_now().await;
-            }
-        });
+        // Sleeping this thread would stop a current-thread runtime for the
+        // entire window. Keep driving it until a wall-clock watchdog wakes us.
+        block_on_bounded(rt, settle.real_time, std::future::pending::<()>());
     }
     settled
 }
@@ -1625,9 +1670,10 @@ where
             gap_defaults: Vec::new(),
         })),
     };
-    let mut rt = RunRuntime::new(build_runtime(config.flavor, &ledger));
-
+    // Declare the binding first so it also outlives runtime shutdown while
+    // unwinding: task destructors must never attach to a previous run's ledger.
     let _ledger = CurrentLedger::attach(ledger.clone());
+    let mut rt = RunRuntime::new(build_runtime(config.flavor, &ledger));
     let mut invariant = block_on_bounded(rt.get(), config.scenario_timeout, scenario(ctx.clone()))
         .unwrap_or_else(|| {
             Err(format!(
@@ -1648,13 +1694,14 @@ where
     // Only what happened up to here counts; tasks torn down by runtime shutdown
     // are an accepted form of abandonment.
     let leaks = ledger.finish();
-    drop(_ledger);
-    rt.close();
-
     let (targets, gap_defaults) = {
         let st = ctx.state.lock().unwrap();
         (st.targets.clone(), st.gap_defaults.clone())
     };
+    // Shutdown drops suspended futures. That must not turn a stalled planned
+    // intervention into an apparently successful cancellation in the report.
+    rt.close();
+    drop(_ledger);
     RunResult {
         settled,
         invariant,
@@ -1704,6 +1751,7 @@ fn trial_from(plan: &Plan, res: &RunResult) -> Trial {
         invariant: res.invariant.clone(),
         leaks: res.leaks.clone(),
         settled: res.settled,
+        registered_gaps: res.gap_defaults.len(),
     }
 }
 
@@ -1751,43 +1799,50 @@ fn extend_queue(
                 };
                 let mut next = plan.clone();
                 next.cuts.push(cut);
-                let mut variants = vec![next.clone()];
+                // Queue each variant as it is made. Building the full gap
+                // Cartesian product first defeats the queue's run-budget bound.
+                let mut push = |variant: Plan| {
+                    if queue.len() >= slots {
+                        *truncated = true;
+                        false
+                    } else {
+                        queue.push_back(variant);
+                        true
+                    }
+                };
+                if !push(next.clone()) {
+                    break 'plans;
+                }
                 if next.cuts.len() == 1 {
-                    if config.repeat_at_site && later_target_at_site(res, target) {
-                        variants.push(Plan {
+                    let repeat = config.repeat_at_site && later_target_at_site(res, target);
+                    if repeat
+                        && !push(Plan {
                             repeat: true,
                             ..next.clone()
-                        });
+                        })
+                    {
+                        break 'plans;
                     }
-                    if !config.gap_choices.is_empty() {
-                        // One variant per gap site and substitution; the other
-                        // sites keep their scenario default, and a choice equal
-                        // to that site's default would only repeat the plan.
-                        let templates = variants.clone();
-                        for template in templates {
-                            for (gap, default) in res.gap_defaults.iter().enumerate() {
-                                for substitute in &config.gap_choices {
-                                    if substitute == default
-                                        || template.gaps.get(gap).copied().flatten()
-                                            == Some(*substitute)
-                                    {
-                                        continue;
-                                    }
-                                    let mut variant = template.clone();
-                                    variant.gaps.resize(gap + 1, None);
-                                    variant.gaps[gap] = Some(*substitute);
-                                    variants.push(variant);
+                    // Preserve the old order: normal, repeated, normal gap
+                    // variants, then repeated gap variants.
+                    for repeated in [false, true].into_iter().take(if repeat { 2 } else { 1 }) {
+                        for (gap, default) in res.gap_defaults.iter().enumerate() {
+                            for substitute in &config.gap_choices {
+                                if substitute == default {
+                                    continue;
                                 }
+                                if queue.len() >= slots {
+                                    *truncated = true;
+                                    break 'plans;
+                                }
+                                let mut variant = next.clone();
+                                variant.repeat = repeated;
+                                variant.gaps.resize(gap + 1, None);
+                                variant.gaps[gap] = Some(*substitute);
+                                queue.push_back(variant);
                             }
                         }
                     }
-                }
-                for variant in variants {
-                    if queue.len() >= slots {
-                        *truncated = true;
-                        break 'plans;
-                    }
-                    queue.push_back(variant);
                 }
             }
         }
@@ -2056,6 +2111,35 @@ where
             errors.push(format!("{} failed: {e}", key.label()));
             return None;
         }
+        if !res.settled {
+            errors.push(format!(
+                "{} did not settle before the watchdog",
+                key.label()
+            ));
+            return None;
+        }
+        if let Err(error) = check_applied_gaps(&key.plan(), &res) {
+            errors.push(format!("{}: {error}", key.label()));
+            return None;
+        }
+        for (&target, &skipped) in key.targets.iter().zip(&key.skipped) {
+            let expected = if skipped {
+                Status::Cancelled
+            } else {
+                Status::Completed
+            };
+            if !res
+                .targets
+                .get(target)
+                .is_some_and(|rec| rec.status == expected)
+            {
+                errors.push(format!(
+                    "{}: target #{target} did not reach its required {expected:?} state",
+                    key.label()
+                ));
+                return None;
+            }
+        }
         if !res.leaks.is_empty() {
             let leaks = res
                 .leaks
@@ -2122,14 +2206,14 @@ fn classify<T: PartialEq>(
     mixed: &[&Side<T>],
     actual: &T,
 ) -> Verdict {
-    if post.matches(actual) {
+    if pre.undecided() || post.undecided() || mixed.iter().any(|side| side.undecided()) {
+        Verdict::Unknown
+    } else if post.matches(actual) {
         Verdict::Post
     } else if pre.matches(actual) {
         Verdict::Pre
     } else if mixed.iter().any(|side| side.matches(actual)) {
         Verdict::Mixed
-    } else if pre.undecided() || post.undecided() || mixed.iter().any(|side| side.undecided()) {
-        Verdict::Unknown
     } else {
         Verdict::Neither
     }
@@ -2192,6 +2276,10 @@ fn calibration_keys(
     (pre, post, mixed)
 }
 
+// Materializing all skip/complete mixtures is exponential. This is a safety
+// ceiling, not a smaller allowed-outcome set: larger plans stay undecided.
+const MAX_MIXED_CALIBRATION_TARGETS: usize = 12;
+
 /// Like [`explore`], but the scenario returns an observation that is judged
 /// against a calibration of the same run.
 ///
@@ -2213,6 +2301,8 @@ fn calibration_keys(
 /// target set, skip/complete assignment and gap assignment, so plans that
 /// differ only in `after_pending` or `race` share them. Calibration runs are not
 /// counted against `Config::max_runs` and do not appear as trials.
+/// Atomic plans with more than 12 explicit cuts are left undecided with a
+/// calibration error, rather than allocating an exponential set of mixtures.
 ///
 /// [`Expect`] is the scenario author's contract: `Atomic` allows `pre`, `post`
 /// or a mixture, `Completed` allows only `post`, and `Undone` allows only `pre`
@@ -2276,8 +2366,21 @@ where
         Fut: Future<Output = Result<T, String>>,
     {
         let targets = calibration_targets(plan, res);
-        if plan.cuts.is_empty() || targets.is_empty() {
+        if !res.can_judge(plan) || targets.is_empty() {
             return Judgement::default();
+        }
+        if self.expect == Expect::Atomic
+            && !plan.repeat
+            && targets.len() > MAX_MIXED_CALIBRATION_TARGETS
+        {
+            report.calibration_errors.push(format!(
+                "mixed calibration for {} targets exceeds the safety limit of {MAX_MIXED_CALIBRATION_TARGETS}; reduce the number of cuts",
+                targets.len()
+            ));
+            return Judgement {
+                verdict: Some(Verdict::Unknown),
+                ..Judgement::default()
+            };
         }
         let (pre_key, post_key, mixed_keys) = calibration_keys(&targets, plan, self.expect);
         for key in [&pre_key, &post_key].into_iter().chain(&mixed_keys) {
@@ -2294,8 +2397,12 @@ where
         let mixed: Vec<_> = mixed_keys.iter().map(|key| &self.cache[key]).collect();
         let verdict = classify(pre, post, &mixed, actual);
         let comparison = comparison_text(actual, pre, post, mixed.len());
-        let violation = (!allows(self.expect, verdict))
-            .then(|| format!("{verdict:?} under {:?}: {comparison}", self.expect));
+        // Equal calibrations are labelled Post, but also satisfy an Undone
+        // observation contract. The degeneracy note retains that limitation.
+        let allowed =
+            allows(self.expect, verdict) || (self.expect == Expect::Undone && pre.matches(actual));
+        let violation =
+            (!allowed).then(|| format!("{verdict:?} under {:?}: {comparison}", self.expect));
         if let Some(note) = degeneracy_note(&targets, pre, post)
             && !report.notes.contains(&note)
         {
@@ -2314,21 +2421,47 @@ where
 /// side failed (the reason was recorded in `calibration_errors`).
 type FieldCache = HashMap<CalibrationKey, Option<Vec<Observation>>>;
 
-fn ensure_field_calibrated<S, Fut>(
-    config: &Config,
-    scenario: &mut S,
-    cache: &mut FieldCache,
-    key: &CalibrationKey,
-    errors: &mut Vec<String>,
-) where
-    S: FnMut(Ctx) -> Fut,
-    Fut: Future<Output = Result<Observation, String>>,
-{
-    if cache.contains_key(key) {
-        return;
+/// Field calibration and eligibility shared by exploration and replay.
+struct FieldJudge<'a, S> {
+    config: &'a Config,
+    scenario: &'a mut S,
+    cache: &'a mut FieldCache,
+    contract: &'a FieldContract,
+}
+
+impl<S> FieldJudge<'_, S> {
+    fn judge<Fut>(
+        &mut self,
+        plan: &Plan,
+        res: &RunResult,
+        actual: &Observation,
+        report: &mut Report,
+    ) -> Option<FieldJudgment>
+    where
+        S: FnMut(Ctx) -> Fut,
+        Fut: Future<Output = Result<Observation, String>>,
+    {
+        if !res.can_judge(plan) {
+            return None;
+        }
+        let targets = calibration_targets(plan, res);
+        let pre_key = CalibrationKey::new(&targets, vec![true; targets.len()], &plan.gaps);
+        let post_key = CalibrationKey::new(&targets, vec![false; targets.len()], &plan.gaps);
+        for key in [&pre_key, &post_key] {
+            if !self.cache.contains_key(key) {
+                let samples = calibration_samples(
+                    self.config,
+                    self.scenario,
+                    key,
+                    &mut report.calibration_errors,
+                );
+                self.cache.insert(key.clone(), samples);
+            }
+        }
+        let pre = self.cache.get(&pre_key).and_then(Option::as_deref)?;
+        let post = self.cache.get(&post_key).and_then(Option::as_deref)?;
+        Some(self.contract.judge(pre, post, actual))
     }
-    let samples = calibration_samples(config, scenario, key, errors);
-    cache.insert(key.clone(), samples);
 }
 
 /// Like [`explore_observed`], but judges a named observation field by field.
@@ -2387,31 +2520,13 @@ where
                     .extend(contract.check_baseline(baseline));
             }
         } else if let Some(Ok(actual)) = &observed {
-            let targets = calibration_targets(plan, &res);
-            if !targets.is_empty() {
-                let pre_key = CalibrationKey::new(&targets, vec![true; targets.len()], &plan.gaps);
-                let post_key =
-                    CalibrationKey::new(&targets, vec![false; targets.len()], &plan.gaps);
-                ensure_field_calibrated(
-                    config,
-                    &mut scenario,
-                    &mut cache,
-                    &pre_key,
-                    &mut report.calibration_errors,
-                );
-                ensure_field_calibrated(
-                    config,
-                    &mut scenario,
-                    &mut cache,
-                    &post_key,
-                    &mut report.calibration_errors,
-                );
-                let pre = cache.get(&pre_key).and_then(Option::as_deref);
-                let post = cache.get(&post_key).and_then(Option::as_deref);
-                if let (Some(pre), Some(post)) = (pre, post) {
-                    judgement.fields = Some(contract.judge(pre, post, actual));
-                }
+            judgement.fields = FieldJudge {
+                config,
+                scenario: &mut scenario,
+                cache: &mut cache,
+                contract: &contract,
             }
+            .judge(plan, &res, actual, report);
         }
         (res, judgement)
     })
@@ -2456,31 +2571,14 @@ where
     }
     let mut trial = trial_from(plan, &res);
     if let Some(Ok(actual)) = &observed {
-        let targets = calibration_targets(plan, &res);
-        if !targets.is_empty() {
-            let mut cache: FieldCache = HashMap::new();
-            let pre_key = CalibrationKey::new(&targets, vec![true; targets.len()], &plan.gaps);
-            let post_key = CalibrationKey::new(&targets, vec![false; targets.len()], &plan.gaps);
-            ensure_field_calibrated(
-                config,
-                &mut scenario,
-                &mut cache,
-                &pre_key,
-                &mut report.calibration_errors,
-            );
-            ensure_field_calibrated(
-                config,
-                &mut scenario,
-                &mut cache,
-                &post_key,
-                &mut report.calibration_errors,
-            );
-            let pre = cache.get(&pre_key).and_then(Option::as_deref);
-            let post = cache.get(&post_key).and_then(Option::as_deref);
-            if let (Some(pre), Some(post)) = (pre, post) {
-                trial.field_judgment = Some(contract.judge(pre, post, actual));
-            }
+        let mut cache = FieldCache::new();
+        trial.field_judgment = FieldJudge {
+            config,
+            scenario: &mut scenario,
+            cache: &mut cache,
+            contract: &contract,
         }
+        .judge(plan, &res, actual, &mut report);
     }
     report.trials.push(trial);
     Ok(report)

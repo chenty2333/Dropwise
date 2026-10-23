@@ -62,15 +62,25 @@ type Origin = (&'static str, &'static Location<'static>);
 /// Obligations of one scenario run, shared by every thread of its runtime.
 #[derive(Default)]
 pub(crate) struct Ledger {
-    leaks: Mutex<Vec<Leak>>,
-    live: Mutex<BTreeMap<u64, Origin>>,
+    state: Mutex<LedgerState>,
+}
+
+#[derive(Default)]
+struct LedgerState {
+    leaks: Vec<Leak>,
+    live: BTreeMap<u64, Origin>,
+    finished: bool,
 }
 
 impl Ledger {
     /// Leaks so far plus every obligation still live, ordered by id.
     pub(crate) fn finish(&self) -> Vec<Leak> {
-        let mut leaks = std::mem::take(&mut *self.leaks.lock().unwrap());
-        let live = std::mem::take(&mut *self.live.lock().unwrap());
+        // Moving a live entry to leaks and taking the final snapshot must be
+        // atomic: separate locks can lose a drop between the two snapshots.
+        let mut state = self.state.lock().unwrap();
+        state.finished = true;
+        let mut leaks = std::mem::take(&mut state.leaks);
+        let live = std::mem::take(&mut state.live);
         leaks.extend(live.into_iter().map(|(id, (label, site))| Leak {
             id,
             label,
@@ -119,7 +129,10 @@ impl<T> Obligation<T> {
         let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
         let ledger = CURRENT.with(|c| c.borrow().clone());
         if let Some(ledger) = &ledger {
-            ledger.live.lock().unwrap().insert(id, (label, site));
+            let mut state = ledger.state.lock().unwrap();
+            if !state.finished {
+                state.live.insert(id, (label, site));
+            }
         }
         Self {
             value: Some(value),
@@ -156,7 +169,7 @@ impl<T> Obligation<T> {
 
     fn resolve(&self) {
         if let Some(ledger) = &self.ledger {
-            ledger.live.lock().unwrap().remove(&self.id);
+            ledger.state.lock().unwrap().live.remove(&self.id);
         }
     }
 }
@@ -164,15 +177,18 @@ impl<T> Obligation<T> {
 impl<T> Drop for Obligation<T> {
     fn drop(&mut self) {
         if let (Some(_), Some(ledger)) = (&self.value, &self.ledger) {
-            ledger.live.lock().unwrap().remove(&self.id);
-            if !std::thread::panicking() {
+            let mut state = ledger.state.lock().unwrap();
+            // A worker panic can be caught by its JoinHandle; unwinding does
+            // not discharge the obligation. Entries absent after finish are
+            // outside the observation window and must not be recorded again.
+            if state.live.remove(&self.id).is_some() {
                 let leak = Leak {
                     id: self.id,
                     label: self.label,
                     site: self.site,
                     kind: LeakKind::DroppedUnresolved,
                 };
-                ledger.leaks.lock().unwrap().push(leak);
+                state.leaks.push(leak);
             }
         }
     }
@@ -182,6 +198,68 @@ impl<T> Drop for Obligation<T> {
 mod tests {
     use super::*;
     use crate::{Config, Ctx, explore};
+
+    #[test]
+    fn concurrent_drop_is_present_exactly_once_in_the_final_snapshot() {
+        for _ in 0..256 {
+            let ledger = Arc::new(Ledger::default());
+            let binding = CurrentLedger::attach(ledger.clone());
+            let owed = Obligation::new(1, "concurrent drop");
+            let barrier = Arc::new(std::sync::Barrier::new(2));
+            let drop_barrier = barrier.clone();
+            let worker = std::thread::spawn(move || {
+                drop_barrier.wait();
+                drop(owed);
+            });
+            barrier.wait();
+            let leaks = ledger.finish();
+            worker.join().unwrap();
+            assert_eq!(leaks.len(), 1);
+            assert_eq!(leaks[0].label, "concurrent drop");
+            // Shutdown/late work cannot repopulate a finished ledger.
+            drop(Obligation::new(2, "after the window"));
+            assert!(ledger.finish().is_empty());
+            drop(binding);
+        }
+    }
+
+    #[test]
+    fn shutdown_destructors_do_not_contaminate_the_previous_ledger() {
+        struct OnDrop;
+        impl Drop for OnDrop {
+            fn drop(&mut self) {
+                drop(Obligation::new(1, "shutdown-only obligation"));
+            }
+        }
+        for panic in [false, true] {
+            let previous = Arc::new(Ledger::default());
+            let _binding = CurrentLedger::attach(previous.clone());
+            let result = std::panic::catch_unwind(|| {
+                explore(
+                    &Config {
+                        max_runs: 1,
+                        ..Config::default()
+                    },
+                    |_ctx: Ctx| async move {
+                        let (tx, rx) = tokio::sync::oneshot::channel();
+                        tokio::spawn(async move {
+                            let _on_drop = OnDrop;
+                            tx.send(()).unwrap();
+                            std::future::pending::<()>().await;
+                        });
+                        rx.await.unwrap();
+                        assert!(!panic, "scenario panic");
+                        Ok(())
+                    },
+                )
+            });
+            assert_eq!(result.is_err(), panic);
+            assert!(
+                previous.finish().is_empty(),
+                "shutdown belongs to the inner run"
+            );
+        }
+    }
 
     #[test]
     fn run_restores_the_previous_ledger_on_every_exit_path() {
