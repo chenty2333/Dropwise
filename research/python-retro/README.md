@@ -25,6 +25,20 @@ asyncio，对 redis-py、SQLAlchemy 和 aiohttp 的历史问题做回溯检测�
 - `run-redis.sh` / `run-postgres.sh` / `run-aiohttp.sh`：起一次性容器、等待、
   跑三轮、写 `logs/`、退出时删容器。容器只绑 127.0.0.1。
 
+## 当前引擎开发与测试
+
+当前引擎面向 CPython 3.15，仓库根目录的 `.python-version` 选择该版本。
+纯 Python 注入任务与原生 `current_task()` / `all_tasks()` 的登记保持一致，
+使超时和清理代码能观察到正确的当前任务及取消计数。不维护旧运行时兼容层。
+
+从仓库根目录运行不依赖外部服务或第三方包的引擎测试：
+
+```sh
+PYTHONPATH=research/python-retro python -m unittest discover -s research/python-retro/tests -v
+```
+
+下面记录的是历史实验环境，不代表当前引擎的运行时支持范围。
+
 ## 环境
 
 历史运行环境由 uv 建在仓库外 `~/dropwise-py-work/`，交卷后已删除；

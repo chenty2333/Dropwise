@@ -27,13 +27,27 @@ import enum
 import time
 from typing import Any, Awaitable, Callable
 
-# The pure-Python Task implementation; the C Task's step method cannot be
-# overridden.  In recent CPython, `asyncio.tasks.Task` itself is the C class,
-# while `_PyTask` is the pure-Python one.
-try:
-    from asyncio.tasks import _PyTask as PureTask
-except ImportError:  # pragma: no cover - older/newer layouts
-    PureTask = asyncio.tasks.Task
+class PureTask(asyncio.tasks._PyTask):
+    """Steppable task registered with CPython 3.15's public task lookup.
+
+    The Python Task now maintains its own registry, separate from the C
+    implementation behind asyncio.current_task(). Register each step there too
+    so driver cleanup and asyncio.timeout() see the actual injection task.
+    This intentionally targets the current runtime, not older task layouts.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # all_tasks() and asyncio.run() shutdown use the native registry too.
+        asyncio.tasks._register_task(self)
+        self.add_done_callback(asyncio.tasks._unregister_task)
+
+    def _Task__step(self, exc=None):
+        asyncio.tasks._enter_task(self._loop, self)
+        try:
+            super()._Task__step(exc)
+        finally:
+            asyncio.tasks._leave_task(self._loop, self)
 
 
 class Expect(enum.Enum):

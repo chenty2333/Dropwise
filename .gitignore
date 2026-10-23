@@ -1,2 +1,5 @@
 target/
 research/linux/build/
+__pycache__/
+*.py[cod]
+.venv/
